@@ -22,7 +22,11 @@ model Organization {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  branches Branch[]
+  branches       Branch[]
+  settings       OrgSettings?
+  paymentMethods PaymentMethod[]
+  gradingSystems GradingSystem[]
+  schools        School[]
 }
 
 model Branch {
@@ -37,6 +41,9 @@ model Branch {
   users        UserBranch[]
   sessions     Session[]
   auditLogs    AuditLog[]
+  courses      Course[]
+  rooms        Room[]
+  daysOff      DayOff[]
 
   @@index([organizationId])
 }
@@ -180,4 +187,149 @@ model AuditLog {
   @@index([entity, entityId, createdAt])
   @@index([actorId, createdAt])
   @@index([createdAt])
+}
+
+// ---------------------------------------------------------------------------
+// Settings core (Phase 3, EXP §8 "Umumiy sozlamalar", Kurslar, Xonalar,
+// Dam olish kunlari, Maktablar)
+// ---------------------------------------------------------------------------
+
+/// The switches on the "Markaz sozlamalari" tab, one row per organisation.
+/// Each flag is read by the module it governs in a later phase.
+model OrgSettings {
+  id             String @id @default(cuid())
+  organizationId String @unique
+
+  spreadOverpayment          Boolean @default(false) // overpayment is spread over the next months
+  adminActionsNeedApproval   Boolean @default(false) // admin actions wait for CEO approval (A-09)
+  printReceiptAfterPayment   Boolean @default(false)
+  refundsEnabled             Boolean @default(false)
+  attendanceComments         Boolean @default(false)
+  teachersSeeExamSchedule    Boolean @default(false)
+  attendanceOnlyDuringLesson Boolean @default(false)
+  teacherSeesSalary          Boolean @default(false)
+  payTeacherOnGroupDayOff    Boolean @default(false)
+  payOnlyAttendedLessons     Boolean @default(false)
+  teacherCanAddStudents      Boolean @default(false)
+  bookAnySupportTeacher      Boolean @default(false)
+  groupSupportSessions       Boolean @default(false)
+
+  workStart           String @default("08:00") // HH:mm, schedule grid start
+  workEnd             String @default("20:00") // HH:mm, schedule grid end
+  scheduleStepMinutes Int    @default(30) // 15 or 30
+
+  updatedAt DateTime @updatedAt
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+}
+
+/// "To'lov usullari" on the general settings tab. Payments reference these from Phase 6.
+model PaymentMethod {
+  id             String   @id @default(cuid())
+  organizationId String
+  name           String
+  isActive       Boolean  @default(true)
+  sortOrder      Int      @default(0)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@unique([organizationId, name])
+}
+
+enum RoundingType {
+  STANDARD
+  IELTS
+}
+
+/// "Baholash tizimlari": a named scale with ordered levels (A-16).
+model GradingSystem {
+  id             String       @id @default(cuid())
+  organizationId String
+  name           String
+  rounding       RoundingType @default(STANDARD)
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+
+  organization Organization   @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  levels       GradingLevel[]
+  courses      Course[]
+
+  @@unique([organizationId, name])
+}
+
+model GradingLevel {
+  id              String  @id @default(cuid())
+  gradingSystemId String
+  name            String
+  minScore        Decimal @db.Decimal(6, 2)
+  maxScore        Decimal @db.Decimal(6, 2)
+  sortOrder       Int     @default(0)
+
+  gradingSystem GradingSystem @relation(fields: [gradingSystemId], references: [id], onDelete: Cascade)
+
+  @@index([gradingSystemId, sortOrder])
+}
+
+/// "Kurslar": per branch, with a monthly price and duration in months.
+model Course {
+  id              String   @id @default(cuid())
+  branchId        String
+  name            String
+  description     String?
+  price           Decimal  @db.Decimal(15, 2) // UZS per month
+  durationMonths  Int
+  gradingSystemId String?
+  color           String? // hex, e.g. #0F766E
+  isArchived      Boolean  @default(false)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  branch        Branch         @relation(fields: [branchId], references: [id])
+  gradingSystem GradingSystem? @relation(fields: [gradingSystemId], references: [id], onDelete: SetNull)
+
+  @@index([branchId, isArchived])
+  @@index([gradingSystemId])
+}
+
+/// "Xonalar": per branch, with a seat capacity.
+model Room {
+  id        String   @id @default(cuid())
+  branchId  String
+  name      String
+  capacity  Int
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  branch Branch @relation(fields: [branchId], references: [id])
+
+  @@unique([branchId, name])
+}
+
+/// "Dam olish kunlari": a date on which the branch holds no lessons.
+model DayOff {
+  id        String   @id @default(cuid())
+  branchId  String
+  date      DateTime @db.Date
+  reason    String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  branch Branch @relation(fields: [branchId], references: [id])
+
+  @@unique([branchId, date])
+}
+
+/// "Maktablar": the schools students attend (students reference them from Phase 6).
+model School {
+  id             String   @id @default(cuid())
+  organizationId String
+  name           String
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@unique([organizationId, name])
 }
