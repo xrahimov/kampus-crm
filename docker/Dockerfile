@@ -36,6 +36,9 @@ RUN addgroup --system --gid 1001 nodejs && adduser --system --uid 1001 nextjs
 COPY --from=build --chown=nextjs:nodejs /app/.next/standalone ./
 COPY --from=build --chown=nextjs:nodejs /app/.next/static ./.next/static
 COPY --from=build --chown=nextjs:nodejs /app/public ./public
+# Uploaded photos (UPLOAD_DIR); compose mounts a volume here.
+RUN mkdir -p /data/uploads && chown nextjs:nodejs /data/uploads
+ENV UPLOAD_DIR=/data/uploads
 USER nextjs
 EXPOSE 3000
 HEALTHCHECK --interval=30s --timeout=5s --start-period=20s \

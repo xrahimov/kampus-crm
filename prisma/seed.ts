@@ -30,11 +30,19 @@ const ROLE_NAMES: Record<(typeof SYSTEM_ROLES)[number], string> = {
 
 const DEMO_PASSWORD = process.env.SEED_ADMIN_PASSWORD ?? "Kampus!2026";
 
+type Salary =
+  | { salaryMethod: "PERCENT"; percentShare: number }
+  | { salaryMethod: "MONTHLY"; fixedSalary: number }
+  | { salaryMethod: "PER_LESSON"; perLessonFee: number }
+  | { salaryMethod: "PER_STUDENT"; perStudentFee: number };
+
 const DEMO_USERS: Array<{
   phone: string;
   fullName: string;
   roles: Array<(typeof SYSTEM_ROLES)[number]>;
   branches: "all" | string[];
+  gender?: "MALE" | "FEMALE";
+  salary?: Salary;
 }> = [
   {
     phone: process.env.SEED_ADMIN_PHONE ?? "+998900000001",
@@ -44,12 +52,43 @@ const DEMO_USERS: Array<{
   },
   { phone: "+998900000002", fullName: "Demo Admin", roles: ["ADMIN"], branches: ["Central"] },
   { phone: "+998900000003", fullName: "Demo Cashier", roles: ["CASHIER"], branches: ["Central"] },
-  { phone: "+998900000004", fullName: "Demo Teacher", roles: ["TEACHER"], branches: ["Central"] },
+  {
+    phone: "+998900000004",
+    fullName: "Demo Teacher",
+    roles: ["TEACHER"],
+    branches: ["Central"],
+    salary: { salaryMethod: "PERCENT", percentShare: 40 },
+  },
   {
     phone: "+998900000005",
     fullName: "Demo Branch Manager",
     roles: ["BRANCH_MANAGER"],
     branches: ["Riverside"],
+    salary: { salaryMethod: "MONTHLY", fixedSalary: 6_000_000 },
+  },
+  // Phase 4: more teachers so the list, tabs and salary methods have something to show.
+  {
+    phone: "+998900000006",
+    fullName: "Demo Teacher Two",
+    roles: ["TEACHER"],
+    branches: ["Riverside"],
+    gender: "FEMALE",
+    salary: { salaryMethod: "MONTHLY", fixedSalary: 4_500_000 },
+  },
+  {
+    phone: "+998900000007",
+    fullName: "Demo Teacher Three",
+    roles: ["TEACHER"],
+    branches: ["Central", "Riverside"],
+    salary: { salaryMethod: "PER_LESSON", perLessonFee: 120_000 },
+  },
+  {
+    phone: "+998900000008",
+    fullName: "Demo Support Teacher",
+    roles: ["SUPPORT_TEACHER"],
+    branches: ["Central"],
+    gender: "FEMALE",
+    salary: { salaryMethod: "PER_STUDENT", perStudentFee: 50_000 },
   },
 ];
 
@@ -238,13 +277,19 @@ async function main() {
 
   const passwordHash = await hashPassword(DEMO_PASSWORD);
   for (const demo of DEMO_USERS) {
+    const profile = {
+      fullName: demo.fullName,
+      gender: demo.gender ?? "MALE",
+      ...(demo.salary ?? {}),
+    };
     const user = await prisma.user.upsert({
       where: { phone: demo.phone },
-      update: { fullName: demo.fullName, passwordHash, isArchived: false },
+      update: { ...profile, passwordHash, isArchived: false },
       create: {
         phone: demo.phone,
-        fullName: demo.fullName,
+        ...profile,
         passwordHash,
+        birthDate: new Date("1990-05-15"),
         hireDate: new Date("2026-01-10"),
       },
     });

@@ -85,7 +85,10 @@
     "integration": "Внешний сервис не ответил.",
     "internal": "Непредвиденная ошибка. Повторите попытку.",
     "forbiddenTitle": "Нет доступа",
-    "inUse": "Эта запись используется и не может быть удалена."
+    "inUse": "Эта запись используется и не может быть удалена.",
+    "selfEdit": "Нельзя менять свои роли или архивировать себя.",
+    "roleBeyondOwn": "Нельзя выдавать права, которых нет у вас.",
+    "systemRole": "Эту системную роль так изменить нельзя."
   },
   "validation": {
     "phone": "Введите номер в формате +998 90 123 45 67.",
@@ -106,7 +109,15 @@
     "levelsMin": "Добавьте хотя бы один уровень.",
     "levelsMax": "Не более 50 уровней.",
     "color": "Выберите цвет.",
-    "duplicate": "Такое значение уже существует."
+    "duplicate": "Такое значение уже существует.",
+    "rolesMin": "Выберите хотя бы одну роль.",
+    "branchesMin": "Выберите хотя бы один филиал.",
+    "permission": "Неизвестное право.",
+    "teacherRole": "Здесь можно задать только роли учителя.",
+    "roleUnknown": "Неизвестная или неактивная роль.",
+    "fileRequired": "Выберите файл.",
+    "fileType": "Только изображения JPEG, PNG или WebP.",
+    "fileSize": "Изображение должно быть не больше 2 МБ."
   },
   "roles": {
     "CEO": "CEO",
@@ -267,6 +278,170 @@
       "studentsCount": "Учеников",
       "deleteTitle": "Удалить школу?",
       "deleteText": "«{name}» будет удалена."
+    },
+    "roles": {
+      "title": "Роли",
+      "description": "Что может каждая роль. Системные роли есть в Kampus изначально; свои добавляйте ниже.",
+      "add": "Новая роль",
+      "edit": "Изменить роль",
+      "name": "Название роли",
+      "permissions": "Права",
+      "users": "Пользователи",
+      "system": "Системная",
+      "systemHint": "Встроенная роль. Права можно менять, но удалить её нельзя.",
+      "allPermissions": "Всё",
+      "permissionCount": "{count, plural, one {# право} few {# права} other {# прав}}",
+      "deleteTitle": "Удалить роль?",
+      "deleteText": "«{name}» будет удалена. Роль, назначенную кому-то, удалить нельзя."
+    }
+  },
+  "teachers": {
+    "title": "Учителя",
+    "add": "Новый учитель",
+    "tabsLabel": "Тип учителя",
+    "tabs": {
+      "teachers": "Учителя",
+      "support": "Саппорт-учителя"
+    },
+    "columns": {
+      "groups": "Назначенные группы"
+    },
+    "groupsLater": "Группы появятся в фазе 5.",
+    "archiveTitle": "Архивировать учителя?",
+    "archiveText": "«{name}» будет разлогинен и скрыт из списков. История сохранится.",
+    "detail": {
+      "registered": "Зарегистрирован",
+      "branches": "Филиалы",
+      "courses": "Преподаёт курсов",
+      "activeGroups": "Активные группы",
+      "activeStudents": "Активные ученики",
+      "groups": "Группы"
+    }
+  },
+  "staff": {
+    "title": "Сотрудники",
+    "description": "Все, кто входит в Kampus.",
+    "filterByRole": "Фильтр по роли",
+    "allRoles": "Все",
+    "archiveTitle": "Архивировать сотрудника?",
+    "archiveText": "«{name}» будет разлогинен и скрыт из списков. История сохранится.",
+    "columns": {
+      "fullName": "ФИО",
+      "phone": "Телефон",
+      "fixedSalary": "Оклад",
+      "percentShare": "Процент",
+      "perLessonFee": "За урок",
+      "perStudentFee": "За ученика",
+      "birthDate": "Дата рождения",
+      "hireDate": "Принят",
+      "roles": "Роли"
+    },
+    "form": {
+      "addTeacher": "Новый учитель",
+      "editTeacher": "Изменить учителя",
+      "addStaff": "Новый сотрудник",
+      "editStaff": "Изменить сотрудника",
+      "photo": "Фото",
+      "choosePhoto": "Выбрать фото",
+      "uploading": "Загрузка…",
+      "removePhoto": "Убрать фото",
+      "fullName": "ФИО",
+      "phone": "Номер телефона",
+      "birthDate": "Дата рождения",
+      "hireDate": "Дата приёма",
+      "branches": "Филиалы",
+      "roles": "Роли",
+      "ownRolesLocked": "Свои роли изменить нельзя.",
+      "salaryMethod": "Способ расчёта зарплаты",
+      "methods": {
+        "PERCENT": "Процент",
+        "MONTHLY": "Оклад",
+        "PER_LESSON": "За урок",
+        "PER_STUDENT": "За ученика"
+      },
+      "amounts": {
+        "PERCENT": "Доля от цены курса (%)",
+        "MONTHLY": "Оклад в месяц (UZS)",
+        "PER_LESSON": "Оплата за урок (UZS)",
+        "PER_STUDENT": "Оплата за ученика (UZS)"
+      },
+      "gender": "Пол",
+      "genders": {
+        "MALE": "Мужской",
+        "FEMALE": "Женский"
+      },
+      "password": "Пароль",
+      "newPassword": "Новый пароль",
+      "keepPassword": "Оставьте пустым, чтобы не менять",
+      "generate": "Сгенерировать"
+    }
+  },
+  "permissions": {
+    "modules": {
+      "dashboard": "Главная",
+      "leads": "Лиды",
+      "teachers": "Учителя",
+      "groups": "Группы",
+      "students": "Ученики",
+      "payments": "Оплаты",
+      "discounts": "Скидки",
+      "exams": "Экзамены",
+      "tests": "Тесты",
+      "finance": "Финансы",
+      "reports": "Отчёты",
+      "staff": "Сотрудники",
+      "settings": "Настройки",
+      "logs": "Журналы"
+    },
+    "names": {
+      "dashboard.view": "Видеть главную",
+      "dashboard.finance": "Видеть финансы на главной",
+      "leads.view": "Видеть лиды",
+      "leads.create": "Добавлять лиды",
+      "leads.update": "Изменять лиды",
+      "leads.delete": "Удалять лиды",
+      "teachers.view": "Видеть учителей",
+      "teachers.create": "Добавлять учителей",
+      "teachers.update": "Изменять учителей",
+      "teachers.delete": "Архивировать учителей",
+      "groups.view": "Видеть группы",
+      "groups.create": "Создавать группы",
+      "groups.update": "Изменять группы",
+      "groups.delete": "Удалять группы",
+      "groups.attendance.mark": "Отмечать посещаемость",
+      "students.view": "Видеть учеников",
+      "students.create": "Добавлять учеников",
+      "students.update": "Изменять учеников",
+      "students.delete": "Удалять учеников",
+      "students.blacklist": "Чёрный список учеников",
+      "payments.create": "Принимать оплату",
+      "payments.refund": "Возвращать оплату",
+      "discounts.give": "Давать скидки",
+      "exams.view": "Видеть экзамены",
+      "exams.create": "Создавать экзамены",
+      "exams.update": "Изменять экзамены",
+      "exams.delete": "Удалять экзамены",
+      "tests.view": "Видеть тесты",
+      "tests.create": "Создавать тесты",
+      "tests.update": "Изменять тесты",
+      "tests.delete": "Удалять тесты",
+      "finance.view": "Видеть финансы",
+      "finance.create": "Добавлять финансовые записи",
+      "finance.update": "Изменять финансовые записи",
+      "finance.delete": "Удалять финансовые записи",
+      "finance.payroll.approve": "Утверждать зарплату",
+      "reports.view": "Видеть отчёты",
+      "reports.payments": "Отчёты по оплатам",
+      "reports.leads": "Отчёты по лидам",
+      "staff.view": "Видеть сотрудников",
+      "staff.create": "Добавлять сотрудников",
+      "staff.update": "Изменять сотрудников",
+      "staff.delete": "Архивировать сотрудников",
+      "settings.org": "Настройки центра и филиалы",
+      "settings.roles": "Управлять ролями",
+      "settings.integrations": "Управлять интеграциями",
+      "settings.catalog": "Курсы, кабинеты, выходные, школы",
+      "logs.view": "Видеть журналы"
     }
   }
 }
