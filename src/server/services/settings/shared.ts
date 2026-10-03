@@ -57,3 +57,15 @@ export function dateToIso(value: Date): string {
 export function isoToDate(value: string): Date {
   return new Date(`${value}T00:00:00.000Z`);
 }
+
+/** The organisation's display name and logo, for printed pages anyone signed in may open. */
+export async function getOrganizationBranding(
+  db: DbClient,
+): Promise<{ name: string; logoUrl: string | null }> {
+  const org = await db.organization.findFirst({
+    select: { name: true, logoUrl: true },
+    orderBy: { createdAt: "asc" },
+  });
+  if (!org) throw new AppError("INTERNAL", "errors.internal");
+  return org;
+}

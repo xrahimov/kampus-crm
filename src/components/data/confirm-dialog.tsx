@@ -23,6 +23,7 @@ export function ConfirmDialog({
   description,
   confirmLabel,
   onConfirm,
+  children,
 }: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -30,6 +31,8 @@ export function ConfirmDialog({
   description: string;
   confirmLabel?: string;
   onConfirm: () => Promise<void>;
+  /** Optional extra inputs, such as a reason field. */
+  children?: React.ReactNode;
 }) {
   const t = useTranslations();
   const [busy, setBusy] = useState(false);
@@ -57,6 +60,7 @@ export function ConfirmDialog({
           <AlertDialogTitle>{title}</AlertDialogTitle>
           <AlertDialogDescription>{description}</AlertDialogDescription>
         </AlertDialogHeader>
+        {children}
         {error && (
           <p role="alert" className="text-sm text-destructive">
             {error}

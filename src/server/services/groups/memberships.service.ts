@@ -4,6 +4,7 @@ import type {
   MembershipStatus,
   MembershipUpdateInput,
 } from "@/lib/validation/groups";
+import type { TransferInput } from "@/lib/validation/students";
 import { recordAudit } from "@/server/audit/audit";
 import { prisma, type DbClient } from "@/server/db/prisma";
 import { AppError } from "@/server/errors/app-error";
@@ -15,6 +16,8 @@ import {
   mustFind,
   rethrowAsAppError,
 } from "@/server/services/settings/shared";
+
+import { membershipBalances } from "@/server/services/students/balances";
 
 import { findGroupInScope, today } from "./shared";
 
@@ -31,6 +34,11 @@ export interface MembershipDto {
   leftAt: string | null;
   customPrice: number | null;
   note: string | null;
+  activatedAt: string | null;
+  frozenAt: string | null;
+  leaveReason: string | null;
+  /** Filled by `listMembers` only (Phase 6); null elsewhere. */
+  balance: number | null;
 }
 
 export const MEMBER_SORT_FIELDS = ["fullName", "status", "joinedAt"] as const;
@@ -53,8 +61,9 @@ const include = {
 } satisfies Prisma.GroupMembershipInclude;
 type Row = Prisma.GroupMembershipGetPayload<{ include: typeof include }>;
 
-function toDto(row: Row): MembershipDto {
+function toDto(row: Row, balance: number | null = null): MembershipDto {
   return {
+    balance,
     id: row.id,
     groupId: row.groupId,
     studentId: row.studentId,
@@ -65,6 +74,9 @@ function toDto(row: Row): MembershipDto {
     leftAt: row.leftAt ? dateToIso(row.leftAt) : null,
     customPrice: row.customPrice ? decimalToNumber(row.customPrice) : null,
     note: row.note,
+    activatedAt: row.activatedAt ? dateToIso(row.activatedAt) : null,
+    frozenAt: row.frozenAt ? dateToIso(row.frozenAt) : null,
+    leaveReason: row.leaveReason,
   };
 }
 
@@ -104,7 +116,11 @@ export async function listMembers(
     include,
     orderBy: [orderBy, { id: "asc" }],
   });
-  return rows.map(toDto);
+  const balances = await membershipBalances(
+    db,
+    rows.map((r) => r.id),
+  );
+  return rows.map((r) => toDto(r, balances.get(r.id)?.balance ?? 0));
 }
 
 /** Autocomplete for "O'quvchilarni qidiring": name or phone, inside the actor's branches. */
@@ -147,6 +163,7 @@ export async function addMember(
     if (!canAccessAllBranches(actor) && !actor.branchIds.includes(student.branchId)) {
       throw AppError.forbidden("errors.branchForbidden");
     }
+    if (student.isBlacklisted) throw AppError.conflict("errors.studentBlacklisted");
   }
   try {
     return await db.$transaction(async (tx) => {
@@ -173,6 +190,7 @@ export async function addMember(
           studentId: studentId!,
           status: input.status,
           joinedAt: isoToDate(input.joinedAt),
+          activatedAt: input.status === "ACTIVE" ? isoToDate(input.joinedAt) : null,
           customPrice: input.customPrice ?? null,
           note: input.note ?? null,
         },
@@ -199,10 +217,26 @@ async function findMembershipInScope(db: DbClient, actor: Actor, id: string) {
   return { row, group };
 }
 
+/** Charging side effects of a status move (A-10, A-59). */
+function statusData(
+  from: MembershipStatus,
+  to: MembershipStatus,
+): Prisma.GroupMembershipUpdateInput {
+  const now = isoToDate(today());
+  const data: Prisma.GroupMembershipUpdateInput = { status: to };
+  if (to === "ACTIVE" && from !== "ACTIVE") {
+    data.frozenAt = null;
+    if (from === "NEW" || from === "TRIAL") data.activatedAt = now;
+  }
+  if (to === "FROZEN") data.frozenAt = now;
+  if (to === "ARCHIVED" || to === "GRADUATED") data.leftAt = now;
+  return data;
+}
+
 export async function updateMembership(
   actor: Actor,
   id: string,
-  input: MembershipUpdateInput,
+  input: MembershipUpdateInput & { leaveReason?: string | null },
   db: DbClient = prisma,
 ): Promise<MembershipDto> {
   authorize(actor, "groups.update");
@@ -215,13 +249,14 @@ export async function updateMembership(
   ) {
     throw AppError.validation({ status: ["validation.statusTransition"] });
   }
-  const terminal = input.status === "ARCHIVED" || input.status === "GRADUATED";
   return db.$transaction(async (tx) => {
     const updated = await tx.groupMembership.update({
       where: { id },
       data: {
-        ...(input.status !== undefined ? { status: input.status } : {}),
-        ...(terminal ? { leftAt: isoToDate(today()) } : {}),
+        ...(input.status !== undefined && input.status !== row.status
+          ? statusData(row.status, input.status)
+          : {}),
+        ...(input.leaveReason !== undefined ? { leaveReason: input.leaveReason } : {}),
         ...(input.customPrice !== undefined ? { customPrice: input.customPrice } : {}),
         ...(input.note !== undefined ? { note: input.note } : {}),
       },
@@ -238,6 +273,101 @@ export async function updateMembership(
     });
     return after;
   });
+}
+
+/** "O'quvchilarni faollashtirish": every NEW or TRIAL member of the group becomes ACTIVE. */
+export async function activateMembers(
+  actor: Actor,
+  groupId: string,
+  db: DbClient = prisma,
+): Promise<number> {
+  authorize(actor, "groups.update");
+  const group = await findGroupInScope(db, actor, groupId, {});
+  const rows = await db.groupMembership.findMany({
+    where: { groupId, status: { in: ["NEW", "TRIAL"] } },
+    include,
+  });
+  await db.$transaction(async (tx) => {
+    for (const row of rows) {
+      const updated = await tx.groupMembership.update({
+        where: { id: row.id },
+        data: statusData(row.status, "ACTIVE"),
+        include,
+      });
+      await recordAudit(tx, actor, {
+        action: "membership.update",
+        entity: "GroupMembership",
+        entityId: row.id,
+        before: toDto(row),
+        after: toDto(updated),
+        branchId: group.branchId,
+      });
+    }
+  });
+  return rows.length;
+}
+
+/**
+ * "Boshqa guruhga ko'chirish": the old membership ends on the transfer date and
+ * a new one starts in the target group. Money stays on the old membership; the
+ * student's total balance is unchanged (A-63).
+ */
+export async function transferMember(
+  actor: Actor,
+  id: string,
+  input: TransferInput,
+  db: DbClient = prisma,
+): Promise<MembershipDto> {
+  authorize(actor, "groups.update");
+  const { row, group } = await findMembershipInScope(db, actor, id);
+  if (LEFT_STATUSES.includes(row.status)) throw AppError.conflict("errors.memberLeft");
+  const target = await findGroupInScope(db, actor, input.groupId, {});
+  if (target.id === group.id) throw AppError.validation({ groupId: ["validation.sameGroup"] });
+  if (target.status === "ARCHIVED") throw AppError.conflict("errors.groupArchived");
+  try {
+    return await db.$transaction(async (tx) => {
+      const closed = await tx.groupMembership.update({
+        where: { id },
+        data: {
+          status: "ARCHIVED",
+          leftAt: isoToDate(input.joinedAt),
+          leaveReason: input.reason ?? "transfer",
+        },
+        include,
+      });
+      await recordAudit(tx, actor, {
+        action: "membership.transfer",
+        entity: "GroupMembership",
+        entityId: id,
+        before: toDto(row),
+        after: { ...toDto(closed), toGroupId: target.id },
+        branchId: group.branchId,
+      });
+      const created = await tx.groupMembership.create({
+        data: {
+          groupId: target.id,
+          studentId: row.studentId,
+          status: "ACTIVE",
+          joinedAt: isoToDate(input.joinedAt),
+          activatedAt: isoToDate(input.joinedAt),
+          customPrice: input.customPrice ?? null,
+          note: input.note ?? null,
+        },
+        include,
+      });
+      const dto = toDto(created);
+      await recordAudit(tx, actor, {
+        action: "membership.create",
+        entity: "GroupMembership",
+        entityId: created.id,
+        after: { ...dto, fromGroupId: group.id },
+        branchId: target.branchId,
+      });
+      return dto;
+    });
+  } catch (error) {
+    rethrowAsAppError(error, "groupId");
+  }
 }
 
 /** "Guruhdan chiqarish": the membership is archived with today's leave date. */
