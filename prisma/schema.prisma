@@ -22,11 +22,13 @@ model Organization {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  branches       Branch[]
-  settings       OrgSettings?
-  paymentMethods PaymentMethod[]
-  gradingSystems GradingSystem[]
-  schools        School[]
+  branches        Branch[]
+  settings        OrgSettings?
+  paymentMethods  PaymentMethod[]
+  gradingSystems  GradingSystem[]
+  schools         School[]
+  leadSources     LeadSource[]
+  receiptSettings ReceiptSettings?
 }
 
 model Branch {
@@ -46,6 +48,7 @@ model Branch {
   daysOff      DayOff[]
   groups       Group[]
   students     Student[]
+  payments     Payment[]
 
   @@index([organizationId])
 }
@@ -94,6 +97,11 @@ model User {
   groupsTaught    GroupTeacher[]
   groupsSupported GroupSupportTeacher[] @relation("supportOf")
   groupNotes      GroupNote[]
+
+  paymentsReceived Payment[]
+  refundsMade      Refund[]
+  discountsGiven   Discount[]
+  studentComments  StudentComment[]
 }
 
 /// A role is a named bundle of permission codes. System roles are seeded and
@@ -251,6 +259,7 @@ model PaymentMethod {
   updatedAt      DateTime @updatedAt
 
   organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  payments     Payment[]
 
   @@unique([organizationId, name])
 }
@@ -350,6 +359,7 @@ model School {
   updatedAt      DateTime @updatedAt
 
   organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  students     Student[]
 
   @@unique([organizationId, name])
 }
@@ -424,6 +434,7 @@ model Group {
   lessons         Lesson[]
   notes           GroupNote[]
   memberships     GroupMembership[]
+  studentComments StudentComment[]
 
   @@index([branchId, status])
   @@index([courseId])
@@ -505,24 +516,40 @@ model Lesson {
   @@index([groupId, date])
 }
 
-/// Minimal student record; Phase 6 adds the full profile (parents, source, school, …).
+/// Student (EXP §6 profile). Phase 5 created the minimal row; Phase 6 adds the
+/// profile fields, parents, custom fields, comments and payments.
 model Student {
-  id         String    @id @default(cuid())
-  branchId   String
-  fullName   String
-  phone      String?
-  gender     Gender    @default(MALE)
-  birthDate  DateTime? @db.Date
-  photoUrl   String?
-  isArchived Boolean   @default(false)
-  createdAt  DateTime  @default(now())
-  updatedAt  DateTime  @updatedAt
+  id            String    @id @default(cuid())
+  branchId      String
+  fullName      String
+  phone         String?
+  gender        Gender    @default(MALE)
+  birthDate     DateTime? @db.Date
+  photoUrl      String?
+  /// Student app login (A-06): stored as observed, no app or portal in v1.
+  passwordHash  String?
+  /// "Manba": a lead source; the catalogue gets its own pages with leads (Phase 7).
+  sourceId      String?
+  schoolId      String?
+  note          String?
+  isBlacklisted Boolean   @default(false)
+  isArchived    Boolean   @default(false)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
 
-  branch      Branch            @relation(fields: [branchId], references: [id])
-  memberships GroupMembership[]
+  branch       Branch               @relation(fields: [branchId], references: [id])
+  school       School?              @relation(fields: [schoolId], references: [id], onDelete: SetNull)
+  source       LeadSource?          @relation(fields: [sourceId], references: [id], onDelete: SetNull)
+  memberships  GroupMembership[]
+  parents      Parent[]
+  customFields StudentCustomField[]
+  comments     StudentComment[]
+  payments     Payment[]
 
   @@index([branchId, isArchived])
   @@index([phone])
+  @@index([schoolId])
+  @@index([sourceId])
 }
 
 model GroupMembership {
@@ -534,6 +561,12 @@ model GroupMembership {
   leftAt      DateTime?        @db.Date
   customPrice Decimal?         @db.Decimal(15, 2)
   note        String?
+  /// First day the student is charged: when the membership became ACTIVE (A-10).
+  activatedAt DateTime?        @db.Date
+  /// Set while FROZEN: lessons from this day on are not charged (A-59).
+  frozenAt    DateTime?        @db.Date
+  /// Why the student left (EXP §10 churn report reasons); free text until Phase 12.
+  leaveReason String?
   createdAt   DateTime         @default(now())
   updatedAt   DateTime         @updatedAt
 
@@ -541,6 +574,9 @@ model GroupMembership {
   student     Student      @relation(fields: [studentId], references: [id])
   attendances Attendance[]
   grades      Grade[]
+  discounts   Discount[]
+  charges     Charge[]
+  payments    Payment[]
 
   @@unique([groupId, studentId])
   @@index([studentId])
@@ -585,4 +621,171 @@ model GroupNote {
   author User? @relation(fields: [authorId], references: [id], onDelete: SetNull)
 
   @@index([groupId, createdAt])
+}
+
+// ---------------------------------------------------------------------------
+// Phase 6: students, payments, discounts, receipts (EXP §6, §5 "To'lov",
+// §5 CHEGIRMALAR / O'QUVCHIGA IZOH, §8 Chek sozlamalari, §11 TO'LOV)
+// ---------------------------------------------------------------------------
+
+/// "Manba" on the student and lead forms. Managed on the lead sources page (Phase 7).
+model LeadSource {
+  id             String   @id @default(cuid())
+  organizationId String
+  name           String
+  isActive       Boolean  @default(true)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  students     Student[]
+
+  @@unique([organizationId, name])
+}
+
+/// "Ota-onasi" tab: name and phone, bulk SMS arrives in Phase 11.
+model Parent {
+  id        String   @id @default(cuid())
+  studentId String
+  fullName  String
+  phone     String
+  createdAt DateTime @default(now())
+
+  student Student @relation(fields: [studentId], references: [id], onDelete: Cascade)
+
+  @@index([studentId])
+}
+
+/// "O'quvchiga qo'shimcha ma'lumot qo'shish": a named value on the profile card.
+model StudentCustomField {
+  id        String   @id @default(cuid())
+  studentId String
+  name      String
+  value     String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  student Student @relation(fields: [studentId], references: [id], onDelete: Cascade)
+
+  @@unique([studentId, name])
+}
+
+/// "Izoh va eslatmalar" on the student, also listed per group ("O'quvchiga izoh").
+model StudentComment {
+  id          String   @id @default(cuid())
+  studentId   String
+  groupId     String?
+  text        String
+  createdById String?
+  createdAt   DateTime @default(now())
+
+  student   Student @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  group     Group?  @relation(fields: [groupId], references: [id], onDelete: SetNull)
+  createdBy User?   @relation(fields: [createdById], references: [id], onDelete: SetNull)
+
+  @@index([studentId, createdAt])
+  @@index([groupId, createdAt])
+}
+
+/// "Chegirma": a reduced monthly price for the next `months` charges (A-10).
+/// Remaining months = months − charges that used this discount.
+model Discount {
+  id              String   @id @default(cuid())
+  membershipId    String
+  discountedPrice Decimal  @db.Decimal(15, 2)
+  amount          Decimal  @db.Decimal(15, 2) // course price − discounted price
+  months          Int
+  givenAt         DateTime @db.Date
+  comment         String?
+  createdById     String?
+  createdAt       DateTime @default(now())
+
+  membership GroupMembership @relation(fields: [membershipId], references: [id], onDelete: Cascade)
+  createdBy  User?           @relation(fields: [createdById], references: [id], onDelete: SetNull)
+  charges    Charge[]
+
+  @@index([membershipId])
+}
+
+/// One monthly fee per membership and course month (A-10). `month` is the first
+/// day of the month; the amount is pro-rated by the lessons the student is in.
+model Charge {
+  id             String   @id @default(cuid())
+  membershipId   String
+  month          DateTime @db.Date
+  price          Decimal  @db.Decimal(15, 2) // monthly price used (course, custom or discounted)
+  amount         Decimal  @db.Decimal(15, 2)
+  lessonsTotal   Int
+  lessonsCounted Int
+  discountId     String?
+  createdAt      DateTime @default(now())
+
+  membership GroupMembership @relation(fields: [membershipId], references: [id], onDelete: Cascade)
+  discount   Discount?       @relation(fields: [discountId], references: [id], onDelete: SetNull)
+
+  @@unique([membershipId, month])
+}
+
+/// "To'lov" (EXP §5 payment form, §6 payment history, §11 TO'LOV).
+model Payment {
+  id              String   @id @default(cuid())
+  studentId       String
+  membershipId    String
+  branchId        String
+  paymentMethodId String?
+  amount          Decimal  @db.Decimal(15, 2)
+  bonus           Decimal  @default(0) @db.Decimal(15, 2) // "O'quvchiga bonus"
+  /// "Tasir vaqti": the course month this payment is for (first day of the month).
+  effectiveMonth  DateTime @db.Date
+  paidAt          DateTime @db.Date
+  comment         String?
+  receivedById    String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  student       Student         @relation(fields: [studentId], references: [id])
+  membership    GroupMembership @relation(fields: [membershipId], references: [id])
+  branch        Branch          @relation(fields: [branchId], references: [id])
+  paymentMethod PaymentMethod?  @relation(fields: [paymentMethodId], references: [id], onDelete: SetNull)
+  receivedBy    User?           @relation(fields: [receivedById], references: [id], onDelete: SetNull)
+  refunds       Refund[]
+
+  @@index([studentId, paidAt])
+  @@index([membershipId])
+  @@index([branchId, paidAt])
+  @@index([effectiveMonth])
+}
+
+/// "Pul qaytarish": part or all of one payment given back.
+model Refund {
+  id           String   @id @default(cuid())
+  paymentId    String
+  amount       Decimal  @db.Decimal(15, 2)
+  reason       String?
+  refundedById String?
+  createdAt    DateTime @default(now())
+
+  payment    Payment @relation(fields: [paymentId], references: [id], onDelete: Cascade)
+  refundedBy User?   @relation(fields: [refundedById], references: [id], onDelete: SetNull)
+
+  @@index([paymentId])
+}
+
+enum ReceiptLogoPosition {
+  TOP
+  BOTTOM
+}
+
+/// "Chek sozlamalari" (EXP §8): what the printed receipt shows.
+model ReceiptSettings {
+  id             String              @id @default(cuid())
+  organizationId String              @unique
+  address        String?
+  phone          String?
+  visibleFields  String[]            @default([])
+  logoPosition   ReceiptLogoPosition @default(TOP)
+  footerText     String?
+  updatedAt      DateTime            @updatedAt
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
 }

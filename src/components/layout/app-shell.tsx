@@ -3,6 +3,8 @@ import { getTranslations } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
 
 import { BranchSelector } from "./branch-selector";
+import { PayButton } from "@/features/payments/pay-button";
+
 import { LocaleSwitcher } from "./locale-switcher";
 import { MainNav } from "./main-nav";
 import { UserMenu } from "./user-menu";
@@ -26,6 +28,7 @@ export async function AppShell({
 }: AppShellProps) {
   const t = await getTranslations();
   const canChooseAll = permissions.includes("*") || permissions.includes("settings.org");
+  const canPay = permissions.includes("*") || permissions.includes("payments.create");
 
   return (
     <div className="flex min-h-screen flex-col">
@@ -42,6 +45,7 @@ export async function AppShell({
           </Link>
 
           <div className="ml-auto flex items-center gap-1 sm:gap-2">
+            {canPay && <PayButton />}
             <BranchSelector
               branches={branches}
               activeBranch={activeBranch}

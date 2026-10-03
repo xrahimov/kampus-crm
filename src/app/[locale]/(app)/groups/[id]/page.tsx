@@ -17,6 +17,9 @@ import {
 import { getMonthGrid } from "@/server/services/groups/lessons.service";
 import { listMembers } from "@/server/services/groups/memberships.service";
 import { getGroupFormOptions } from "@/server/services/groups/options.service";
+import { listGroupDiscounts } from "@/server/services/students/discounts.service";
+import { getPaymentOptions } from "@/server/services/students/payments.service";
+import { listGroupComments } from "@/server/services/students/students.service";
 
 type Props = {
   params: Promise<{ locale: string; id: string }>;
@@ -63,19 +66,23 @@ export default async function Page({ params, searchParams }: Props) {
   const historyPage = Math.max(1, Number(str(sp.page) ?? 1) || 1);
   const pageSize = 20;
 
-  const [grid, members, daysOff, notes, history, options] = await Promise.all([
-    getMonthGrid(current.actor, id, month),
-    listMembers(current.actor, id, { archived: str(sp.archived) === "1" }),
-    listGroupDaysOff(current.actor, id),
-    listGroupNotes(current.actor, id),
-    listGroupHistory(current.actor, id, {
-      page: historyPage,
-      pageSize,
-      skip: (historyPage - 1) * pageSize,
-      take: pageSize,
-    }),
-    getGroupFormOptions(current.actor),
-  ]);
+  const [grid, members, daysOff, notes, history, options, discounts, comments, paymentOptions] =
+    await Promise.all([
+      getMonthGrid(current.actor, id, month),
+      listMembers(current.actor, id, { archived: str(sp.archived) === "1" }),
+      listGroupDaysOff(current.actor, id),
+      listGroupNotes(current.actor, id),
+      listGroupHistory(current.actor, id, {
+        page: historyPage,
+        pageSize,
+        skip: (historyPage - 1) * pageSize,
+        take: pageSize,
+      }),
+      getGroupFormOptions(current.actor),
+      listGroupDiscounts(current.actor, id),
+      listGroupComments(current.actor, id),
+      getPaymentOptions(current.actor),
+    ]);
 
   return (
     <GroupDetail
@@ -85,6 +92,9 @@ export default async function Page({ params, searchParams }: Props) {
       daysOff={daysOff}
       notes={notes}
       history={history}
+      discounts={discounts}
+      comments={comments}
+      paymentOptions={paymentOptions}
       options={options}
       branches={current.branches}
       actorBranchIds={current.actor.branchIds}
@@ -95,6 +105,9 @@ export default async function Page({ params, searchParams }: Props) {
         delete: can(current.actor, "groups.delete"),
         mark: can(current.actor, "groups.attendance.mark"),
         createStudent: can(current.actor, "students.create"),
+        pay: can(current.actor, "payments.create"),
+        discount: can(current.actor, "discounts.give"),
+        comment: can(current.actor, "students.view"),
       }}
     />
   );

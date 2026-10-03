@@ -42,8 +42,13 @@ import type {
 import type { MonthGridDto } from "@/server/services/groups/lessons.service";
 import type { MembershipDto } from "@/server/services/groups/memberships.service";
 import type { GroupFormOptions } from "@/server/services/groups/options.service";
+import type { PaymentOptionsDto } from "@/server/services/students/payments.service";
+import type { DiscountDto } from "@/server/services/students/discounts.service";
+import type { StudentCommentDto } from "@/server/services/students/students.service";
 
 import { AttendanceGrid } from "./attendance-grid";
+import { CommentsTab } from "./comments-tab";
+import { DiscountsTab } from "./discounts-tab";
 import { GradesGrid } from "./grades-grid";
 import { GroupDialog } from "./group-dialog";
 import { ChangeTeacherDialog, DayOffDialog, SupportTeachersDialog } from "./group-dialogs";
@@ -53,15 +58,13 @@ import { MoveBranchDialog } from "./move-branch-dialog";
 import { HistoryTab, NotesTab } from "./notes-history";
 import { weekdayLabel } from "./weekday";
 
-const TABS = ["attendance", "grades", "notes", "history"] as const;
+const TABS = ["attendance", "grades", "notes", "history", "discounts", "comments"] as const;
 /** EXP §5 tabs that belong to later phases; shown disabled with the phase number. */
 const LATER_TABS: Array<{ key: string; phase: number }> = [
   { key: "tests", phase: 10 },
   { key: "knowledge", phase: 10 },
   { key: "exams", phase: 8 },
-  { key: "discounts", phase: 6 },
   { key: "coins", phase: 10 },
-  { key: "comments", phase: 6 },
 ];
 
 /** EXP §5 "/groups/:id": info card and members on the left, tabs on the right. */
@@ -72,6 +75,9 @@ export function GroupDetail({
   daysOff,
   notes,
   history,
+  discounts,
+  comments,
+  paymentOptions,
   options,
   branches,
   actorBranchIds,
@@ -85,12 +91,23 @@ export function GroupDetail({
   daysOff: GroupDayOffDto[];
   notes: GroupNoteDto[];
   history: Page<GroupHistoryDto>;
+  discounts: DiscountDto[];
+  comments: StudentCommentDto[];
+  paymentOptions: PaymentOptionsDto;
   options: GroupFormOptions;
   branches: BranchOption[];
   actorBranchIds: string[];
   activeBranchId: string | null;
   allBranches: boolean;
-  can: { update: boolean; delete: boolean; mark: boolean; createStudent: boolean };
+  can: {
+    update: boolean;
+    delete: boolean;
+    mark: boolean;
+    createStudent: boolean;
+    pay: boolean;
+    discount: boolean;
+    comment: boolean;
+  };
 }) {
   const t = useTranslations();
   const td = useTranslations("groups.detail");
@@ -308,6 +325,8 @@ export function GroupDetail({
                 onToggleArchived={(v) => setParam("archived", v ? "1" : null)}
                 canEdit={can.update}
                 canCreateStudent={can.createStudent}
+                canPay={can.pay}
+                paymentOptions={paymentOptions}
               />
             </CardContent>
           </Card>
@@ -355,6 +374,23 @@ export function GroupDetail({
               </TabsContent>
               <TabsContent value="history" className="pt-4">
                 <HistoryTab history={history} />
+              </TabsContent>
+              <TabsContent value="discounts" className="pt-4">
+                <DiscountsTab
+                  groupId={group.id}
+                  discounts={discounts}
+                  members={members}
+                  coursePrice={group.coursePrice}
+                  canGive={can.discount && !archived}
+                />
+              </TabsContent>
+              <TabsContent value="comments" className="pt-4">
+                <CommentsTab
+                  groupId={group.id}
+                  comments={comments}
+                  members={members}
+                  canWrite={can.comment}
+                />
               </TabsContent>
             </Tabs>
           </CardContent>

@@ -1,6 +1,6 @@
 "use client";
 
-import { MoreHorizontal, Plus, Search } from "lucide-react";
+import { MoreHorizontal, Plus, Search, UserCheck } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useEffect, useState, useTransition } from "react";
 
@@ -22,14 +22,19 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { FormDialog } from "@/features/settings/shared/form-dialog";
+import { PaymentDialog } from "@/features/payments/payment-dialog";
 import { todayIso } from "@/features/staff/password";
-import { useRouter } from "@/i18n/navigation";
+import { Link, useRouter } from "@/i18n/navigation";
 import { api, ApiError } from "@/lib/api-client";
 import { parseDateOnly } from "@/lib/dates";
 import { cn } from "@/lib/utils";
 import type { MembershipStatus } from "@/lib/validation/groups";
 import { useDateFormat } from "@/lib/use-date-format";
+import { useMoneyFormat } from "@/lib/use-money-format";
 import type { MembershipDto } from "@/server/services/groups/memberships.service";
+import type { PaymentOptionsDto } from "@/server/services/students/payments.service";
+
+import { TransferDialog } from "./transfer-dialog";
 
 const STATUS_VARIANT: Record<
   MembershipStatus,
@@ -61,6 +66,8 @@ export function MembersPanel({
   onToggleArchived,
   canEdit,
   canCreateStudent,
+  canPay,
+  paymentOptions,
 }: {
   groupId: string;
   groupArchived: boolean;
@@ -69,18 +76,28 @@ export function MembersPanel({
   onToggleArchived: (value: boolean) => void;
   canEdit: boolean;
   canCreateStudent: boolean;
+  canPay: boolean;
+  paymentOptions: PaymentOptionsDto;
 }) {
   const t = useTranslations();
   const tm = useTranslations("groups.members");
   const fmt = useDateFormat();
+  const money = useMoneyFormat();
   const router = useRouter();
   const [, startTransition] = useTransition();
   const [query, setQuery] = useState("");
   const [showJoined, setShowJoined] = useState(false);
+  const [showBalance, setShowBalance] = useState(true);
   const [adding, setAdding] = useState(false);
   const [removing, setRemoving] = useState<MembershipDto | null>(null);
+  const [removeReason, setRemoveReason] = useState("");
+  const [paying, setPaying] = useState<MembershipDto | null>(null);
+  const [transferring, setTransferring] = useState<MembershipDto | null>(null);
+  const [activating, setActivating] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const refresh = () => startTransition(() => router.refresh());
+  const canActivate =
+    canEdit && !groupArchived && members.some((m) => m.status === "NEW" || m.status === "TRIAL");
 
   const visible = members.filter((m) => {
     const q = query.trim().toLowerCase();
@@ -103,11 +120,23 @@ export function MembersPanel({
         <h2 className="text-base font-semibold">
           {tm("title")} <span className="text-muted-foreground">({members.length})</span>
         </h2>
-        {canEdit && !groupArchived && (
-          <Button size="sm" onClick={() => setAdding(true)} data-testid="add-member">
-            <Plus /> {tm("add")}
-          </Button>
-        )}
+        <div className="flex flex-wrap gap-2">
+          {canActivate && (
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => setActivating(true)}
+              data-testid="activate-members"
+            >
+              <UserCheck /> {tm("activateAll")}
+            </Button>
+          )}
+          {canEdit && !groupArchived && (
+            <Button size="sm" onClick={() => setAdding(true)} data-testid="add-member">
+              <Plus /> {tm("add")}
+            </Button>
+          )}
+        </div>
       </div>
       <div className="flex flex-wrap items-center gap-3">
         <div className="relative min-w-40 flex-1">
@@ -124,6 +153,10 @@ export function MembersPanel({
         <label className="flex items-center gap-2 text-xs">
           <Switch checked={showJoined} onCheckedChange={setShowJoined} />
           {tm("showJoined")}
+        </label>
+        <label className="flex items-center gap-2 text-xs">
+          <Switch checked={showBalance} onCheckedChange={setShowBalance} />
+          {tm("showBalance")}
         </label>
         <label className="flex items-center gap-2 text-xs">
           <Switch
@@ -153,13 +186,28 @@ export function MembersPanel({
           {visible.map((m) => (
             <li key={m.id} className="flex items-center gap-3 px-3 py-2" data-testid="member-row">
               <div className="min-w-0 flex-1">
-                <p className="truncate font-medium">{m.fullName}</p>
+                <Link
+                  href={`/students/${m.studentId}`}
+                  className="block truncate font-medium hover:underline"
+                >
+                  {m.fullName}
+                </Link>
                 <p className="truncate text-xs text-muted-foreground tabular-nums">
                   {m.phone ?? "—"}
                   {showJoined &&
                     ` · ${tm("joined")} ${fmt(parseDateOnly(m.joinedAt), { dateStyle: "medium" })}`}
                 </p>
               </div>
+              {showBalance && m.balance !== null && (
+                <Badge
+                  variant={m.balance < 0 ? "destructive" : m.balance > 0 ? "success" : "outline"}
+                  className="tabular-nums"
+                  title={tm("balance")}
+                  data-testid="member-balance"
+                >
+                  {money(m.balance)}
+                </Badge>
+              )}
               {canEdit && NEXT[m.status].length > 0 ? (
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
@@ -188,7 +236,7 @@ export function MembersPanel({
                   {t(`groups.memberStatuses.${m.status}`)}
                 </Badge>
               )}
-              {canEdit && m.status !== "ARCHIVED" && (
+              {canEdit && m.status !== "ARCHIVED" && m.status !== "GRADUATED" && (
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <Button
@@ -205,8 +253,14 @@ export function MembersPanel({
                         {tm("graduate")}
                       </DropdownMenuItem>
                     )}
-                    <DropdownMenuItem disabled>{tm("paymentLater")}</DropdownMenuItem>
-                    <DropdownMenuItem disabled>{tm("transferLater")}</DropdownMenuItem>
+                    {canPay && (
+                      <DropdownMenuItem onSelect={() => setPaying(m)}>
+                        {tm("payment")}
+                      </DropdownMenuItem>
+                    )}
+                    <DropdownMenuItem onSelect={() => setTransferring(m)}>
+                      {tm("transfer")}
+                    </DropdownMenuItem>
                     <DropdownMenuSeparator />
                     <DropdownMenuItem
                       onSelect={() => setRemoving(m)}
@@ -231,15 +285,62 @@ export function MembersPanel({
       />
       <ConfirmDialog
         open={!!removing}
-        onOpenChange={(open) => !open && setRemoving(null)}
+        onOpenChange={(open) => {
+          if (!open) {
+            setRemoving(null);
+            setRemoveReason("");
+          }
+        }}
         title={tm("removeTitle")}
         description={tm("removeText", { name: removing?.fullName ?? "" })}
         confirmLabel={tm("remove")}
         onConfirm={async () => {
           if (!removing) return;
-          await api(`/memberships/${removing.id}/remove`, { method: "POST" });
+          await api(`/memberships/${removing.id}/remove`, {
+            method: "POST",
+            body: { reason: removeReason.trim() || null },
+          });
           refresh();
         }}
+      >
+        <div className="space-y-2">
+          <Label htmlFor="remove-reason">{t("students.remove.reason")}</Label>
+          <Input
+            id="remove-reason"
+            value={removeReason}
+            onChange={(e) => setRemoveReason(e.target.value)}
+          />
+        </div>
+      </ConfirmDialog>
+      <ConfirmDialog
+        open={activating}
+        onOpenChange={setActivating}
+        title={tm("activateTitle")}
+        description={tm("activateText")}
+        confirmLabel={tm("activateAll")}
+        onConfirm={async () => {
+          await api(`/groups/${groupId}/activate-members`, { method: "POST" });
+          refresh();
+        }}
+      />
+      {paying && (
+        <PaymentDialog
+          open={!!paying}
+          onOpenChange={(open) => !open && setPaying(null)}
+          studentName={paying.fullName}
+          memberships={[{ membershipId: paying.id, groupName: "", status: paying.status }]}
+          defaultMembershipId={paying.id}
+          options={paymentOptions}
+          onSaved={refresh}
+        />
+      )}
+      <TransferDialog
+        open={!!transferring}
+        onOpenChange={(open) => !open && setTransferring(null)}
+        membershipId={transferring?.id ?? null}
+        currentGroupId={groupId}
+        studentName={transferring?.fullName ?? ""}
+        onSaved={refresh}
       />
     </div>
   );

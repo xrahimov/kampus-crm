@@ -360,7 +360,12 @@ async function seedGroups(branches: Map<string, string>) {
           },
         }));
       const membership = await prisma.groupMembership.create({
-        data: { groupId: group.id, studentId: student.id, joinedAt: group.startDate },
+        data: {
+          groupId: group.id,
+          studentId: student.id,
+          joinedAt: group.startDate,
+          activatedAt: group.startDate,
+        },
       });
       // Past lessons get a mark so the attendance grid has something to show.
       const past = group.lessons.filter((l) => l.date.toISOString().slice(0, 10) < today);
@@ -376,6 +381,45 @@ async function seedGroups(branches: Map<string, string>) {
     created += 1;
   }
   console.log(`Seeded ${created} demo groups.`);
+}
+
+/** Phase 6: lead sources and a few demo payments so balances and the payments log have data. */
+async function seedPayments(organizationId: string) {
+  for (const name of ["Instagram", "Telegram", "Friend", "Walk-in", "Website"]) {
+    await prisma.leadSource.upsert({
+      where: { organizationId_name: { organizationId, name } },
+      update: {},
+      create: { organizationId, name },
+    });
+  }
+  if ((await prisma.payment.count()) > 0) return;
+  const cash = await prisma.paymentMethod.findFirstOrThrow({
+    where: { organizationId, name: "Cash" },
+  });
+  const cashier = await prisma.user.findUniqueOrThrow({ where: { phone: "+998900000003" } });
+  const memberships = await prisma.groupMembership.findMany({
+    include: { group: { select: { branchId: true, startDate: true } } },
+    orderBy: { id: "asc" },
+    take: 4,
+  });
+  for (const [i, m] of memberships.entries()) {
+    const month = m.group.startDate;
+    await prisma.payment.create({
+      data: {
+        studentId: m.studentId,
+        membershipId: m.id,
+        branchId: m.group.branchId,
+        paymentMethodId: cash.id,
+        amount: [500_000, 350_000, 1_000_000, 200_000][i]!,
+        bonus: i === 2 ? 50_000 : 0,
+        effectiveMonth: month,
+        paidAt: month,
+        comment: i === 1 ? "Partial payment" : null,
+        receivedById: cashier.id,
+      },
+    });
+  }
+  console.log(`Seeded ${memberships.length} demo payments.`);
 }
 
 async function main() {
@@ -445,6 +489,7 @@ async function main() {
 
   await seedSettings(org.id, branches);
   await seedGroups(branches);
+  await seedPayments(org.id);
 
   console.log(`Seeded ${DEMO_USERS.length} demo users across ${branchNames.length} branches.`);
   console.log(`Sign in with ${DEMO_USERS[0]!.phone} and the SEED_ADMIN_PASSWORD from .env.`);

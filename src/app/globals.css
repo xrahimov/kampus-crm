@@ -104,3 +104,12 @@
     @apply outline-2 outline-offset-2 outline-ring;
   }
 }
+
+@media print {
+  @page {
+    margin: 10mm;
+  }
+  body {
+    background: white;
+  }
+}

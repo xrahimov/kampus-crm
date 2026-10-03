@@ -225,11 +225,11 @@ Every list endpoint takes the common query contract (§2). Every mutation is aud
 ✓ `GET|POST /groups/:id/notes` · `GET /groups/:id/history` · `GET|POST /groups/:id/discounts` (Phase 6) · `DELETE /discounts/:id` (Phase 6) · `GET /groups/:id/coins` · `POST /coins/give` (Phase 10) · `GET|POST /groups/:id/student-comments` (Phase 6)
 `GET /groups/:id/tests` · `GET /groups/:id/knowledge` (Phase 10) · `GET|POST /groups/:id/exams` (Phase 8)
 
-**Students (EXP §6)**
-`GET|POST /students` · `GET|PATCH|DELETE /students/:id` · `POST /students/:id/blacklist` · `POST /students/activate` · `POST /students/import` · `GET /students/export.xlsx` · `POST /students/sms` · `GET /students/:id/badge.pdf`
-`GET|POST /students/:id/custom-fields` · `GET|POST /students/:id/parents` · `DELETE /parents/:id` · `GET|POST /students/:id/comments`
-`GET /students/:id/groups` · `GET /students/:id/progress` · `GET /students/:id/test-results` · `GET /students/:id/sms` · `GET /students/:id/history` · `GET /students/:id/calls` · `POST /students/:id/call`
-`GET /students/:id/payments` · `POST /payments` · `GET /payments/:id/receipt` · `POST /payments/:id/refund`
+**Students (EXP §6)** — Phase 6 ships the lines marked ✓ (A-59..A-65); the rest follow with their modules.
+✓ `GET|POST /students?archived&courseId&schoolId&groupId&teacherId&groupStatus&paymentStatus` · `GET|PATCH|DELETE /students/:id` · `POST /students/:id/restore` · `POST /students/:id/blacklist` · `GET /students/options` · `POST /students/activate` (Phase 7 with leads) · `POST /students/import` · `GET /students/export.xlsx` · `POST /students/sms` (Phases 11–12) · badges are pages: `/students/:id/badge`, `/students/badges`
+✓ `POST /students/:id/custom-fields` · `DELETE /custom-fields/:id` · `POST /students/:id/parents` · `DELETE /parents/:id` · `GET|POST /students/:id/comments` · `GET /students/:id/history` · `GET /memberships/:id/calendar?month` · `POST /groups/:id/activate-members`
+`GET /students/:id/progress` (Phase 8) · `GET /students/:id/test-results` (Phase 10) · `GET /students/:id/sms` · `GET /students/:id/calls` · `POST /students/:id/call` (Phase 11)
+✓ `GET /payments?studentId&groupId&membershipId&paymentMethodId&receivedById&from&to` · `POST /payments` · `GET /payments/:id` · `POST /payments/:id/refund` · `GET /payments/options` · `GET /memberships/:id/payment-info` · `POST /memberships/:id/transfer` · `GET|PUT /settings/receipt` · the receipt is a page: `/payments/:id/receipt`
 
 **Exams (EXP §7)**
 `GET|POST /exams?type=group|mock` · `GET|PATCH|DELETE /exams/:id` · `PUT /exams/:id/results`
@@ -312,7 +312,7 @@ Kai asked for the site-map order. I've moved the Settings core forward and the D
 | 3     | Settings core: org settings, branches, payment methods, grading systems, courses, rooms, days off, schools                                                  | §8                        |
 | 4     | Teachers                                                                                                                                                    | §4                        |
 | 5     | Groups (schedule, members, attendance, grades, notes, history; minimal students). Discounts and student comments moved to Phase 6 (A-49)                    | §5                        |
-| 6     | Students + payments, refunds, receipts, parents, badges                                                                                                     | §6, §11 TO'LOV            |
+| 6     | Students + payments, refunds, receipts, parents, badges, discounts, student comments, transfer; Settings → receipt and payments log                         | §6, §11 TO'LOV            |
 | 7     | Leads, sources, lead forms                                                                                                                                  | §2, §3, §8 Forms          |
 | 8     | Exams                                                                                                                                                       | §7                        |
 | 9     | Finance + payroll                                                                                                                                           | §9                        |
