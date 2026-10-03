@@ -105,7 +105,12 @@
     "formNotFound": "This form does not exist or is switched off.",
     "boardHasLeads": "The board still has leads.",
     "columnHasLeads": "The column still has leads.",
-    "lastColumn": "A board needs at least one column."
+    "lastColumn": "A board needs at least one column.",
+    "examNotFound": "Exam not found.",
+    "examHasResults": "This exam has scores. Remove them first.",
+    "examsHidden": "The exam schedule is hidden for teachers.",
+    "notMockExam": "Only mock exams take registrations.",
+    "examFull": "The exam has no free places."
   },
   "validation": {
     "phone": "Enter a number like +998 90 123 45 67.",
@@ -151,7 +156,12 @@
     "sameGroup": "Choose a different group.",
     "leadsMin": "Select at least one lead.",
     "columnBranch": "The column belongs to another branch.",
-    "slug": "Use Latin letters, digits and dashes."
+    "slug": "Use Latin letters, digits and dashes.",
+    "passScore": "Pass score cannot exceed the maximum score.",
+    "groupsMin": "Select at least one group.",
+    "groupUnknown": "Unknown group.",
+    "examType": "The exam type cannot be changed.",
+    "scoreMax": "The score exceeds the maximum."
   },
   "roles": {
     "CEO": "CEO",
@@ -1017,7 +1027,18 @@
     },
     "activateTitle": "Activate students?",
     "activateText": "Every new and trial student among the {count} listed becomes active today.",
-    "activated": "{count} memberships activated."
+    "activated": "{count} memberships activated.",
+    "progress": {
+      "gradeAverage": "Average grade",
+      "attendance": "Attendance",
+      "examAverage": "Average exam score",
+      "byMonth": "By month",
+      "month": "Month",
+      "lessons": "Lessons",
+      "exams": "Exam results",
+      "noData": "No grades or attendance yet.",
+      "noExams": "No exams yet."
+    }
   },
   "payments": {
     "pay": "Payment",
@@ -1213,6 +1234,108 @@
       "submit": "Send",
       "thanksTitle": "Thank you!",
       "thanksText": "We received your request and will contact you soon."
+    }
+  },
+  "exams": {
+    "title": "Exams",
+    "add": "Add exam",
+    "edit": "Edit exam",
+    "tabs": {
+      "GROUP": "Group exams",
+      "MOCK": "Mock exams"
+    },
+    "types": {
+      "GROUP": "Group exam",
+      "MOCK": "Mock exam"
+    },
+    "statuses": {
+      "NOT_STARTED": "Not started",
+      "FINISHED": "Finished"
+    },
+    "filters": {
+      "anyStatus": "All statuses",
+      "group": "Group",
+      "anyGroup": "All groups",
+      "from": "From",
+      "to": "To"
+    },
+    "columns": {
+      "name": "Exam",
+      "type": "Type",
+      "group": "Group",
+      "groups": "Groups",
+      "date": "Date",
+      "examiner": "Examiner",
+      "room": "Room",
+      "time": "Time",
+      "students": "Students",
+      "registrations": "Registrations",
+      "capacity": "Capacity",
+      "price": "Price",
+      "passScore": "Pass score",
+      "maxScore": "Max score",
+      "retake": "Retake"
+    },
+    "actions": {
+      "results": "Results",
+      "finish": "Finish",
+      "reopen": "Reopen"
+    },
+    "deleteTitle": "Delete exam?",
+    "deleteText": "\"{name}\" will be deleted together with its registrations.",
+    "hidden": "The exam schedule is hidden for teachers. An administrator can turn it on in Settings → General.",
+    "form": {
+      "type": "Exam type",
+      "name": "Exam name",
+      "group": "Group",
+      "retake": "Retake",
+      "date": "Exam date",
+      "startTime": "Start time",
+      "endTime": "End time",
+      "more": "Additional details",
+      "examiner": "Examiner",
+      "room": "Room",
+      "none": "None",
+      "gradingSystem": "Grading system",
+      "custom": "Custom",
+      "passScore": "Pass score",
+      "maxScore": "Maximum score",
+      "price": "Price (optional)",
+      "priceHint": "Leave empty for 0",
+      "capacity": "Capacity",
+      "pick": "Pick groups",
+      "course": "Course",
+      "anyCourse": "All courses",
+      "allBranches": "All branches",
+      "minMonths": "Minimum months studied",
+      "pickAll": "Filter and select all",
+      "selected": "Selected groups",
+      "selectedCount": "{count} selected",
+      "noGroups": "No groups match the filter."
+    },
+    "results": {
+      "back": "Back to exams",
+      "student": "Student",
+      "group": "Group",
+      "present": "Present",
+      "absent": "Absent",
+      "score": "Score",
+      "scoreFor": "Score for {name}",
+      "level": "Level",
+      "result": "Result",
+      "passed": "Passed",
+      "failed": "Failed",
+      "notGraded": "Not graded",
+      "comment": "Comment",
+      "save": "Save results",
+      "saved": "Results saved.",
+      "register": "Register a student",
+      "search": "Search by name or phone…",
+      "noCandidates": "No students found.",
+      "remove": "Remove registration",
+      "empty": "No students yet.",
+      "full": "Capacity reached.",
+      "registrations": "{count} of {capacity}"
     }
   }
 }

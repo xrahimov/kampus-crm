@@ -422,6 +422,104 @@ async function seedPayments(organizationId: string) {
   console.log(`Seeded ${memberships.length} demo payments.`);
 }
 
+/** Phase 8: one upcoming and one finished group exam, plus a mock exam with registrations. */
+async function seedExams(branches: Map<string, string>) {
+  const central = branches.get("Central")!;
+  const groups = await prisma.group.findMany({
+    where: { branchId: central, name: { in: ["GE-Morning A1", "IELTS Evening"] } },
+    include: {
+      memberships: { where: { status: { notIn: ["ARCHIVED", "GRADUATED"] } } },
+      teachers: { take: 1 },
+    },
+  });
+  const morning = groups.find((g) => g.name === "GE-Morning A1");
+  const ielts = groups.find((g) => g.name === "IELTS Evening");
+  if (!morning || !ielts) return;
+  const cefr = await prisma.gradingSystem.findFirst({ where: { name: "CEFR" } });
+  const ieltsScale = await prisma.gradingSystem.findFirst({ where: { name: "IELTS" } });
+  const room = await prisma.room.findFirst({ where: { branchId: central } });
+  const day = (offset: number) => {
+    const d = new Date();
+    d.setUTCDate(d.getUTCDate() + offset);
+    return new Date(d.toISOString().slice(0, 10) + "T00:00:00.000Z");
+  };
+  const examiner = morning.teachers[0]?.userId ?? null;
+
+  const exists = async (name: string) =>
+    (await prisma.exam.count({ where: { branchId: central, name } })) > 0;
+
+  if (!(await exists("Unit 1–3 progress test"))) {
+    await prisma.exam.create({
+      data: {
+        branchId: central,
+        type: "GROUP",
+        name: "Unit 1–3 progress test",
+        groupId: morning.id,
+        date: day(7),
+        startTime: "10:00",
+        endTime: "11:30",
+        examinerId: examiner,
+        roomId: room?.id ?? null,
+        gradingSystemId: cefr?.id ?? null,
+        passScore: 50,
+        maxScore: 100,
+      },
+    });
+  }
+  if (!(await exists("Placement check"))) {
+    const scores = [78, 42, 91, 65, 55, 88];
+    await prisma.exam.create({
+      data: {
+        branchId: central,
+        type: "GROUP",
+        name: "Placement check",
+        groupId: morning.id,
+        date: day(-14),
+        startTime: "10:00",
+        endTime: "11:00",
+        examinerId: examiner,
+        gradingSystemId: cefr?.id ?? null,
+        passScore: 50,
+        maxScore: 100,
+        status: "FINISHED",
+        finishedAt: day(-14),
+        results: {
+          create: morning.memberships.map((m, i) => ({
+            studentId: m.studentId,
+            score: scores[i % scores.length]!,
+            isPresent: true,
+            gradedById: examiner,
+            gradedAt: day(-14),
+          })),
+        },
+      },
+    });
+  }
+  if (!(await exists("IELTS Mock (October)"))) {
+    await prisma.exam.create({
+      data: {
+        branchId: central,
+        type: "MOCK",
+        name: "IELTS Mock (October)",
+        date: day(10),
+        startTime: "09:00",
+        endTime: "12:00",
+        roomId: room?.id ?? null,
+        gradingSystemId: ieltsScale?.id ?? null,
+        passScore: 5.5,
+        maxScore: 9,
+        price: 150_000,
+        capacity: 20,
+        targets: { create: [{ groupId: morning.id }, { groupId: ielts.id }] },
+        results: {
+          create: ielts.memberships.slice(0, 2).map((m) => ({ studentId: m.studentId })),
+        },
+      },
+    });
+  }
+  console.log("Seeded demo exams.");
+}
+
 /** Phase 7: one "Website" board per branch, a few invented leads and a public form. */
 async function seedLeads(organizationId: string, branches: Map<string, string>) {
   const sources = new Map(
@@ -630,6 +728,7 @@ async function main() {
   await seedGroups(branches);
   await seedPayments(org.id);
   await seedLeads(org.id, branches);
+  await seedExams(branches);
 
   console.log(`Seeded ${DEMO_USERS.length} demo users across ${branchNames.length} branches.`);
   console.log(`Sign in with ${DEMO_USERS[0]!.phone} and the SEED_ADMIN_PASSWORD from .env.`);

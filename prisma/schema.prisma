@@ -52,6 +52,7 @@ model Branch {
   payments     Payment[]
   leadBoards   LeadBoard[]
   leads        Lead[]
+  exams        Exam[]
 
   @@index([organizationId])
 }
@@ -108,6 +109,9 @@ model User {
 
   leadsAssigned Lead[] @relation("leadTeacher")
   leadsCreated  Lead[] @relation("leadCreator")
+
+  examsExamined Exam[]       @relation("examiner")
+  examsGraded   ExamResult[] @relation("examGrader")
 }
 
 /// A role is a named bundle of permission codes. System roles are seeded and
@@ -288,6 +292,7 @@ model GradingSystem {
   levels       GradingLevel[]
   courses      Course[]
   groups       Group[]
+  exams        Exam[]
 
   @@unique([organizationId, name])
 }
@@ -338,6 +343,7 @@ model Room {
 
   branch Branch              @relation(fields: [branchId], references: [id])
   slots  GroupScheduleSlot[]
+  exams  Exam[]
 
   @@unique([branchId, name])
 }
@@ -443,6 +449,8 @@ model Group {
   notes           GroupNote[]
   memberships     GroupMembership[]
   studentComments StudentComment[]
+  exams           Exam[]
+  mockExams       ExamGroup[]
 
   @@index([branchId, status])
   @@index([courseId])
@@ -554,6 +562,7 @@ model Student {
   comments     StudentComment[]
   payments     Payment[]
   leads        Lead[]
+  examResults  ExamResult[]
 
   @@index([branchId, isArchived])
   @@index([phone])
@@ -936,4 +945,86 @@ model LeadForm {
   schoolId     String?
 
   @@index([organizationId])
+}
+
+// ---------------------------------------------------------------------------
+// Phase 8: exams (EXP §7, §5 IMTIHON tab, §6 progress tab)
+// ---------------------------------------------------------------------------
+
+enum ExamType {
+  GROUP
+  MOCK
+}
+
+enum ExamStatus {
+  NOT_STARTED
+  FINISHED
+}
+
+/// "Imtihon": a group exam (one group) or a mock exam (several target groups, price, capacity).
+model Exam {
+  id              String     @id @default(cuid())
+  branchId        String
+  type            ExamType
+  name            String
+  groupId         String?
+  isRetake        Boolean    @default(false)
+  date            DateTime   @db.Date
+  startTime       String // "HH:mm"
+  endTime         String
+  examinerId      String?
+  roomId          String?
+  /// null = "Maxsus" (custom): only pass and max scores, no level names.
+  gradingSystemId String?
+  passScore       Decimal    @db.Decimal(6, 2)
+  maxScore        Decimal    @db.Decimal(6, 2)
+  price           Decimal?   @db.Decimal(15, 2)
+  capacity        Int?
+  status          ExamStatus @default(NOT_STARTED)
+  finishedAt      DateTime?
+  createdAt       DateTime   @default(now())
+  updatedAt       DateTime   @updatedAt
+
+  branch        Branch         @relation(fields: [branchId], references: [id])
+  group         Group?         @relation(fields: [groupId], references: [id], onDelete: SetNull)
+  examiner      User?          @relation("examiner", fields: [examinerId], references: [id], onDelete: SetNull)
+  room          Room?          @relation(fields: [roomId], references: [id], onDelete: SetNull)
+  gradingSystem GradingSystem? @relation(fields: [gradingSystemId], references: [id], onDelete: SetNull)
+  targets       ExamGroup[]
+  results       ExamResult[]
+
+  @@index([branchId, type, status, date])
+  @@index([groupId])
+}
+
+/// Target groups of a mock exam ("Tanlangan guruhlar").
+model ExamGroup {
+  examId  String
+  groupId String
+
+  exam  Exam  @relation(fields: [examId], references: [id], onDelete: Cascade)
+  group Group @relation(fields: [groupId], references: [id], onDelete: Cascade)
+
+  @@id([examId, groupId])
+  @@index([groupId])
+}
+
+/// One row per student: a registration ("Ariza") until a score is entered.
+model ExamResult {
+  id           String    @id @default(cuid())
+  examId       String
+  studentId    String
+  score        Decimal?  @db.Decimal(6, 2)
+  isPresent    Boolean   @default(true)
+  comment      String?
+  registeredAt DateTime  @default(now())
+  gradedById   String?
+  gradedAt     DateTime?
+
+  exam     Exam    @relation(fields: [examId], references: [id], onDelete: Cascade)
+  student  Student @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  gradedBy User?   @relation("examGrader", fields: [gradedById], references: [id], onDelete: SetNull)
+
+  @@unique([examId, studentId])
+  @@index([studentId])
 }

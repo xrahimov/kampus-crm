@@ -52,18 +52,28 @@ import { DiscountsTab } from "./discounts-tab";
 import { GradesGrid } from "./grades-grid";
 import { GroupDialog } from "./group-dialog";
 import { ChangeTeacherDialog, DayOffDialog, SupportTeachersDialog } from "./group-dialogs";
+import { GroupExamsTab } from "@/features/exams/group-exams-tab";
+import type { ExamDto, ExamOptions } from "@/server/services/exams/exams.service";
+
 import { GroupStatusBadge } from "./groups-page";
 import { MembersPanel } from "./members-panel";
 import { MoveBranchDialog } from "./move-branch-dialog";
 import { HistoryTab, NotesTab } from "./notes-history";
 import { weekdayLabel } from "./weekday";
 
-const TABS = ["attendance", "grades", "notes", "history", "discounts", "comments"] as const;
+const TABS = [
+  "attendance",
+  "grades",
+  "notes",
+  "history",
+  "exams",
+  "discounts",
+  "comments",
+] as const;
 /** EXP §5 tabs that belong to later phases; shown disabled with the phase number. */
 const LATER_TABS: Array<{ key: string; phase: number }> = [
   { key: "tests", phase: 10 },
   { key: "knowledge", phase: 10 },
-  { key: "exams", phase: 8 },
   { key: "coins", phase: 10 },
 ];
 
@@ -77,6 +87,8 @@ export function GroupDetail({
   history,
   discounts,
   comments,
+  exams,
+  examOptions,
   paymentOptions,
   options,
   branches,
@@ -93,6 +105,8 @@ export function GroupDetail({
   history: Page<GroupHistoryDto>;
   discounts: DiscountDto[];
   comments: StudentCommentDto[];
+  exams: ExamDto[] | null;
+  examOptions: ExamOptions | null;
   paymentOptions: PaymentOptionsDto;
   options: GroupFormOptions;
   branches: BranchOption[];
@@ -108,6 +122,7 @@ export function GroupDetail({
     discount: boolean;
     comment: boolean;
     leads: boolean;
+    exams: boolean;
   };
 }) {
   const t = useTranslations();
@@ -376,6 +391,15 @@ export function GroupDetail({
               </TabsContent>
               <TabsContent value="history" className="pt-4">
                 <HistoryTab history={history} />
+              </TabsContent>
+              <TabsContent value="exams" className="pt-4">
+                <GroupExamsTab
+                  groupId={group.id}
+                  exams={exams}
+                  options={examOptions}
+                  branches={branches}
+                  canCreate={can.exams && !archived}
+                />
               </TabsContent>
               <TabsContent value="discounts" className="pt-4">
                 <DiscountsTab

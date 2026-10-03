@@ -64,14 +64,16 @@ import type {
   StudentOptions,
 } from "@/server/services/students/students.service";
 
+import type { StudentProgressDto } from "@/server/services/exams/exams.service";
+
 import { CommentDialog } from "./comment-dialog";
+import { ProgressTab } from "./progress-tab";
 import { GroupCard } from "./group-card";
 import { StudentDialog } from "./student-dialog";
 import { BalanceBadge } from "./students-page";
 
-const TABS = ["groups", "comments", "history", "parents"] as const;
+const TABS = ["groups", "progress", "comments", "history", "parents"] as const;
 const LATER_TABS: Array<{ key: string; phase: number }> = [
-  { key: "progress", phase: 8 },
   { key: "testResults", phase: 10 },
   { key: "sms", phase: 11 },
   { key: "calls", phase: 11 },
@@ -86,6 +88,7 @@ export function StudentDetail({
   history,
   payments,
   paymentGroupId,
+  progress,
   qrSvg,
   options,
   paymentOptions,
@@ -97,6 +100,7 @@ export function StudentDetail({
   history: Page<StudentHistoryDto>;
   payments: Page<PaymentDto> & { totalAmount: number };
   paymentGroupId: string | null;
+  progress: StudentProgressDto;
   qrSvg: string;
   options: StudentOptions;
   paymentOptions: PaymentOptionsDto;
@@ -380,6 +384,10 @@ export function StudentDetail({
                       {showArchivedGroups ? td("hideArchivedGroups") : td("showArchivedGroups")}
                     </Button>
                   )}
+                </TabsContent>
+
+                <TabsContent value="progress" className="pt-4">
+                  <ProgressTab progress={progress} />
                 </TabsContent>
 
                 <TabsContent value="comments" className="space-y-4 pt-4">
