@@ -62,6 +62,7 @@ export default async function Page({
         update: can(current.actor, "students.update"),
         delete: can(current.actor, "students.delete"),
         blacklist: can(current.actor, "students.blacklist"),
+        activate: can(current.actor, "groups.update"),
       }}
     />
   );

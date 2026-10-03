@@ -108,6 +108,7 @@ export default async function Page({ params, searchParams }: Props) {
         pay: can(current.actor, "payments.create"),
         discount: can(current.actor, "discounts.give"),
         comment: can(current.actor, "students.view"),
+        leads: can(current.actor, "leads.create"),
       }}
     />
   );

@@ -94,7 +94,7 @@ export function StudentsPage({
   actorBranchIds: string[];
   activeBranchId: string | null;
   allBranches: boolean;
-  can: { create: boolean; update: boolean; delete: boolean; blacklist: boolean };
+  can: { create: boolean; update: boolean; delete: boolean; blacklist: boolean; activate: boolean };
 }) {
   const t = useTranslations();
   const ts = useTranslations("students");
@@ -110,6 +110,8 @@ export function StudentsPage({
   const [commenting, setCommenting] = useState<StudentRowDto | null>(null);
   const [archiving, setArchiving] = useState<StudentRowDto | null>(null);
   const [blacklisting, setBlacklisting] = useState<StudentRowDto | null>(null);
+  const [activating, setActivating] = useState(false);
+  const [notice, setNotice] = useState<string | null>(null);
   const { options: branchOptions, defaultId } = creatableBranches(
     branches,
     actorBranchIds,
@@ -184,6 +186,21 @@ export function StudentsPage({
           >
             {archived ? ts("archiveView") : ts("activeView")}
           </Button>
+          {can.activate && !archived && (
+            <Button
+              variant="outline"
+              size="sm"
+              disabled={
+                !page.items.some((s) =>
+                  s.groups.some((g) => g.status === "NEW" || g.status === "TRIAL"),
+                )
+              }
+              onClick={() => setActivating(true)}
+              data-testid="activate-students"
+            >
+              {ts("activate")}
+            </Button>
+          )}
           {can.create && (
             <Button variant="outline" size="sm" disabled title={ts("importExcel")}>
               {ts("importExcel")}
@@ -205,6 +222,12 @@ export function StudentsPage({
           </Button>
         </div>
       </div>
+
+      {notice && (
+        <p role="status" className="text-sm text-muted-foreground">
+          {notice}
+        </p>
+      )}
 
       <div className="flex flex-wrap items-end gap-3">
         <div className="min-w-48 space-y-1">
@@ -406,6 +429,21 @@ export function StudentsPage({
         student={commenting}
         onOpenChange={(open) => !open && setCommenting(null)}
         onSaved={refresh}
+      />
+      <ConfirmDialog
+        open={activating}
+        onOpenChange={setActivating}
+        title={ts("activateTitle")}
+        description={ts("activateText", { count: page.items.length })}
+        confirmLabel={ts("activate")}
+        onConfirm={async () => {
+          const result = await api<{ activated: number }>("/students/activate", {
+            method: "POST",
+            body: { studentIds: page.items.map((s) => s.id) },
+          });
+          setNotice(ts("activated", { count: result.activated }));
+          refresh();
+        }}
       />
       <ConfirmDialog
         open={!!archiving}

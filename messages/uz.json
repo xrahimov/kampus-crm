@@ -98,7 +98,14 @@
     "memberLeft": "Bu o‘quvchi guruhdan allaqachon chiqqan.",
     "studentBlacklisted": "Bu o‘quvchi qora ro‘yxatda.",
     "groupBranch": "Guruh boshqa filialda.",
-    "memberUnknown": "Guruh a’zoligi topilmadi."
+    "memberUnknown": "Guruh a’zoligi topilmadi.",
+    "boardNotFound": "Lid doskasi topilmadi.",
+    "columnNotFound": "Lid ustuni topilmadi.",
+    "leadNotFound": "Lid topilmadi.",
+    "formNotFound": "Bunday forma yo‘q yoki o‘chirilgan.",
+    "boardHasLeads": "Doskada hali lidlar bor.",
+    "columnHasLeads": "Ustunda hali lidlar bor.",
+    "lastColumn": "Doskada kamida bitta ustun bo‘lishi kerak."
   },
   "validation": {
     "phone": "+998 90 123 45 67 ko‘rinishida raqam kiriting.",
@@ -141,7 +148,10 @@
     "studentRequired": "O‘quvchini tanlang.",
     "refundTooLarge": "Bu to‘lovdan qolgan summadan ko‘p.",
     "discountBelowPrice": "Odatiy narxdan past bo‘lishi kerak.",
-    "sameGroup": "Boshqa guruhni tanlang."
+    "sameGroup": "Boshqa guruhni tanlang.",
+    "leadsMin": "Kamida bitta lidni tanlang.",
+    "columnBranch": "Ustun boshqa filialga tegishli.",
+    "slug": "Lotin harflari, raqamlar va chiziqchadan foydalaning."
   },
   "roles": {
     "CEO": "CEO",
@@ -348,6 +358,27 @@
         "teacher": "O‘qituvchi",
         "coursePrice": "Kurs narxi"
       }
+    },
+    "forms": {
+      "title": "Formalar",
+      "description": "Tashrif buyuruvchilarni lidga aylantiradigan ochiq veb-formalar. Havolani nusxalash uchun qatorni bosing.",
+      "add": "Yangi",
+      "edit": "Formani tahrirlash",
+      "name": "Nomi",
+      "slug": "Havola nomi",
+      "slugHint": "Lotin harflari, raqamlar va chiziqcha; /forms/<nom> bo‘ladi.",
+      "column": "Lid bo‘limi",
+      "columnPlaceholder": "Bo‘limni tanlang",
+      "source": "Manba",
+      "integration": "Integratsiya",
+      "integrationHint": "Eslatma uchun erkin matn, masalan forma joylashtirilgan sayt.",
+      "leadCount": "Tushgan lidlar soni",
+      "link": "Link",
+      "copied": "Havola nusxalandi",
+      "open": "Formani ochish",
+      "hint": "Havolani nusxalash uchun qatorni bosing.",
+      "deleteTitle": "Forma o‘chirilsinmi?",
+      "deleteText": "“{name}” lid qabul qilishni to‘xtatadi; tushgan lidlar qoladi."
     }
   },
   "teachers": {
@@ -707,7 +738,8 @@
       "activateText": "Holati Yangi yoki Sinov bo‘lgan barcha o‘quvchilar bugundan Faol bo‘ladi.",
       "activated": "{count} o‘quvchi faollashtirildi.",
       "payment": "To‘lov",
-      "transfer": "Boshqa guruhga ko‘chirish"
+      "transfer": "Boshqa guruhga ko‘chirish",
+      "toLead": "Lidlarga qaytarish"
     },
     "notes": {
       "newNote": "Eslatma qo'shish",
@@ -909,7 +941,8 @@
         "pay": "To‘lov",
         "transfer": "Boshqa guruhga ko‘chirish",
         "status": "Holatni o‘zgartirish",
-        "remove": "Guruhdan chiqarish"
+        "remove": "Guruhdan chiqarish",
+        "toLead": "Lidlarga qaytarish"
       }
     },
     "comments": {
@@ -942,7 +975,8 @@
         "payment.refund": "Pul qaytarildi",
         "discount.give": "Chegirma berildi",
         "discount.remove": "Chegirma o‘chirildi",
-        "student.unblacklist": "Qora ro‘yxatdan chiqarildi"
+        "student.unblacklist": "Qora ro‘yxatdan chiqarildi",
+        "membership.toLead": "Lidlarga qaytarildi"
       }
     },
     "parents": {
@@ -974,7 +1008,16 @@
       "groups": "Guruhlar",
       "all": "Barcha beyjiklar",
       "forStudents": "{count} o‘quvchi"
-    }
+    },
+    "toLead": {
+      "title": "Lidlarga qaytarilsinmi?",
+      "text": "“{name}” bugun guruhdan chiqadi va doskada yangi lid sifatida paydo bo‘ladi.",
+      "confirm": "Lidlarga qaytarish",
+      "reason": "Sabab"
+    },
+    "activateTitle": "O‘quvchilar faollashtirilsinmi?",
+    "activateText": "Ro‘yxatdagi {count} o‘quvchi orasidagi har bir yangi va sinovdagi o‘quvchi bugun faol bo‘ladi.",
+    "activated": "{count} a‘zolik faollashtirildi."
   },
   "payments": {
     "pay": "To‘lov",
@@ -1065,5 +1108,111 @@
     },
     "deleteTitle": "Chegirma o‘chirilsinmi?",
     "deleteText": "“{name}” uchun chegirma hozir tugaydi. O‘tgan oylar hisoblanganicha qoladi."
+  },
+  "leads": {
+    "title": "Lidlar",
+    "add": "Yangi lid qo‘shish",
+    "edit": "Lidni tahrirlash",
+    "board": "Doska",
+    "editBoard": "Doska nomini o‘zgartirish",
+    "deleteBoard": "Doskani o‘chirish",
+    "createBoard": "Bo‘lim yaratish",
+    "boardName": "Doska nomi",
+    "sources": "Manba",
+    "excel": "Excel (12-bosqich)",
+    "amocrm": "AmoCRM (11-bosqich)",
+    "addColumn": "Qo‘shimcha ustun qo‘shish",
+    "columnName": "Bo‘lim nomi",
+    "editColumn": "Ustun nomini o‘zgartirish",
+    "columnSms": "Ustundagi barcha lidlarga SMS (11-bosqich)",
+    "emptyColumn": "Bo‘sh kanban",
+    "noBoards": "Hali lid doskalari yo‘q.",
+    "noBoardsHint": "Lidlarni yig‘ish uchun doska yarating.",
+    "moveTo": "Ko‘chirish",
+    "restore": "Tiklash",
+    "select": "{name} ni tanlash",
+    "fromForm": "Veb-forma orqali kelgan",
+    "student": "O‘quvchi profili",
+    "deleteTitle": "Lid o‘chirilsinmi?",
+    "deleteText": "“{name}” butunlay o‘chiriladi. Arxivlash yozuvni saqlaydi.",
+    "deleteColumnTitle": "Ustun o‘chirilsinmi?",
+    "deleteColumnText": "“{name}” o‘chiriladi. Faqat bo‘sh ustunni o‘chirish mumkin.",
+    "deleteBoardTitle": "Doska o‘chirilsinmi?",
+    "deleteBoardText": "“{name}” va uning ustunlari o‘chiriladi. Faqat lidsiz doskani o‘chirish mumkin.",
+    "filters": {
+      "all": "Hammasi",
+      "lessonTime": "Dars vaqti",
+      "teacher": "O‘qituvchi",
+      "days": "Kunlar",
+      "archive": "Arxiv"
+    },
+    "statuses": {
+      "NEW": "Yangi",
+      "CONTACTED": "Bog‘lanildi",
+      "UNREACHABLE": "Bog‘lana olmadi",
+      "LOST": "Yo‘qotilgan"
+    },
+    "temperatures": {
+      "HOT": "Issiq",
+      "WARM": "Iliq",
+      "COLD": "Sovuq"
+    },
+    "days": {
+      "ODD": "Toq kunlar (Du, Cho, Ju)",
+      "EVEN": "Juft kunlar (Se, Pa, Sha)",
+      "OTHER": "Boshqa kunlar"
+    },
+    "form": {
+      "column": "Bo‘lim",
+      "source": "Manba",
+      "fullName": "Ism",
+      "phone": "Telefon raqam",
+      "phoneN": "Telefon raqam {n}",
+      "addPhone": "Telefon raqam qo‘shish",
+      "removePhone": "Raqamni olib tashlash",
+      "birthDate": "Tug‘ilgan sanasi",
+      "age": "Yoshi",
+      "teacher": "O‘qituvchiga biriktirish",
+      "days": "Kunni tanlang",
+      "lessonTime": "Dars vaqtini tanlang",
+      "status": "Holat",
+      "temperature": "Harorat",
+      "comment": "Izoh",
+      "createNew": "Yangi yaratish…",
+      "newColumn": "Yangi bo‘lim nomi",
+      "newSource": "Yangi manba nomi"
+    },
+    "addToGroup": {
+      "button": "Lidlarni guruhga qo‘shish ({count})",
+      "title": "Lidlarni guruhga qo‘shish",
+      "hint": "Tanlangan {count} lid tanlangan guruhning o‘quvchisiga aylanadi.",
+      "group": "Guruh",
+      "groupPlaceholder": "Guruhni tanlang",
+      "joinedAt": "Qo‘shilgan sana",
+      "status": "Guruhdagi holati",
+      "done": "{added} qo‘shildi, {skipped} o‘tkazib yuborildi (guruhda bor)."
+    },
+    "sourcesPage": {
+      "title": "Manbalar hisoboti",
+      "description": "Har bir manba qancha lid olib kelgani.",
+      "add": "Yangi manba",
+      "edit": "Manbani tahrirlash",
+      "name": "Manba nomi",
+      "from": "Dan",
+      "to": "Gacha",
+      "leads": "lid",
+      "students": "{count} o‘quvchi",
+      "deleteTitle": "Manba o‘chirilsinmi?",
+      "deleteText": "“{name}” o‘chiriladi; lidlar va o‘quvchilar manbasiz qoladi."
+    },
+    "publicForm": {
+      "intro": "Ma‘lumotlaringizni qoldiring, {organization} sizga qo‘ng‘iroq qiladi.",
+      "fullName": "Ismingiz",
+      "phone": "Telefon raqam",
+      "comment": "Izoh",
+      "submit": "Yuborish",
+      "thanksTitle": "Rahmat!",
+      "thanksText": "So‘rovingizni qabul qildik va tez orada bog‘lanamiz."
+    }
   }
 }

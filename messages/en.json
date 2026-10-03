@@ -98,7 +98,14 @@
     "memberLeft": "This student has already left the group.",
     "studentBlacklisted": "This student is blacklisted.",
     "groupBranch": "The group is in another branch.",
-    "memberUnknown": "Group membership not found."
+    "memberUnknown": "Group membership not found.",
+    "boardNotFound": "Lead board not found.",
+    "columnNotFound": "Lead column not found.",
+    "leadNotFound": "Lead not found.",
+    "formNotFound": "This form does not exist or is switched off.",
+    "boardHasLeads": "The board still has leads.",
+    "columnHasLeads": "The column still has leads.",
+    "lastColumn": "A board needs at least one column."
   },
   "validation": {
     "phone": "Enter a number like +998 90 123 45 67.",
@@ -141,7 +148,10 @@
     "studentRequired": "Choose a student.",
     "refundTooLarge": "More than what is left of this payment.",
     "discountBelowPrice": "Must be lower than the regular price.",
-    "sameGroup": "Choose a different group."
+    "sameGroup": "Choose a different group.",
+    "leadsMin": "Select at least one lead.",
+    "columnBranch": "The column belongs to another branch.",
+    "slug": "Use Latin letters, digits and dashes."
   },
   "roles": {
     "CEO": "CEO",
@@ -348,6 +358,27 @@
         "teacher": "Teacher",
         "coursePrice": "Course price"
       }
+    },
+    "forms": {
+      "title": "Forms",
+      "description": "Public web forms that turn visitors into leads. Click a row to copy its link.",
+      "add": "New form",
+      "edit": "Edit form",
+      "name": "Name",
+      "slug": "Link name",
+      "slugHint": "Latin letters, digits and dashes; becomes /forms/<name>.",
+      "column": "Lead column",
+      "columnPlaceholder": "Choose a column",
+      "source": "Source",
+      "integration": "Integration",
+      "integrationHint": "Free text for your notes, for example the site the form is embedded in.",
+      "leadCount": "Leads received",
+      "link": "Link",
+      "copied": "Link copied",
+      "open": "Open the form",
+      "hint": "Click a row to copy its link.",
+      "deleteTitle": "Delete form?",
+      "deleteText": "“{name}” will stop accepting leads; received leads stay."
     }
   },
   "teachers": {
@@ -707,7 +738,8 @@
       "activateText": "All students with status New or Trial become Active today.",
       "activated": "{count} students activated.",
       "payment": "Payment",
-      "transfer": "Move to another group"
+      "transfer": "Move to another group",
+      "toLead": "Return to leads"
     },
     "notes": {
       "newNote": "Add note",
@@ -909,7 +941,8 @@
         "pay": "Payment",
         "transfer": "Move to another group",
         "status": "Change status",
-        "remove": "Remove from group"
+        "remove": "Remove from group",
+        "toLead": "Return to leads"
       }
     },
     "comments": {
@@ -942,7 +975,8 @@
         "payment.refund": "Refund made",
         "discount.give": "Discount given",
         "discount.remove": "Discount removed",
-        "student.unblacklist": "Removed from blacklist"
+        "student.unblacklist": "Removed from blacklist",
+        "membership.toLead": "Returned to leads"
       }
     },
     "parents": {
@@ -974,7 +1008,16 @@
       "groups": "Groups",
       "all": "All badges",
       "forStudents": "{count} students"
-    }
+    },
+    "toLead": {
+      "title": "Return to leads?",
+      "text": "“{name}” leaves the group today and appears as a new lead on the board.",
+      "confirm": "Return to leads",
+      "reason": "Reason"
+    },
+    "activateTitle": "Activate students?",
+    "activateText": "Every new and trial student among the {count} listed becomes active today.",
+    "activated": "{count} memberships activated."
   },
   "payments": {
     "pay": "Payment",
@@ -1065,5 +1108,111 @@
     },
     "deleteTitle": "Remove discount?",
     "deleteText": "The discount for “{name}” ends now. Past months stay as charged."
+  },
+  "leads": {
+    "title": "Leads",
+    "add": "Add lead",
+    "edit": "Edit lead",
+    "board": "Board",
+    "editBoard": "Rename board",
+    "deleteBoard": "Delete board",
+    "createBoard": "New board",
+    "boardName": "Board name",
+    "sources": "Sources",
+    "excel": "Excel (phase 12)",
+    "amocrm": "AmoCRM (phase 11)",
+    "addColumn": "Add column",
+    "columnName": "Column name",
+    "editColumn": "Rename column",
+    "columnSms": "SMS to the whole column (phase 11)",
+    "emptyColumn": "No leads here.",
+    "noBoards": "No lead boards yet.",
+    "noBoardsHint": "Create a board to start collecting leads.",
+    "moveTo": "Move to",
+    "restore": "Restore",
+    "select": "Select {name}",
+    "fromForm": "Came through a web form",
+    "student": "Student profile",
+    "deleteTitle": "Delete lead?",
+    "deleteText": "“{name}” will be removed for good. Archiving keeps the record.",
+    "deleteColumnTitle": "Delete column?",
+    "deleteColumnText": "“{name}” will be removed. Only an empty column can be deleted.",
+    "deleteBoardTitle": "Delete board?",
+    "deleteBoardText": "“{name}” and its columns will be removed. Only a board without leads can be deleted.",
+    "filters": {
+      "all": "All",
+      "lessonTime": "Lesson time",
+      "teacher": "Teacher",
+      "days": "Days",
+      "archive": "Archive"
+    },
+    "statuses": {
+      "NEW": "New",
+      "CONTACTED": "Contacted",
+      "UNREACHABLE": "Could not reach",
+      "LOST": "Lost"
+    },
+    "temperatures": {
+      "HOT": "Hot",
+      "WARM": "Warm",
+      "COLD": "Cold"
+    },
+    "days": {
+      "ODD": "Odd days (Mon, Wed, Fri)",
+      "EVEN": "Even days (Tue, Thu, Sat)",
+      "OTHER": "Other days"
+    },
+    "form": {
+      "column": "Column",
+      "source": "Source",
+      "fullName": "Name",
+      "phone": "Phone number",
+      "phoneN": "Phone number {n}",
+      "addPhone": "Add a phone number",
+      "removePhone": "Remove phone number",
+      "birthDate": "Date of birth",
+      "age": "Age",
+      "teacher": "Assign a teacher",
+      "days": "Days",
+      "lessonTime": "Lesson time",
+      "status": "Status",
+      "temperature": "Temperature",
+      "comment": "Comment",
+      "createNew": "Create new…",
+      "newColumn": "New column name",
+      "newSource": "New source name"
+    },
+    "addToGroup": {
+      "button": "Add leads to group ({count})",
+      "title": "Add leads to a group",
+      "hint": "{count} selected leads become students of the chosen group.",
+      "group": "Group",
+      "groupPlaceholder": "Choose a group",
+      "joinedAt": "Joined on",
+      "status": "Status in the group",
+      "done": "{added} added, {skipped} skipped (already in the group)."
+    },
+    "sourcesPage": {
+      "title": "Sources report",
+      "description": "How many leads each source brought.",
+      "add": "New source",
+      "edit": "Edit source",
+      "name": "Source name",
+      "from": "From",
+      "to": "To",
+      "leads": "leads",
+      "students": "{count} students",
+      "deleteTitle": "Delete source?",
+      "deleteText": "“{name}” will be removed; leads and students keep their records without a source."
+    },
+    "publicForm": {
+      "intro": "Leave your details and {organization} will call you back.",
+      "fullName": "Your name",
+      "phone": "Phone number",
+      "comment": "Comment",
+      "submit": "Send",
+      "thanksTitle": "Thank you!",
+      "thanksText": "We received your request and will contact you soon."
+    }
   }
 }

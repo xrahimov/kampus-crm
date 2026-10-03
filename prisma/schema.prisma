@@ -29,6 +29,7 @@ model Organization {
   schools         School[]
   leadSources     LeadSource[]
   receiptSettings ReceiptSettings?
+  leadForms       LeadForm[]
 }
 
 model Branch {
@@ -49,6 +50,8 @@ model Branch {
   groups       Group[]
   students     Student[]
   payments     Payment[]
+  leadBoards   LeadBoard[]
+  leads        Lead[]
 
   @@index([organizationId])
 }
@@ -102,6 +105,9 @@ model User {
   refundsMade      Refund[]
   discountsGiven   Discount[]
   studentComments  StudentComment[]
+
+  leadsAssigned Lead[] @relation("leadTeacher")
+  leadsCreated  Lead[] @relation("leadCreator")
 }
 
 /// A role is a named bundle of permission codes. System roles are seeded and
@@ -360,6 +366,8 @@ model School {
 
   organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
   students     Student[]
+  leads        Lead[]
+  forms        LeadForm[]
 
   @@unique([organizationId, name])
 }
@@ -545,6 +553,7 @@ model Student {
   customFields StudentCustomField[]
   comments     StudentComment[]
   payments     Payment[]
+  leads        Lead[]
 
   @@index([branchId, isArchived])
   @@index([phone])
@@ -639,6 +648,8 @@ model LeadSource {
 
   organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
   students     Student[]
+  leads        Lead[]
+  forms        LeadForm[]
 
   @@unique([organizationId, name])
 }
@@ -788,4 +799,141 @@ model ReceiptSettings {
   updatedAt      DateTime            @updatedAt
 
   organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+}
+
+// ---------------------------------------------------------------------------
+// Phase 7: leads (EXP §2 Kanban, §3 sources, §8 Forms)
+// ---------------------------------------------------------------------------
+
+enum LeadStatus {
+  NEW
+  CONTACTED
+  UNREACHABLE
+  LOST
+}
+
+enum LeadTemperature {
+  HOT
+  WARM
+  COLD
+}
+
+/// "Kunni tanlang" on the lead form: odd days, even days or "other days".
+enum LeadDays {
+  ODD
+  EVEN
+  OTHER
+}
+
+/// A pipeline ("Website" in the board selector). Boards belong to a branch (A-66).
+model LeadBoard {
+  id        String   @id @default(cuid())
+  branchId  String
+  name      String
+  sortOrder Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  branch  Branch       @relation(fields: [branchId], references: [id])
+  columns LeadColumn[]
+  leads   Lead[]
+
+  @@unique([branchId, name])
+}
+
+/// "Bo'lim": a Kanban column (stage) of a board.
+model LeadColumn {
+  id        String   @id @default(cuid())
+  boardId   String
+  name      String
+  sortOrder Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  board LeadBoard  @relation(fields: [boardId], references: [id], onDelete: Cascade)
+  leads Lead[]
+  forms LeadForm[]
+
+  @@unique([boardId, name])
+  @@index([boardId, sortOrder])
+}
+
+/// "Yangi Lid" (EXP §2 form). Phones live in LeadPhone ("+ Telefon raqam qo'shish").
+model Lead {
+  id          String           @id @default(cuid())
+  branchId    String
+  boardId     String
+  columnId    String
+  fullName    String
+  birthDate   DateTime?        @db.Date
+  age         Int?
+  sourceId    String?
+  teacherId   String?
+  days        LeadDays?
+  lessonTime  String? // "HH:mm"
+  status      LeadStatus       @default(NEW)
+  temperature LeadTemperature?
+  comment     String?
+  sortOrder   Int              @default(0)
+  isArchived  Boolean          @default(false)
+  /// Set when the lead was added to a group (converted) or came back from a group.
+  studentId   String?
+  convertedAt DateTime?
+  formId      String?
+  createdById String?
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+
+  branch    Branch      @relation(fields: [branchId], references: [id])
+  board     LeadBoard   @relation(fields: [boardId], references: [id], onDelete: Cascade)
+  column    LeadColumn  @relation(fields: [columnId], references: [id])
+  source    LeadSource? @relation(fields: [sourceId], references: [id], onDelete: SetNull)
+  teacher   User?       @relation("leadTeacher", fields: [teacherId], references: [id], onDelete: SetNull)
+  student   Student?    @relation(fields: [studentId], references: [id], onDelete: SetNull)
+  form      LeadForm?   @relation(fields: [formId], references: [id], onDelete: SetNull)
+  createdBy User?       @relation("leadCreator", fields: [createdById], references: [id], onDelete: SetNull)
+  phones    LeadPhone[]
+  school    School?     @relation(fields: [schoolId], references: [id])
+  schoolId  String?
+
+  @@index([columnId, isArchived, sortOrder])
+  @@index([branchId, isArchived])
+  @@index([sourceId, createdAt])
+  @@index([studentId])
+}
+
+model LeadPhone {
+  id        String @id @default(cuid())
+  leadId    String
+  phone     String
+  sortOrder Int    @default(0)
+
+  lead Lead @relation(fields: [leadId], references: [id], onDelete: Cascade)
+
+  @@index([leadId])
+  @@index([phone])
+}
+
+/// "Formalar" (EXP §8): a public lead-capture form that drops into one column.
+model LeadForm {
+  id             String   @id @default(cuid())
+  organizationId String
+  name           String
+  slug           String   @unique
+  columnId       String
+  sourceId       String?
+  /// Free text shown in the "Integratsiya" column (the reference's values were not visible).
+  integration    String?
+  isActive       Boolean  @default(true)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  column       LeadColumn   @relation(fields: [columnId], references: [id])
+  source       LeadSource?  @relation(fields: [sourceId], references: [id], onDelete: SetNull)
+  leads        Lead[]
+  school       School?      @relation(fields: [schoolId], references: [id])
+  schoolId     String?
+
+  @@index([organizationId])
 }

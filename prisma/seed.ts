@@ -422,6 +422,145 @@ async function seedPayments(organizationId: string) {
   console.log(`Seeded ${memberships.length} demo payments.`);
 }
 
+/** Phase 7: one "Website" board per branch, a few invented leads and a public form. */
+async function seedLeads(organizationId: string, branches: Map<string, string>) {
+  const sources = new Map(
+    (await prisma.leadSource.findMany({ where: { organizationId } })).map((s) => [s.name, s.id]),
+  );
+  const teacher = await prisma.user.findUniqueOrThrow({ where: { phone: "+998900000004" } });
+  const columnIds = new Map<string, string>();
+  for (const [name, branchId] of branches) {
+    const board =
+      (await prisma.leadBoard.findUnique({
+        where: { branchId_name: { branchId, name: "Website" } },
+      })) ??
+      (await prisma.leadBoard.create({
+        data: {
+          branchId,
+          name: "Website",
+          columns: {
+            create: [
+              { name: "NEW LEADS", sortOrder: 0 },
+              { name: "Contacted", sortOrder: 1 },
+              { name: "Trial booked", sortOrder: 2 },
+            ],
+          },
+        },
+      }));
+    const first = await prisma.leadColumn.findFirstOrThrow({
+      where: { boardId: board.id },
+      orderBy: { sortOrder: "asc" },
+    });
+    columnIds.set(name, first.id);
+  }
+  if ((await prisma.lead.count()) === 0) {
+    const centralColumn = columnIds.get("Central")!;
+    const columns = await prisma.leadColumn.findMany({
+      where: { board: { branchId: branches.get("Central")! } },
+      orderBy: { sortOrder: "asc" },
+    });
+    const LEADS: Array<{
+      name: string;
+      phone: string;
+      source: string;
+      column: number;
+      status: "NEW" | "CONTACTED" | "UNREACHABLE" | "LOST";
+      temperature: "HOT" | "WARM" | "COLD" | null;
+      days: "ODD" | "EVEN" | "OTHER" | null;
+      time: string | null;
+      teacher?: boolean;
+      comment?: string;
+    }> = [
+      {
+        name: "Demo Lead One",
+        phone: "+998901110001",
+        source: "Instagram",
+        column: 0,
+        status: "NEW",
+        temperature: "HOT",
+        days: "EVEN",
+        time: "09:00",
+        comment: "Asked about the morning group",
+      },
+      {
+        name: "Demo Lead Two",
+        phone: "+998901110002",
+        source: "Telegram",
+        column: 0,
+        status: "NEW",
+        temperature: null,
+        days: null,
+        time: null,
+      },
+      {
+        name: "Demo Lead Three",
+        phone: "+998901110003",
+        source: "Friend",
+        column: 1,
+        status: "CONTACTED",
+        temperature: "WARM",
+        days: "ODD",
+        time: "18:00",
+        teacher: true,
+      },
+      {
+        name: "Demo Lead Four",
+        phone: "+998901110004",
+        source: "Website",
+        column: 1,
+        status: "UNREACHABLE",
+        temperature: "COLD",
+        days: null,
+        time: null,
+      },
+      {
+        name: "Demo Lead Five",
+        phone: "+998901110005",
+        source: "Walk-in",
+        column: 2,
+        status: "CONTACTED",
+        temperature: "HOT",
+        days: "EVEN",
+        time: "09:00",
+        teacher: true,
+        comment: "Trial lesson on Thursday",
+      },
+    ];
+    for (const [i, l] of LEADS.entries()) {
+      await prisma.lead.create({
+        data: {
+          branchId: branches.get("Central")!,
+          boardId: columns[0]!.boardId,
+          columnId: columns[l.column]?.id ?? centralColumn,
+          fullName: l.name,
+          sourceId: sources.get(l.source) ?? null,
+          teacherId: l.teacher ? teacher.id : null,
+          days: l.days,
+          lessonTime: l.time,
+          status: l.status,
+          temperature: l.temperature,
+          comment: l.comment ?? null,
+          sortOrder: i,
+          phones: { create: [{ phone: l.phone, sortOrder: 0 }] },
+        },
+      });
+    }
+    console.log(`Seeded ${LEADS.length} demo leads.`);
+  }
+  await prisma.leadForm.upsert({
+    where: { slug: "website" },
+    update: {},
+    create: {
+      organizationId,
+      name: "Website form",
+      slug: "website",
+      columnId: columnIds.get("Central")!,
+      sourceId: sources.get("Website") ?? null,
+      integration: "kampus-demo.example",
+    },
+  });
+}
+
 async function main() {
   const org = await prisma.organization.upsert({
     where: { id: "org_demo" },
@@ -490,6 +629,7 @@ async function main() {
   await seedSettings(org.id, branches);
   await seedGroups(branches);
   await seedPayments(org.id);
+  await seedLeads(org.id, branches);
 
   console.log(`Seeded ${DEMO_USERS.length} demo users across ${branchNames.length} branches.`);
   console.log(`Sign in with ${DEMO_USERS[0]!.phone} and the SEED_ADMIN_PASSWORD from .env.`);

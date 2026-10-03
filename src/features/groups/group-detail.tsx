@@ -107,6 +107,7 @@ export function GroupDetail({
     pay: boolean;
     discount: boolean;
     comment: boolean;
+    leads: boolean;
   };
 }) {
   const t = useTranslations();
@@ -326,6 +327,7 @@ export function GroupDetail({
                 canEdit={can.update}
                 canCreateStudent={can.createStudent}
                 canPay={can.pay}
+                canLeads={can.leads}
                 paymentOptions={paymentOptions}
               />
             </CardContent>
