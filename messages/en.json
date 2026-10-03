@@ -410,54 +410,86 @@
       "logs": "Logs"
     },
     "names": {
-      "dashboard.view": "View dashboard",
-      "dashboard.finance": "See finance figures on the dashboard",
-      "leads.view": "View leads",
-      "leads.create": "Add leads",
-      "leads.update": "Edit leads",
-      "leads.delete": "Delete leads",
-      "teachers.view": "View teachers",
-      "teachers.create": "Add teachers",
-      "teachers.update": "Edit teachers",
-      "teachers.delete": "Archive teachers",
-      "groups.view": "View groups",
-      "groups.create": "Create groups",
-      "groups.update": "Edit groups",
-      "groups.delete": "Delete groups",
-      "groups.attendance.mark": "Mark attendance",
-      "students.view": "View students",
-      "students.create": "Add students",
-      "students.update": "Edit students",
-      "students.delete": "Delete students",
-      "students.blacklist": "Blacklist students",
-      "payments.create": "Take payments",
-      "payments.refund": "Refund payments",
-      "discounts.give": "Give discounts",
-      "exams.view": "View exams",
-      "exams.create": "Create exams",
-      "exams.update": "Edit exams",
-      "exams.delete": "Delete exams",
-      "tests.view": "View tests",
-      "tests.create": "Create tests",
-      "tests.update": "Edit tests",
-      "tests.delete": "Delete tests",
-      "finance.view": "View finance",
-      "finance.create": "Add finance records",
-      "finance.update": "Edit finance records",
-      "finance.delete": "Delete finance records",
-      "finance.payroll.approve": "Approve payroll",
-      "reports.view": "View reports",
-      "reports.payments": "Payment reports",
-      "reports.leads": "Lead reports",
-      "staff.view": "View staff",
-      "staff.create": "Add staff",
-      "staff.update": "Edit staff",
-      "staff.delete": "Archive staff",
-      "settings.org": "Centre settings and branches",
-      "settings.roles": "Manage roles",
-      "settings.integrations": "Manage integrations",
-      "settings.catalog": "Courses, rooms, days off, schools",
-      "logs.view": "View logs"
+      "dashboard": {
+        "view": "View dashboard",
+        "finance": "See finance figures on the dashboard"
+      },
+      "leads": {
+        "view": "View leads",
+        "create": "Add leads",
+        "update": "Edit leads",
+        "delete": "Delete leads"
+      },
+      "teachers": {
+        "view": "View teachers",
+        "create": "Add teachers",
+        "update": "Edit teachers",
+        "delete": "Archive teachers"
+      },
+      "groups": {
+        "view": "View groups",
+        "create": "Create groups",
+        "update": "Edit groups",
+        "delete": "Delete groups",
+        "attendance": {
+          "mark": "Mark attendance"
+        }
+      },
+      "students": {
+        "view": "View students",
+        "create": "Add students",
+        "update": "Edit students",
+        "delete": "Delete students",
+        "blacklist": "Blacklist students"
+      },
+      "payments": {
+        "create": "Take payments",
+        "refund": "Refund payments"
+      },
+      "discounts": {
+        "give": "Give discounts"
+      },
+      "exams": {
+        "view": "View exams",
+        "create": "Create exams",
+        "update": "Edit exams",
+        "delete": "Delete exams"
+      },
+      "tests": {
+        "view": "View tests",
+        "create": "Create tests",
+        "update": "Edit tests",
+        "delete": "Delete tests"
+      },
+      "finance": {
+        "view": "View finance",
+        "create": "Add finance records",
+        "update": "Edit finance records",
+        "delete": "Delete finance records",
+        "payroll": {
+          "approve": "Approve payroll"
+        }
+      },
+      "reports": {
+        "view": "View reports",
+        "payments": "Payment reports",
+        "leads": "Lead reports"
+      },
+      "staff": {
+        "view": "View staff",
+        "create": "Add staff",
+        "update": "Edit staff",
+        "delete": "Archive staff"
+      },
+      "settings": {
+        "org": "Centre settings and branches",
+        "roles": "Manage roles",
+        "integrations": "Manage integrations",
+        "catalog": "Courses, rooms, days off, schools"
+      },
+      "logs": {
+        "view": "View logs"
+      }
     }
   },
   "groups": {

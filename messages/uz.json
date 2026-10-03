@@ -410,54 +410,86 @@
       "logs": "Jurnallar"
     },
     "names": {
-      "dashboard.view": "Bosh sahifani ko'rish",
-      "dashboard.finance": "Bosh sahifada moliyani ko'rish",
-      "leads.view": "Lidlarni ko'rish",
-      "leads.create": "Lid qo'shish",
-      "leads.update": "Lidlarni tahrirlash",
-      "leads.delete": "Lidlarni o'chirish",
-      "teachers.view": "O'qituvchilarni ko'rish",
-      "teachers.create": "O'qituvchi qo'shish",
-      "teachers.update": "O'qituvchilarni tahrirlash",
-      "teachers.delete": "O'qituvchilarni arxivlash",
-      "groups.view": "Guruhlarni ko'rish",
-      "groups.create": "Guruh yaratish",
-      "groups.update": "Guruhlarni tahrirlash",
-      "groups.delete": "Guruhlarni o'chirish",
-      "groups.attendance.mark": "Davomat qo'yish",
-      "students.view": "O'quvchilarni ko'rish",
-      "students.create": "O'quvchi qo'shish",
-      "students.update": "O'quvchilarni tahrirlash",
-      "students.delete": "O'quvchilarni o'chirish",
-      "students.blacklist": "O'quvchilarni qora ro'yxatga olish",
-      "payments.create": "To'lov qabul qilish",
-      "payments.refund": "To'lovni qaytarish",
-      "discounts.give": "Chegirma berish",
-      "exams.view": "Imtihonlarni ko'rish",
-      "exams.create": "Imtihon yaratish",
-      "exams.update": "Imtihonlarni tahrirlash",
-      "exams.delete": "Imtihonlarni o'chirish",
-      "tests.view": "Testlarni ko'rish",
-      "tests.create": "Test yaratish",
-      "tests.update": "Testlarni tahrirlash",
-      "tests.delete": "Testlarni o'chirish",
-      "finance.view": "Moliyani ko'rish",
-      "finance.create": "Moliya yozuvi qo'shish",
-      "finance.update": "Moliya yozuvlarini tahrirlash",
-      "finance.delete": "Moliya yozuvlarini o'chirish",
-      "finance.payroll.approve": "Oylikni tasdiqlash",
-      "reports.view": "Hisobotlarni ko'rish",
-      "reports.payments": "To'lov hisobotlari",
-      "reports.leads": "Lid hisobotlari",
-      "staff.view": "Xodimlarni ko'rish",
-      "staff.create": "Xodim qo'shish",
-      "staff.update": "Xodimlarni tahrirlash",
-      "staff.delete": "Xodimlarni arxivlash",
-      "settings.org": "Markaz sozlamalari va filiallar",
-      "settings.roles": "Rollarni boshqarish",
-      "settings.integrations": "Integratsiyalarni boshqarish",
-      "settings.catalog": "Kurslar, xonalar, dam olish kunlari, maktablar",
-      "logs.view": "Jurnallarni ko'rish"
+      "dashboard": {
+        "view": "Bosh sahifani ko'rish",
+        "finance": "Bosh sahifada moliyani ko'rish"
+      },
+      "leads": {
+        "view": "Lidlarni ko'rish",
+        "create": "Lid qo'shish",
+        "update": "Lidlarni tahrirlash",
+        "delete": "Lidlarni o'chirish"
+      },
+      "teachers": {
+        "view": "O'qituvchilarni ko'rish",
+        "create": "O'qituvchi qo'shish",
+        "update": "O'qituvchilarni tahrirlash",
+        "delete": "O'qituvchilarni arxivlash"
+      },
+      "groups": {
+        "view": "Guruhlarni ko'rish",
+        "create": "Guruh yaratish",
+        "update": "Guruhlarni tahrirlash",
+        "delete": "Guruhlarni o'chirish",
+        "attendance": {
+          "mark": "Davomat qo'yish"
+        }
+      },
+      "students": {
+        "view": "O'quvchilarni ko'rish",
+        "create": "O'quvchi qo'shish",
+        "update": "O'quvchilarni tahrirlash",
+        "delete": "O'quvchilarni o'chirish",
+        "blacklist": "O'quvchilarni qora ro'yxatga olish"
+      },
+      "payments": {
+        "create": "To'lov qabul qilish",
+        "refund": "To'lovni qaytarish"
+      },
+      "discounts": {
+        "give": "Chegirma berish"
+      },
+      "exams": {
+        "view": "Imtihonlarni ko'rish",
+        "create": "Imtihon yaratish",
+        "update": "Imtihonlarni tahrirlash",
+        "delete": "Imtihonlarni o'chirish"
+      },
+      "tests": {
+        "view": "Testlarni ko'rish",
+        "create": "Test yaratish",
+        "update": "Testlarni tahrirlash",
+        "delete": "Testlarni o'chirish"
+      },
+      "finance": {
+        "view": "Moliyani ko'rish",
+        "create": "Moliya yozuvi qo'shish",
+        "update": "Moliya yozuvlarini tahrirlash",
+        "delete": "Moliya yozuvlarini o'chirish",
+        "payroll": {
+          "approve": "Oylikni tasdiqlash"
+        }
+      },
+      "reports": {
+        "view": "Hisobotlarni ko'rish",
+        "payments": "To'lov hisobotlari",
+        "leads": "Lid hisobotlari"
+      },
+      "staff": {
+        "view": "Xodimlarni ko'rish",
+        "create": "Xodim qo'shish",
+        "update": "Xodimlarni tahrirlash",
+        "delete": "Xodimlarni arxivlash"
+      },
+      "settings": {
+        "org": "Markaz sozlamalari va filiallar",
+        "roles": "Rollarni boshqarish",
+        "integrations": "Integratsiyalarni boshqarish",
+        "catalog": "Kurslar, xonalar, dam olish kunlari, maktablar"
+      },
+      "logs": {
+        "view": "Jurnallarni ko'rish"
+      }
     }
   },
   "groups": {
