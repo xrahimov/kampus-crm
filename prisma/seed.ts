@@ -10,6 +10,7 @@ import { PrismaPg } from "@prisma/adapter-pg";
 import { PrismaClient } from "../src/generated/prisma/client";
 import { DEFAULT_ROLE_PERMISSIONS, SYSTEM_ROLES } from "../src/lib/rbac/default-roles";
 import { hashPassword } from "../src/server/auth/password";
+import { addMonths, planLessons } from "../src/server/services/groups/schedule";
 
 const prisma = new PrismaClient({
   adapter: new PrismaPg({ connectionString: process.env.DATABASE_URL! }),
@@ -242,6 +243,141 @@ async function seedSettings(organizationId: string, branches: Map<string, string
   }
 }
 
+/** Phase 5: demo groups with schedules, teachers, students, lessons and some attendance. Invented data. */
+async function seedGroups(branches: Map<string, string>) {
+  const userByPhone = async (phone: string) =>
+    (await prisma.user.findUniqueOrThrow({ where: { phone }, select: { id: true } })).id;
+  const teacherOne = await userByPhone("+998900000004");
+  const teacherTwo = await userByPhone("+998900000006");
+  const teacherThree = await userByPhone("+998900000007");
+  const support = await userByPhone("+998900000008");
+
+  const GROUPS: Array<{
+    name: string;
+    branch: string;
+    course: string;
+    pattern: "EVEN" | "ODD" | "EVERY_DAY";
+    time: [string, string];
+    room: string | null;
+    teachers: Array<[string, "MAIN" | "ASSISTANT", "PERCENT" | "PER_LESSON", number]>;
+    support?: string[];
+    startDate: string;
+    students: string[];
+  }> = [
+    {
+      name: "GE-Morning A1",
+      branch: "Central",
+      course: "General English",
+      pattern: "EVEN",
+      time: ["09:00", "10:30"],
+      room: "Room 101",
+      teachers: [[teacherOne, "MAIN", "PERCENT", 40]],
+      support: [support],
+      startDate: "2026-09-01",
+      students: ["Demo Student One", "Demo Student Two", "Demo Student Three", "Demo Student Four"],
+    },
+    {
+      name: "IELTS Evening",
+      branch: "Central",
+      course: "IELTS Preparation",
+      pattern: "ODD",
+      time: ["18:00", "19:30"],
+      room: "Room 102",
+      teachers: [
+        [teacherThree, "MAIN", "PER_LESSON", 120_000],
+        [teacherOne, "ASSISTANT", "PERCENT", 10],
+      ],
+      startDate: "2026-09-15",
+      students: ["Demo Student Five", "Demo Student Six"],
+    },
+    {
+      name: "GE-Riverside B1",
+      branch: "Riverside",
+      course: "General English",
+      pattern: "EVERY_DAY",
+      time: ["14:00", "15:00"],
+      room: null,
+      teachers: [[teacherTwo, "MAIN", "PERCENT", 45]],
+      startDate: "2026-10-01",
+      students: ["Demo Student Seven"],
+    },
+  ];
+
+  const today = new Date().toISOString().slice(0, 10);
+  const weekdays = { EVEN: [2, 4, 6], ODD: [1, 3, 5], EVERY_DAY: [1, 2, 3, 4, 5, 6] };
+  let created = 0;
+  for (const g of GROUPS) {
+    const branchId = branches.get(g.branch)!;
+    if (await prisma.group.findFirst({ where: { branchId, name: g.name } })) continue;
+    const course = await prisma.course.findFirstOrThrow({ where: { branchId, name: g.course } });
+    const room = g.room
+      ? await prisma.room.findUnique({ where: { branchId_name: { branchId, name: g.room } } })
+      : null;
+    const endDate = addMonths(g.startDate, course.durationMonths);
+    const slots = weekdays[g.pattern].map((weekday) => ({
+      weekday,
+      startTime: g.time[0],
+      endTime: g.time[1],
+    }));
+    const group = await prisma.group.create({
+      data: {
+        branchId,
+        courseId: course.id,
+        name: g.name,
+        weekdayPattern: g.pattern,
+        startDate: new Date(`${g.startDate}T00:00:00.000Z`),
+        endDate: new Date(`${endDate}T00:00:00.000Z`),
+        slots: { create: slots.map((s) => ({ ...s, roomId: room?.id ?? null })) },
+        teachers: {
+          create: g.teachers.map(([userId, role, shareType, shareValue]) => ({
+            userId,
+            role,
+            shareType,
+            shareValue,
+            since: new Date(`${g.startDate}T00:00:00.000Z`),
+          })),
+        },
+        supportTeachers: { create: (g.support ?? []).map((userId) => ({ userId })) },
+        lessons: {
+          create: planLessons(g.startDate, endDate, slots).map((l) => ({
+            date: new Date(`${l.date}T00:00:00.000Z`),
+            startTime: l.startTime,
+            endTime: l.endTime,
+          })),
+        },
+      },
+      include: { lessons: { orderBy: { date: "asc" } } },
+    });
+    for (const [i, fullName] of g.students.entries()) {
+      const student =
+        (await prisma.student.findFirst({ where: { branchId, fullName } })) ??
+        (await prisma.student.create({
+          data: {
+            branchId,
+            fullName,
+            phone: `+99891${String(1_000_000 + created * 10 + i).padStart(7, "0")}`,
+            gender: i % 2 ? "FEMALE" : "MALE",
+          },
+        }));
+      const membership = await prisma.groupMembership.create({
+        data: { groupId: group.id, studentId: student.id, joinedAt: group.startDate },
+      });
+      // Past lessons get a mark so the attendance grid has something to show.
+      const past = group.lessons.filter((l) => l.date.toISOString().slice(0, 10) < today);
+      await prisma.attendance.createMany({
+        data: past.map((l, n) => ({
+          lessonId: l.id,
+          membershipId: membership.id,
+          status: (n + i) % 5 === 0 ? "ABSENT" : "PRESENT",
+          markedById: g.teachers[0]![0],
+        })),
+      });
+    }
+    created += 1;
+  }
+  console.log(`Seeded ${created} demo groups.`);
+}
+
 async function main() {
   const org = await prisma.organization.upsert({
     where: { id: "org_demo" },
@@ -308,6 +444,7 @@ async function main() {
   }
 
   await seedSettings(org.id, branches);
+  await seedGroups(branches);
 
   console.log(`Seeded ${DEMO_USERS.length} demo users across ${branchNames.length} branches.`);
   console.log(`Sign in with ${DEMO_USERS[0]!.phone} and the SEED_ADMIN_PASSWORD from .env.`);

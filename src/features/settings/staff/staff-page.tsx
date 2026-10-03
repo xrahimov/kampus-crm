@@ -1,6 +1,6 @@
 "use client";
 
-import { useFormatter, useTranslations } from "next-intl";
+import { useTranslations } from "next-intl";
 import { useSearchParams } from "next/navigation";
 import { useState, useTransition } from "react";
 
@@ -28,6 +28,8 @@ import { api } from "@/lib/api-client";
 import { parseDateOnly } from "@/lib/dates";
 import { cn } from "@/lib/utils";
 import type { Page } from "@/lib/validation/common";
+import { useDateFormat } from "@/lib/use-date-format";
+import { useMoneyFormat } from "@/lib/use-money-format";
 import type { RoleDto } from "@/server/services/staff/roles.service";
 import type { RoleCount, StaffDto } from "@/server/services/staff/staff.service";
 
@@ -64,7 +66,8 @@ export function StaffPage({
   canDelete: boolean;
 }) {
   const t = useTranslations();
-  const format = useFormatter();
+  const formatMoney = useMoneyFormat();
+  const fmt = useDateFormat();
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -90,10 +93,7 @@ export function StaffPage({
     router.replace(`${pathname}?${params.toString()}`);
   }
 
-  const money = (value: number | null) =>
-    value === null
-      ? "—"
-      : format.number(value, { style: "currency", currency: "UZS", maximumFractionDigits: 0 });
+  const money = (value: number | null) => (value === null ? "—" : formatMoney(value));
   const total = roleCounts.reduce((sum, r) => sum + r.count, 0);
 
   return (
@@ -185,7 +185,7 @@ export function StaffPage({
                   <TableCell>{person.branches.map((b) => b.name).join(", ") || "—"}</TableCell>
                   <TableCell className="whitespace-nowrap">
                     {person.hireDate
-                      ? format.dateTime(parseDateOnly(person.hireDate), { dateStyle: "medium" })
+                      ? fmt(parseDateOnly(person.hireDate), { dateStyle: "medium" })
                       : "—"}
                   </TableCell>
                   <TableCell>

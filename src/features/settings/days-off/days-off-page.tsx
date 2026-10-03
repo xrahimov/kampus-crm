@@ -1,6 +1,6 @@
 "use client";
 
-import { useFormatter, useTranslations } from "next-intl";
+import { useTranslations } from "next-intl";
 import { useState, useTransition } from "react";
 
 import { ConfirmDialog } from "@/components/data/confirm-dialog";
@@ -20,6 +20,7 @@ import { useRouter } from "@/i18n/navigation";
 import { api } from "@/lib/api-client";
 import { parseDateOnly } from "@/lib/dates";
 import type { Page } from "@/lib/validation/common";
+import { useDateFormat } from "@/lib/use-date-format";
 import type { DayOffDto } from "@/server/services/settings/days-off.service";
 
 import { creatableBranches, type BranchOption } from "../shared/branch-select";
@@ -41,7 +42,7 @@ export function DaysOffPage({
   allBranches: boolean;
 }) {
   const t = useTranslations();
-  const format = useFormatter();
+  const fmt = useDateFormat();
   const router = useRouter();
   const [, startTransition] = useTransition();
   const [dialog, setDialog] = useState<{ open: boolean; dayOff: DayOffDto | null }>({
@@ -84,7 +85,7 @@ export function DaysOffPage({
               {page.items.map((dayOff) => (
                 <TableRow key={dayOff.id} data-testid="day-off-row">
                   <TableCell className="font-medium whitespace-nowrap">
-                    {format.dateTime(parseDateOnly(dayOff.date), { dateStyle: "medium" })}
+                    {fmt(parseDateOnly(dayOff.date), { dateStyle: "medium" })}
                   </TableCell>
                   <TableCell>{dayOff.branchName}</TableCell>
                   <TableCell className="max-w-md truncate">{dayOff.reason}</TableCell>

@@ -88,7 +88,11 @@
     "inUse": "This record is in use and cannot be deleted.",
     "selfEdit": "You cannot change your own roles or archive yourself.",
     "roleBeyondOwn": "You cannot grant permissions you do not hold yourself.",
-    "systemRole": "This system role cannot be changed that way."
+    "systemRole": "This system role cannot be changed that way.",
+    "courseNotFound": "Course not found in this branch",
+    "studentNotFound": "Student not found",
+    "groupArchived": "The group is archived",
+    "attendanceOutsideLesson": "Attendance can be marked only during the lesson"
   },
   "validation": {
     "phone": "Enter a number like +998 90 123 45 67.",
@@ -117,7 +121,18 @@
     "roleUnknown": "Unknown or inactive role.",
     "fileRequired": "Choose a file.",
     "fileType": "Only JPEG, PNG or WebP images.",
-    "fileSize": "The image must be 2 MB or smaller."
+    "fileSize": "The image must be 2 MB or smaller.",
+    "slotsMin": "Add at least one lesson day",
+    "slotsUnique": "Each weekday only once",
+    "teachersUnique": "Each teacher only once",
+    "teachersMax": "At most three teachers",
+    "endAfterStart": "End date must be after the start date",
+    "slotsPattern": "Lesson days must match the chosen pattern",
+    "roomBranch": "The room belongs to another branch",
+    "teacherUnknown": "Not a teacher of this branch",
+    "memberUnknown": "Not a student of this group",
+    "statusTransition": "This status change is not allowed",
+    "studentRequired": "Pick a student or enter a new one"
   },
   "roles": {
     "CEO": "CEO",
@@ -306,7 +321,6 @@
     "columns": {
       "groups": "Assigned groups"
     },
-    "groupsLater": "Groups arrive in phase 5.",
     "archiveTitle": "Archive teacher?",
     "archiveText": "“{name}” will be signed out and hidden from lists. Their history stays.",
     "detail": {
@@ -315,8 +329,10 @@
       "courses": "Courses taught",
       "activeGroups": "Active groups",
       "activeStudents": "Active students",
-      "groups": "Groups"
-    }
+      "groups": "Groups",
+      "role": "Role"
+    },
+    "noGroups": "No groups yet."
   },
   "staff": {
     "title": "Staff",
@@ -394,54 +410,295 @@
       "logs": "Logs"
     },
     "names": {
-      "dashboard.view": "View dashboard",
-      "dashboard.finance": "See finance figures on the dashboard",
-      "leads.view": "View leads",
-      "leads.create": "Add leads",
-      "leads.update": "Edit leads",
-      "leads.delete": "Delete leads",
-      "teachers.view": "View teachers",
-      "teachers.create": "Add teachers",
-      "teachers.update": "Edit teachers",
-      "teachers.delete": "Archive teachers",
-      "groups.view": "View groups",
-      "groups.create": "Create groups",
-      "groups.update": "Edit groups",
-      "groups.delete": "Delete groups",
-      "groups.attendance.mark": "Mark attendance",
-      "students.view": "View students",
-      "students.create": "Add students",
-      "students.update": "Edit students",
-      "students.delete": "Delete students",
-      "students.blacklist": "Blacklist students",
-      "payments.create": "Take payments",
-      "payments.refund": "Refund payments",
-      "discounts.give": "Give discounts",
-      "exams.view": "View exams",
-      "exams.create": "Create exams",
-      "exams.update": "Edit exams",
-      "exams.delete": "Delete exams",
-      "tests.view": "View tests",
-      "tests.create": "Create tests",
-      "tests.update": "Edit tests",
-      "tests.delete": "Delete tests",
-      "finance.view": "View finance",
-      "finance.create": "Add finance records",
-      "finance.update": "Edit finance records",
-      "finance.delete": "Delete finance records",
-      "finance.payroll.approve": "Approve payroll",
-      "reports.view": "View reports",
-      "reports.payments": "Payment reports",
-      "reports.leads": "Lead reports",
-      "staff.view": "View staff",
-      "staff.create": "Add staff",
-      "staff.update": "Edit staff",
-      "staff.delete": "Archive staff",
-      "settings.org": "Centre settings and branches",
-      "settings.roles": "Manage roles",
-      "settings.integrations": "Manage integrations",
-      "settings.catalog": "Courses, rooms, days off, schools",
-      "logs.view": "View logs"
+      "dashboard": {
+        "view": "View dashboard",
+        "finance": "See finance figures on the dashboard"
+      },
+      "leads": {
+        "view": "View leads",
+        "create": "Add leads",
+        "update": "Edit leads",
+        "delete": "Delete leads"
+      },
+      "teachers": {
+        "view": "View teachers",
+        "create": "Add teachers",
+        "update": "Edit teachers",
+        "delete": "Archive teachers"
+      },
+      "groups": {
+        "view": "View groups",
+        "create": "Create groups",
+        "update": "Edit groups",
+        "delete": "Delete groups",
+        "attendance": {
+          "mark": "Mark attendance"
+        }
+      },
+      "students": {
+        "view": "View students",
+        "create": "Add students",
+        "update": "Edit students",
+        "delete": "Delete students",
+        "blacklist": "Blacklist students"
+      },
+      "payments": {
+        "create": "Take payments",
+        "refund": "Refund payments"
+      },
+      "discounts": {
+        "give": "Give discounts"
+      },
+      "exams": {
+        "view": "View exams",
+        "create": "Create exams",
+        "update": "Edit exams",
+        "delete": "Delete exams"
+      },
+      "tests": {
+        "view": "View tests",
+        "create": "Create tests",
+        "update": "Edit tests",
+        "delete": "Delete tests"
+      },
+      "finance": {
+        "view": "View finance",
+        "create": "Add finance records",
+        "update": "Edit finance records",
+        "delete": "Delete finance records",
+        "payroll": {
+          "approve": "Approve payroll"
+        }
+      },
+      "reports": {
+        "view": "View reports",
+        "payments": "Payment reports",
+        "leads": "Lead reports"
+      },
+      "staff": {
+        "view": "View staff",
+        "create": "Add staff",
+        "update": "Edit staff",
+        "delete": "Archive staff"
+      },
+      "settings": {
+        "org": "Centre settings and branches",
+        "roles": "Manage roles",
+        "integrations": "Manage integrations",
+        "catalog": "Courses, rooms, days off, schools"
+      },
+      "logs": {
+        "view": "View logs"
+      }
+    }
+  },
+  "groups": {
+    "title": "Groups",
+    "add": "New group",
+    "noLessonYet": "No lesson has been held yet",
+    "perDaySchedule": "Per day",
+    "finishTitle": "Finish group?",
+    "finishText": "“{name}” will be marked finished, its students graduated and future lessons removed.",
+    "archiveTitle": "Archive group?",
+    "archiveText": "“{name}” will be hidden from the active list. Its lessons and history stay.",
+    "moveBranchText": "Choose the branch “{name}” moves to. Room assignments are cleared.",
+    "filters": {
+      "all": "All statuses",
+      "anyTeacher": "Any teacher",
+      "anyCourse": "Any course",
+      "anyDays": "Any days"
+    },
+    "columns": {
+      "name": "Group",
+      "course": "Course",
+      "teacher": "Teacher",
+      "support": "Support teacher",
+      "days": "Days",
+      "time": "Time",
+      "students": "Students",
+      "opened": "Opened",
+      "ends": "Ends"
+    },
+    "statuses": {
+      "ACTIVE": "Active",
+      "ARCHIVED": "Archived",
+      "TRIAL": "Trial",
+      "FROZEN": "Frozen"
+    },
+    "patterns": {
+      "EVEN": "Even days (Tue, Thu, Sat)",
+      "ODD": "Odd days (Mon, Wed, Fri)",
+      "EVERY_DAY": "Every day (Mon–Sat)",
+      "CUSTOM": "Custom"
+    },
+    "teacherRoles": {
+      "MAIN": "Main teacher",
+      "ASSISTANT": "Assistant",
+      "CO_TEACHER": "Co-teacher"
+    },
+    "shareTypes": {
+      "PERCENT": "Percent",
+      "PER_LESSON": "Per lesson",
+      "PER_STUDENT": "Per student"
+    },
+    "memberStatuses": {
+      "NEW": "New",
+      "TRIAL": "Trial",
+      "ACTIVE": "Active",
+      "FROZEN": "Frozen",
+      "ARCHIVED": "Removed",
+      "GRADUATED": "Graduated"
+    },
+    "actions": {
+      "view": "Open",
+      "moveBranch": "Move to another branch",
+      "finish": "Finish group"
+    },
+    "form": {
+      "add": "New group",
+      "edit": "Edit group",
+      "name": "Group name",
+      "course": "Course",
+      "pickCourse": "Choose a course",
+      "gradingOverride": "Grading system",
+      "useCourseGrading": "Same as the course",
+      "gradingHint": "Leave as the course's unless this group grades differently.",
+      "weekdays": "Days",
+      "customDays": "Lesson days",
+      "perDay": "Different time or room per day",
+      "startTime": "Start",
+      "endTime": "End",
+      "room": "Room",
+      "noRoom": "No room",
+      "teachers": "Teachers",
+      "teacher": "Teacher",
+      "teacherRole": "Role",
+      "shareType": "Pay by",
+      "shareValue": "Share",
+      "addTeacher": "Add teacher",
+      "startDate": "Start date",
+      "endDate": "End date",
+      "endDateHint": "Left empty, it is the start date plus the course length."
+    },
+    "detail": {
+      "info": "Group",
+      "more": "More",
+      "price": "Course price",
+      "gradingSystem": "Grading system",
+      "branch": "Branch",
+      "duration": "Length",
+      "months": "{count, plural, one {# month} other {# months}}",
+      "activeStudents": "Active students",
+      "lessonsHeld": "Lessons held",
+      "schedule": "Schedule",
+      "sinceDate": "since {date}",
+      "daysOff": "Days off",
+      "supportTeachers": "Support teachers",
+      "noSupportCandidates": "No other teachers in this branch.",
+      "changeTeacher": "Change teacher",
+      "outgoingTeacher": "Teacher leaving",
+      "incomingTeacher": "New teacher",
+      "noCandidates": "No one available",
+      "dayOff": "Give a day off",
+      "dayOffHint": "The group skips this day; an unmarked lesson on it is removed.",
+      "date": "Date",
+      "reason": "Reason",
+      "laterPhase": "Arrives in phase {phase}",
+      "tabs": {
+        "attendance": "Attendance",
+        "grades": "Grades",
+        "notes": "Notes",
+        "history": "History",
+        "tests": "Tests",
+        "knowledge": "Knowledge",
+        "exams": "Exams",
+        "discounts": "Discounts",
+        "coins": "Coins",
+        "comments": "Comments"
+      },
+      "changeTeacherHint": "The new teacher's share counts from today."
+    },
+    "attendance": {
+      "PRESENT": "Present",
+      "ABSENT": "Absent",
+      "EXCUSED": "Excused",
+      "NOT_MARKED": "Not marked",
+      "extraLesson": "Extra lesson",
+      "date": "Date",
+      "start": "Start",
+      "end": "End",
+      "noLessons": "No lessons this month.",
+      "topics": "Topic",
+      "setTopic": "Lesson topic",
+      "topic": "Topic",
+      "attachment": "Attachment link"
+    },
+    "grades": {
+      "system": "Grading",
+      "student": "Student",
+      "average": "Average",
+      "empty": "Nothing to grade this month."
+    },
+    "members": {
+      "title": "Students",
+      "add": "Add student",
+      "student": "Student",
+      "empty": "No students in this group.",
+      "showJoined": "Join dates",
+      "showArchived": "Removed",
+      "joined": "joined",
+      "changeStatus": "Change status",
+      "graduate": "Graduate",
+      "paymentLater": "Payment (phase 6)",
+      "transferLater": "Transfer (phase 6)",
+      "remove": "Remove from group",
+      "removeTitle": "Remove student?",
+      "removeText": "“{name}” will leave this group. Their attendance stays.",
+      "newStudent": "New student",
+      "searchStudent": "Find a student",
+      "searchHint": "Type at least two letters of the name or phone",
+      "joinDate": "Joined on",
+      "customPriceToggle": "Custom price",
+      "customPrice": "Price per month (UZS)",
+      "note": "Note",
+      "alreadyIn": "This student is already in the group."
+    },
+    "notes": {
+      "newNote": "Add note",
+      "placeholder": "Write a note about this group…",
+      "empty": "No notes yet."
+    },
+    "history": {
+      "empty": "No changes recorded yet.",
+      "field": "What changed",
+      "before": "Before",
+      "after": "After",
+      "by": "By",
+      "at": "When",
+      "fields": {
+        "name": "Name",
+        "courseName": "Course",
+        "gradingSystemName": "Grading system",
+        "weekdayPattern": "Days",
+        "slots": "Schedule",
+        "teachers": "Teachers",
+        "supportTeachers": "Support teachers",
+        "startDate": "Start date",
+        "endDate": "End date",
+        "status": "Status",
+        "branchName": "Branch"
+      },
+      "actions": {
+        "create": "Group created",
+        "update": "Edited",
+        "finish": "Finished",
+        "archive": "Archived",
+        "moveBranch": "Moved to another branch",
+        "changeTeacher": "Teacher changed",
+        "supportTeachers": "Support teachers changed",
+        "dayOff": "Day off given",
+        "note": "Note added"
+      }
     }
   }
 }

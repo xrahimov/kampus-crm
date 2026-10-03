@@ -57,7 +57,7 @@ test.describe("teachers", () => {
     await expect(page).toHaveURL(/\/en\/teachers\/[a-z0-9]+/);
     await expect(page.getByRole("heading", { name })).toBeVisible();
     await expect(page.getByText("Per lesson", { exact: true })).toBeVisible();
-    await expect(page.getByText("Groups arrive in phase 5.")).toBeVisible();
+    await expect(page.getByText("No groups yet.")).toBeVisible();
 
     await page.goBack();
     await row.getByRole("button", { name: `Actions for ${name}` }).click();
@@ -99,6 +99,8 @@ test.describe("teachers", () => {
     await page.getByTestId("add-button").click();
     const dialog = page.getByTestId("role-dialog");
     await dialog.getByLabel("Role name").fill(name);
+    // Permission labels resolve to text, not raw keys.
+    await expect(dialog.getByText("View leads", { exact: true })).toBeVisible();
     await dialog.getByTestId("perm-leads.view").click();
     await dialog.getByRole("button", { name: "Save" }).click();
     await expect(dialog).toBeHidden();

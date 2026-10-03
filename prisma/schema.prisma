@@ -44,6 +44,8 @@ model Branch {
   courses      Course[]
   rooms        Room[]
   daysOff      DayOff[]
+  groups       Group[]
+  students     Student[]
 
   @@index([organizationId])
 }
@@ -88,6 +90,10 @@ model User {
   sessions  Session[]
   loginLogs LoginLog[]
   auditLogs AuditLog[]
+
+  groupsTaught    GroupTeacher[]
+  groupsSupported GroupSupportTeacher[] @relation("supportOf")
+  groupNotes      GroupNote[]
 }
 
 /// A role is a named bundle of permission codes. System roles are seeded and
@@ -266,6 +272,7 @@ model GradingSystem {
   organization Organization   @relation(fields: [organizationId], references: [id], onDelete: Cascade)
   levels       GradingLevel[]
   courses      Course[]
+  groups       Group[]
 
   @@unique([organizationId, name])
 }
@@ -299,6 +306,7 @@ model Course {
 
   branch        Branch         @relation(fields: [branchId], references: [id])
   gradingSystem GradingSystem? @relation(fields: [gradingSystemId], references: [id], onDelete: SetNull)
+  groups        Group[]
 
   @@index([branchId, isArchived])
   @@index([gradingSystemId])
@@ -313,7 +321,8 @@ model Room {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  branch Branch @relation(fields: [branchId], references: [id])
+  branch Branch              @relation(fields: [branchId], references: [id])
+  slots  GroupScheduleSlot[]
 
   @@unique([branchId, name])
 }
@@ -343,4 +352,237 @@ model School {
   organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
 
   @@unique([organizationId, name])
+}
+
+// --- Phase 5: groups, schedule, lessons, attendance (EXP §5) -----------------
+
+enum GroupStatus {
+  ACTIVE
+  ARCHIVED
+  TRIAL
+  FROZEN
+}
+
+/// "Hafta kunlari": EVEN = Tue/Thu/Sat, ODD = Mon/Wed/Fri (A-50), EVERY_DAY = Mon–Sat, CUSTOM = chosen days.
+enum WeekdayPattern {
+  EVEN
+  ODD
+  EVERY_DAY
+  CUSTOM
+}
+
+enum GroupTeacherRole {
+  MAIN
+  ASSISTANT
+  CO_TEACHER
+}
+
+/// A teacher's share in one group ("Ulush turi", EXP §5); overrides the teacher's default (A-12).
+enum ShareType {
+  PERCENT
+  PER_LESSON
+  PER_STUDENT
+}
+
+enum MembershipStatus {
+  NEW
+  TRIAL
+  ACTIVE
+  FROZEN
+  ARCHIVED
+  GRADUATED
+}
+
+enum AttendanceStatus {
+  PRESENT
+  ABSENT
+  EXCUSED
+  NOT_MARKED
+}
+
+model Group {
+  id              String         @id @default(cuid())
+  branchId        String
+  courseId        String
+  gradingSystemId String? // override; null = the course's system
+  name            String
+  weekdayPattern  WeekdayPattern @default(EVEN)
+  startDate       DateTime       @db.Date
+  endDate         DateTime       @db.Date
+  status          GroupStatus    @default(ACTIVE)
+  finishedAt      DateTime?
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+
+  branch          Branch                @relation(fields: [branchId], references: [id])
+  course          Course                @relation(fields: [courseId], references: [id])
+  gradingSystem   GradingSystem?        @relation(fields: [gradingSystemId], references: [id], onDelete: SetNull)
+  slots           GroupScheduleSlot[]
+  teachers        GroupTeacher[]
+  supportTeachers GroupSupportTeacher[]
+  daysOff         GroupDayOff[]
+  lessons         Lesson[]
+  notes           GroupNote[]
+  memberships     GroupMembership[]
+
+  @@index([branchId, status])
+  @@index([courseId])
+}
+
+/// One meeting per weekday (1 = Monday … 7 = Sunday), "HH:mm" times.
+model GroupScheduleSlot {
+  id        String  @id @default(cuid())
+  groupId   String
+  weekday   Int
+  startTime String
+  endTime   String
+  roomId    String?
+
+  group Group @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  room  Room? @relation(fields: [roomId], references: [id], onDelete: SetNull)
+
+  @@unique([groupId, weekday])
+  @@index([roomId])
+}
+
+model GroupTeacher {
+  id         String           @id @default(cuid())
+  groupId    String
+  userId     String
+  role       GroupTeacherRole @default(MAIN)
+  shareType  ShareType        @default(PERCENT)
+  shareValue Decimal          @db.Decimal(15, 2)
+  since      DateTime         @db.Date
+
+  group Group @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  user  User  @relation(fields: [userId], references: [id])
+
+  @@unique([groupId, userId])
+  @@index([userId])
+}
+
+model GroupSupportTeacher {
+  groupId String
+  userId  String
+
+  group Group @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  user  User  @relation("supportOf", fields: [userId], references: [id])
+
+  @@id([groupId, userId])
+  @@index([userId])
+}
+
+/// "Dam berish": a day the group does not meet; its lesson is removed (A-53).
+model GroupDayOff {
+  id      String   @id @default(cuid())
+  groupId String
+  date    DateTime @db.Date
+  reason  String
+
+  group Group @relation(fields: [groupId], references: [id], onDelete: Cascade)
+
+  @@unique([groupId, date])
+}
+
+/// One meeting of a group, generated from the schedule or added as an extra lesson.
+model Lesson {
+  id            String   @id @default(cuid())
+  groupId       String
+  date          DateTime @db.Date
+  startTime     String
+  endTime       String
+  topic         String?
+  attachmentUrl String?
+  isExtra       Boolean  @default(false)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  group       Group        @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  attendances Attendance[]
+  grades      Grade[]
+
+  @@unique([groupId, date, startTime])
+  @@index([groupId, date])
+}
+
+/// Minimal student record; Phase 6 adds the full profile (parents, source, school, …).
+model Student {
+  id         String    @id @default(cuid())
+  branchId   String
+  fullName   String
+  phone      String?
+  gender     Gender    @default(MALE)
+  birthDate  DateTime? @db.Date
+  photoUrl   String?
+  isArchived Boolean   @default(false)
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+
+  branch      Branch            @relation(fields: [branchId], references: [id])
+  memberships GroupMembership[]
+
+  @@index([branchId, isArchived])
+  @@index([phone])
+}
+
+model GroupMembership {
+  id          String           @id @default(cuid())
+  groupId     String
+  studentId   String
+  status      MembershipStatus @default(ACTIVE)
+  joinedAt    DateTime         @db.Date
+  leftAt      DateTime?        @db.Date
+  customPrice Decimal?         @db.Decimal(15, 2)
+  note        String?
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+
+  group       Group        @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  student     Student      @relation(fields: [studentId], references: [id])
+  attendances Attendance[]
+  grades      Grade[]
+
+  @@unique([groupId, studentId])
+  @@index([studentId])
+}
+
+model Attendance {
+  lessonId     String
+  membershipId String
+  status       AttendanceStatus @default(NOT_MARKED)
+  comment      String?
+  markedById   String?
+  markedAt     DateTime         @default(now())
+
+  lesson     Lesson          @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+  membership GroupMembership @relation(fields: [membershipId], references: [id], onDelete: Cascade)
+
+  @@id([lessonId, membershipId])
+}
+
+model Grade {
+  lessonId     String
+  membershipId String
+  score        Decimal  @db.Decimal(6, 2)
+  comment      String?
+  gradedById   String?
+  gradedAt     DateTime @default(now())
+
+  lesson     Lesson          @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+  membership GroupMembership @relation(fields: [membershipId], references: [id], onDelete: Cascade)
+
+  @@id([lessonId, membershipId])
+}
+
+model GroupNote {
+  id        String   @id @default(cuid())
+  groupId   String
+  authorId  String?
+  text      String
+  createdAt DateTime @default(now())
+
+  group  Group @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  author User? @relation(fields: [authorId], references: [id], onDelete: SetNull)
+
+  @@index([groupId, createdAt])
 }

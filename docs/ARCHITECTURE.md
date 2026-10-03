@@ -218,12 +218,12 @@ Every list endpoint takes the common query contract (§2). Every mutation is aud
 **Teachers (EXP §4)**
 `GET|POST /teachers?tab=teachers|support&archived` · `GET|PATCH|DELETE /teachers/:id` · `PUT /teachers/:id/group-rates` · `POST /teachers/sms`
 
-**Groups (EXP §5)**
-`GET|POST /groups` · `GET|PATCH|DELETE /groups/:id` · `POST /groups/:id/finish` · `POST /groups/:id/move-branch` · `POST /groups/:id/change-teacher` · `POST /groups/:id/support-teachers` · `POST /groups/:id/day-off` · `GET /groups/export.xlsx`
-`GET|POST /groups/:id/members` · `PATCH /memberships/:id` (status, custom price) · `POST /memberships/:id/transfer` · `POST /memberships/:id/remove` · `POST /memberships/:id/to-lead` · `POST /groups/:id/members/import` (xlsx) · `GET /groups/members/import-template.xlsx`
-`GET /groups/:id/lessons?month` · `POST /groups/:id/lessons/extra` · `PATCH /lessons/:id` (topic, attachment) · `PUT /lessons/:id/attendance` · `PUT /lessons/:id/grades`
-`GET|POST /groups/:id/notes` · `GET|POST /groups/:id/discounts` · `DELETE /discounts/:id` · `GET /groups/:id/coins` · `POST /coins/give` · `GET|POST /groups/:id/student-comments` · `GET /groups/:id/history`
-`GET /groups/:id/tests` · `GET /groups/:id/knowledge` · `GET|POST /groups/:id/exams`
+**Groups (EXP §5)** — Phase 5 ships the lines marked ✓; the rest follow with their modules (A-49).
+✓ `GET|POST /groups?status&teacherId&courseId&weekdayPattern` · `GET|PATCH|DELETE /groups/:id` · `POST /groups/:id/finish` · `POST /groups/:id/move-branch` · `POST /groups/:id/change-teacher` · `POST /groups/:id/support-teachers` · `GET|POST /groups/:id/day-off` · `GET /groups/teacher-options` · `GET /groups/export.xlsx` (Phase 12)
+✓ `GET|POST /groups/:id/members?archived&q&sort` · `PATCH /memberships/:id` (status, custom price, note) · `POST /memberships/:id/remove` · `GET /students/search?q` · `POST /memberships/:id/transfer` (Phase 6) · `POST /memberships/:id/to-lead` (Phase 7) · `POST /groups/:id/members/import` (xlsx, Phase 12) · `GET /groups/members/import-template.xlsx` (Phase 12)
+✓ `GET /groups/:id/lessons?month` · `POST /groups/:id/lessons/extra` · `PATCH /lessons/:id` (topic, attachment) · `PUT /lessons/:id/attendance` · `PUT /lessons/:id/grades`
+✓ `GET|POST /groups/:id/notes` · `GET /groups/:id/history` · `GET|POST /groups/:id/discounts` (Phase 6) · `DELETE /discounts/:id` (Phase 6) · `GET /groups/:id/coins` · `POST /coins/give` (Phase 10) · `GET|POST /groups/:id/student-comments` (Phase 6)
+`GET /groups/:id/tests` · `GET /groups/:id/knowledge` (Phase 10) · `GET|POST /groups/:id/exams` (Phase 8)
 
 **Students (EXP §6)**
 `GET|POST /students` · `GET|PATCH|DELETE /students/:id` · `POST /students/:id/blacklist` · `POST /students/activate` · `POST /students/import` · `GET /students/export.xlsx` · `POST /students/sms` · `GET /students/:id/badge.pdf`
@@ -311,7 +311,7 @@ Kai asked for the site-map order. I've moved the Settings core forward and the D
 | 2     | Skeleton: auth, sessions, RBAC, roles/staff basics, layout + nav + branch selector, i18n (uz/ru/en), audit, error handling, list contract, Docker, CI, seed | §0, §8 Staff/Roles        |
 | 3     | Settings core: org settings, branches, payment methods, grading systems, courses, rooms, days off, schools                                                  | §8                        |
 | 4     | Teachers                                                                                                                                                    | §4                        |
-| 5     | Groups (schedule, members, attendance, grades, notes, discounts, student comments, history)                                                                 | §5                        |
+| 5     | Groups (schedule, members, attendance, grades, notes, history; minimal students). Discounts and student comments moved to Phase 6 (A-49)                    | §5                        |
 | 6     | Students + payments, refunds, receipts, parents, badges                                                                                                     | §6, §11 TO'LOV            |
 | 7     | Leads, sources, lead forms                                                                                                                                  | §2, §3, §8 Forms          |
 | 8     | Exams                                                                                                                                                       | §7                        |

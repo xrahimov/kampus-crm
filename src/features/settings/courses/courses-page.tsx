@@ -1,6 +1,6 @@
 "use client";
 
-import { useFormatter, useTranslations } from "next-intl";
+import { useTranslations } from "next-intl";
 import { useSearchParams } from "next/navigation";
 import { useState, useTransition } from "react";
 
@@ -23,6 +23,7 @@ import {
 import { usePathname, useRouter } from "@/i18n/navigation";
 import { api } from "@/lib/api-client";
 import type { Page } from "@/lib/validation/common";
+import { useMoneyFormat } from "@/lib/use-money-format";
 import type { CourseDto } from "@/server/services/settings/courses.service";
 import type { GradingSystemDto } from "@/server/services/settings/grading-systems.service";
 
@@ -49,7 +50,7 @@ export function CoursesPage({
   allBranches: boolean;
 }) {
   const t = useTranslations();
-  const format = useFormatter();
+  const money = useMoneyFormat();
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -74,9 +75,6 @@ export function CoursesPage({
     params.delete("page");
     router.replace(`${pathname}?${params.toString()}`);
   }
-
-  const money = (value: number) =>
-    format.number(value, { style: "currency", currency: "UZS", maximumFractionDigits: 0 });
 
   return (
     <div className="space-y-4">
