@@ -9,8 +9,17 @@ import { Avatar } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import type { BranchOption } from "@/features/settings/shared/branch-select";
 import { Link, useRouter } from "@/i18n/navigation";
+import { parseDateOnly } from "@/lib/dates";
 import type { RoleDto } from "@/server/services/staff/roles.service";
 import type { TeacherDetailDto } from "@/server/services/staff/teachers.service";
 
@@ -107,10 +116,52 @@ export function TeacherDetail({
           <CardTitle>{t("teachers.detail.groups")}</CardTitle>
         </CardHeader>
         <CardContent>
-          <EmptyState
-            title={t("teachers.groupsLater")}
-            hint={t("common.comingSoon", { phase: 5 })}
-          />
+          {teacher.groups.length === 0 ? (
+            <EmptyState title={t("teachers.noGroups")} />
+          ) : (
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>{t("groups.columns.name")}</TableHead>
+                  <TableHead>{t("groups.columns.course")}</TableHead>
+                  <TableHead>{t("teachers.detail.role")}</TableHead>
+                  <TableHead className="text-right">{t("groups.columns.students")}</TableHead>
+                  <TableHead>{t("groups.columns.opened")}</TableHead>
+                  <TableHead>{t("groups.columns.ends")}</TableHead>
+                  <TableHead>{t("common.status")}</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {teacher.groups.map((g) => (
+                  <TableRow key={`${g.id}-${g.role}`} data-testid="teacher-group-row">
+                    <TableCell className="font-medium">
+                      <Link href={`/groups/${g.id}`} className="hover:underline">
+                        {g.name}
+                      </Link>
+                    </TableCell>
+                    <TableCell>{g.courseName}</TableCell>
+                    <TableCell>
+                      {g.role === "SUPPORT"
+                        ? t("groups.columns.support")
+                        : t(`groups.teacherRoles.${g.role}`)}
+                    </TableCell>
+                    <TableCell className="text-right tabular-nums">{g.activeStudents}</TableCell>
+                    <TableCell className="whitespace-nowrap">
+                      {format.dateTime(parseDateOnly(g.startDate), { dateStyle: "medium" })}
+                    </TableCell>
+                    <TableCell className="whitespace-nowrap">
+                      {format.dateTime(parseDateOnly(g.endDate), { dateStyle: "medium" })}
+                    </TableCell>
+                    <TableCell>
+                      <Badge variant={g.status === "ACTIVE" ? "success" : "secondary"}>
+                        {t(`groups.statuses.${g.status}`)}
+                      </Badge>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          )}
         </CardContent>
       </Card>
 

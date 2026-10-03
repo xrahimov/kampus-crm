@@ -88,7 +88,11 @@
     "inUse": "Bu yozuv ishlatilmoqda, o‘chirib bo‘lmaydi.",
     "selfEdit": "O'z rollaringizni o'zgartira yoki o'zingizni arxivlay olmaysiz.",
     "roleBeyondOwn": "O'zingizda bo'lmagan huquqlarni bera olmaysiz.",
-    "systemRole": "Bu tizim rolini shunday o'zgartirib bo'lmaydi."
+    "systemRole": "Bu tizim rolini shunday o'zgartirib bo'lmaydi.",
+    "courseNotFound": "Bu filialda kurs topilmadi",
+    "studentNotFound": "O'quvchi topilmadi",
+    "groupArchived": "Guruh arxivlangan",
+    "attendanceOutsideLesson": "Davomatni faqat dars vaqtida belgilash mumkin"
   },
   "validation": {
     "phone": "+998 90 123 45 67 ko‘rinishida raqam kiriting.",
@@ -117,7 +121,18 @@
     "roleUnknown": "Noma'lum yoki nofaol rol.",
     "fileRequired": "Fayl tanlang.",
     "fileType": "Faqat JPEG, PNG yoki WebP rasmlar.",
-    "fileSize": "Rasm hajmi 2 MB dan oshmasligi kerak."
+    "fileSize": "Rasm hajmi 2 MB dan oshmasligi kerak.",
+    "slotsMin": "Kamida bir dars kuni qo'shing",
+    "slotsUnique": "Har hafta kuni faqat bir marta",
+    "teachersUnique": "Har o'qituvchi faqat bir marta",
+    "teachersMax": "Ko'pi bilan uch o'qituvchi",
+    "endAfterStart": "Tugash sanasi boshlanishdan keyin bo'lishi kerak",
+    "slotsPattern": "Dars kunlari tanlangan sxemaga mos bo'lishi kerak",
+    "roomBranch": "Xona boshqa filialga tegishli",
+    "teacherUnknown": "Bu filial o'qituvchisi emas",
+    "memberUnknown": "Bu guruh o'quvchisi emas",
+    "statusTransition": "Bunday holat o'zgarishi mumkin emas",
+    "studentRequired": "O'quvchini tanlang yoki yangisini kiriting"
   },
   "roles": {
     "CEO": "CEO",
@@ -306,7 +321,6 @@
     "columns": {
       "groups": "Biriktirilgan guruhlar"
     },
-    "groupsLater": "Guruhlar 5-bosqichda qo'shiladi.",
     "archiveTitle": "O'qituvchi arxivlansinmi?",
     "archiveText": "“{name}” tizimdan chiqariladi va ro'yxatlardan yashiriladi. Tarixi saqlanadi.",
     "detail": {
@@ -315,8 +329,10 @@
       "courses": "O'qitadigan kurslar",
       "activeGroups": "Faol guruhlar",
       "activeStudents": "Faol o'quvchilar",
-      "groups": "Guruhlar"
-    }
+      "groups": "Guruhlar",
+      "role": "Rol"
+    },
+    "noGroups": "Hozircha guruh yo'q."
   },
   "staff": {
     "title": "Xodimlar",
@@ -442,6 +458,215 @@
       "settings.integrations": "Integratsiyalarni boshqarish",
       "settings.catalog": "Kurslar, xonalar, dam olish kunlari, maktablar",
       "logs.view": "Jurnallarni ko'rish"
+    }
+  },
+  "groups": {
+    "title": "Guruhlar",
+    "add": "Yangi guruh",
+    "noLessonYet": "Hali dars o'tilmagan",
+    "perDaySchedule": "Kunlar bo'yicha",
+    "finishTitle": "Guruh tugatilsinmi?",
+    "finishText": "“{name}” tugatilgan deb belgilanadi, o'quvchilar bitirgan hisoblanadi, kelgusi darslar o'chiriladi.",
+    "archiveTitle": "Guruh arxivlansinmi?",
+    "archiveText": "“{name}” faol ro'yxatdan yashiriladi. Darslari va tarixi saqlanadi.",
+    "moveBranchText": "“{name}” o'tadigan filialni tanlang. Xona biriktirmalari bekor qilinadi.",
+    "filters": {
+      "all": "Barcha holatlar",
+      "anyTeacher": "Istalgan o'qituvchi",
+      "anyCourse": "Istalgan kurs",
+      "anyDays": "Istalgan kunlar"
+    },
+    "columns": {
+      "name": "Guruh",
+      "course": "Kurs",
+      "teacher": "O'qituvchi",
+      "support": "Support o'qituvchi",
+      "days": "Kunlar",
+      "time": "Vaqt",
+      "students": "O'quvchilar",
+      "opened": "Ochilgan",
+      "ends": "Tugaydi"
+    },
+    "statuses": {
+      "ACTIVE": "Faol",
+      "ARCHIVED": "Arxivlangan",
+      "TRIAL": "Sinov",
+      "FROZEN": "Muzlatilgan"
+    },
+    "patterns": {
+      "EVEN": "Juft kunlar (se, pa, sh)",
+      "ODD": "Toq kunlar (du, ch, ju)",
+      "EVERY_DAY": "Har kuni (du–sh)",
+      "CUSTOM": "Boshqa"
+    },
+    "teacherRoles": {
+      "MAIN": "Asosiy o'qituvchi",
+      "ASSISTANT": "Yordamchi",
+      "CO_TEACHER": "Hamkor o'qituvchi"
+    },
+    "shareTypes": {
+      "PERCENT": "Foiz",
+      "PER_LESSON": "Har dars uchun",
+      "PER_STUDENT": "Har o'quvchi uchun"
+    },
+    "memberStatuses": {
+      "NEW": "Yangi",
+      "TRIAL": "Sinov",
+      "ACTIVE": "Faol",
+      "FROZEN": "Muzlatilgan",
+      "ARCHIVED": "Chiqarilgan",
+      "GRADUATED": "Bitirgan"
+    },
+    "actions": {
+      "view": "Ochish",
+      "moveBranch": "Boshqa filialga o'tkazish",
+      "finish": "Guruhni tugatish"
+    },
+    "form": {
+      "add": "Yangi guruh",
+      "edit": "Guruhni tahrirlash",
+      "name": "Guruh nomi",
+      "course": "Kurs",
+      "pickCourse": "Kursni tanlang",
+      "gradingOverride": "Baholash tizimi",
+      "useCourseGrading": "Kursdagi kabi",
+      "gradingHint": "Guruh boshqacha baholanmasa, kursdagini qoldiring.",
+      "weekdays": "Kunlar",
+      "customDays": "Dars kunlari",
+      "perDay": "Har kun uchun alohida vaqt yoki xona",
+      "startTime": "Boshlanishi",
+      "endTime": "Tugashi",
+      "room": "Xona",
+      "noRoom": "Xonasiz",
+      "teachers": "O'qituvchilar",
+      "teacher": "O'qituvchi",
+      "teacherRole": "Rol",
+      "shareType": "To'lov turi",
+      "shareValue": "Ulush",
+      "addTeacher": "O'qituvchi qo'shish",
+      "startDate": "Boshlanish sanasi",
+      "endDate": "Tugash sanasi",
+      "endDateHint": "Bo'sh qolsa — boshlanish sanasi + kurs davomiyligi."
+    },
+    "detail": {
+      "info": "Guruh",
+      "more": "Yana",
+      "price": "Kurs narxi",
+      "gradingSystem": "Baholash tizimi",
+      "branch": "Filial",
+      "duration": "Davomiyligi",
+      "months": "{count} oy",
+      "activeStudents": "Faol o'quvchilar",
+      "lessonsHeld": "O'tilgan darslar",
+      "schedule": "Dars jadvali",
+      "sinceDate": "{date} dan",
+      "daysOff": "Dam kunlari",
+      "supportTeachers": "Support o'qituvchilar",
+      "noSupportCandidates": "Bu filialda boshqa o'qituvchi yo'q.",
+      "changeTeacher": "O'qituvchini o'zgartirish",
+      "outgoingTeacher": "Ketayotgan o'qituvchi",
+      "incomingTeacher": "Yangi o'qituvchi",
+      "noCandidates": "Bo'sh o'qituvchi yo'q",
+      "dayOff": "Dam berish",
+      "dayOffHint": "Guruh bu kunni o'tkazib yuboradi; belgilanmagan dars o'chiriladi.",
+      "date": "Sana",
+      "reason": "Sabab",
+      "laterPhase": "{phase}-bosqichda qo'shiladi",
+      "tabs": {
+        "attendance": "Davomat",
+        "grades": "Baho",
+        "notes": "Eslatmalar",
+        "history": "Guruh tarixi",
+        "tests": "Testlar",
+        "knowledge": "Bilim",
+        "exams": "Imtihonlar",
+        "discounts": "Chegirmalar",
+        "coins": "Coinlar",
+        "comments": "Izohlar"
+      },
+      "changeTeacherHint": "Yangi o'qituvchining ulushi bugundan hisoblanadi."
+    },
+    "attendance": {
+      "PRESENT": "Keldi",
+      "ABSENT": "Kelmadi",
+      "EXCUSED": "Sababli",
+      "NOT_MARKED": "Belgilanmagan",
+      "extraLesson": "Qo'shimcha dars",
+      "date": "Sana",
+      "start": "Boshlanishi",
+      "end": "Tugashi",
+      "noLessons": "Bu oyda dars yo'q.",
+      "topics": "Mavzu",
+      "setTopic": "Dars mavzusi",
+      "topic": "Mavzu",
+      "attachment": "Material havolasi"
+    },
+    "grades": {
+      "system": "Baholash",
+      "student": "O'quvchi",
+      "average": "O'rtacha",
+      "empty": "Bu oyda baholash uchun hech narsa yo'q."
+    },
+    "members": {
+      "title": "O'quvchilar",
+      "add": "O'quvchi qo'shish",
+      "student": "O'quvchi",
+      "empty": "Guruhda o'quvchi yo'q.",
+      "showJoined": "Qo'shilgan sanalar",
+      "showArchived": "Chiqarilganlar",
+      "joined": "qo'shilgan",
+      "changeStatus": "Holatni o'zgartirish",
+      "graduate": "Bitirtirish",
+      "paymentLater": "To'lov (6-bosqich)",
+      "transferLater": "O'tkazish (6-bosqich)",
+      "remove": "Guruhdan chiqarish",
+      "removeTitle": "O'quvchi chiqarilsinmi?",
+      "removeText": "“{name}” guruhdan chiqariladi. Davomati saqlanadi.",
+      "newStudent": "Yangi o'quvchi",
+      "searchStudent": "O'quvchini topish",
+      "searchHint": "Ism yoki telefondan kamida ikki belgi kiriting",
+      "joinDate": "Qo'shilgan sana",
+      "customPriceToggle": "Alohida narx",
+      "customPrice": "Oylik narx (so'm)",
+      "note": "Izoh",
+      "alreadyIn": "Bu o'quvchi guruhda bor."
+    },
+    "notes": {
+      "newNote": "Eslatma qo'shish",
+      "placeholder": "Guruh haqida eslatma yozing…",
+      "empty": "Hozircha eslatma yo'q."
+    },
+    "history": {
+      "empty": "Hozircha o'zgarish yo'q.",
+      "field": "Nima o'zgardi",
+      "before": "Oldin",
+      "after": "Keyin",
+      "by": "Kim",
+      "at": "Qachon",
+      "fields": {
+        "name": "Nomi",
+        "courseName": "Kurs",
+        "gradingSystemName": "Baholash tizimi",
+        "weekdayPattern": "Kunlar",
+        "slots": "Dars jadvali",
+        "teachers": "O'qituvchilar",
+        "supportTeachers": "Support o'qituvchilar",
+        "startDate": "Boshlanish sanasi",
+        "endDate": "Tugash sanasi",
+        "status": "Holat",
+        "branchName": "Filial"
+      },
+      "actions": {
+        "create": "Guruh yaratildi",
+        "update": "Tahrirlandi",
+        "finish": "Tugatildi",
+        "archive": "Arxivlandi",
+        "moveBranch": "Boshqa filialga o'tkazildi",
+        "changeTeacher": "O'qituvchi o'zgartirildi",
+        "supportTeachers": "Support o'qituvchilar o'zgartirildi",
+        "dayOff": "Dam berildi",
+        "note": "Eslatma qo'shildi"
+      }
     }
   }
 }

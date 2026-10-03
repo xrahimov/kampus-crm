@@ -32,6 +32,7 @@ import type { Page } from "@/lib/validation/common";
 import { TEACHER_KINDS, type TeacherKind } from "@/lib/validation/staff";
 import type { RoleDto } from "@/server/services/staff/roles.service";
 import type { StaffDto } from "@/server/services/staff/staff.service";
+import type { TeacherRowDto } from "@/server/services/staff/teachers.service";
 
 import { StaffDialog } from "./staff-dialog";
 
@@ -50,7 +51,7 @@ export function TeachersPage({
   canUpdate,
   canDelete,
 }: {
-  page: Page<StaffDto>;
+  page: Page<TeacherRowDto>;
   kind: TeacherKind;
   archived: boolean;
   roles: RoleDto[];
@@ -193,8 +194,12 @@ export function TeachersPage({
                       <TableCell className="whitespace-nowrap">{date(person.hireDate)}</TableCell>
                     </>
                   ) : (
-                    <TableCell className="text-muted-foreground">
-                      {t("teachers.groupsLater")}
+                    <TableCell>
+                      {person.groupNames.length === 0 ? (
+                        <span className="text-muted-foreground">—</span>
+                      ) : (
+                        person.groupNames.join(", ")
+                      )}
                     </TableCell>
                   )}
                   <TableCell>

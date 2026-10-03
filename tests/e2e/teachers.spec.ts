@@ -57,7 +57,7 @@ test.describe("teachers", () => {
     await expect(page).toHaveURL(/\/en\/teachers\/[a-z0-9]+/);
     await expect(page.getByRole("heading", { name })).toBeVisible();
     await expect(page.getByText("Per lesson", { exact: true })).toBeVisible();
-    await expect(page.getByText("Groups arrive in phase 5.")).toBeVisible();
+    await expect(page.getByText("No groups yet.")).toBeVisible();
 
     await page.goBack();
     await row.getByRole("button", { name: `Actions for ${name}` }).click();
