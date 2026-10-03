@@ -57,20 +57,31 @@ enum Gender {
   FEMALE
 }
 
+/// How a teacher is paid (EXP §4 "Maosh hisoblash usuli"); see A-12.
+enum SalaryMethod {
+  PERCENT
+  MONTHLY
+  PER_LESSON
+  PER_STUDENT
+}
+
 model User {
-  id           String    @id @default(cuid())
-  fullName     String
-  phone        String    @unique // E.164, e.g. +998901234567
-  passwordHash String
-  gender       Gender    @default(MALE)
-  birthDate    DateTime? @db.Date
-  hireDate     DateTime? @db.Date
-  photoUrl     String?
-  fixedSalary  Decimal?  @db.Decimal(15, 2)
-  percentShare Decimal?  @db.Decimal(5, 2)
-  isArchived   Boolean   @default(false)
-  createdAt    DateTime  @default(now())
-  updatedAt    DateTime  @updatedAt
+  id            String        @id @default(cuid())
+  fullName      String
+  phone         String        @unique // E.164, e.g. +998901234567
+  passwordHash  String
+  gender        Gender        @default(MALE)
+  birthDate     DateTime?     @db.Date
+  hireDate      DateTime?     @db.Date
+  photoUrl      String?
+  salaryMethod  SalaryMethod?
+  fixedSalary   Decimal?      @db.Decimal(15, 2) // MONTHLY: UZS per month
+  percentShare  Decimal?      @db.Decimal(5, 2) // PERCENT: % of course price
+  perLessonFee  Decimal?      @db.Decimal(15, 2) // PER_LESSON: UZS per lesson
+  perStudentFee Decimal?      @db.Decimal(15, 2) // PER_STUDENT: UZS per active student
+  isArchived    Boolean       @default(false)
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
 
   roles     UserRole[]
   branches  UserBranch[]

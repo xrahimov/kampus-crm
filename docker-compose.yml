@@ -41,6 +41,10 @@ services:
       APP_URL: ${APP_URL:-http://localhost:3000}
       # Plain http on a LAN: allow the session cookie without TLS.
       COOKIE_SECURE: ${COOKIE_SECURE:-false}
+      # Uploaded photos (local storage adapter) live on a named volume.
+      UPLOAD_DIR: /data/uploads
+    volumes:
+      - uploads:/data/uploads
     ports:
       - "3000:3000"
     depends_on:
@@ -51,3 +55,4 @@ services:
 
 volumes:
   db-data:
+  uploads:

@@ -241,7 +241,7 @@ Every list endpoint takes the common query contract (§2). Every mutation is aud
 `GET|PUT /settings/coins` · `GET|POST /coin-reasons` · `PATCH|DELETE /coin-reasons/:id`
 `GET|POST /tests` · `PATCH|DELETE /tests/:id` · `GET|POST /question-bank` · `PATCH|DELETE /question-bank/:id`
 `GET|PUT /settings/org` · `GET|PUT /settings/auto-sms`
-`GET|POST /staff` · `GET|PATCH|DELETE /staff/:id` · `GET|POST /roles` · `PATCH|DELETE /roles/:id` · `GET /permissions`
+`GET|POST /staff?role&archived` · `GET /staff/role-counts` · `GET|PATCH|DELETE /staff/:id` · `GET|POST /roles` · `PATCH|DELETE /roles/:id` · `GET /permissions` · `POST /uploads` · `GET /files/:key`
 `GET /calls` · `GET /logs/logins` · `GET /logs/actions` · `GET /logs/sms` · `GET|POST /bot-recipients` · `DELETE /bot-recipients/:id`
 `GET|PUT /integrations/amocrm` · `GET|PUT /integrations/face-id` · `GET|PUT /integrations/sms` · `GET|PUT /integrations/telegram` · `GET|PUT /integrations/telephony`
 `GET /approvals` · `POST /approvals/:id/approve|reject` (A-09)

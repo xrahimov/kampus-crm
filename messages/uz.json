@@ -85,7 +85,10 @@
     "integration": "Tashqi xizmat javob bermadi.",
     "internal": "Kutilmagan xatolik. Qayta urinib ko‘ring.",
     "forbiddenTitle": "Ruxsat yo‘q",
-    "inUse": "Bu yozuv ishlatilmoqda, o‘chirib bo‘lmaydi."
+    "inUse": "Bu yozuv ishlatilmoqda, o‘chirib bo‘lmaydi.",
+    "selfEdit": "O'z rollaringizni o'zgartira yoki o'zingizni arxivlay olmaysiz.",
+    "roleBeyondOwn": "O'zingizda bo'lmagan huquqlarni bera olmaysiz.",
+    "systemRole": "Bu tizim rolini shunday o'zgartirib bo'lmaydi."
   },
   "validation": {
     "phone": "+998 90 123 45 67 ko‘rinishida raqam kiriting.",
@@ -106,7 +109,15 @@
     "levelsMin": "Kamida bitta daraja qo‘shing.",
     "levelsMax": "Ko‘pi bilan 50 daraja.",
     "color": "Rang tanlang.",
-    "duplicate": "Bu qiymat allaqachon mavjud."
+    "duplicate": "Bu qiymat allaqachon mavjud.",
+    "rolesMin": "Kamida bitta rol tanlang.",
+    "branchesMin": "Kamida bitta filial tanlang.",
+    "permission": "Noma'lum huquq.",
+    "teacherRole": "Bu yerda faqat o'qituvchi rollarini tanlash mumkin.",
+    "roleUnknown": "Noma'lum yoki nofaol rol.",
+    "fileRequired": "Fayl tanlang.",
+    "fileType": "Faqat JPEG, PNG yoki WebP rasmlar.",
+    "fileSize": "Rasm hajmi 2 MB dan oshmasligi kerak."
   },
   "roles": {
     "CEO": "CEO",
@@ -267,6 +278,170 @@
       "studentsCount": "O‘quvchilar soni",
       "deleteTitle": "Maktab o‘chirilsinmi?",
       "deleteText": "“{name}” o‘chiriladi."
+    },
+    "roles": {
+      "title": "Rollar",
+      "description": "Har bir rol nima qila oladi. Tizim rollari Kampus bilan birga keladi; o'zingiznikini quyida qo'shing.",
+      "add": "Yangi rol",
+      "edit": "Rolni tahrirlash",
+      "name": "Rol nomi",
+      "permissions": "Huquqlar",
+      "users": "Foydalanuvchilar",
+      "system": "Tizim",
+      "systemHint": "O'rnatilgan rol. Huquqlarini o'zgartirish mumkin, lekin o'chirib bo'lmaydi.",
+      "allPermissions": "Hammasi",
+      "permissionCount": "{count} ta huquq",
+      "deleteTitle": "Rol o'chirilsinmi?",
+      "deleteText": "“{name}” o'chiriladi. Kimgadir biriktirilgan rolni o'chirib bo'lmaydi."
+    }
+  },
+  "teachers": {
+    "title": "O'qituvchilar",
+    "add": "Yangi o'qituvchi",
+    "tabsLabel": "O'qituvchi turi",
+    "tabs": {
+      "teachers": "O'qituvchilar",
+      "support": "Support o'qituvchilar"
+    },
+    "columns": {
+      "groups": "Biriktirilgan guruhlar"
+    },
+    "groupsLater": "Guruhlar 5-bosqichda qo'shiladi.",
+    "archiveTitle": "O'qituvchi arxivlansinmi?",
+    "archiveText": "“{name}” tizimdan chiqariladi va ro'yxatlardan yashiriladi. Tarixi saqlanadi.",
+    "detail": {
+      "registered": "Ro'yxatga olingan",
+      "branches": "Filiallar",
+      "courses": "O'qitadigan kurslar",
+      "activeGroups": "Faol guruhlar",
+      "activeStudents": "Faol o'quvchilar",
+      "groups": "Guruhlar"
+    }
+  },
+  "staff": {
+    "title": "Xodimlar",
+    "description": "Kampus tizimiga kiradigan barcha xodimlar.",
+    "filterByRole": "Rol bo'yicha filtr",
+    "allRoles": "Barchasi",
+    "archiveTitle": "Xodim arxivlansinmi?",
+    "archiveText": "“{name}” tizimdan chiqariladi va ro'yxatlardan yashiriladi. Tarixi saqlanadi.",
+    "columns": {
+      "fullName": "F.I.Sh.",
+      "phone": "Telefon",
+      "fixedSalary": "Oylik",
+      "percentShare": "Foiz",
+      "perLessonFee": "Dars haqi",
+      "perStudentFee": "Talaba ulushi",
+      "birthDate": "Tug'ilgan sana",
+      "hireDate": "Ishga olingan",
+      "roles": "Rollar"
+    },
+    "form": {
+      "addTeacher": "Yangi o'qituvchi",
+      "editTeacher": "O'qituvchini tahrirlash",
+      "addStaff": "Yangi xodim",
+      "editStaff": "Xodimni tahrirlash",
+      "photo": "Rasm",
+      "choosePhoto": "Rasm tanlash",
+      "uploading": "Yuklanmoqda…",
+      "removePhoto": "Rasmni olib tashlash",
+      "fullName": "F.I.Sh.",
+      "phone": "Telefon raqami",
+      "birthDate": "Tug'ilgan sana",
+      "hireDate": "Ishga olingan sana",
+      "branches": "Filiallar",
+      "roles": "Rollar",
+      "ownRolesLocked": "O'zingizning rollaringizni o'zgartira olmaysiz.",
+      "salaryMethod": "Maosh hisoblash usuli",
+      "methods": {
+        "PERCENT": "Foiz",
+        "MONTHLY": "Oylik",
+        "PER_LESSON": "Dars haqi",
+        "PER_STUDENT": "Talaba ulushi"
+      },
+      "amounts": {
+        "PERCENT": "Kurs narxidan ulush (%)",
+        "MONTHLY": "Oylik maosh (UZS)",
+        "PER_LESSON": "Bir dars haqi (UZS)",
+        "PER_STUDENT": "Bir talaba uchun haq (UZS)"
+      },
+      "gender": "Jinsi",
+      "genders": {
+        "MALE": "Erkak",
+        "FEMALE": "Ayol"
+      },
+      "password": "Parol",
+      "newPassword": "Yangi parol",
+      "keepPassword": "O'zgartirmaslik uchun bo'sh qoldiring",
+      "generate": "Yaratish"
+    }
+  },
+  "permissions": {
+    "modules": {
+      "dashboard": "Bosh sahifa",
+      "leads": "Lidlar",
+      "teachers": "O'qituvchilar",
+      "groups": "Guruhlar",
+      "students": "O'quvchilar",
+      "payments": "To'lovlar",
+      "discounts": "Chegirmalar",
+      "exams": "Imtihonlar",
+      "tests": "Testlar",
+      "finance": "Moliya",
+      "reports": "Hisobotlar",
+      "staff": "Xodimlar",
+      "settings": "Sozlamalar",
+      "logs": "Jurnallar"
+    },
+    "names": {
+      "dashboard.view": "Bosh sahifani ko'rish",
+      "dashboard.finance": "Bosh sahifada moliyani ko'rish",
+      "leads.view": "Lidlarni ko'rish",
+      "leads.create": "Lid qo'shish",
+      "leads.update": "Lidlarni tahrirlash",
+      "leads.delete": "Lidlarni o'chirish",
+      "teachers.view": "O'qituvchilarni ko'rish",
+      "teachers.create": "O'qituvchi qo'shish",
+      "teachers.update": "O'qituvchilarni tahrirlash",
+      "teachers.delete": "O'qituvchilarni arxivlash",
+      "groups.view": "Guruhlarni ko'rish",
+      "groups.create": "Guruh yaratish",
+      "groups.update": "Guruhlarni tahrirlash",
+      "groups.delete": "Guruhlarni o'chirish",
+      "groups.attendance.mark": "Davomat qo'yish",
+      "students.view": "O'quvchilarni ko'rish",
+      "students.create": "O'quvchi qo'shish",
+      "students.update": "O'quvchilarni tahrirlash",
+      "students.delete": "O'quvchilarni o'chirish",
+      "students.blacklist": "O'quvchilarni qora ro'yxatga olish",
+      "payments.create": "To'lov qabul qilish",
+      "payments.refund": "To'lovni qaytarish",
+      "discounts.give": "Chegirma berish",
+      "exams.view": "Imtihonlarni ko'rish",
+      "exams.create": "Imtihon yaratish",
+      "exams.update": "Imtihonlarni tahrirlash",
+      "exams.delete": "Imtihonlarni o'chirish",
+      "tests.view": "Testlarni ko'rish",
+      "tests.create": "Test yaratish",
+      "tests.update": "Testlarni tahrirlash",
+      "tests.delete": "Testlarni o'chirish",
+      "finance.view": "Moliyani ko'rish",
+      "finance.create": "Moliya yozuvi qo'shish",
+      "finance.update": "Moliya yozuvlarini tahrirlash",
+      "finance.delete": "Moliya yozuvlarini o'chirish",
+      "finance.payroll.approve": "Oylikni tasdiqlash",
+      "reports.view": "Hisobotlarni ko'rish",
+      "reports.payments": "To'lov hisobotlari",
+      "reports.leads": "Lid hisobotlari",
+      "staff.view": "Xodimlarni ko'rish",
+      "staff.create": "Xodim qo'shish",
+      "staff.update": "Xodimlarni tahrirlash",
+      "staff.delete": "Xodimlarni arxivlash",
+      "settings.org": "Markaz sozlamalari va filiallar",
+      "settings.roles": "Rollarni boshqarish",
+      "settings.integrations": "Integratsiyalarni boshqarish",
+      "settings.catalog": "Kurslar, xonalar, dam olish kunlari, maktablar",
+      "logs.view": "Jurnallarni ko'rish"
     }
   }
 }

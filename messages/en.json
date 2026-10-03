@@ -85,7 +85,10 @@
     "integration": "An external service did not respond.",
     "internal": "Unexpected error. Please try again.",
     "forbiddenTitle": "No access",
-    "inUse": "This record is in use and cannot be deleted."
+    "inUse": "This record is in use and cannot be deleted.",
+    "selfEdit": "You cannot change your own roles or archive yourself.",
+    "roleBeyondOwn": "You cannot grant permissions you do not hold yourself.",
+    "systemRole": "This system role cannot be changed that way."
   },
   "validation": {
     "phone": "Enter a number like +998 90 123 45 67.",
@@ -106,7 +109,15 @@
     "levelsMin": "Add at least one level.",
     "levelsMax": "At most 50 levels.",
     "color": "Pick a colour.",
-    "duplicate": "This value is already in use."
+    "duplicate": "This value is already in use.",
+    "rolesMin": "Choose at least one role.",
+    "branchesMin": "Choose at least one branch.",
+    "permission": "Unknown permission.",
+    "teacherRole": "Only teacher roles can be set here.",
+    "roleUnknown": "Unknown or inactive role.",
+    "fileRequired": "Choose a file.",
+    "fileType": "Only JPEG, PNG or WebP images.",
+    "fileSize": "The image must be 2 MB or smaller."
   },
   "roles": {
     "CEO": "CEO",
@@ -267,6 +278,170 @@
       "studentsCount": "Students",
       "deleteTitle": "Delete school?",
       "deleteText": "“{name}” will be removed."
+    },
+    "roles": {
+      "title": "Roles",
+      "description": "What each role may do. System roles come with Kampus; add your own below.",
+      "add": "New role",
+      "edit": "Edit role",
+      "name": "Role name",
+      "permissions": "Permissions",
+      "users": "Users",
+      "system": "System",
+      "systemHint": "A built-in role. You can change what it may do, but it cannot be deleted.",
+      "allPermissions": "Everything",
+      "permissionCount": "{count, plural, one {# permission} other {# permissions}}",
+      "deleteTitle": "Delete role?",
+      "deleteText": "“{name}” will be removed. Roles still assigned to someone cannot be deleted."
+    }
+  },
+  "teachers": {
+    "title": "Teachers",
+    "add": "New teacher",
+    "tabsLabel": "Teacher type",
+    "tabs": {
+      "teachers": "Teachers",
+      "support": "Support teachers"
+    },
+    "columns": {
+      "groups": "Assigned groups"
+    },
+    "groupsLater": "Groups arrive in phase 5.",
+    "archiveTitle": "Archive teacher?",
+    "archiveText": "“{name}” will be signed out and hidden from lists. Their history stays.",
+    "detail": {
+      "registered": "Registered",
+      "branches": "Branches",
+      "courses": "Courses taught",
+      "activeGroups": "Active groups",
+      "activeStudents": "Active students",
+      "groups": "Groups"
+    }
+  },
+  "staff": {
+    "title": "Staff",
+    "description": "Everyone who signs in to Kampus.",
+    "filterByRole": "Filter by role",
+    "allRoles": "All",
+    "archiveTitle": "Archive staff member?",
+    "archiveText": "“{name}” will be signed out and hidden from lists. Their history stays.",
+    "columns": {
+      "fullName": "Full name",
+      "phone": "Phone",
+      "fixedSalary": "Monthly salary",
+      "percentShare": "Percent share",
+      "perLessonFee": "Per lesson",
+      "perStudentFee": "Per student",
+      "birthDate": "Date of birth",
+      "hireDate": "Hired on",
+      "roles": "Roles"
+    },
+    "form": {
+      "addTeacher": "New teacher",
+      "editTeacher": "Edit teacher",
+      "addStaff": "New staff member",
+      "editStaff": "Edit staff member",
+      "photo": "Photo",
+      "choosePhoto": "Choose photo",
+      "uploading": "Uploading…",
+      "removePhoto": "Remove photo",
+      "fullName": "Full name",
+      "phone": "Phone number",
+      "birthDate": "Date of birth",
+      "hireDate": "Hire date",
+      "branches": "Branches",
+      "roles": "Roles",
+      "ownRolesLocked": "You cannot change your own roles.",
+      "salaryMethod": "Salary method",
+      "methods": {
+        "PERCENT": "Percent",
+        "MONTHLY": "Monthly",
+        "PER_LESSON": "Per lesson",
+        "PER_STUDENT": "Per student"
+      },
+      "amounts": {
+        "PERCENT": "Share of course price (%)",
+        "MONTHLY": "Monthly salary (UZS)",
+        "PER_LESSON": "Fee per lesson (UZS)",
+        "PER_STUDENT": "Fee per student (UZS)"
+      },
+      "gender": "Gender",
+      "genders": {
+        "MALE": "Male",
+        "FEMALE": "Female"
+      },
+      "password": "Password",
+      "newPassword": "New password",
+      "keepPassword": "Leave empty to keep the current one",
+      "generate": "Generate"
+    }
+  },
+  "permissions": {
+    "modules": {
+      "dashboard": "Home",
+      "leads": "Leads",
+      "teachers": "Teachers",
+      "groups": "Groups",
+      "students": "Students",
+      "payments": "Payments",
+      "discounts": "Discounts",
+      "exams": "Exams",
+      "tests": "Tests",
+      "finance": "Finance",
+      "reports": "Reports",
+      "staff": "Staff",
+      "settings": "Settings",
+      "logs": "Logs"
+    },
+    "names": {
+      "dashboard.view": "View dashboard",
+      "dashboard.finance": "See finance figures on the dashboard",
+      "leads.view": "View leads",
+      "leads.create": "Add leads",
+      "leads.update": "Edit leads",
+      "leads.delete": "Delete leads",
+      "teachers.view": "View teachers",
+      "teachers.create": "Add teachers",
+      "teachers.update": "Edit teachers",
+      "teachers.delete": "Archive teachers",
+      "groups.view": "View groups",
+      "groups.create": "Create groups",
+      "groups.update": "Edit groups",
+      "groups.delete": "Delete groups",
+      "groups.attendance.mark": "Mark attendance",
+      "students.view": "View students",
+      "students.create": "Add students",
+      "students.update": "Edit students",
+      "students.delete": "Delete students",
+      "students.blacklist": "Blacklist students",
+      "payments.create": "Take payments",
+      "payments.refund": "Refund payments",
+      "discounts.give": "Give discounts",
+      "exams.view": "View exams",
+      "exams.create": "Create exams",
+      "exams.update": "Edit exams",
+      "exams.delete": "Delete exams",
+      "tests.view": "View tests",
+      "tests.create": "Create tests",
+      "tests.update": "Edit tests",
+      "tests.delete": "Delete tests",
+      "finance.view": "View finance",
+      "finance.create": "Add finance records",
+      "finance.update": "Edit finance records",
+      "finance.delete": "Delete finance records",
+      "finance.payroll.approve": "Approve payroll",
+      "reports.view": "View reports",
+      "reports.payments": "Payment reports",
+      "reports.leads": "Lead reports",
+      "staff.view": "View staff",
+      "staff.create": "Add staff",
+      "staff.update": "Edit staff",
+      "staff.delete": "Archive staff",
+      "settings.org": "Centre settings and branches",
+      "settings.roles": "Manage roles",
+      "settings.integrations": "Manage integrations",
+      "settings.catalog": "Courses, rooms, days off, schools",
+      "logs.view": "View logs"
     }
   }
 }

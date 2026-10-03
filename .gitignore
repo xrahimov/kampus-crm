@@ -46,3 +46,6 @@ next-env.d.ts
 # playwright
 /test-results/
 /playwright-report/
+
+# uploaded files (local storage adapter)
+/uploads/
