@@ -23,6 +23,13 @@ export function authorize(actor: Actor, permission: Permission): void {
   }
 }
 
+/** Throws unless the actor holds at least one of the permissions. */
+export function authorizeAny(actor: Actor, permissions: readonly Permission[]): void {
+  if (!permissions.some((p) => can(actor, p))) {
+    throw AppError.forbidden();
+  }
+}
+
 export function canAccessAllBranches(actor: Actor): boolean {
   return actor.permissions.includes("*") || actor.permissions.includes("settings.org");
 }

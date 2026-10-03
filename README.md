@@ -55,7 +55,8 @@ prisma/                 schema, versioned migrations, seed
 messages/               uz.json, ru.json, en.json
 src/app/[locale]/       pages: (auth)/login, (app)/<module>
 src/app/api/v1/         thin HTTP handlers
-src/components/         ui/ (shadcn-style primitives), layout/
+src/components/         ui/ (shadcn-style primitives), data/ (search, sort, paging, dialogs), layout/
+src/features/<module>/  client UI per module: tables, dialogs, forms
 src/lib/                shared by client and server: zod schemas, rbac catalogue, api client
 src/server/             auth, rbac, audit, errors, http helpers, services, db
 tests/unit, tests/e2e   Vitest and Playwright suites

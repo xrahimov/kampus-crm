@@ -53,6 +53,156 @@ const DEMO_USERS: Array<{
   },
 ];
 
+/** Phase 3 catalogue: invented values, no connection to any real centre. */
+async function seedSettings(organizationId: string, branches: Map<string, string>) {
+  await prisma.orgSettings.upsert({
+    where: { organizationId },
+    update: {},
+    create: { organizationId, refundsEnabled: true, printReceiptAfterPayment: true },
+  });
+
+  const paymentMethods = ["Cash", "Card", "Bank transfer"];
+  for (const [i, name] of paymentMethods.entries()) {
+    await prisma.paymentMethod.upsert({
+      where: { organizationId_name: { organizationId, name } },
+      update: { sortOrder: i },
+      create: { organizationId, name, sortOrder: i },
+    });
+  }
+
+  const gradingSystems: Array<{
+    name: string;
+    rounding: "STANDARD" | "IELTS";
+    levels: Array<[string, number, number]>;
+  }> = [
+    {
+      name: "CEFR",
+      rounding: "STANDARD",
+      levels: [
+        ["A1", 0, 20],
+        ["A2", 21, 40],
+        ["B1", 41, 60],
+        ["B2", 61, 80],
+        ["C1", 81, 100],
+      ],
+    },
+    {
+      name: "IELTS",
+      rounding: "IELTS",
+      levels: [
+        ["4.0", 4, 4.5],
+        ["5.0", 5, 5.5],
+        ["6.0", 6, 6.5],
+        ["7.0", 7, 7.5],
+        ["8.0", 8, 8.5],
+        ["9.0", 9, 9],
+      ],
+    },
+    {
+      name: "Standard 1–5",
+      rounding: "STANDARD",
+      levels: [
+        ["1", 0, 20],
+        ["2", 21, 40],
+        ["3", 41, 60],
+        ["4", 61, 80],
+        ["5", 81, 100],
+      ],
+    },
+    {
+      name: "Pure 100",
+      rounding: "STANDARD",
+      levels: Array.from({ length: 10 }, (_, i): [string, number, number] => [
+        `${i * 10 + 1}–${(i + 1) * 10}`,
+        i * 10 + (i === 0 ? 0 : 1),
+        (i + 1) * 10,
+      ]),
+    },
+  ];
+  const gradingIds = new Map<string, string>();
+  for (const system of gradingSystems) {
+    const existing = await prisma.gradingSystem.findUnique({
+      where: { organizationId_name: { organizationId, name: system.name } },
+    });
+    if (existing) {
+      gradingIds.set(system.name, existing.id);
+      continue;
+    }
+    const created = await prisma.gradingSystem.create({
+      data: {
+        organizationId,
+        name: system.name,
+        rounding: system.rounding,
+        levels: {
+          create: system.levels.map(([name, minScore, maxScore], sortOrder) => ({
+            name,
+            minScore,
+            maxScore,
+            sortOrder,
+          })),
+        },
+      },
+    });
+    gradingIds.set(system.name, created.id);
+  }
+
+  const courses: Array<[string, string, number, number, string | null, string]> = [
+    ["General English", "Central", 450_000, 6, "CEFR", "#0F766E"],
+    ["IELTS Preparation", "Central", 650_000, 4, "IELTS", "#B45309"],
+    ["Mathematics", "Central", 400_000, 9, "Standard 1–5", "#1D4ED8"],
+    ["General English", "Riverside", 420_000, 6, "CEFR", "#0F766E"],
+    ["Russian for beginners", "Riverside", 380_000, 6, null, "#7C3AED"],
+  ];
+  for (const [name, branchName, price, durationMonths, grading, color] of courses) {
+    const branchId = branches.get(branchName)!;
+    const existing = await prisma.course.findFirst({ where: { branchId, name } });
+    if (existing) continue;
+    await prisma.course.create({
+      data: {
+        branchId,
+        name,
+        price,
+        durationMonths,
+        color,
+        gradingSystemId: grading ? gradingIds.get(grading) : null,
+        description: "Demo course",
+      },
+    });
+  }
+
+  const rooms: Array<[string, string, number]> = [
+    ["Room 101", "Central", 12],
+    ["Room 102", "Central", 16],
+    ["Lab", "Central", 8],
+    ["Room A", "Riverside", 10],
+    ["Room B", "Riverside", 14],
+  ];
+  for (const [name, branchName, capacity] of rooms) {
+    const branchId = branches.get(branchName)!;
+    await prisma.room.upsert({
+      where: { branchId_name: { branchId, name } },
+      update: { capacity },
+      create: { branchId, name, capacity },
+    });
+  }
+
+  for (const branchId of branches.values()) {
+    await prisma.dayOff.upsert({
+      where: { branchId_date: { branchId, date: new Date("2026-01-01T00:00:00.000Z") } },
+      update: {},
+      create: { branchId, date: new Date("2026-01-01T00:00:00.000Z"), reason: "New Year" },
+    });
+  }
+
+  for (const name of ["School No. 1 (demo)", "School No. 2 (demo)", "Lyceum (demo)"]) {
+    await prisma.school.upsert({
+      where: { organizationId_name: { organizationId, name } },
+      update: {},
+      create: { organizationId, name },
+    });
+  }
+}
+
 async function main() {
   const org = await prisma.organization.upsert({
     where: { id: "org_demo" },
@@ -111,6 +261,8 @@ async function main() {
       data: branchIds.map((branchId) => ({ userId: user.id, branchId })),
     });
   }
+
+  await seedSettings(org.id, branches);
 
   console.log(`Seeded ${DEMO_USERS.length} demo users across ${branchNames.length} branches.`);
   console.log(`Sign in with ${DEMO_USERS[0]!.phone} and the SEED_ADMIN_PASSWORD from .env.`);

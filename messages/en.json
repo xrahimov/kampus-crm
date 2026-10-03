@@ -12,7 +12,27 @@
     "allBranches": "All branches",
     "language": "Language",
     "comingSoon": "This section will be built in phase {phase}.",
-    "retry": "Try again"
+    "retry": "Try again",
+    "delete": "Delete",
+    "close": "Close",
+    "add": "Add",
+    "edit": "Edit",
+    "remove": "Remove",
+    "archive": "Archive",
+    "archived": "Archived",
+    "actions": "Actions",
+    "actionsFor": "Actions for {name}",
+    "status": "Status",
+    "active": "Active",
+    "inactive": "Inactive",
+    "saving": "Saving…",
+    "saved": "Saved.",
+    "nothingFound": "Nothing found.",
+    "pagination": {
+      "range": "{from}–{to} of {total}",
+      "previous": "Previous page",
+      "next": "Next page"
+    }
   },
   "nav": {
     "dashboard": "Home",
@@ -63,7 +83,9 @@
     "rateLimited": "Too many attempts. Try again in {seconds} seconds.",
     "csrf": "Your session expired. Reload the page and try again.",
     "integration": "An external service did not respond.",
-    "internal": "Unexpected error. Please try again."
+    "internal": "Unexpected error. Please try again.",
+    "forbiddenTitle": "No access",
+    "inUse": "This record is in use and cannot be deleted."
   },
   "validation": {
     "phone": "Enter a number like +998 90 123 45 67.",
@@ -72,7 +94,19 @@
     "required": "Required.",
     "invalidJson": "Invalid request.",
     "sort": "Invalid sort.",
-    "sortField": "Cannot sort by this field."
+    "sortField": "Cannot sort by this field.",
+    "tooLong": "Too long.",
+    "time": "Enter a time like 09:00.",
+    "date": "Enter a valid date.",
+    "min": "Too small.",
+    "max": "Too large.",
+    "scheduleStep": "Choose 15 or 30 minutes.",
+    "workHours": "Closing time must be after opening time.",
+    "levelRange": "Maximum must be at least the minimum.",
+    "levelsMin": "Add at least one level.",
+    "levelsMax": "At most 50 levels.",
+    "color": "Pick a colour.",
+    "duplicate": "This value is already in use."
   },
   "roles": {
     "CEO": "CEO",
@@ -90,5 +124,149 @@
     "uz": "O‘zbekcha",
     "ru": "Русский",
     "en": "English"
+  },
+  "settings": {
+    "title": "Settings",
+    "nav": {
+      "label": "Settings sections",
+      "phase": "Phase {phase}",
+      "general": "General settings",
+      "courses": "Courses",
+      "rooms": "Rooms",
+      "daysOff": "Days off",
+      "schools": "Schools",
+      "staff": "Staff",
+      "roles": "Roles",
+      "sms": "SMS templates",
+      "receipt": "Receipt settings",
+      "coins": "Coin settings",
+      "tests": "Test settings",
+      "payments": "Payments",
+      "forms": "Forms",
+      "calls": "Calls",
+      "logins": "Login log",
+      "actions": "Action log",
+      "smsLog": "Sent SMS",
+      "bot": "Bot notifications",
+      "amocrm": "AmoCRM",
+      "faceId": "FaceID"
+    },
+    "general": {
+      "centerTitle": "Center settings",
+      "centerDescription": "Name, working hours and the behaviour switches that other modules follow.",
+      "orgName": "Organisation name",
+      "workStart": "Work starts",
+      "workEnd": "Work ends",
+      "scheduleStep": "Schedule step",
+      "minutes": "{count} minutes",
+      "switchesTitle": "Behaviour"
+    },
+    "switches": {
+      "spreadOverpayment": "Spread a student's overpayment over the next months",
+      "adminActionsNeedApproval": "Admin actions need CEO approval",
+      "printReceiptAfterPayment": "Print a receipt after each payment",
+      "refundsEnabled": "Refunds enabled",
+      "attendanceComments": "Allow comments on attendance",
+      "teachersSeeExamSchedule": "Teachers and support teachers see the exam schedule",
+      "attendanceOnlyDuringLesson": "Attendance can be marked only during the lesson",
+      "teacherSeesSalary": "Teachers see their monthly salary",
+      "payTeacherOnGroupDayOff": "Pay the teacher when a group has a day off",
+      "payOnlyAttendedLessons": "Pay teachers only for lessons they attended",
+      "teacherCanAddStudents": "Teachers can add students",
+      "bookAnySupportTeacher": "Students may book any support teacher",
+      "groupSupportSessions": "Allow group support sessions"
+    },
+    "switchHints": {
+      "adminActionsNeedApproval": "Refunds, discounts, deletions and payment edits by admins wait for the CEO.",
+      "attendanceOnlyDuringLesson": "Admins and the CEO are exempt."
+    },
+    "branches": {
+      "title": "Branches",
+      "description": "Every course, room and group belongs to a branch.",
+      "add": "New branch",
+      "edit": "Edit branch",
+      "name": "Name",
+      "deactivate": "Deactivate",
+      "deactivateTitle": "Deactivate branch?",
+      "deactivateText": "“{name}” will disappear from every selector. Its records are kept."
+    },
+    "paymentMethods": {
+      "title": "Payment methods",
+      "description": "Shown when a payment is recorded.",
+      "add": "New method",
+      "edit": "Edit method",
+      "name": "Name",
+      "sortOrder": "Order",
+      "deleteTitle": "Delete payment method?",
+      "deleteText": "“{name}” will be removed. Methods already used by payments cannot be deleted."
+    },
+    "gradingSystems": {
+      "title": "Grading systems",
+      "description": "Scales that courses and groups grade against.",
+      "add": "New system",
+      "edit": "Edit system",
+      "name": "Name",
+      "rounding": "Rounding",
+      "roundingTypes": {
+        "STANDARD": "Standard",
+        "IELTS": "IELTS"
+      },
+      "levelsCount": "Levels",
+      "coursesCount": "Courses",
+      "levels": "Levels",
+      "levelName": "Level",
+      "minScore": "From",
+      "maxScore": "To",
+      "addLevel": "Add level",
+      "formHint": "Levels are listed from lowest to highest score.",
+      "deleteTitle": "Delete grading system?",
+      "deleteText": "“{name}” will be removed. {count, plural, =0 {No course uses it.} one {One course uses it and will keep working without a scale.} other {# courses use it and will keep working without a scale.}}"
+    },
+    "courses": {
+      "title": "Courses",
+      "description": "Notes",
+      "add": "New course",
+      "edit": "Edit course",
+      "name": "Name",
+      "price": "Monthly price (UZS)",
+      "durationMonths": "Duration (months)",
+      "durationShort": "Duration",
+      "months": "{count, plural, one {# month} other {# months}}",
+      "gradingSystem": "Grading system",
+      "noGradingSystem": "Not set",
+      "color": "Colour",
+      "archiveTitle": "Archive course?",
+      "archiveText": "“{name}” will be hidden from new groups. Existing groups keep it."
+    },
+    "rooms": {
+      "title": "Rooms",
+      "description": "Classrooms and their seat capacity, per branch.",
+      "add": "New room",
+      "edit": "Edit room",
+      "name": "Name",
+      "capacity": "Capacity",
+      "deleteTitle": "Delete room?",
+      "deleteText": "“{name}” will be removed."
+    },
+    "daysOff": {
+      "title": "Days off",
+      "description": "Dates with no lessons at a branch.",
+      "add": "New day off",
+      "edit": "Edit day off",
+      "date": "Date",
+      "reason": "Reason",
+      "deleteTitle": "Delete day off?",
+      "deleteText": "{date} will be removed."
+    },
+    "schools": {
+      "title": "Schools",
+      "description": "Schools your students attend.",
+      "add": "New school",
+      "edit": "Edit school",
+      "name": "Name",
+      "studentsCount": "Students",
+      "deleteTitle": "Delete school?",
+      "deleteText": "“{name}” will be removed."
+    }
   }
 }

@@ -1,0 +1,163 @@
+import { z } from "zod";
+
+import { idSchema } from "./common";
+
+/* Shared by the API routes (server) and the forms (client). Messages are i18n keys. */
+
+const name = z.string().trim().min(1, "validation.required").max(120, "validation.tooLong");
+/** Optional free text; an empty form field is stored as "not set". */
+const optionalText = z
+  .string()
+  .trim()
+  .max(1000, "validation.tooLong")
+  .transform((v) => (v === "" ? undefined : v))
+  .optional();
+
+/** "HH:mm", 24-hour. */
+export const timeSchema = z.string().regex(/^([01]\d|2[0-3]):[0-5]\d$/, "validation.time");
+
+/** "YYYY-MM-DD" calendar date, no time zone. */
+export const dateOnlySchema = z
+  .string()
+  .regex(/^\d{4}-\d{2}-\d{2}$/, "validation.date")
+  .refine((v) => !Number.isNaN(new Date(`${v}T00:00:00Z`).getTime()), "validation.date");
+
+export const SCHEDULE_STEPS = [15, 30] as const;
+
+/** Form amounts arrive as strings or numbers; both are accepted. */
+const money = z.coerce.number().min(0, "validation.min").max(9_999_999_999_999, "validation.max");
+
+// --- Organisation settings (EXP §8 "Markaz sozlamalari") ---------------------
+
+export const ORG_SWITCHES = [
+  "spreadOverpayment",
+  "adminActionsNeedApproval",
+  "printReceiptAfterPayment",
+  "refundsEnabled",
+  "attendanceComments",
+  "teachersSeeExamSchedule",
+  "attendanceOnlyDuringLesson",
+  "teacherSeesSalary",
+  "payTeacherOnGroupDayOff",
+  "payOnlyAttendedLessons",
+  "teacherCanAddStudents",
+  "bookAnySupportTeacher",
+  "groupSupportSessions",
+] as const;
+export type OrgSwitch = (typeof ORG_SWITCHES)[number];
+
+const switchFields = Object.fromEntries(ORG_SWITCHES.map((k) => [k, z.boolean()])) as Record<
+  OrgSwitch,
+  z.ZodBoolean
+>;
+
+export const orgSettingsSchema = z
+  .object({
+    name,
+    ...switchFields,
+    workStart: timeSchema,
+    workEnd: timeSchema,
+    scheduleStepMinutes: z.coerce
+      .number()
+      .refine((v): v is (typeof SCHEDULE_STEPS)[number] => SCHEDULE_STEPS.includes(v as 15 | 30), {
+        message: "validation.scheduleStep",
+      }),
+  })
+  .refine((v) => v.workStart < v.workEnd, {
+    message: "validation.workHours",
+    path: ["workEnd"],
+  });
+export type OrgSettingsInput = z.infer<typeof orgSettingsSchema>;
+
+// --- Branches -----------------------------------------------------------------
+
+export const branchSchema = z.object({
+  name,
+  isActive: z.boolean().default(true),
+});
+export type BranchInput = z.infer<typeof branchSchema>;
+export const branchUpdateSchema = branchSchema.partial();
+
+// --- Payment methods ----------------------------------------------------------
+
+export const paymentMethodSchema = z.object({
+  name,
+  isActive: z.boolean().default(true),
+  sortOrder: z.coerce.number().int().min(0).max(1000).default(0),
+});
+export type PaymentMethodInput = z.infer<typeof paymentMethodSchema>;
+export const paymentMethodUpdateSchema = paymentMethodSchema.partial();
+
+// --- Grading systems ----------------------------------------------------------
+
+export const ROUNDING_TYPES = ["STANDARD", "IELTS"] as const;
+
+export const gradingLevelSchema = z
+  .object({
+    name: z.string().trim().min(1, "validation.required").max(60, "validation.tooLong"),
+    minScore: z.coerce.number().min(0, "validation.min").max(1000, "validation.max"),
+    maxScore: z.coerce.number().min(0, "validation.min").max(1000, "validation.max"),
+  })
+  .refine((l) => l.minScore <= l.maxScore, {
+    message: "validation.levelRange",
+    path: ["maxScore"],
+  });
+
+export const gradingSystemSchema = z.object({
+  name,
+  rounding: z.enum(ROUNDING_TYPES).default("STANDARD"),
+  levels: z
+    .array(gradingLevelSchema)
+    .min(1, "validation.levelsMin")
+    .max(50, "validation.levelsMax"),
+});
+export type GradingSystemInput = z.infer<typeof gradingSystemSchema>;
+export type GradingLevelInput = z.infer<typeof gradingLevelSchema>;
+
+// --- Courses ------------------------------------------------------------------
+
+export const courseSchema = z.object({
+  branchId: idSchema,
+  name,
+  description: optionalText,
+  price: money,
+  durationMonths: z.coerce.number().int().min(1, "validation.min").max(60, "validation.max"),
+  gradingSystemId: idSchema.nullable().optional(),
+  color: z
+    .string()
+    .regex(/^#[0-9a-fA-F]{6}$/, "validation.color")
+    .nullable()
+    .optional(),
+});
+export type CourseInput = z.infer<typeof courseSchema>;
+export const courseUpdateSchema = courseSchema
+  .omit({ branchId: true })
+  .extend({ isArchived: z.boolean().optional() })
+  .partial();
+export type CourseUpdateInput = z.infer<typeof courseUpdateSchema>;
+
+// --- Rooms --------------------------------------------------------------------
+
+export const roomSchema = z.object({
+  branchId: idSchema,
+  name,
+  capacity: z.coerce.number().int().min(1, "validation.min").max(1000, "validation.max"),
+});
+export type RoomInput = z.infer<typeof roomSchema>;
+export const roomUpdateSchema = roomSchema.omit({ branchId: true }).partial();
+
+// --- Days off -----------------------------------------------------------------
+
+export const dayOffSchema = z.object({
+  branchId: idSchema,
+  date: dateOnlySchema,
+  reason: z.string().trim().min(1, "validation.required").max(500, "validation.tooLong"),
+});
+export type DayOffInput = z.infer<typeof dayOffSchema>;
+export const dayOffUpdateSchema = dayOffSchema.omit({ branchId: true }).partial();
+
+// --- Schools ------------------------------------------------------------------
+
+export const schoolSchema = z.object({ name });
+export type SchoolInput = z.infer<typeof schoolSchema>;
+export const schoolUpdateSchema = schoolSchema.partial();

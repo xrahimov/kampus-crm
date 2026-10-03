@@ -12,7 +12,27 @@
     "allBranches": "Barcha filiallar",
     "language": "Til",
     "comingSoon": "Bu bo‘lim {phase}-bosqichda quriladi.",
-    "retry": "Qayta urinish"
+    "retry": "Qayta urinish",
+    "delete": "O‘chirish",
+    "close": "Yopish",
+    "add": "Qo‘shish",
+    "edit": "Tahrirlash",
+    "remove": "Olib tashlash",
+    "archive": "Arxivlash",
+    "archived": "Arxivlangan",
+    "actions": "Harakatlar",
+    "actionsFor": "{name} uchun harakatlar",
+    "status": "Holat",
+    "active": "Faol",
+    "inactive": "Nofaol",
+    "saving": "Saqlanmoqda…",
+    "saved": "Saqlandi.",
+    "nothingFound": "Hech narsa topilmadi.",
+    "pagination": {
+      "range": "{total} tadan {from}–{to}",
+      "previous": "Oldingi sahifa",
+      "next": "Keyingi sahifa"
+    }
   },
   "nav": {
     "dashboard": "Bosh sahifa",
@@ -63,7 +83,9 @@
     "rateLimited": "Juda ko‘p urinish. {seconds} soniyadan keyin qayta urinib ko‘ring.",
     "csrf": "Sessiya muddati tugadi. Sahifani yangilab, qayta urinib ko‘ring.",
     "integration": "Tashqi xizmat javob bermadi.",
-    "internal": "Kutilmagan xatolik. Qayta urinib ko‘ring."
+    "internal": "Kutilmagan xatolik. Qayta urinib ko‘ring.",
+    "forbiddenTitle": "Ruxsat yo‘q",
+    "inUse": "Bu yozuv ishlatilmoqda, o‘chirib bo‘lmaydi."
   },
   "validation": {
     "phone": "+998 90 123 45 67 ko‘rinishida raqam kiriting.",
@@ -72,7 +94,19 @@
     "required": "Majburiy.",
     "invalidJson": "Noto‘g‘ri so‘rov.",
     "sort": "Noto‘g‘ri saralash.",
-    "sortField": "Bu maydon bo‘yicha saralab bo‘lmaydi."
+    "sortField": "Bu maydon bo‘yicha saralab bo‘lmaydi.",
+    "tooLong": "Juda uzun.",
+    "time": "Vaqtni 09:00 ko‘rinishida kiriting.",
+    "date": "To‘g‘ri sana kiriting.",
+    "min": "Juda kichik.",
+    "max": "Juda katta.",
+    "scheduleStep": "15 yoki 30 daqiqani tanlang.",
+    "workHours": "Ish tugash vaqti boshlanish vaqtidan keyin bo‘lishi kerak.",
+    "levelRange": "Maksimum minimumdan kichik bo‘lmasligi kerak.",
+    "levelsMin": "Kamida bitta daraja qo‘shing.",
+    "levelsMax": "Ko‘pi bilan 50 daraja.",
+    "color": "Rang tanlang.",
+    "duplicate": "Bu qiymat allaqachon mavjud."
   },
   "roles": {
     "CEO": "CEO",
@@ -90,5 +124,149 @@
     "uz": "O‘zbekcha",
     "ru": "Русский",
     "en": "English"
+  },
+  "settings": {
+    "title": "Sozlamalar",
+    "nav": {
+      "label": "Sozlamalar bo‘limlari",
+      "phase": "{phase}-bosqich",
+      "general": "Umumiy sozlamalar",
+      "courses": "Kurslar",
+      "rooms": "Xonalar",
+      "daysOff": "Dam olish kunlari",
+      "schools": "Maktablar",
+      "staff": "Xodimlar",
+      "roles": "Rollar",
+      "sms": "SMS shablonlari",
+      "receipt": "Chek sozlamalari",
+      "coins": "Coin sozlamalari",
+      "tests": "Test sozlamalari",
+      "payments": "To‘lovlar",
+      "forms": "Formalar",
+      "calls": "Qo‘ng‘iroqlar",
+      "logins": "Tizimga kirishlar",
+      "actions": "Amallar tarixi",
+      "smsLog": "Yuborilgan SMS lar",
+      "bot": "Bot xabarnoma",
+      "amocrm": "AmoCRM",
+      "faceId": "FaceID"
+    },
+    "general": {
+      "centerTitle": "Markaz sozlamalari",
+      "centerDescription": "Nomi, ish vaqti va boshqa bo‘limlar amal qiladigan qoidalar.",
+      "orgName": "Tashkilot nomi",
+      "workStart": "Ish boshlanish vaqti",
+      "workEnd": "Ish tugash vaqti",
+      "scheduleStep": "Vaqt intervali",
+      "minutes": "{count} daqiqa",
+      "switchesTitle": "Qoidalar"
+    },
+    "switches": {
+      "spreadOverpayment": "O‘quvchining ortiqcha to‘lovi keyingi oylarga bo‘lib yuborilsin",
+      "adminActionsNeedApproval": "Admin amallari CEO tasdig‘idan o‘tsin",
+      "printReceiptAfterPayment": "To‘lovdan so‘ng chek chiqsin",
+      "refundsEnabled": "Pul qaytarish funksiyasi",
+      "attendanceComments": "Davomatga izoh yozish",
+      "teachersSeeExamSchedule": "Ustozlar va support ustozlar imtihon jadvalini ko‘rsin",
+      "attendanceOnlyDuringLesson": "Faqat dars vaqtida yo‘qlama qilish mumkin",
+      "teacherSeesSalary": "O‘qituvchiga oylik maoshi ko‘rinsin",
+      "payTeacherOnGroupDayOff": "Guruhga dam berilganida o‘qituvchiga oylik yozilsin",
+      "payOnlyAttendedLessons": "O‘qituvchiga faqat kelgan darslar uchun oylik yozilsin",
+      "teacherCanAddStudents": "O‘qituvchi o‘quvchi qo‘sha oladi",
+      "bookAnySupportTeacher": "Har qanday support ustozga yozilish",
+      "groupSupportSessions": "Guruhli support uchrashuvlariga ruxsat"
+    },
+    "switchHints": {
+      "adminActionsNeedApproval": "Adminlarning pul qaytarish, chegirma, o‘chirish va to‘lovni tahrirlash amallari CEO tasdig‘ini kutadi.",
+      "attendanceOnlyDuringLesson": "Admin va CEO uchun cheklov yo‘q."
+    },
+    "branches": {
+      "title": "Filiallar",
+      "description": "Har bir kurs, xona va guruh filialga tegishli.",
+      "add": "Yangi filial",
+      "edit": "Filialni tahrirlash",
+      "name": "Nomi",
+      "deactivate": "Nofaol qilish",
+      "deactivateTitle": "Filial nofaol qilinsinmi?",
+      "deactivateText": "“{name}” barcha tanlovlardan yo‘qoladi. Yozuvlari saqlanib qoladi."
+    },
+    "paymentMethods": {
+      "title": "To‘lov usullari",
+      "description": "To‘lov qabul qilinganda tanlanadi.",
+      "add": "Yangi usul",
+      "edit": "Usulni tahrirlash",
+      "name": "Nomi",
+      "sortOrder": "Tartib",
+      "deleteTitle": "To‘lov usuli o‘chirilsinmi?",
+      "deleteText": "“{name}” o‘chiriladi. To‘lovlarda ishlatilgan usullarni o‘chirib bo‘lmaydi."
+    },
+    "gradingSystems": {
+      "title": "Baholash tizimlari",
+      "description": "Kurs va guruhlar baholanadigan shkalalar.",
+      "add": "Tizim yaratish",
+      "edit": "Tizimni tahrirlash",
+      "name": "Nomi",
+      "rounding": "Yaxlitlash turi",
+      "roundingTypes": {
+        "STANDARD": "Standart",
+        "IELTS": "IELTS"
+      },
+      "levelsCount": "Darajalar soni",
+      "coursesCount": "Kurslar",
+      "levels": "Darajalar",
+      "levelName": "Daraja",
+      "minScore": "Dan",
+      "maxScore": "Gacha",
+      "addLevel": "Daraja qo‘shish",
+      "formHint": "Darajalar eng pastdan eng yuqoriga qarab yoziladi.",
+      "deleteTitle": "Baholash tizimi o‘chirilsinmi?",
+      "deleteText": "“{name}” o‘chiriladi. {count, plural, =0 {Hech bir kurs ishlatmaydi.} other {# ta kurs ishlatadi, ular shkalasiz ishlashda davom etadi.}}"
+    },
+    "courses": {
+      "title": "Kurslar",
+      "description": "Izoh",
+      "add": "Yangi kurs qo‘shish",
+      "edit": "Kursni tahrirlash",
+      "name": "Nomi",
+      "price": "Kurs narxi (oylik, so‘m)",
+      "durationMonths": "Kurs davomiyligi (oy)",
+      "durationShort": "Davomiyligi",
+      "months": "{count} oy",
+      "gradingSystem": "Baholash tizimi",
+      "noGradingSystem": "Sozlanmagan",
+      "color": "Rang",
+      "archiveTitle": "Kurs arxivlansinmi?",
+      "archiveText": "“{name}” yangi guruhlar uchun ko‘rinmaydi. Mavjud guruhlarda qoladi."
+    },
+    "rooms": {
+      "title": "Xonalar",
+      "description": "Har bir filialdagi xonalar va sig‘imi.",
+      "add": "Yangi xona qo‘shish",
+      "edit": "Xonani tahrirlash",
+      "name": "Xona nomi",
+      "capacity": "Sig‘im",
+      "deleteTitle": "Xona o‘chirilsinmi?",
+      "deleteText": "“{name}” o‘chiriladi."
+    },
+    "daysOff": {
+      "title": "Dam olish kunlari",
+      "description": "Filialda dars bo‘lmaydigan kunlar.",
+      "add": "Dam olish kuni qo‘shish",
+      "edit": "Tahrirlash",
+      "date": "Sana",
+      "reason": "Sabab",
+      "deleteTitle": "Dam olish kuni o‘chirilsinmi?",
+      "deleteText": "{date} o‘chiriladi."
+    },
+    "schools": {
+      "title": "Maktablar",
+      "description": "O‘quvchilar o‘qiydigan maktablar.",
+      "add": "Maktab qo‘shish",
+      "edit": "Maktabni tahrirlash",
+      "name": "Nomi",
+      "studentsCount": "O‘quvchilar soni",
+      "deleteTitle": "Maktab o‘chirilsinmi?",
+      "deleteText": "“{name}” o‘chiriladi."
+    }
   }
 }
