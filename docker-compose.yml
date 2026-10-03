@@ -1,0 +1,53 @@
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: kampus
+      POSTGRES_PASSWORD: kampus
+      POSTGRES_DB: kampus
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U kampus -d kampus"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+    ports:
+      - "5432:5432"
+
+  migrate:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+      target: migrator
+    environment:
+      DATABASE_URL: postgresql://kampus:kampus@db:5432/kampus?schema=public
+      # Set SEED=true to also load the fake demo data after migrating.
+      SEED: ${SEED:-false}
+      SEED_ADMIN_PHONE: ${SEED_ADMIN_PHONE:-+998900000001}
+      SEED_ADMIN_PASSWORD: ${SEED_ADMIN_PASSWORD:-Kampus!2026}
+    command: sh -c "npx prisma migrate deploy && if [ \"$$SEED\" = \"true\" ]; then npx tsx prisma/seed.ts; fi"
+    depends_on:
+      db:
+        condition: service_healthy
+
+  app:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+      target: runner
+    environment:
+      DATABASE_URL: postgresql://kampus:kampus@db:5432/kampus?schema=public
+      APP_URL: ${APP_URL:-http://localhost:3000}
+      # Plain http on a LAN: allow the session cookie without TLS.
+      COOKIE_SECURE: ${COOKIE_SECURE:-false}
+    ports:
+      - "3000:3000"
+    depends_on:
+      db:
+        condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
+
+volumes:
+  db-data:
