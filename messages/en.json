@@ -1,0 +1,94 @@
+{
+  "app": {
+    "name": "Kampus",
+    "tagline": "Learning center CRM"
+  },
+  "common": {
+    "loading": "Loading…",
+    "save": "Save",
+    "cancel": "Cancel",
+    "back": "Back",
+    "search": "Search…",
+    "allBranches": "All branches",
+    "language": "Language",
+    "comingSoon": "This section will be built in phase {phase}.",
+    "retry": "Try again"
+  },
+  "nav": {
+    "dashboard": "Home",
+    "leads": "Leads",
+    "teachers": "Teachers",
+    "groups": "Groups",
+    "students": "Students",
+    "exams": "Exams",
+    "settings": "Settings",
+    "finance": "Finance",
+    "reports": "Reports"
+  },
+  "auth": {
+    "signIn": "Sign in",
+    "signInTitle": "Sign in to Kampus",
+    "signInSubtitle": "Use the phone number and password your administrator gave you.",
+    "phone": "Phone number",
+    "phonePlaceholder": "+998 90 123 45 67",
+    "password": "Password",
+    "signingIn": "Signing in…",
+    "signOut": "Sign out",
+    "signedInAs": "Signed in as",
+    "role": "Role"
+  },
+  "branch": {
+    "select": "Branch",
+    "active": "Active branch"
+  },
+  "dashboard": {
+    "title": "Home",
+    "welcome": "Welcome, {name}",
+    "yourRoles": "Your roles",
+    "yourBranches": "Your branches",
+    "phaseNote": "KPIs, the weekly schedule and the finance summary arrive in phase 13."
+  },
+  "errors": {
+    "title": "Something went wrong",
+    "notFoundTitle": "Page not found",
+    "notFoundText": "The page you asked for does not exist.",
+    "validation": "Please check the highlighted fields.",
+    "unauthenticated": "Please sign in.",
+    "invalidCredentials": "Wrong phone number or password.",
+    "forbidden": "You do not have permission to do this.",
+    "branchForbidden": "You do not have access to this branch.",
+    "branchNotFound": "Branch not found.",
+    "notFound": "Not found.",
+    "conflict": "This record was changed by someone else. Reload and try again.",
+    "rateLimited": "Too many attempts. Try again in {seconds} seconds.",
+    "csrf": "Your session expired. Reload the page and try again.",
+    "integration": "An external service did not respond.",
+    "internal": "Unexpected error. Please try again."
+  },
+  "validation": {
+    "phone": "Enter a number like +998 90 123 45 67.",
+    "passwordMin": "At least 8 characters.",
+    "passwordMax": "At most 128 characters.",
+    "required": "Required.",
+    "invalidJson": "Invalid request.",
+    "sort": "Invalid sort.",
+    "sortField": "Cannot sort by this field."
+  },
+  "roles": {
+    "CEO": "CEO",
+    "ADMIN": "Admin",
+    "BRANCH_MANAGER": "Branch manager",
+    "CASHIER": "Cashier",
+    "TEACHER": "Teacher",
+    "SUPPORT_TEACHER": "Support teacher",
+    "MARKETER": "Marketer",
+    "WATCHER": "Watcher",
+    "PARENT": "Parent",
+    "OTHER": "Other"
+  },
+  "locales": {
+    "uz": "O‘zbekcha",
+    "ru": "Русский",
+    "en": "English"
+  }
+}

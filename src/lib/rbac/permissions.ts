@@ -1,0 +1,109 @@
+/**
+ * Permission catalogue. Shared by the server (authorization) and the client
+ * (hiding navigation). Codes are `module.action`; the special code `*` grants
+ * everything and is reserved for the CEO role.
+ *
+ * The reference CRM's individual permissions were not visible (EXPLORATION.md
+ * §8 Roles, NOT VERIFIED), so this list is our own design — see ASSUMPTIONS A-05.
+ */
+export const PERMISSIONS = [
+  "dashboard.view",
+  "dashboard.finance",
+
+  "leads.view",
+  "leads.create",
+  "leads.update",
+  "leads.delete",
+
+  "teachers.view",
+  "teachers.create",
+  "teachers.update",
+  "teachers.delete",
+
+  "groups.view",
+  "groups.create",
+  "groups.update",
+  "groups.delete",
+  "groups.attendance.mark",
+
+  "students.view",
+  "students.create",
+  "students.update",
+  "students.delete",
+  "students.blacklist",
+
+  "payments.create",
+  "payments.refund",
+  "discounts.give",
+
+  "exams.view",
+  "exams.create",
+  "exams.update",
+  "exams.delete",
+
+  "tests.view",
+  "tests.create",
+  "tests.update",
+  "tests.delete",
+
+  "finance.view",
+  "finance.create",
+  "finance.update",
+  "finance.delete",
+  "finance.payroll.approve",
+
+  "reports.view",
+  "reports.payments",
+  "reports.leads",
+
+  "staff.view",
+  "staff.create",
+  "staff.update",
+  "staff.delete",
+
+  "settings.org",
+  "settings.roles",
+  "settings.integrations",
+  "settings.catalog",
+
+  "logs.view",
+] as const;
+
+export type Permission = (typeof PERMISSIONS)[number];
+export const ALL_PERMISSIONS = "*" as const;
+export type PermissionGrant = Permission | typeof ALL_PERMISSIONS;
+
+export function isPermission(value: string): value is Permission {
+  return (PERMISSIONS as readonly string[]).includes(value);
+}
+
+/** Modules as they appear in the main navigation (EXPLORATION.md §0). */
+export const MODULES = [
+  "dashboard",
+  "leads",
+  "teachers",
+  "groups",
+  "students",
+  "exams",
+  "settings",
+  "finance",
+  "reports",
+] as const;
+export type ModuleKey = (typeof MODULES)[number];
+
+/** The permission that unlocks each navigation item. */
+export const MODULE_VIEW_PERMISSION: Record<ModuleKey, Permission> = {
+  dashboard: "dashboard.view",
+  leads: "leads.view",
+  teachers: "teachers.view",
+  groups: "groups.view",
+  students: "students.view",
+  exams: "exams.view",
+  settings: "settings.catalog",
+  finance: "finance.view",
+  reports: "reports.view",
+};
+
+export function hasPermission(grants: readonly string[], permission: Permission): boolean {
+  return grants.includes(ALL_PERMISSIONS) || grants.includes(permission);
+}

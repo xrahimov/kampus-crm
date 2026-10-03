@@ -1,0 +1,94 @@
+{
+  "app": {
+    "name": "Kampus",
+    "tagline": "O‘quv markazi uchun CRM"
+  },
+  "common": {
+    "loading": "Yuklanmoqda…",
+    "save": "Saqlash",
+    "cancel": "Bekor qilish",
+    "back": "Orqaga",
+    "search": "Qidirish…",
+    "allBranches": "Barcha filiallar",
+    "language": "Til",
+    "comingSoon": "Bu bo‘lim {phase}-bosqichda quriladi.",
+    "retry": "Qayta urinish"
+  },
+  "nav": {
+    "dashboard": "Bosh sahifa",
+    "leads": "Lidlar",
+    "teachers": "O‘qituvchilar",
+    "groups": "Guruhlar",
+    "students": "O‘quvchilar",
+    "exams": "Imtihonlar",
+    "settings": "Sozlamalar",
+    "finance": "Moliya",
+    "reports": "Hisobotlar"
+  },
+  "auth": {
+    "signIn": "Kirish",
+    "signInTitle": "Kampus tizimiga kirish",
+    "signInSubtitle": "Administrator bergan telefon raqam va paroldan foydalaning.",
+    "phone": "Telefon raqam",
+    "phonePlaceholder": "+998 90 123 45 67",
+    "password": "Parol",
+    "signingIn": "Kirilmoqda…",
+    "signOut": "Chiqish",
+    "signedInAs": "Foydalanuvchi",
+    "role": "Rol"
+  },
+  "branch": {
+    "select": "Filial",
+    "active": "Joriy filial"
+  },
+  "dashboard": {
+    "title": "Bosh sahifa",
+    "welcome": "Xush kelibsiz, {name}",
+    "yourRoles": "Rollaringiz",
+    "yourBranches": "Filiallaringiz",
+    "phaseNote": "Ko‘rsatkichlar, haftalik jadval va moliya xulosasi 13-bosqichda qo‘shiladi."
+  },
+  "errors": {
+    "title": "Xatolik yuz berdi",
+    "notFoundTitle": "Sahifa topilmadi",
+    "notFoundText": "Siz so‘ragan sahifa mavjud emas.",
+    "validation": "Belgilangan maydonlarni tekshiring.",
+    "unauthenticated": "Iltimos, tizimga kiring.",
+    "invalidCredentials": "Telefon raqam yoki parol noto‘g‘ri.",
+    "forbidden": "Bu amal uchun ruxsatingiz yo‘q.",
+    "branchForbidden": "Bu filialga kirish huquqingiz yo‘q.",
+    "branchNotFound": "Filial topilmadi.",
+    "notFound": "Topilmadi.",
+    "conflict": "Bu yozuvni boshqa foydalanuvchi o‘zgartirgan. Sahifani yangilab, qayta urinib ko‘ring.",
+    "rateLimited": "Juda ko‘p urinish. {seconds} soniyadan keyin qayta urinib ko‘ring.",
+    "csrf": "Sessiya muddati tugadi. Sahifani yangilab, qayta urinib ko‘ring.",
+    "integration": "Tashqi xizmat javob bermadi.",
+    "internal": "Kutilmagan xatolik. Qayta urinib ko‘ring."
+  },
+  "validation": {
+    "phone": "+998 90 123 45 67 ko‘rinishida raqam kiriting.",
+    "passwordMin": "Kamida 8 ta belgi.",
+    "passwordMax": "Ko‘pi bilan 128 ta belgi.",
+    "required": "Majburiy.",
+    "invalidJson": "Noto‘g‘ri so‘rov.",
+    "sort": "Noto‘g‘ri saralash.",
+    "sortField": "Bu maydon bo‘yicha saralab bo‘lmaydi."
+  },
+  "roles": {
+    "CEO": "CEO",
+    "ADMIN": "Admin",
+    "BRANCH_MANAGER": "Filial menejeri",
+    "CASHIER": "Kassir",
+    "TEACHER": "O‘qituvchi",
+    "SUPPORT_TEACHER": "Support o‘qituvchi",
+    "MARKETER": "Marketolog",
+    "WATCHER": "Kuzatuvchi",
+    "PARENT": "Ota-ona",
+    "OTHER": "Boshqa"
+  },
+  "locales": {
+    "uz": "O‘zbekcha",
+    "ru": "Русский",
+    "en": "English"
+  }
+}

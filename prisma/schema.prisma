@@ -1,0 +1,183 @@
+// Kampus CRM — Prisma schema.
+// Phase 2 (skeleton): organisation, branches, users, roles, sessions, logs.
+// Later phases add their own models in the sections marked below.
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ---------------------------------------------------------------------------
+// Organisation & branches (EXP §0 branch selector, §8 general settings)
+// ---------------------------------------------------------------------------
+
+model Organization {
+  id        String   @id @default(cuid())
+  name      String
+  logoUrl   String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  branches Branch[]
+}
+
+model Branch {
+  id             String   @id @default(cuid())
+  organizationId String
+  name           String
+  isActive       Boolean  @default(true)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  organization Organization @relation(fields: [organizationId], references: [id])
+  users        UserBranch[]
+  sessions     Session[]
+  auditLogs    AuditLog[]
+
+  @@index([organizationId])
+}
+
+// ---------------------------------------------------------------------------
+// Users, roles, permissions (EXP §8 Staff, Roles)
+// ---------------------------------------------------------------------------
+
+enum Gender {
+  MALE
+  FEMALE
+}
+
+model User {
+  id           String    @id @default(cuid())
+  fullName     String
+  phone        String    @unique // E.164, e.g. +998901234567
+  passwordHash String
+  gender       Gender    @default(MALE)
+  birthDate    DateTime? @db.Date
+  hireDate     DateTime? @db.Date
+  photoUrl     String?
+  fixedSalary  Decimal?  @db.Decimal(15, 2)
+  percentShare Decimal?  @db.Decimal(5, 2)
+  isArchived   Boolean   @default(false)
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  roles     UserRole[]
+  branches  UserBranch[]
+  sessions  Session[]
+  loginLogs LoginLog[]
+  auditLogs AuditLog[]
+}
+
+/// A role is a named bundle of permission codes. System roles are seeded and
+/// cannot be deleted; the CEO can create custom roles (EXP §8 Roles (Beta)).
+model Role {
+  id          String   @id @default(cuid())
+  code        String   @unique // e.g. CEO, ADMIN, TEACHER, or custom:branch-manager
+  name        String
+  isSystem    Boolean  @default(false)
+  isActive    Boolean  @default(true)
+  permissions String[] @default([])
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  users UserRole[]
+}
+
+model UserRole {
+  userId String
+  roleId String
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  role Role @relation(fields: [roleId], references: [id], onDelete: Cascade)
+
+  @@id([userId, roleId])
+  @@index([roleId])
+}
+
+model UserBranch {
+  userId   String
+  branchId String
+
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  branch Branch @relation(fields: [branchId], references: [id], onDelete: Cascade)
+
+  @@id([userId, branchId])
+  @@index([branchId])
+}
+
+// ---------------------------------------------------------------------------
+// Auth: sessions, login rate limiting, login log (EXP §8 "Tizimga kirishlar")
+// ---------------------------------------------------------------------------
+
+model Session {
+  id             String   @id @default(cuid())
+  tokenHash      String   @unique // sha256 of the opaque cookie token
+  userId         String
+  activeBranchId String?
+  csrfSecret     String
+  ip             String?
+  userAgent      String?
+  expiresAt      DateTime
+  lastSeenAt     DateTime @default(now())
+  createdAt      DateTime @default(now())
+
+  user         User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  activeBranch Branch? @relation(fields: [activeBranchId], references: [id], onDelete: SetNull)
+
+  @@index([userId])
+  @@index([expiresAt])
+}
+
+/// One row per failed login, keyed by phone and by IP. Counted in a sliding
+/// window to lock out brute force (see server/auth/rate-limit.ts).
+model LoginAttempt {
+  id        String   @id @default(cuid())
+  key       String
+  createdAt DateTime @default(now())
+
+  @@index([key, createdAt])
+}
+
+model LoginLog {
+  id        String   @id @default(cuid())
+  userId    String?
+  phone     String
+  success   Boolean
+  ip        String?
+  userAgent String?
+  createdAt DateTime @default(now())
+
+  user User? @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([userId, createdAt])
+  @@index([createdAt])
+}
+
+// ---------------------------------------------------------------------------
+// Audit log for every create/update/delete (EXP §5 group history,
+// §6 student history, §8 action log)
+// ---------------------------------------------------------------------------
+
+model AuditLog {
+  id        String   @id @default(cuid())
+  actorId   String?
+  branchId  String?
+  action    String // e.g. group.update
+  entity    String // e.g. Group
+  entityId  String
+  before    Json?
+  after     Json?
+  ip        String?
+  createdAt DateTime @default(now())
+
+  actor  User?   @relation(fields: [actorId], references: [id], onDelete: SetNull)
+  branch Branch? @relation(fields: [branchId], references: [id], onDelete: SetNull)
+
+  @@index([entity, entityId, createdAt])
+  @@index([actorId, createdAt])
+  @@index([createdAt])
+}
