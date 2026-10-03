@@ -14,12 +14,14 @@ const PHONE = "+998901110001";
 const LOCKED_PHONE = "+998901110002";
 const PASSWORD = "test-password-1";
 
+let orgId: string;
 let branchA: string;
 let branchB: string;
 let userId: string;
 
 beforeAll(async () => {
   const org = await prisma.organization.create({ data: { name: "Test Org" } });
+  orgId = org.id;
   branchA = (await prisma.branch.create({ data: { organizationId: org.id, name: "A" } })).id;
   branchB = (await prisma.branch.create({ data: { organizationId: org.id, name: "B" } })).id;
   const role = await prisma.role.upsert({
@@ -47,7 +49,7 @@ beforeAll(async () => {
 afterAll(async () => {
   await prisma.user.deleteMany({ where: { phone: { in: [PHONE, LOCKED_PHONE] } } });
   await prisma.branch.deleteMany({ where: { id: { in: [branchA, branchB] } } });
-  await prisma.organization.deleteMany({ where: { name: "Test Org" } });
+  await prisma.organization.delete({ where: { id: orgId } });
   await prisma.$disconnect();
 });
 

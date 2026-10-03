@@ -74,10 +74,8 @@ const list = <F extends string>(field: F) => ({
 });
 
 beforeAll(async () => {
-  // The seed's organisation is the deployment's single org (A-37).
-  if (!(await prisma.organization.findFirst())) {
-    await prisma.organization.create({ data: { name: "Test Org" } });
-  }
+  // The seed (run by tests/unit/global-setup.ts) provides the deployment's single org (A-37).
+  expect(await prisma.organization.findFirst({ where: { id: "org_demo" } })).not.toBeNull();
   ceo.userId = await ensureUser(PHONES.ceo, "Test CEO");
   adminUserId = await ensureUser(PHONES.admin, "Test Admin");
   teacher.userId = await ensureUser(PHONES.teacher, "Test Teacher");
