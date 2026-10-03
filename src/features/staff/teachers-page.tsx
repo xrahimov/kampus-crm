@@ -1,6 +1,6 @@
 "use client";
 
-import { useFormatter, useTranslations } from "next-intl";
+import { useTranslations } from "next-intl";
 import { useSearchParams } from "next/navigation";
 import { useState, useTransition } from "react";
 
@@ -30,6 +30,8 @@ import { api } from "@/lib/api-client";
 import { parseDateOnly } from "@/lib/dates";
 import type { Page } from "@/lib/validation/common";
 import { TEACHER_KINDS, type TeacherKind } from "@/lib/validation/staff";
+import { useDateFormat } from "@/lib/use-date-format";
+import { useMoneyFormat } from "@/lib/use-money-format";
 import type { RoleDto } from "@/server/services/staff/roles.service";
 import type { StaffDto } from "@/server/services/staff/staff.service";
 import type { TeacherRowDto } from "@/server/services/staff/teachers.service";
@@ -65,7 +67,8 @@ export function TeachersPage({
   canDelete: boolean;
 }) {
   const t = useTranslations();
-  const format = useFormatter();
+  const formatMoney = useMoneyFormat();
+  const fmt = useDateFormat();
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -91,12 +94,9 @@ export function TeachersPage({
     router.replace(`${pathname}?${params.toString()}`);
   }
 
-  const money = (value: number | null) =>
-    value === null
-      ? "—"
-      : format.number(value, { style: "currency", currency: "UZS", maximumFractionDigits: 0 });
+  const money = (value: number | null) => (value === null ? "—" : formatMoney(value));
   const date = (value: string | null) =>
-    value ? format.dateTime(parseDateOnly(value), { dateStyle: "medium" }) : "—";
+    value ? fmt(parseDateOnly(value), { dateStyle: "medium" }) : "—";
 
   return (
     <div className="space-y-4">

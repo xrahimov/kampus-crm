@@ -10,7 +10,7 @@ import {
   UserCog,
   Users,
 } from "lucide-react";
-import { useFormatter, useTranslations } from "next-intl";
+import { useTranslations } from "next-intl";
 import { useSearchParams } from "next/navigation";
 import { useState, useTransition } from "react";
 
@@ -31,6 +31,8 @@ import { Link, usePathname, useRouter } from "@/i18n/navigation";
 import { api } from "@/lib/api-client";
 import { parseDateOnly } from "@/lib/dates";
 import type { Page } from "@/lib/validation/common";
+import { useDateFormat } from "@/lib/use-date-format";
+import { useMoneyFormat } from "@/lib/use-money-format";
 import type {
   GroupDayOffDto,
   GroupDto,
@@ -92,7 +94,8 @@ export function GroupDetail({
 }) {
   const t = useTranslations();
   const td = useTranslations("groups.detail");
-  const format = useFormatter();
+  const money = useMoneyFormat();
+  const fmt = useDateFormat();
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -120,9 +123,7 @@ export function GroupDetail({
     router.replace(`${pathname}?${params.toString()}`, { scroll: false });
   }
 
-  const date = (v: string) => format.dateTime(parseDateOnly(v), { dateStyle: "medium" });
-  const money = (v: number) =>
-    format.number(v, { style: "currency", currency: "UZS", maximumFractionDigits: 0 });
+  const date = (v: string) => fmt(parseDateOnly(v), { dateStyle: "medium" });
 
   return (
     <div className="space-y-4">
@@ -202,8 +203,8 @@ export function GroupDetail({
         )}
       </div>
 
-      <div className="grid gap-4 lg:grid-cols-[minmax(0,2fr)_minmax(0,3fr)] xl:grid-cols-[minmax(0,1fr)_minmax(0,2fr)]">
-        <div className="space-y-4">
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-[minmax(0,2fr)_minmax(0,3fr)] xl:grid-cols-[minmax(0,1fr)_minmax(0,2fr)]">
+        <div className="min-w-0 space-y-4">
           <Card>
             <CardHeader>
               <CardTitle className="text-base">{td("info")}</CardTitle>
@@ -232,7 +233,7 @@ export function GroupDetail({
               <ul className="text-sm" data-testid="group-schedule">
                 {group.slots.map((s) => (
                   <li key={s.weekday} className="flex justify-between gap-2 py-0.5">
-                    <span>{weekdayLabel(format, s.weekday, "long")}</span>
+                    <span>{weekdayLabel(fmt, s.weekday, "long")}</span>
                     <span className="tabular-nums">
                       {s.startTime} – {s.endTime}
                       {s.roomName && <span className="text-muted-foreground"> · {s.roomName}</span>}
@@ -312,7 +313,7 @@ export function GroupDetail({
           </Card>
         </div>
 
-        <Card>
+        <Card className="min-w-0">
           <CardContent className="pt-6">
             <Tabs value={tab} onValueChange={(v) => setParam("tab", v === "attendance" ? null : v)}>
               <TabsList className="h-auto flex-wrap">

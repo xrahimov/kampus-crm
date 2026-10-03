@@ -1,7 +1,7 @@
 "use client";
 
 import { Paperclip, Plus } from "lucide-react";
-import { useFormatter, useTranslations } from "next-intl";
+import { useTranslations } from "next-intl";
 import { useState, useTransition } from "react";
 
 import { EmptyState } from "@/components/data/empty-state";
@@ -15,6 +15,7 @@ import { api, ApiError } from "@/lib/api-client";
 import { parseDateOnly } from "@/lib/dates";
 import { cn } from "@/lib/utils";
 import type { AttendanceStatus } from "@/lib/validation/groups";
+import { useDateFormat } from "@/lib/use-date-format";
 import type { MonthGridDto } from "@/server/services/groups/lessons.service";
 
 import { MonthTabs } from "./month-tabs";
@@ -48,7 +49,7 @@ export function AttendanceGrid({
   canEdit: boolean;
 }) {
   const t = useTranslations();
-  const format = useFormatter();
+  const fmt = useDateFormat();
   const router = useRouter();
   const [, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
@@ -122,7 +123,7 @@ export function AttendanceGrid({
                       onClick={() => setTopicLesson(l)}
                       title={l.topic ?? t("groups.attendance.setTopic")}
                     >
-                      {format.dateTime(parseDateOnly(l.date), { day: "numeric", month: "short" })}
+                      {fmt(parseDateOnly(l.date), { day: "numeric", month: "short" })}
                       {l.isExtra && <span className="ml-0.5 text-[10px] text-primary">+</span>}
                       {l.attachmentUrl && <Paperclip className="ml-0.5 inline size-3" />}
                     </button>

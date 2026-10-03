@@ -2,7 +2,7 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Plus, Trash2 } from "lucide-react";
-import { useFormatter, useTranslations } from "next-intl";
+import { useTranslations } from "next-intl";
 import { useEffect, useState } from "react";
 import { Controller, useFieldArray, useForm, useWatch } from "react-hook-form";
 import { z } from "zod";
@@ -37,6 +37,7 @@ import {
   type Weekday,
 } from "@/lib/validation/groups";
 import { timeSchema } from "@/lib/validation/settings";
+import { useDateFormat } from "@/lib/use-date-format";
 import type { GroupDto } from "@/server/services/groups/groups.service";
 import type { GroupFormOptions } from "@/server/services/groups/options.service";
 
@@ -150,7 +151,7 @@ export function GroupDialog({
 }) {
   const t = useTranslations();
   const tg = useTranslations("groups.form");
-  const format = useFormatter();
+  const fmt = useDateFormat();
   const [error, setError] = useState<string | null>(null);
 
   const emptyDays = () =>
@@ -402,7 +403,7 @@ export function GroupDialog({
                           )
                         }
                       />
-                      {weekdayLabel(format, weekday)}
+                      {weekdayLabel(fmt, weekday)}
                     </label>
                   );
                 })}
@@ -456,7 +457,7 @@ export function GroupDialog({
                 key={weekday}
                 className="grid items-end gap-2 rounded-md border p-2 sm:grid-cols-[5rem_1fr_1fr_1fr]"
               >
-                <span className="text-sm font-medium">{weekdayLabel(format, weekday)}</span>
+                <span className="text-sm font-medium">{weekdayLabel(fmt, weekday)}</span>
                 <Input
                   type="time"
                   aria-label={tg("startTime")}
@@ -487,10 +488,7 @@ export function GroupDialog({
       <fieldset className="space-y-2">
         <legend className="text-sm font-medium">{tg("teachers")}</legend>
         {teacherRows.fields.map((row, index) => (
-          <div
-            key={row.id}
-            className="grid gap-2 rounded-md border p-2 sm:grid-cols-[1fr_1fr_1fr_6rem_auto]"
-          >
+          <div key={row.id} className="grid grid-cols-[1fr_auto] gap-2 rounded-md border p-2">
             <Controller
               control={form.control}
               name={`teachers.${index}.userId`}
@@ -512,50 +510,6 @@ export function GroupDialog({
                 </Select>
               )}
             />
-            <Controller
-              control={form.control}
-              name={`teachers.${index}.role`}
-              render={({ field }) => (
-                <Select value={field.value} onValueChange={field.onChange}>
-                  <SelectTrigger aria-label={tg("teacherRole")}>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {GROUP_TEACHER_ROLES.map((r) => (
-                      <SelectItem key={r} value={r}>
-                        {t(`groups.teacherRoles.${r}`)}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              )}
-            />
-            <Controller
-              control={form.control}
-              name={`teachers.${index}.shareType`}
-              render={({ field }) => (
-                <Select value={field.value} onValueChange={field.onChange}>
-                  <SelectTrigger aria-label={tg("shareType")}>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {SHARE_TYPES.map((s) => (
-                      <SelectItem key={s} value={s}>
-                        {t(`groups.shareTypes.${s}`)}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              )}
-            />
-            <Input
-              type="number"
-              min={0}
-              step="any"
-              aria-label={tg("shareValue")}
-              aria-invalid={!!errors.teachers?.[index]?.shareValue}
-              {...form.register(`teachers.${index}.shareValue`)}
-            />
             <Button
               type="button"
               variant="ghost"
@@ -565,6 +519,52 @@ export function GroupDialog({
             >
               <Trash2 />
             </Button>
+            <div className="col-span-2 grid grid-cols-[1fr_1fr_5rem] gap-2">
+              <Controller
+                control={form.control}
+                name={`teachers.${index}.role`}
+                render={({ field }) => (
+                  <Select value={field.value} onValueChange={field.onChange}>
+                    <SelectTrigger aria-label={tg("teacherRole")}>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {GROUP_TEACHER_ROLES.map((r) => (
+                        <SelectItem key={r} value={r}>
+                          {t(`groups.teacherRoles.${r}`)}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                )}
+              />
+              <Controller
+                control={form.control}
+                name={`teachers.${index}.shareType`}
+                render={({ field }) => (
+                  <Select value={field.value} onValueChange={field.onChange}>
+                    <SelectTrigger aria-label={tg("shareType")}>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {SHARE_TYPES.map((s) => (
+                        <SelectItem key={s} value={s}>
+                          {t(`groups.shareTypes.${s}`)}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                )}
+              />
+              <Input
+                type="number"
+                min={0}
+                step="any"
+                aria-label={tg("shareValue")}
+                aria-invalid={!!errors.teachers?.[index]?.shareValue}
+                {...form.register(`teachers.${index}.shareValue`)}
+              />
+            </div>
           </div>
         ))}
         {teacherRows.fields.length < 3 && (

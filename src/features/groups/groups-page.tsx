@@ -1,7 +1,7 @@
 "use client";
 
 import { ArrowRightLeft, Eye, Flag, MoreHorizontal, Pencil, Trash2 } from "lucide-react";
-import { useFormatter, useTranslations } from "next-intl";
+import { useTranslations } from "next-intl";
 import { useSearchParams } from "next/navigation";
 import { useState, useTransition } from "react";
 
@@ -40,6 +40,7 @@ import { Link, usePathname, useRouter } from "@/i18n/navigation";
 import { api } from "@/lib/api-client";
 import { parseDateOnly } from "@/lib/dates";
 import type { Page } from "@/lib/validation/common";
+import { useDateFormat } from "@/lib/use-date-format";
 import {
   GROUP_STATUSES,
   WEEKDAY_PATTERNS,
@@ -87,7 +88,7 @@ export function GroupsPage({
   can: { create: boolean; update: boolean; delete: boolean };
 }) {
   const t = useTranslations();
-  const format = useFormatter();
+  const fmt = useDateFormat();
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -115,10 +116,10 @@ export function GroupsPage({
     router.replace(`${pathname}?${params.toString()}`);
   }
 
-  const date = (value: string) => format.dateTime(parseDateOnly(value), { dateStyle: "medium" });
+  const date = (value: string) => fmt(parseDateOnly(value), { dateStyle: "medium" });
   const scheduleDays = (g: GroupDto) =>
     g.weekdayPattern === "CUSTOM"
-      ? g.slots.map((s) => weekdayLabel(format, s.weekday)).join(", ")
+      ? g.slots.map((s) => weekdayLabel(fmt, s.weekday)).join(", ")
       : t(`groups.patterns.${g.weekdayPattern}`);
   const scheduleTime = (g: GroupDto) => {
     const first = g.slots[0];

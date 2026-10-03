@@ -1,14 +1,13 @@
-import type { useFormatter } from "next-intl";
-
+import type { DateFormatter } from "@/lib/dates";
 import type { Weekday, WeekdayPattern } from "@/lib/validation/groups";
 
 /** 2026-01-05 is a Monday; weekday N is N-1 days later. */
 export function weekdayLabel(
-  format: ReturnType<typeof useFormatter>,
+  fmt: DateFormatter,
   weekday: Weekday,
   style: "short" | "long" = "short",
 ): string {
-  return format.dateTime(new Date(Date.UTC(2026, 0, 4 + weekday, 12)), { weekday: style });
+  return fmt(new Date(Date.UTC(2026, 0, 4 + weekday, 12)), { weekday: style });
 }
 
 /** EVEN = Tue/Thu/Sat, ODD = Mon/Wed/Fri, EVERY_DAY = Mon–Sat (A-50); mirrors the server. */

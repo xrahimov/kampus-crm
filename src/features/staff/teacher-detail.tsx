@@ -1,7 +1,7 @@
 "use client";
 
 import { ArrowLeft } from "lucide-react";
-import { useFormatter, useTranslations } from "next-intl";
+import { useTranslations } from "next-intl";
 import { useState, useTransition } from "react";
 
 import { EmptyState } from "@/components/data/empty-state";
@@ -20,6 +20,7 @@ import {
 import type { BranchOption } from "@/features/settings/shared/branch-select";
 import { Link, useRouter } from "@/i18n/navigation";
 import { parseDateOnly } from "@/lib/dates";
+import { useDateFormat } from "@/lib/use-date-format";
 import type { RoleDto } from "@/server/services/staff/roles.service";
 import type { TeacherDetailDto } from "@/server/services/staff/teachers.service";
 
@@ -41,7 +42,7 @@ export function TeacherDetail({
   canUpdate: boolean;
 }) {
   const t = useTranslations();
-  const format = useFormatter();
+  const fmt = useDateFormat();
   const router = useRouter();
   const [, startTransition] = useTransition();
   const [editing, setEditing] = useState(false);
@@ -81,7 +82,7 @@ export function TeacherDetail({
               </div>
               <div className="flex gap-2">
                 <dt className="text-muted-foreground">{t("teachers.detail.registered")}</dt>
-                <dd>{format.dateTime(new Date(teacher.createdAt), { dateStyle: "medium" })}</dd>
+                <dd>{fmt(new Date(teacher.createdAt), { dateStyle: "medium" })}</dd>
               </div>
               <div className="flex gap-2">
                 <dt className="text-muted-foreground">{t("teachers.detail.branches")}</dt>
@@ -147,10 +148,10 @@ export function TeacherDetail({
                     </TableCell>
                     <TableCell className="text-right tabular-nums">{g.activeStudents}</TableCell>
                     <TableCell className="whitespace-nowrap">
-                      {format.dateTime(parseDateOnly(g.startDate), { dateStyle: "medium" })}
+                      {fmt(parseDateOnly(g.startDate), { dateStyle: "medium" })}
                     </TableCell>
                     <TableCell className="whitespace-nowrap">
-                      {format.dateTime(parseDateOnly(g.endDate), { dateStyle: "medium" })}
+                      {fmt(parseDateOnly(g.endDate), { dateStyle: "medium" })}
                     </TableCell>
                     <TableCell>
                       <Badge variant={g.status === "ACTIVE" ? "success" : "secondary"}>

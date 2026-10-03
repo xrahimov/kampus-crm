@@ -1,6 +1,6 @@
 "use client";
 
-import { useFormatter, useTranslations } from "next-intl";
+import { useTranslations } from "next-intl";
 import { useState, useTransition } from "react";
 
 import { EmptyState } from "@/components/data/empty-state";
@@ -10,6 +10,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { useRouter } from "@/i18n/navigation";
 import { api, ApiError } from "@/lib/api-client";
 import type { Page } from "@/lib/validation/common";
+import { useDateFormat } from "@/lib/use-date-format";
 import type { GroupHistoryDto, GroupNoteDto } from "@/server/services/groups/groups.service";
 
 /** EXP §5 ESLATMALAR. */
@@ -24,7 +25,7 @@ export function NotesTab({
 }) {
   const t = useTranslations("groups.notes");
   const tc = useTranslations("common");
-  const format = useFormatter();
+  const fmt = useDateFormat();
   const router = useRouter();
   const [, startTransition] = useTransition();
   const [text, setText] = useState("");
@@ -78,7 +79,7 @@ export function NotesTab({
               <p className="whitespace-pre-wrap">{n.text}</p>
               <p className="mt-1 text-xs text-muted-foreground">
                 {n.authorName ?? "—"} ·{" "}
-                {format.dateTime(new Date(n.createdAt), {
+                {fmt(new Date(n.createdAt), {
                   dateStyle: "medium",
                   timeStyle: "short",
                 })}
@@ -123,7 +124,7 @@ function renderValue(value: unknown, t: ReturnType<typeof useTranslations>): str
 export function HistoryTab({ history }: { history: Page<GroupHistoryDto> }) {
   const t = useTranslations();
   const th = useTranslations("groups.history");
-  const format = useFormatter();
+  const fmt = useDateFormat();
   if (history.items.length === 0) return <EmptyState title={th("empty")} />;
   return (
     <div className="space-y-3">
@@ -154,7 +155,7 @@ export function HistoryTab({ history }: { history: Page<GroupHistoryDto> }) {
                 <td className="max-w-xs px-3 py-2">{h.field ? renderValue(h.after, t) : "—"}</td>
                 <td className="px-3 py-2 whitespace-nowrap">{h.actorName ?? "—"}</td>
                 <td className="px-3 py-2 whitespace-nowrap">
-                  {format.dateTime(new Date(h.at), { dateStyle: "medium", timeStyle: "short" })}
+                  {fmt(new Date(h.at), { dateStyle: "medium", timeStyle: "short" })}
                 </td>
               </tr>
             ))}

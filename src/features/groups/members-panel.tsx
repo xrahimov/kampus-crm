@@ -1,7 +1,7 @@
 "use client";
 
 import { MoreHorizontal, Plus, Search } from "lucide-react";
-import { useFormatter, useTranslations } from "next-intl";
+import { useTranslations } from "next-intl";
 import { useEffect, useState, useTransition } from "react";
 
 import { ConfirmDialog } from "@/components/data/confirm-dialog";
@@ -28,6 +28,7 @@ import { api, ApiError } from "@/lib/api-client";
 import { parseDateOnly } from "@/lib/dates";
 import { cn } from "@/lib/utils";
 import type { MembershipStatus } from "@/lib/validation/groups";
+import { useDateFormat } from "@/lib/use-date-format";
 import type { MembershipDto } from "@/server/services/groups/memberships.service";
 
 const STATUS_VARIANT: Record<
@@ -71,7 +72,7 @@ export function MembersPanel({
 }) {
   const t = useTranslations();
   const tm = useTranslations("groups.members");
-  const format = useFormatter();
+  const fmt = useDateFormat();
   const router = useRouter();
   const [, startTransition] = useTransition();
   const [query, setQuery] = useState("");
@@ -156,7 +157,7 @@ export function MembersPanel({
                 <p className="truncate text-xs text-muted-foreground tabular-nums">
                   {m.phone ?? "—"}
                   {showJoined &&
-                    ` · ${tm("joined")} ${format.dateTime(parseDateOnly(m.joinedAt), { dateStyle: "medium" })}`}
+                    ` · ${tm("joined")} ${fmt(parseDateOnly(m.joinedAt), { dateStyle: "medium" })}`}
                 </p>
               </div>
               {canEdit && NEXT[m.status].length > 0 ? (
@@ -299,6 +300,10 @@ function AddMemberDialog({
 
   async function submit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    if (!createNew && !picked) {
+      setFields({ studentId: ["validation.studentRequired"] });
+      return;
+    }
     const data = new FormData(event.currentTarget);
     setBusy(true);
     setError(null);
@@ -342,7 +347,7 @@ function AddMemberDialog({
       }}
       title={tm("add")}
       onSubmit={submit}
-      submitting={busy || (!createNew && !picked)}
+      submitting={busy}
       error={error}
       side="right"
       testId="add-member-dialog"

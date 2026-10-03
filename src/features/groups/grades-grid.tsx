@@ -1,12 +1,13 @@
 "use client";
 
-import { useFormatter, useTranslations } from "next-intl";
+import { useTranslations } from "next-intl";
 import { useState, useTransition } from "react";
 
 import { EmptyState } from "@/components/data/empty-state";
 import { useRouter } from "@/i18n/navigation";
 import { api, ApiError } from "@/lib/api-client";
 import { parseDateOnly } from "@/lib/dates";
+import { useDateFormat } from "@/lib/use-date-format";
 import type { MonthGridDto } from "@/server/services/groups/lessons.service";
 
 import { MonthTabs } from "./month-tabs";
@@ -24,7 +25,7 @@ export function GradesGrid({
   canMark: boolean;
 }) {
   const t = useTranslations("groups.grades");
-  const format = useFormatter();
+  const fmt = useDateFormat();
   const router = useRouter();
   const [, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
@@ -79,7 +80,7 @@ export function GradesGrid({
                 </th>
                 {grid.lessons.map((l) => (
                   <th key={l.id} className="px-1 py-2 text-center font-medium whitespace-nowrap">
-                    {format.dateTime(parseDateOnly(l.date), { day: "numeric", month: "short" })}
+                    {fmt(parseDateOnly(l.date), { day: "numeric", month: "short" })}
                   </th>
                 ))}
                 <th className="px-3 py-2 text-right font-medium">{t("average")}</th>

@@ -109,6 +109,23 @@ test.describe("groups", () => {
     await expect(page.getByTestId("group-row").filter({ hasText: name })).toBeVisible();
   });
 
+  test("Uzbek pages spell dates themselves and hydrate without errors", async ({ page }) => {
+    const errors: string[] = [];
+    page.on("pageerror", (e) => errors.push(e.message));
+    await signIn(page, CEO_PHONE);
+    await page.goto("/uz/groups");
+    await expect(page.getByRole("heading", { name: "Guruhlar" })).toBeVisible();
+    await expect(page.getByTestId("group-row").filter({ hasText: "GE-Morning A1" })).toContainText(
+      "1-sen, 2026",
+    );
+    await page.getByRole("link", { name: "GE-Morning A1" }).click();
+    await expect(page.getByTestId("group-schedule")).toContainText("seshanba");
+    await expect(page.getByTestId("month-2026-09")).toHaveText("Sen 2026");
+    await page.waitForLoadState("networkidle");
+    // React 19 reports hydration mismatches as minified errors #418, #423 and #425 in production.
+    expect(errors.filter((e) => /hydrat|#418|#423|#425/i.test(e))).toEqual([]);
+  });
+
   test("teacher sees only their own groups and cannot create one", async ({ page, request }) => {
     await signIn(page, TEACHER_PHONE);
     await page.goto("/en/groups");
