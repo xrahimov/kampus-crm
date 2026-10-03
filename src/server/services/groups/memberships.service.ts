@@ -308,6 +308,45 @@ export async function activateMembers(
 }
 
 /**
+ * "FAOLLASHTIRISH" on the students list (EXP §6, A-68): every NEW or TRIAL
+ * membership of the given students becomes ACTIVE today. Students outside the
+ * actor's scope are ignored, not refused.
+ */
+export async function activateStudents(
+  actor: Actor,
+  studentIds: string[],
+  db: DbClient = prisma,
+): Promise<number> {
+  authorize(actor, "groups.update");
+  const rows = await db.groupMembership.findMany({
+    where: {
+      studentId: { in: studentIds },
+      status: { in: ["NEW", "TRIAL"] },
+      group: { ...(branchScope(actor) ?? {}), status: { not: "ARCHIVED" } },
+    },
+    include: { ...include, group: { select: { branchId: true } } },
+  });
+  await db.$transaction(async (tx) => {
+    for (const row of rows) {
+      const updated = await tx.groupMembership.update({
+        where: { id: row.id },
+        data: statusData(row.status, "ACTIVE"),
+        include,
+      });
+      await recordAudit(tx, actor, {
+        action: "membership.update",
+        entity: "GroupMembership",
+        entityId: row.id,
+        before: toDto(row),
+        after: toDto(updated),
+        branchId: row.group.branchId,
+      });
+    }
+  });
+  return rows.length;
+}
+
+/**
  * "Boshqa guruhga ko'chirish": the old membership ends on the transfer date and
  * a new one starts in the target group. Money stays on the old membership; the
  * student's total balance is unchanged (A-63).

@@ -24,7 +24,7 @@ export const SETTINGS_NAV: SettingsNavItem[] = [
   { key: "coins", href: "/settings/coins", permission: "settings.org", phase: 10 },
   { key: "tests", href: "/settings/tests", permission: "tests.view", phase: 10 },
   { key: "payments", href: "/settings/payments", permission: "reports.payments" },
-  { key: "forms", href: "/settings/forms", permission: "settings.catalog", phase: 7 },
+  { key: "forms", href: "/settings/forms", permission: "settings.catalog" },
   { key: "calls", href: "/settings/calls", permission: "logs.view", phase: 11 },
   { key: "logins", href: "/settings/logs/logins", permission: "logs.view", phase: 11 },
   { key: "actions", href: "/settings/logs/actions", permission: "logs.view", phase: 11 },

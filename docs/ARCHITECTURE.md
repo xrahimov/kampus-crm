@@ -210,23 +210,23 @@ Every list endpoint takes the common query contract (§2). Every mutation is aud
 `GET /dashboard/kpis?branchId` · `GET /dashboard/schedule?weekday&step` · `GET /dashboard/finance?branchId&year&month&method`
 
 **Leads (EXP §2–3)**
-`GET|POST /lead-boards` · `PATCH|DELETE /lead-boards/:id` · `POST /lead-boards/:id/columns` · `PATCH|DELETE /lead-columns/:id`
-`GET|POST /leads` · `GET|PATCH|DELETE /leads/:id` · `POST /leads/:id/move` · `POST /leads/:id/archive` · `POST /leads/add-to-group` · `POST /lead-columns/:id/sms` · `GET /leads/export.xlsx`
-`GET|POST /lead-sources` · `GET /lead-sources/stats?from&to`
-`GET|POST /lead-forms` · `PATCH|DELETE /lead-forms/:id` · `POST /public/lead-forms/:slug` (public submit, rate limited)
+✓ `GET|POST /lead-boards` · `PATCH|DELETE /lead-boards/:id` · `POST /lead-boards/:id/columns` · `PATCH|DELETE /lead-columns/:id`
+✓ `GET /leads?boardId&q&lessonTime&teacherId&days&archived` (board view) · `POST /leads` · `GET|PATCH|DELETE /leads/:id` · `POST /leads/:id/move` · `POST /leads/:id/archive` · `POST /leads/:id/restore` · `POST /leads/add-to-group` · `GET /leads/options` · `POST /lead-columns/:id/sms` (Phase 11) · `GET /leads/export.xlsx` (Phase 12)
+✓ `GET /lead-sources?from&to` (catalogue with counts, EXP §3) · `POST /lead-sources` · `PATCH|DELETE /lead-sources/:id`
+✓ `GET|POST /lead-forms` · `PATCH|DELETE /lead-forms/:id` · `GET|POST /public/lead-forms/:slug` (public, rate limited, no session); the page is `/forms/:slug`
 
 **Teachers (EXP §4)**
 `GET|POST /teachers?tab=teachers|support&archived` · `GET|PATCH|DELETE /teachers/:id` · `PUT /teachers/:id/group-rates` · `POST /teachers/sms`
 
 **Groups (EXP §5)** — Phase 5 ships the lines marked ✓; the rest follow with their modules (A-49).
 ✓ `GET|POST /groups?status&teacherId&courseId&weekdayPattern` · `GET|PATCH|DELETE /groups/:id` · `POST /groups/:id/finish` · `POST /groups/:id/move-branch` · `POST /groups/:id/change-teacher` · `POST /groups/:id/support-teachers` · `GET|POST /groups/:id/day-off` · `GET /groups/teacher-options` · `GET /groups/export.xlsx` (Phase 12)
-✓ `GET|POST /groups/:id/members?archived&q&sort` · `PATCH /memberships/:id` (status, custom price, note) · `POST /memberships/:id/remove` · `GET /students/search?q` · `POST /memberships/:id/transfer` (Phase 6) · `POST /memberships/:id/to-lead` (Phase 7) · `POST /groups/:id/members/import` (xlsx, Phase 12) · `GET /groups/members/import-template.xlsx` (Phase 12)
+✓ `GET|POST /groups/:id/members?archived&q&sort` · `PATCH /memberships/:id` (status, custom price, note) · `POST /memberships/:id/remove` · `GET /students/search?q` · `POST /memberships/:id/transfer` (Phase 6) · `POST /memberships/:id/to-lead` (Phase 7 ✓) · `POST /groups/:id/members/import` (xlsx, Phase 12) · `GET /groups/members/import-template.xlsx` (Phase 12)
 ✓ `GET /groups/:id/lessons?month` · `POST /groups/:id/lessons/extra` · `PATCH /lessons/:id` (topic, attachment) · `PUT /lessons/:id/attendance` · `PUT /lessons/:id/grades`
 ✓ `GET|POST /groups/:id/notes` · `GET /groups/:id/history` · `GET|POST /groups/:id/discounts` (Phase 6) · `DELETE /discounts/:id` (Phase 6) · `GET /groups/:id/coins` · `POST /coins/give` (Phase 10) · `GET|POST /groups/:id/student-comments` (Phase 6)
 `GET /groups/:id/tests` · `GET /groups/:id/knowledge` (Phase 10) · `GET|POST /groups/:id/exams` (Phase 8)
 
 **Students (EXP §6)** — Phase 6 ships the lines marked ✓ (A-59..A-65); the rest follow with their modules.
-✓ `GET|POST /students?archived&courseId&schoolId&groupId&teacherId&groupStatus&paymentStatus` · `GET|PATCH|DELETE /students/:id` · `POST /students/:id/restore` · `POST /students/:id/blacklist` · `GET /students/options` · `POST /students/activate` (Phase 7 with leads) · `POST /students/import` · `GET /students/export.xlsx` · `POST /students/sms` (Phases 11–12) · badges are pages: `/students/:id/badge`, `/students/badges`
+✓ `GET|POST /students?archived&courseId&schoolId&groupId&teacherId&groupStatus&paymentStatus` · `GET|PATCH|DELETE /students/:id` · `POST /students/:id/restore` · `POST /students/:id/blacklist` · `GET /students/options` · `POST /students/activate` (Phase 7 ✓) · `POST /students/import` · `GET /students/export.xlsx` · `POST /students/sms` (Phases 11–12) · badges are pages: `/students/:id/badge`, `/students/badges`
 ✓ `POST /students/:id/custom-fields` · `DELETE /custom-fields/:id` · `POST /students/:id/parents` · `DELETE /parents/:id` · `GET|POST /students/:id/comments` · `GET /students/:id/history` · `GET /memberships/:id/calendar?month` · `POST /groups/:id/activate-members`
 `GET /students/:id/progress` (Phase 8) · `GET /students/:id/test-results` (Phase 10) · `GET /students/:id/sms` · `GET /students/:id/calls` · `POST /students/:id/call` (Phase 11)
 ✓ `GET /payments?studentId&groupId&membershipId&paymentMethodId&receivedById&from&to` · `POST /payments` · `GET /payments/:id` · `POST /payments/:id/refund` · `GET /payments/options` · `GET /memberships/:id/payment-info` · `POST /memberships/:id/transfer` · `GET|PUT /settings/receipt` · the receipt is a page: `/payments/:id/receipt`
@@ -313,7 +313,7 @@ Kai asked for the site-map order. I've moved the Settings core forward and the D
 | 4     | Teachers                                                                                                                                                    | §4                        |
 | 5     | Groups (schedule, members, attendance, grades, notes, history; minimal students). Discounts and student comments moved to Phase 6 (A-49)                    | §5                        |
 | 6     | Students + payments, refunds, receipts, parents, badges, discounts, student comments, transfer; Settings → receipt and payments log                         | §6, §11 TO'LOV            |
-| 7     | Leads, sources, lead forms                                                                                                                                  | §2, §3, §8 Forms          |
+| 7     | Leads (boards, columns, Kanban, add to group, return to leads), sources report, lead forms with a public page; students "Activate"                          | §2, §3, §8 Forms          |
 | 8     | Exams                                                                                                                                                       | §7                        |
 | 9     | Finance + payroll                                                                                                                                           | §9                        |
 | 10    | Tests + question bank, coins + marketplace                                                                                                                  | §8 Tests/Coins, §10 Coins |

@@ -7,6 +7,8 @@ import { locales, routing } from "@/i18n/routing";
 const intl = createIntlMiddleware(routing);
 
 const PUBLIC_PATHS = new Set(["/login"]);
+/** Path prefixes anyone may open (public lead forms, Phase 7). */
+const PUBLIC_PREFIXES = ["/forms/"];
 
 function stripLocale(pathname: string): { locale: string | null; rest: string } {
   const match = pathname.match(/^\/([a-z]{2})(\/.*)?$/);
@@ -26,6 +28,9 @@ export function proxy(request: NextRequest) {
   const { locale, rest } = stripLocale(pathname);
   const hasSession = request.cookies.has(SESSION_COOKIE);
   const isPublic = PUBLIC_PATHS.has(rest);
+  const isOpen = PUBLIC_PREFIXES.some((prefix) => rest.startsWith(prefix));
+
+  if (isOpen) return intl(request);
 
   if (!hasSession && !isPublic) {
     const url = request.nextUrl.clone();

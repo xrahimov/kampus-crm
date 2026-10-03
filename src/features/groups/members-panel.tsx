@@ -34,6 +34,7 @@ import { useMoneyFormat } from "@/lib/use-money-format";
 import type { MembershipDto } from "@/server/services/groups/memberships.service";
 import type { PaymentOptionsDto } from "@/server/services/students/payments.service";
 
+import { ToLeadDialog } from "./to-lead-dialog";
 import { TransferDialog } from "./transfer-dialog";
 
 const STATUS_VARIANT: Record<
@@ -67,6 +68,7 @@ export function MembersPanel({
   canEdit,
   canCreateStudent,
   canPay,
+  canLeads,
   paymentOptions,
 }: {
   groupId: string;
@@ -77,6 +79,8 @@ export function MembersPanel({
   canEdit: boolean;
   canCreateStudent: boolean;
   canPay: boolean;
+  /** `leads.create`: shows "Return to leads" (Phase 7). */
+  canLeads: boolean;
   paymentOptions: PaymentOptionsDto;
 }) {
   const t = useTranslations();
@@ -93,6 +97,7 @@ export function MembersPanel({
   const [removeReason, setRemoveReason] = useState("");
   const [paying, setPaying] = useState<MembershipDto | null>(null);
   const [transferring, setTransferring] = useState<MembershipDto | null>(null);
+  const [returning, setReturning] = useState<MembershipDto | null>(null);
   const [activating, setActivating] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const refresh = () => startTransition(() => router.refresh());
@@ -261,6 +266,11 @@ export function MembersPanel({
                     <DropdownMenuItem onSelect={() => setTransferring(m)}>
                       {tm("transfer")}
                     </DropdownMenuItem>
+                    {canLeads && (
+                      <DropdownMenuItem onSelect={() => setReturning(m)} data-testid="to-lead">
+                        {tm("toLead")}
+                      </DropdownMenuItem>
+                    )}
                     <DropdownMenuSeparator />
                     <DropdownMenuItem
                       onSelect={() => setRemoving(m)}
@@ -340,6 +350,13 @@ export function MembersPanel({
         membershipId={transferring?.id ?? null}
         currentGroupId={groupId}
         studentName={transferring?.fullName ?? ""}
+        onSaved={refresh}
+      />
+      <ToLeadDialog
+        open={!!returning}
+        onOpenChange={(open) => !open && setReturning(null)}
+        membershipId={returning?.id ?? null}
+        studentName={returning?.fullName ?? ""}
         onSaved={refresh}
       />
     </div>

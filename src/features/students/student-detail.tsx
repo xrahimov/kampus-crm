@@ -41,6 +41,7 @@ import {
 } from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
+import { ToLeadDialog } from "@/features/groups/to-lead-dialog";
 import { TransferDialog } from "@/features/groups/transfer-dialog";
 import { PaymentDialog, type PayableMembership } from "@/features/payments/payment-dialog";
 import { PaymentsTable } from "@/features/payments/payments-table";
@@ -107,6 +108,7 @@ export function StudentDetail({
     pay: boolean;
     refund: boolean;
     groups: boolean;
+    leads: boolean;
   };
 }) {
   const t = useTranslations();
@@ -124,6 +126,7 @@ export function StudentDetail({
   const [payMembership, setPayMembership] = useState<string | null>(null);
   const [transferring, setTransferring] = useState<StudentDetailDto["groups"][number] | null>(null);
   const [removing, setRemoving] = useState<StudentDetailDto["groups"][number] | null>(null);
+  const [returning, setReturning] = useState<StudentDetailDto["groups"][number] | null>(null);
   const [removeReason, setRemoveReason] = useState("");
   const [deletingParent, setDeletingParent] = useState<StudentDetailDto["parents"][number] | null>(
     null,
@@ -361,6 +364,7 @@ export function StudentDetail({
                           setDialog("pay");
                         }}
                         onTransfer={() => setTransferring(g)}
+                        onToLead={can.leads ? () => setReturning(g) : null}
                         onRemove={() => setRemoving(g)}
                         onStatus={(s) => void setStatus(g.membershipId, s)}
                       />
@@ -539,6 +543,13 @@ export function StudentDetail({
         onOpenChange={(open) => !open && setTransferring(null)}
         membershipId={transferring?.membershipId ?? null}
         currentGroupId={transferring?.groupId ?? ""}
+        studentName={student.fullName}
+        onSaved={refresh}
+      />
+      <ToLeadDialog
+        open={!!returning}
+        onOpenChange={(open) => !open && setReturning(null)}
+        membershipId={returning?.membershipId ?? null}
         studentName={student.fullName}
         onSaved={refresh}
       />

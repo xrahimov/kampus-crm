@@ -57,6 +57,7 @@ export function GroupCard({
   canPay,
   onPay,
   onTransfer,
+  onToLead,
   onRemove,
   onStatus,
 }: {
@@ -65,6 +66,8 @@ export function GroupCard({
   canPay: boolean;
   onPay: () => void;
   onTransfer: () => void;
+  /** Null when the user may not create leads. */
+  onToLead: (() => void) | null;
   onRemove: () => void;
   onStatus: (status: MembershipStatus) => void;
 }) {
@@ -166,6 +169,11 @@ export function GroupCard({
                       <DropdownMenuItem onSelect={onTransfer}>
                         {tg("actions.transfer")}
                       </DropdownMenuItem>
+                      {onToLead && (
+                        <DropdownMenuItem onSelect={onToLead}>
+                          {tg("actions.toLead")}
+                        </DropdownMenuItem>
+                      )}
                       <DropdownMenuSeparator />
                       <DropdownMenuItem
                         onSelect={onRemove}
