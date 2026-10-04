@@ -66,9 +66,46 @@
   "dashboard": {
     "title": "Главная",
     "welcome": "Добро пожаловать, {name}",
+    "subtitle": "Цифры на сегодня, расписание кабинетов и деньги.",
     "yourRoles": "Ваши роли",
     "yourBranches": "Ваши филиалы",
-    "phaseNote": "Показатели, недельное расписание и сводка по финансам появятся на этапе 13."
+    "branch": "Филиал",
+    "showNumbers": "Показать цифры",
+    "hideNumbers": "Скрыть цифры",
+    "utilisation": "Загрузка центра {percent}%",
+    "kpis": {
+      "activeLeads": "Активные лиды",
+      "groups": "Группы",
+      "remainingDebt": "Оставшийся долг",
+      "debtors": "Должники",
+      "dueSoon": "Скоро оплата",
+      "activeStudents": "Активные ученики",
+      "studentsInGroups": "Учеников в группах",
+      "trial": "На пробном уроке",
+      "leftThisMonth": "Ушли в этом месяце",
+      "teachers": "Учителя",
+      "exams": "Предстоящие экзамены",
+      "newAdmissions": "Новые в группах"
+    },
+    "schedule": {
+      "title": "Расписание кабинетов",
+      "step": "Шаг времени",
+      "minutes": "{count} минут",
+      "teacher": "Учитель",
+      "free": "Свободно",
+      "noRoom": "Без кабинета",
+      "empty": "Кабинетов пока нет.",
+      "emptyHint": "Добавьте кабинеты в настройках и выберите их в расписании групп.",
+      "hours": "Рабочие часы {start}–{end}",
+      "h": "ч"
+    },
+    "finance": {
+      "title": "Финансы",
+      "year": "Год",
+      "month": "Месяц",
+      "wholeYear": "Весь год",
+      "method": "Тип оплаты"
+    }
   },
   "errors": {
     "title": "Что-то пошло не так",
@@ -2593,6 +2630,32 @@
       "net": "К выплате",
       "gender": "Пол",
       "birthDate": "Дата рождения"
+    }
+  },
+  "search": {
+    "placeholder": "Поиск: ученики, лиды, группы…",
+    "searching": "Ищем…",
+    "empty": "Ничего не найдено.",
+    "groups": {
+      "students": "Ученики",
+      "leads": "Лиды",
+      "groups": "Группы"
+    }
+  },
+  "notifications": {
+    "title": "Уведомления",
+    "loading": "Загрузка…",
+    "empty": "Уведомлений пока нет.",
+    "markAllRead": "Отметить все прочитанными",
+    "markRead": "Прочитано",
+    "viewAll": "Все уведомления",
+    "unreadOnly": "Только непрочитанные",
+    "unreadCount": "Непрочитанных: {count}",
+    "kinds": {
+      "PAYMENT": "{name} оплатил(а) {amount} за {group} (принял {by})",
+      "LEAD": "Новый лид {name} в {column} ({source})",
+      "DEBTORS": "Сегодня должников: {count}",
+      "BIRTHDAY": "У {name} сегодня день рождения"
     }
   }
 }

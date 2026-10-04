@@ -1,6 +1,6 @@
 "use client";
 
-import { LogOut, UserRound } from "lucide-react";
+import { Bell, LogOut, Receipt, UserRound } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useTransition } from "react";
 
@@ -13,15 +13,18 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { useRouter } from "@/i18n/navigation";
+import { Link, useRouter } from "@/i18n/navigation";
 import { api } from "@/lib/api-client";
 
 export function UserMenu({
   user,
   roles,
+  canReceipt = false,
 }: {
   user: { fullName: string; phone: string };
   roles: Array<{ code: string; name: string }>;
+  /** Shows "Chek sozlamalari" (EXP §11) for users who may edit organisation settings. */
+  canReceipt?: boolean;
 }) {
   const t = useTranslations();
   const router = useRouter();
@@ -55,6 +58,21 @@ export function UserMenu({
               .join(", ")}
           </p>
         </DropdownMenuLabel>
+        <DropdownMenuSeparator />
+        <DropdownMenuItem asChild>
+          <Link href="/notifications" data-testid="menu-notifications">
+            <Bell />
+            {t("notifications.title")}
+          </Link>
+        </DropdownMenuItem>
+        {canReceipt && (
+          <DropdownMenuItem asChild>
+            <Link href="/settings/receipt" data-testid="menu-receipt">
+              <Receipt />
+              {t("settings.nav.receipt")}
+            </Link>
+          </DropdownMenuItem>
+        )}
         <DropdownMenuSeparator />
         <DropdownMenuItem onSelect={signOut} disabled={isPending} data-testid="sign-out">
           <LogOut />

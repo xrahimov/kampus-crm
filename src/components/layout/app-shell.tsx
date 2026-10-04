@@ -1,8 +1,14 @@
 import { getTranslations } from "next-intl/server";
 
+import type { Actor } from "@/server/rbac/authorize";
+
 import { Link } from "@/i18n/navigation";
 
+import { unreadCount } from "@/server/services/dashboard/notifications.service";
+
 import { BranchSelector } from "./branch-selector";
+import { GlobalSearch } from "./global-search";
+import { NotificationBell } from "./notification-bell";
 import { PayButton } from "@/features/payments/pay-button";
 
 import { LocaleSwitcher } from "./locale-switcher";
@@ -10,6 +16,7 @@ import { MainNav } from "./main-nav";
 import { UserMenu } from "./user-menu";
 
 export interface AppShellProps {
+  actor: Actor;
   user: { id: string; fullName: string; phone: string; photoUrl: string | null };
   roles: Array<{ code: string; name: string }>;
   permissions: string[];
@@ -19,6 +26,7 @@ export interface AppShellProps {
 }
 
 export async function AppShell({
+  actor,
   user,
   roles,
   permissions,
@@ -29,6 +37,8 @@ export async function AppShell({
   const t = await getTranslations();
   const canChooseAll = permissions.includes("*") || permissions.includes("settings.org");
   const canPay = permissions.includes("*") || permissions.includes("payments.create");
+  const canReceipt = permissions.includes("*") || permissions.includes("settings.org");
+  const unread = await unreadCount(actor);
 
   return (
     <div className="flex min-h-screen flex-col">
@@ -45,6 +55,7 @@ export async function AppShell({
           </Link>
 
           <div className="ml-auto flex items-center gap-1 sm:gap-2">
+            <GlobalSearch />
             {canPay && <PayButton />}
             <BranchSelector
               branches={branches}
@@ -52,7 +63,8 @@ export async function AppShell({
               canChooseAll={canChooseAll}
             />
             <LocaleSwitcher />
-            <UserMenu user={user} roles={roles} />
+            <NotificationBell initialUnread={unread} />
+            <UserMenu user={user} roles={roles} canReceipt={canReceipt} />
           </div>
         </div>
         <MainNav permissions={permissions} />

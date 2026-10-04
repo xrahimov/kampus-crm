@@ -66,9 +66,46 @@
   "dashboard": {
     "title": "Home",
     "welcome": "Welcome, {name}",
+    "subtitle": "Today's figures, the room schedule and the money.",
     "yourRoles": "Your roles",
     "yourBranches": "Your branches",
-    "phaseNote": "KPIs, the weekly schedule and the finance summary arrive in phase 13."
+    "branch": "Branch",
+    "showNumbers": "Show numbers",
+    "hideNumbers": "Hide numbers",
+    "utilisation": "Center utilisation {percent}%",
+    "kpis": {
+      "activeLeads": "Active leads",
+      "groups": "Groups",
+      "remainingDebt": "Remaining debt",
+      "debtors": "Debtors",
+      "dueSoon": "Payment due soon",
+      "activeStudents": "Active students",
+      "studentsInGroups": "Students in groups",
+      "trial": "In trial lessons",
+      "leftThisMonth": "Left this month",
+      "teachers": "Teachers",
+      "exams": "Upcoming exams",
+      "newAdmissions": "New group admissions"
+    },
+    "schedule": {
+      "title": "Room schedule",
+      "step": "Time step",
+      "minutes": "{count} minutes",
+      "teacher": "Teacher",
+      "free": "Free",
+      "noRoom": "No room",
+      "empty": "No rooms yet.",
+      "emptyHint": "Add rooms in Settings and pick them in each group's schedule.",
+      "hours": "Working hours {start}–{end}",
+      "h": "h"
+    },
+    "finance": {
+      "title": "Finance",
+      "year": "Year",
+      "month": "Month",
+      "wholeYear": "Whole year",
+      "method": "Payment type"
+    }
   },
   "errors": {
     "title": "Something went wrong",
@@ -2593,6 +2630,32 @@
       "net": "Net",
       "gender": "Gender",
       "birthDate": "Birth date"
+    }
+  },
+  "search": {
+    "placeholder": "Search students, leads, groups…",
+    "searching": "Searching…",
+    "empty": "Nothing found.",
+    "groups": {
+      "students": "Students",
+      "leads": "Leads",
+      "groups": "Groups"
+    }
+  },
+  "notifications": {
+    "title": "Notifications",
+    "loading": "Loading…",
+    "empty": "No notifications yet.",
+    "markAllRead": "Mark all as read",
+    "markRead": "Mark as read",
+    "viewAll": "View all notifications",
+    "unreadOnly": "Unread only",
+    "unreadCount": "{count} unread",
+    "kinds": {
+      "PAYMENT": "{name} paid {amount} for {group} (received by {by})",
+      "LEAD": "New lead {name} in {column} ({source})",
+      "DEBTORS": "{count} students owe money today",
+      "BIRTHDAY": "{name} has a birthday today"
     }
   }
 }

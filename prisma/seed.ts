@@ -1212,6 +1212,48 @@ async function seedReports(organizationId: string) {
   console.log("Seeded leave reasons, 2 left students and 1 graduate.");
 }
 
+/** Phase 13: a few bell notifications for the demo CEO and admin (A-97). */
+async function seedNotifications() {
+  if ((await prisma.notification.count()) > 0) return;
+  const users = await prisma.user.findMany({
+    where: { phone: { in: ["+998900000001", "+998900000002"] } },
+    select: { id: true },
+  });
+  const student = await prisma.student.findFirst({ where: { fullName: "Demo Student One" } });
+  const today = new Date().toISOString().slice(0, 10);
+  for (const u of users) {
+    await prisma.notification.createMany({
+      data: [
+        {
+          userId: u.id,
+          kind: "PAYMENT",
+          params: {
+            name: "Demo Student One",
+            amount: 500000,
+            group: "GE-Morning A1",
+            by: "Demo Cashier",
+          },
+          href: student ? `/students/${student.id}` : null,
+        },
+        {
+          userId: u.id,
+          kind: "LEAD",
+          params: { name: "<client name>", column: "NEW LEADS", source: "Instagram" },
+          href: "/leads",
+        },
+        {
+          userId: u.id,
+          kind: "DEBTORS",
+          params: { count: 2, day: today },
+          href: "/students?paymentStatus=DEBTOR",
+          readAt: new Date(),
+        },
+      ],
+    });
+  }
+  console.log("Seeded demo notifications.");
+}
+
 async function main() {
   const org = await prisma.organization.upsert({
     where: { id: "org_demo" },
@@ -1286,6 +1328,7 @@ async function main() {
   await seedCoinsAndTests(org.id, branches);
   await seedIntegrations(org.id, branches);
   await seedReports(org.id);
+  await seedNotifications();
 
   console.log(`Seeded ${DEMO_USERS.length} demo users across ${branchNames.length} branches.`);
   console.log(`Sign in with ${DEMO_USERS[0]!.phone} and the SEED_ADMIN_PASSWORD from .env.`);
