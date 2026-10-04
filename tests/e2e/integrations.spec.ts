@@ -115,6 +115,13 @@ test.describe("integrations", () => {
     await expect(page.getByTestId("login-row").first()).toContainText("Demo CEO");
     await page.goto("/en/settings/logs/actions");
     await expect(page.getByTestId("action-row").first()).toBeVisible();
+    // Every known action shows its translated name, never a raw key like "lead.move".
+    await expect(
+      page.getByTestId("action-row").filter({
+        hasText:
+          /\b(payment|discount|membership|group|student|attendance|grades|lead|sms|exam)\.\w+/,
+      }),
+    ).toHaveCount(0);
 
     // Bot notifications: add a staff member with a chat id, then remove them again.
     await page.goto("/en/settings/bot");

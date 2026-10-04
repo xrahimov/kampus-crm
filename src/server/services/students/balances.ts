@@ -1,6 +1,11 @@
 import type { Prisma } from "@/generated/prisma/client";
 import type { DbClient } from "@/server/db/prisma";
-import { dateToIso, decimalToNumber, isoToDate } from "@/server/services/settings/shared";
+import {
+  dateToIso,
+  decimalToNumber,
+  isoToDate,
+  prismaCode,
+} from "@/server/services/settings/shared";
 
 import {
   addMonthsIso,
@@ -129,17 +134,31 @@ export async function syncCharges(db: DbClient, membershipIds: string[]): Promis
           data: { lessonsTotal: total, lessonsCounted: counted, amount },
         });
       } else {
-        await db.charge.create({
-          data: {
-            membershipId: m.id,
-            month: isoToDate(month),
-            price,
-            amount,
-            lessonsTotal: total,
-            lessonsCounted: counted,
-            discountId: discount?.id ?? null,
-          },
-        });
+        try {
+          await db.charge.create({
+            data: {
+              membershipId: m.id,
+              month: isoToDate(month),
+              price,
+              amount,
+              lessonsTotal: total,
+              lessonsCounted: counted,
+              discountId: discount?.id ?? null,
+            },
+          });
+        } catch (error) {
+          // Balances are computed on demand from many places at once (a page,
+          // the daily job, a report), so another caller may have written this
+          // month's row between our read and this insert. It used the same
+          // inputs, so keep its row; only the moving current month is refreshed.
+          if (prismaCode(error) !== "P2002") throw error;
+          if (month === currentMonth) {
+            await db.charge.update({
+              where: { membershipId_month: { membershipId: m.id, month: isoToDate(month) } },
+              data: { lessonsTotal: total, lessonsCounted: counted, amount },
+            });
+          }
+        }
       }
     }
   }
