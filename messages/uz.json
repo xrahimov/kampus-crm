@@ -110,7 +110,12 @@
     "examHasResults": "Bu imtihonda ballar bor. Avval ularni o'chiring.",
     "examsHidden": "Imtihon jadvali ustozlarga ko'rinmaydi.",
     "notMockExam": "Arizalar faqat mock imtihonlar uchun.",
-    "examFull": "Imtihonda bo'sh joy yo'q."
+    "examFull": "Imtihonda bo'sh joy yo'q.",
+    "categoryNotFound": "Bo'lim topilmadi.",
+    "categoryHasEntries": "Bu bo'limda yozuvlar bor. Avval ularni o'chiring yoki ko'chiring.",
+    "entryNotFound": "Yozuv topilmadi.",
+    "payrollNotFound": "Bu oy uchun ish haqi hali hisoblanmagan.",
+    "payrollLineNotFound": "Ish haqi qatori topilmadi."
   },
   "validation": {
     "phone": "+998 90 123 45 67 ko‘rinishida raqam kiriting.",
@@ -161,7 +166,10 @@
     "groupsMin": "Kamida bitta guruh tanlang.",
     "groupUnknown": "Noma'lum guruh.",
     "examType": "Imtihon turini o'zgartirib bo'lmaydi.",
-    "scoreMax": "Ball maksimaldan katta."
+    "scoreMax": "Ball maksimaldan katta.",
+    "categoryKind": "Bo'lim boshqa hisobotga tegishli.",
+    "staffUnknown": "Noma'lum xodim.",
+    "entryType": "Yozuv turini o'zgartirib bo'lmaydi."
   },
   "roles": {
     "CEO": "CEO",
@@ -1336,6 +1344,160 @@
       "empty": "Hali o'quvchilar yo'q.",
       "full": "Joylar tugadi.",
       "registrations": "{capacity} dan {count}"
+    }
+  },
+  "finance": {
+    "title": "Moliya",
+    "overview": "Umumiy raqamlar",
+    "byMethod": "To'lov usullari bo'yicha tushumlar",
+    "noMethod": "Usulsiz",
+    "yearly": "{year} yildagi aylanmalar",
+    "planTitle": "{month} oyidagi rejasi",
+    "effectiveTime": "Tasir vaqti",
+    "plan": {
+      "achieved": "Erishilgan summa",
+      "expected": "Kutilayotgan",
+      "done": "{percent}% bajarildi",
+      "left": "{percent}% qoldi",
+      "progress": "Reja bajarilishi",
+      "monthlyPlan": "Oylik reja",
+      "activeDebt": "Faol qarzdorlik · qarzdorlar",
+      "prepayments": "Oldindan to'lovlar",
+      "currentShare": "Joriy oy ulushiga"
+    },
+    "expenseReport": "Chiqim hisoboti",
+    "incomeReport": "Kirim hisoboti",
+    "addCategory": "Bo'lim",
+    "categoryDialog": "Xarajatlar bo'limini yaratish",
+    "categoryName": "Bo'lim nomi",
+    "sections": {
+      "advance": "Avanslar",
+      "marketing": "Marketing",
+      "bonus": "Bonuslar",
+      "penalty": "Jarimalar",
+      "investment": "Investitsiyalar",
+      "expense": "Chiqimlar",
+      "income": "Kirimlar"
+    },
+    "staffMoney": "Xodimlarga bonus va jarimalar",
+    "kpis": {
+      "income": "Tushumlar",
+      "expenses": "Chiqimlar",
+      "profit": "Foyda",
+      "activeBalance": "Aktiv balans",
+      "ltv": "LTV",
+      "cac": "CAC",
+      "marketingEfficiency": "Marketing samaradorligi",
+      "averagePayment": "O'rtacha to'lov"
+    },
+    "filters": {
+      "branch": "Filial",
+      "year": "Yil",
+      "month": "Oy",
+      "wholeYear": "Butun yil",
+      "method": "To'lov turi",
+      "anyMethod": "Barchasi",
+      "anyStaff": "Barcha xodimlar"
+    },
+    "titles": {
+      "EXPENSE": "Chiqim kiritish",
+      "INCOME": "Kirim kiritish",
+      "ADVANCE": "Avans berish",
+      "MARKETING": "Marketing yaratish",
+      "BONUS": "Bonus berish",
+      "PENALTY": "Jarima berish",
+      "INVESTMENT": "Investitsiya yaratish"
+    },
+    "editTitle": "Yozuvni tahrirlash",
+    "add": {
+      "EXPENSE": "Chiqim kiritish",
+      "INCOME": "Yangi qo'shish",
+      "ADVANCE": "Avans berish",
+      "MARKETING": "Marketing qo'shish",
+      "BONUS": "Bonus berish",
+      "PENALTY": "Jarima berish",
+      "INVESTMENT": "Investitsiya yaratish"
+    },
+    "form": {
+      "branch": "Filial",
+      "method": "To'lov turi",
+      "category": "Bo'lim",
+      "party": "Kontragent",
+      "staff": "Xodim",
+      "student": "Talaba",
+      "studentSearch": "Ism yoki telefon…",
+      "counterparty": "Ism familiya",
+      "amount": "Summa",
+      "date": "Sana",
+      "comment": "Izoh"
+    },
+    "columns": {
+      "counterparty": "Xodim / talaba",
+      "method": "To'lov turi",
+      "amount": "Summa",
+      "date": "Sana",
+      "comment": "Izoh",
+      "createdBy": "Kim yaratdi"
+    },
+    "deleteTitle": "Yozuv o'chirilsinmi?",
+    "deleteText": "{amount} summali yozuv o'chiriladi.",
+    "payroll": {
+      "title": "Ish haqi hisobotlari",
+      "open": "{month} ni ochish",
+      "rulesNote": "Hisoblash turlari: foiz — kurs narxi × o'quvchilar; dars haqi × o'tilgan darslar; talaba ulushi × o'quvchilar; bonus qo'shiladi, jarima va avans ayriladi.",
+      "empty": "Ish haqi hali hisoblanmagan. Hisoblash uchun oyni oching.",
+      "columns": {
+        "month": "Oy",
+        "staff": "Xodimlar",
+        "fixed": "Doimiy",
+        "percent": "Foiz",
+        "perLesson": "Dars",
+        "perStudent": "O'quvchi",
+        "bonus": "Bonus",
+        "penalty": "Jarima",
+        "advance": "Avans",
+        "total": "Jami",
+        "staffMember": "Xodim",
+        "role": "Lavozim",
+        "penaltyCount": "Jarima (soni)",
+        "net": "Maosh"
+      },
+      "statuses": {
+        "DRAFT": "Qoralama",
+        "SAVED": "Saqlangan"
+      },
+      "lineStatuses": {
+        "MODERATION": "Moderatsiya",
+        "APPROVED": "Tasdiqlangan"
+      },
+      "monthTitle": "{month} ish haqi",
+      "summary": "{staff} ta xodim · {approved} ta tasdiqlangan",
+      "search": "Xodim qidirish…",
+      "hints": {
+        "penaltyCount": "Shu oydagi jarimalar soni",
+        "fixed": "Doimiy oylik maosh",
+        "percent": "Kurs narxidan foiz × o'quvchilar",
+        "perLesson": "Dars haqi × o'tilgan darslar",
+        "perStudent": "Talaba ulushi × o'quvchilar",
+        "bonus": "Shu oydagi bonuslar",
+        "penalty": "Shu oydagi jarimalar",
+        "advance": "Shu oydagi avanslar"
+      },
+      "details": "Guruhlar bo'yicha",
+      "negative": "Manfiy maosh",
+      "approve": "Tasdiqlash",
+      "noGroups": "Bu oyda guruhlar yo'q.",
+      "shareTypes": {
+        "PERCENT": "{value}% × {price} × {students} o'quvchi",
+        "PER_LESSON": "{value} × {lessons} dars",
+        "PER_STUDENT": "{value} × {students} o'quvchi"
+      },
+      "total": "Jami",
+      "recalculate": "Qayta hisoblash",
+      "recalculated": "Qayta hisoblandi.",
+      "saveDraft": "Vaqtincha saqlash",
+      "savedDraft": "Qoralama saqlandi.",
+      "saved": "Ish haqi saqlandi."
     }
   }
 }

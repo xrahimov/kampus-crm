@@ -22,14 +22,16 @@ model Organization {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  branches        Branch[]
-  settings        OrgSettings?
-  paymentMethods  PaymentMethod[]
-  gradingSystems  GradingSystem[]
-  schools         School[]
-  leadSources     LeadSource[]
-  receiptSettings ReceiptSettings?
-  leadForms       LeadForm[]
+  branches          Branch[]
+  settings          OrgSettings?
+  paymentMethods    PaymentMethod[]
+  gradingSystems    GradingSystem[]
+  schools           School[]
+  leadSources       LeadSource[]
+  receiptSettings   ReceiptSettings?
+  leadForms         LeadForm[]
+  financeCategories FinanceCategory[]
+  payrollRuns       PayrollRun[]
 }
 
 model Branch {
@@ -40,19 +42,20 @@ model Branch {
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
 
-  organization Organization @relation(fields: [organizationId], references: [id])
-  users        UserBranch[]
-  sessions     Session[]
-  auditLogs    AuditLog[]
-  courses      Course[]
-  rooms        Room[]
-  daysOff      DayOff[]
-  groups       Group[]
-  students     Student[]
-  payments     Payment[]
-  leadBoards   LeadBoard[]
-  leads        Lead[]
-  exams        Exam[]
+  organization   Organization   @relation(fields: [organizationId], references: [id])
+  users          UserBranch[]
+  sessions       Session[]
+  auditLogs      AuditLog[]
+  courses        Course[]
+  rooms          Room[]
+  daysOff        DayOff[]
+  groups         Group[]
+  students       Student[]
+  payments       Payment[]
+  leadBoards     LeadBoard[]
+  leads          Lead[]
+  exams          Exam[]
+  financeEntries FinanceEntry[]
 
   @@index([organizationId])
 }
@@ -110,8 +113,12 @@ model User {
   leadsAssigned Lead[] @relation("leadTeacher")
   leadsCreated  Lead[] @relation("leadCreator")
 
-  examsExamined Exam[]       @relation("examiner")
-  examsGraded   ExamResult[] @relation("examGrader")
+  examsExamined   Exam[]         @relation("examiner")
+  financeEntries  FinanceEntry[] @relation("financeStaff")
+  financeCreated  FinanceEntry[] @relation("financeCreator")
+  payrollLines    PayrollLine[]
+  payrollApproved PayrollLine[]  @relation("payrollApprover")
+  examsGraded     ExamResult[]   @relation("examGrader")
 }
 
 /// A role is a named bundle of permission codes. System roles are seeded and
@@ -268,8 +275,9 @@ model PaymentMethod {
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
 
-  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
-  payments     Payment[]
+  organization   Organization   @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  payments       Payment[]
+  financeEntries FinanceEntry[]
 
   @@unique([organizationId, name])
 }
@@ -553,16 +561,17 @@ model Student {
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
 
-  branch       Branch               @relation(fields: [branchId], references: [id])
-  school       School?              @relation(fields: [schoolId], references: [id], onDelete: SetNull)
-  source       LeadSource?          @relation(fields: [sourceId], references: [id], onDelete: SetNull)
-  memberships  GroupMembership[]
-  parents      Parent[]
-  customFields StudentCustomField[]
-  comments     StudentComment[]
-  payments     Payment[]
-  leads        Lead[]
-  examResults  ExamResult[]
+  branch         Branch               @relation(fields: [branchId], references: [id])
+  school         School?              @relation(fields: [schoolId], references: [id], onDelete: SetNull)
+  source         LeadSource?          @relation(fields: [sourceId], references: [id], onDelete: SetNull)
+  memberships    GroupMembership[]
+  parents        Parent[]
+  customFields   StudentCustomField[]
+  comments       StudentComment[]
+  payments       Payment[]
+  leads          Lead[]
+  examResults    ExamResult[]
+  financeEntries FinanceEntry[]
 
   @@index([branchId, isArchived])
   @@index([phone])
@@ -1027,4 +1036,121 @@ model ExamResult {
 
   @@unique([examId, studentId])
   @@index([studentId])
+}
+
+/**
+ * Phase 9: finance (EXP §9).
+ */
+
+/// "Chiqim hisoboti" / "Kirim hisoboti" categories ("+ BO'LIM").
+enum FinanceKind {
+  EXPENSE
+  INCOME
+}
+
+model FinanceCategory {
+  id             String      @id @default(cuid())
+  organizationId String
+  kind           FinanceKind
+  name           String
+  sortOrder      Int         @default(0)
+  createdAt      DateTime    @default(now())
+
+  organization Organization   @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  entries      FinanceEntry[]
+
+  @@unique([organizationId, kind, name])
+}
+
+/// One ledger for every money row of EXP §9: category expenses and incomes,
+/// advances, marketing, staff bonuses and fines, investments (A-74).
+enum FinanceEntryType {
+  EXPENSE
+  INCOME
+  ADVANCE
+  MARKETING
+  BONUS
+  PENALTY
+  INVESTMENT
+}
+
+model FinanceEntry {
+  id              String           @id @default(cuid())
+  branchId        String
+  type            FinanceEntryType
+  categoryId      String?
+  paymentMethodId String?
+  amount          Decimal          @db.Decimal(15, 2)
+  date            DateTime         @db.Date
+  comment         String?
+  /// "XODIM / TALABA" counterparty; advances, bonuses and fines always name a staff member.
+  staffId         String?
+  studentId       String?
+  /// Investments: "Ism familiya" of the investor.
+  counterparty    String?
+  createdById     String?
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+
+  branch        Branch           @relation(fields: [branchId], references: [id])
+  category      FinanceCategory? @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  paymentMethod PaymentMethod?   @relation(fields: [paymentMethodId], references: [id], onDelete: SetNull)
+  staff         User?            @relation("financeStaff", fields: [staffId], references: [id], onDelete: SetNull)
+  student       Student?         @relation(fields: [studentId], references: [id], onDelete: SetNull)
+  createdBy     User?            @relation("financeCreator", fields: [createdById], references: [id], onDelete: SetNull)
+
+  @@index([branchId, type, date])
+  @@index([staffId, date])
+}
+
+/// "Ish haqi hisobotlari": one computed run per month (A-75).
+enum PayrollStatus {
+  DRAFT
+  SAVED
+}
+
+enum PayrollLineStatus {
+  MODERATION
+  APPROVED
+}
+
+model PayrollRun {
+  id             String        @id @default(cuid())
+  organizationId String
+  month          DateTime      @db.Date
+  status         PayrollStatus @default(DRAFT)
+  computedAt     DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+
+  organization Organization  @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  lines        PayrollLine[]
+
+  @@unique([organizationId, month])
+}
+
+model PayrollLine {
+  id           String            @id @default(cuid())
+  runId        String
+  userId       String
+  roleName     String
+  fixed        Decimal           @default(0) @db.Decimal(15, 2)
+  percent      Decimal           @default(0) @db.Decimal(15, 2)
+  perLesson    Decimal           @default(0) @db.Decimal(15, 2)
+  perStudent   Decimal           @default(0) @db.Decimal(15, 2)
+  bonus        Decimal           @default(0) @db.Decimal(15, 2)
+  penalty      Decimal           @default(0) @db.Decimal(15, 2)
+  penaltyCount Int               @default(0)
+  advance      Decimal           @default(0) @db.Decimal(15, 2)
+  net          Decimal           @default(0) @db.Decimal(15, 2)
+  /// Per-group breakdown shown on hover / in the row details.
+  details      Json              @default("[]")
+  status       PayrollLineStatus @default(MODERATION)
+  approvedById String?
+  approvedAt   DateTime?
+
+  run        PayrollRun @relation(fields: [runId], references: [id], onDelete: Cascade)
+  user       User       @relation(fields: [userId], references: [id])
+  approvedBy User?      @relation("payrollApprover", fields: [approvedById], references: [id], onDelete: SetNull)
+
+  @@unique([runId, userId])
 }

@@ -7,7 +7,7 @@
 import "dotenv/config";
 import { PrismaPg } from "@prisma/adapter-pg";
 
-import { PrismaClient } from "../src/generated/prisma/client";
+import { type Prisma, PrismaClient } from "../src/generated/prisma/client";
 import { DEFAULT_ROLE_PERMISSIONS, SYSTEM_ROLES } from "../src/lib/rbac/default-roles";
 import { hashPassword } from "../src/server/auth/password";
 import { addMonths, planLessons } from "../src/server/services/groups/schedule";
@@ -422,6 +422,103 @@ async function seedPayments(organizationId: string) {
   console.log(`Seeded ${memberships.length} demo payments.`);
 }
 
+/** Phase 9: finance categories and a few ledger rows for the current month. */
+async function seedFinance(organizationId: string, branches: Map<string, string>) {
+  const central = branches.get("Central")!;
+  const categories: Array<["EXPENSE" | "INCOME", string]> = [
+    ["EXPENSE", "Ijara"],
+    ["EXPENSE", "Kitoblar"],
+    ["EXPENSE", "Boshqalar"],
+    ["INCOME", "Ichimliklar"],
+    ["INCOME", "Kitoblar"],
+    ["INCOME", "Boshqalar"],
+  ];
+  const ids = new Map<string, string>();
+  for (const [i, [kind, name]] of categories.entries()) {
+    const row = await prisma.financeCategory.upsert({
+      where: { organizationId_kind_name: { organizationId, kind, name } },
+      update: { sortOrder: i },
+      create: { organizationId, kind, name, sortOrder: i },
+    });
+    ids.set(`${kind}:${name}`, row.id);
+  }
+  if ((await prisma.financeEntry.count({ where: { branchId: central } })) > 0) return;
+  const cash = await prisma.paymentMethod.findFirstOrThrow({
+    where: { organizationId, name: "Cash" },
+  });
+  const card = await prisma.paymentMethod.findFirstOrThrow({
+    where: { organizationId, name: "Card" },
+  });
+  const ceo = await prisma.user.findUniqueOrThrow({ where: { phone: "+998900000001" } });
+  const teacher = await prisma.user.findUniqueOrThrow({ where: { phone: "+998900000004" } });
+  const teacherTwo = await prisma.user.findUniqueOrThrow({ where: { phone: "+998900000006" } });
+  const now = new Date();
+  const day = (d: number) =>
+    new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), Math.min(d, 28)));
+  const rows: Array<Omit<Prisma.FinanceEntryUncheckedCreateInput, "branchId">> = [
+    {
+      type: "EXPENSE",
+      categoryId: ids.get("EXPENSE:Ijara"),
+      paymentMethodId: card.id,
+      amount: 8_000_000,
+      date: day(1),
+      comment: "Office rent",
+    },
+    {
+      type: "EXPENSE",
+      categoryId: ids.get("EXPENSE:Kitoblar"),
+      paymentMethodId: cash.id,
+      amount: 1_200_000,
+      date: day(3),
+      staffId: teacher.id,
+      comment: "Course books",
+    },
+    {
+      type: "INCOME",
+      categoryId: ids.get("INCOME:Ichimliklar"),
+      paymentMethodId: cash.id,
+      amount: 350_000,
+      date: day(5),
+      comment: "Vending",
+    },
+    {
+      type: "ADVANCE",
+      paymentMethodId: cash.id,
+      amount: 1_000_000,
+      date: day(6),
+      staffId: teacher.id,
+      comment: "Advance on salary",
+    },
+    {
+      type: "MARKETING",
+      paymentMethodId: card.id,
+      amount: 2_500_000,
+      date: day(2),
+      comment: "Instagram ads",
+    },
+    {
+      type: "BONUS",
+      paymentMethodId: cash.id,
+      amount: 500_000,
+      date: day(10),
+      staffId: teacherTwo.id,
+      comment: "Best retention",
+    },
+    { type: "PENALTY", amount: 150_000, date: day(12), staffId: teacher.id, comment: "Late twice" },
+    {
+      type: "INVESTMENT",
+      amount: 50_000_000,
+      date: day(1),
+      counterparty: "Demo Investor",
+      comment: "Seed capital",
+    },
+  ];
+  for (const data of rows) {
+    await prisma.financeEntry.create({ data: { ...data, branchId: central, createdById: ceo.id } });
+  }
+  console.log("Seeded demo finance rows.");
+}
+
 /** Phase 8: one upcoming and one finished group exam, plus a mock exam with registrations. */
 async function seedExams(branches: Map<string, string>) {
   const central = branches.get("Central")!;
@@ -729,6 +826,7 @@ async function main() {
   await seedPayments(org.id);
   await seedLeads(org.id, branches);
   await seedExams(branches);
+  await seedFinance(org.id, branches);
 
   console.log(`Seeded ${DEMO_USERS.length} demo users across ${branchNames.length} branches.`);
   console.log(`Sign in with ${DEMO_USERS[0]!.phone} and the SEED_ADMIN_PASSWORD from .env.`);

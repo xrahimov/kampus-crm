@@ -110,7 +110,12 @@
     "examHasResults": "This exam has scores. Remove them first.",
     "examsHidden": "The exam schedule is hidden for teachers.",
     "notMockExam": "Only mock exams take registrations.",
-    "examFull": "The exam has no free places."
+    "examFull": "The exam has no free places.",
+    "categoryNotFound": "Category not found.",
+    "categoryHasEntries": "This category has entries. Delete or move them first.",
+    "entryNotFound": "Entry not found.",
+    "payrollNotFound": "Payroll for this month is not computed yet.",
+    "payrollLineNotFound": "Payroll row not found."
   },
   "validation": {
     "phone": "Enter a number like +998 90 123 45 67.",
@@ -161,7 +166,10 @@
     "groupsMin": "Select at least one group.",
     "groupUnknown": "Unknown group.",
     "examType": "The exam type cannot be changed.",
-    "scoreMax": "The score exceeds the maximum."
+    "scoreMax": "The score exceeds the maximum.",
+    "categoryKind": "The category belongs to the other report.",
+    "staffUnknown": "Unknown staff member.",
+    "entryType": "The entry type cannot be changed."
   },
   "roles": {
     "CEO": "CEO",
@@ -1336,6 +1344,160 @@
       "empty": "No students yet.",
       "full": "Capacity reached.",
       "registrations": "{count} of {capacity}"
+    }
+  },
+  "finance": {
+    "title": "Finance",
+    "overview": "Key figures",
+    "byMethod": "Income by payment method",
+    "noMethod": "No method",
+    "yearly": "{year} turnover",
+    "planTitle": "Plan for {month}",
+    "effectiveTime": "Effect time",
+    "plan": {
+      "achieved": "Achieved",
+      "expected": "Expected",
+      "done": "{percent}% done",
+      "left": "{percent}% left",
+      "progress": "Plan progress",
+      "monthlyPlan": "Monthly plan",
+      "activeDebt": "Active debt · debtors",
+      "prepayments": "Prepayments",
+      "currentShare": "Current month share"
+    },
+    "expenseReport": "Expense report",
+    "incomeReport": "Income report",
+    "addCategory": "Category",
+    "categoryDialog": "Create a category",
+    "categoryName": "Category name",
+    "sections": {
+      "advance": "Advances",
+      "marketing": "Marketing",
+      "bonus": "Bonuses",
+      "penalty": "Fines",
+      "investment": "Investments",
+      "expense": "Expenses",
+      "income": "Income"
+    },
+    "staffMoney": "Staff bonuses and fines",
+    "kpis": {
+      "income": "Income",
+      "expenses": "Expenses",
+      "profit": "Profit",
+      "activeBalance": "Active balance",
+      "ltv": "LTV",
+      "cac": "CAC",
+      "marketingEfficiency": "Marketing efficiency",
+      "averagePayment": "Average payment"
+    },
+    "filters": {
+      "branch": "Branch",
+      "year": "Year",
+      "month": "Month",
+      "wholeYear": "Whole year",
+      "method": "Payment type",
+      "anyMethod": "All types",
+      "anyStaff": "All staff"
+    },
+    "titles": {
+      "EXPENSE": "Add an expense",
+      "INCOME": "Add an income",
+      "ADVANCE": "Give an advance",
+      "MARKETING": "Add marketing",
+      "BONUS": "Give a bonus",
+      "PENALTY": "Give a fine",
+      "INVESTMENT": "Create an investment"
+    },
+    "editTitle": "Edit entry",
+    "add": {
+      "EXPENSE": "Add expense",
+      "INCOME": "Add new",
+      "ADVANCE": "Give advance",
+      "MARKETING": "Add marketing",
+      "BONUS": "Give bonus",
+      "PENALTY": "Give fine",
+      "INVESTMENT": "Create investment"
+    },
+    "form": {
+      "branch": "Branch",
+      "method": "Payment type",
+      "category": "Category",
+      "party": "Counterparty",
+      "staff": "Staff member",
+      "student": "Student",
+      "studentSearch": "Name or phone…",
+      "counterparty": "Full name",
+      "amount": "Amount",
+      "date": "Date",
+      "comment": "Comment"
+    },
+    "columns": {
+      "counterparty": "Staff / student",
+      "method": "Payment type",
+      "amount": "Amount",
+      "date": "Date",
+      "comment": "Comment",
+      "createdBy": "Created by"
+    },
+    "deleteTitle": "Delete entry?",
+    "deleteText": "The {amount} entry will be deleted.",
+    "payroll": {
+      "title": "Payroll reports",
+      "open": "Open {month}",
+      "rulesNote": "Calculation: percent of the course price × students; per lesson × lessons held; per student × students; plus bonuses, minus fines and advances.",
+      "empty": "No payroll computed yet. Open a month to compute it.",
+      "columns": {
+        "month": "Month",
+        "staff": "Staff",
+        "fixed": "Fixed",
+        "percent": "Percent",
+        "perLesson": "Lessons",
+        "perStudent": "Students",
+        "bonus": "Bonus",
+        "penalty": "Fines",
+        "advance": "Advance",
+        "total": "Total",
+        "staffMember": "Staff member",
+        "role": "Role",
+        "penaltyCount": "Fines (count)",
+        "net": "Salary"
+      },
+      "statuses": {
+        "DRAFT": "Draft",
+        "SAVED": "Saved"
+      },
+      "lineStatuses": {
+        "MODERATION": "Moderation",
+        "APPROVED": "Approved"
+      },
+      "monthTitle": "{month} payroll",
+      "summary": "{staff} staff · {approved} approved",
+      "search": "Search staff…",
+      "hints": {
+        "penaltyCount": "Number of fines this month",
+        "fixed": "Fixed monthly salary",
+        "percent": "Percent of the course price × students",
+        "perLesson": "Per-lesson fee × lessons held",
+        "perStudent": "Per-student fee × students",
+        "bonus": "Bonuses this month",
+        "penalty": "Fines this month",
+        "advance": "Advances this month"
+      },
+      "details": "Per-group breakdown",
+      "negative": "Negative salary",
+      "approve": "Approve",
+      "noGroups": "No groups this month.",
+      "shareTypes": {
+        "PERCENT": "{value}% × {price} × {students} students",
+        "PER_LESSON": "{value} × {lessons} lessons",
+        "PER_STUDENT": "{value} × {students} students"
+      },
+      "total": "Total",
+      "recalculate": "Recalculate",
+      "recalculated": "Recalculated.",
+      "saveDraft": "Save draft",
+      "savedDraft": "Draft saved.",
+      "saved": "Payroll saved."
     }
   }
 }
