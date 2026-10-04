@@ -22,10 +22,12 @@ COPY . .
 RUN npx prisma generate && npm run build
 
 # --- migrator: full toolchain, no app server ---------------------------------
+# Carries the source tree because the seed and the bootstrap import services
+# (and `@/` path aliases need tsconfig.json).
 FROM deps AS migrator
-COPY src/lib ./src/lib
-COPY src/server/auth/password.ts ./src/server/auth/password.ts
-COPY scripts/bootstrap.ts ./scripts/bootstrap.ts
+COPY src ./src
+COPY scripts ./scripts
+COPY tsconfig.json ./
 RUN npx prisma generate
 CMD ["npx", "prisma", "migrate", "deploy"]
 

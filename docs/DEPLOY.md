@@ -27,9 +27,15 @@ server with Docker works the same way.
 ```bash
 ssh root@<server-ip>
 apt-get update && apt-get -y upgrade
+apt-get -y install unattended-upgrades && dpkg-reconfigure -f noninteractive unattended-upgrades
+fallocate -l 2G /swapfile && chmod 600 /swapfile && mkswap /swapfile && swapon /swapfile
+echo '/swapfile none swap sw 0 0' >> /etc/fstab
 curl -fsSL https://get.docker.com | sh
 docker compose version      # Docker Compose v2 is included
 ```
+
+Security updates then install themselves, and the 2 GB swap file keeps the
+first `docker compose build` from running out of memory on a 4 GB server.
 
 ## 3. Get the code
 
