@@ -419,7 +419,26 @@ async function seedPayments(organizationId: string) {
       },
     });
   }
-  console.log(`Seeded ${memberships.length} demo payments.`);
+  // One payment received this month, so the payments report's staff tab has a row (Phase 12).
+  const now = new Date();
+  const thisMonth = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1));
+  if (memberships[0]) {
+    await prisma.payment.create({
+      data: {
+        studentId: memberships[0].studentId,
+        membershipId: memberships[0].id,
+        branchId: memberships[0].group.branchId,
+        paymentMethodId: cash.id,
+        amount: 450_000,
+        bonus: 0,
+        effectiveMonth: thisMonth,
+        paidAt: new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate())),
+        comment: null,
+        receivedById: cashier.id,
+      },
+    });
+  }
+  console.log(`Seeded ${memberships.length + 1} demo payments.`);
 }
 
 /** Phase 9: finance categories and a few ledger rows for the current month. */
@@ -1130,6 +1149,69 @@ async function seedIntegrations(organizationId: string, branches: Map<string, st
   void groupA;
 }
 
+/** Phase 12: leave reasons, a couple of students who left this month and one graduate. */
+async function seedReports(organizationId: string) {
+  for (const [kind, name] of [
+    ["LEAVE", "Daraja"],
+    ["LEAVE", "Joylashuv"],
+    ["LEAVE", "Narx"],
+    ["LEAVE", "Vaqt"],
+    ["TRANSFER", "Daraja"],
+    ["TRANSFER", "Vaqt"],
+  ] as const) {
+    await prisma.leaveReason.upsert({
+      where: { organizationId_kind_name: { organizationId, kind, name } },
+      update: {},
+      create: { organizationId, kind, name },
+    });
+  }
+  const admin = await prisma.user.findUniqueOrThrow({ where: { phone: "+998900000001" } });
+  const members = async (name: string) =>
+    (
+      await prisma.group.findFirst({
+        where: { name },
+        include: { memberships: { include: { student: true } } },
+      })
+    )?.memberships ?? [];
+  const byName = (rows: Awaited<ReturnType<typeof members>>, fullName: string) =>
+    rows.find((m) => m.student.fullName === fullName);
+  const morning = await members("GE-Morning A1");
+  const evening = await members("IELTS Evening");
+  const three = byName(morning, "Demo Student Three");
+  const four = byName(morning, "Demo Student Four");
+  const six = byName(evening, "Demo Student Six");
+  if (!three || !four || !six) return;
+  if ((await prisma.graduateRecord.count()) > 0) return;
+  const now = new Date();
+  const day = (d: number) => new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), d));
+  // Students One, Two and Five stay open: the e2e specs act on them.
+  await prisma.groupMembership.update({
+    where: { id: three.id },
+    data: { status: "ARCHIVED", leftAt: day(3), leaveReason: "Narx", leftById: admin.id },
+  });
+  await prisma.groupMembership.update({
+    where: { id: six.id },
+    data: {
+      status: "ARCHIVED",
+      leftAt: day(5),
+      leaveReason: "transfer",
+      note: "Vaqt",
+      leftById: admin.id,
+    },
+  });
+  await prisma.groupMembership.update({
+    where: { id: four.id },
+    data: {
+      status: "GRADUATED",
+      leftAt: day(2),
+      graduate: {
+        create: { ieltsScore: 6.5, cefrLevel: "B2", university: true, employed: false },
+      },
+    },
+  });
+  console.log("Seeded leave reasons, 2 left students and 1 graduate.");
+}
+
 async function main() {
   const org = await prisma.organization.upsert({
     where: { id: "org_demo" },
@@ -1203,6 +1285,7 @@ async function main() {
   await seedFinance(org.id, branches);
   await seedCoinsAndTests(org.id, branches);
   await seedIntegrations(org.id, branches);
+  await seedReports(org.id);
 
   console.log(`Seeded ${DEMO_USERS.length} demo users across ${branchNames.length} branches.`);
   console.log(`Sign in with ${DEMO_USERS[0]!.phone} and the SEED_ADMIN_PASSWORD from .env.`);

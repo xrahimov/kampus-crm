@@ -1,6 +1,6 @@
 "use client";
 
-import { MoreHorizontal, Plus, Search, UserCheck } from "lucide-react";
+import { FileUp, MoreHorizontal, Plus, Search, UserCheck } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useEffect, useState, useTransition } from "react";
 
@@ -24,6 +24,8 @@ import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { FormDialog } from "@/features/settings/shared/form-dialog";
 import { PaymentDialog } from "@/features/payments/payment-dialog";
+import { ExcelLink } from "@/features/shared/excel-link";
+import { ImportDialog } from "@/features/shared/import-dialog";
 import { todayIso } from "@/features/staff/password";
 import { Link, useRouter } from "@/i18n/navigation";
 import { api, ApiError } from "@/lib/api-client";
@@ -35,6 +37,7 @@ import { useMoneyFormat } from "@/lib/use-money-format";
 import type { MembershipDto } from "@/server/services/groups/memberships.service";
 import type { PaymentOptionsDto } from "@/server/services/students/payments.service";
 
+import { LeaveReasonField } from "./leave-reason-field";
 import { ToLeadDialog } from "./to-lead-dialog";
 import { TransferDialog } from "./transfer-dialog";
 
@@ -97,6 +100,7 @@ export function MembersPanel({
   const [showJoined, setShowJoined] = useState(false);
   const [showBalance, setShowBalance] = useState(true);
   const [adding, setAdding] = useState(false);
+  const [importing, setImporting] = useState(false);
   const [removing, setRemoving] = useState<MembershipDto | null>(null);
   const [removeReason, setRemoveReason] = useState("");
   const [paying, setPaying] = useState<MembershipDto | null>(null);
@@ -131,6 +135,11 @@ export function MembersPanel({
           {tm("title")} <span className="text-muted-foreground">({members.length})</span>
         </h2>
         <div className="flex flex-wrap gap-2">
+          <ExcelLink
+            path={`/groups/${groupId}/export.xlsx`}
+            params={{ archived: showArchived ? "true" : null }}
+            testId="members-excel"
+          />
           {canActivate && (
             <Button
               size="sm"
@@ -139,6 +148,16 @@ export function MembersPanel({
               data-testid="activate-members"
             >
               <UserCheck /> {tm("activateAll")}
+            </Button>
+          )}
+          {canEdit && !groupArchived && (
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => setImporting(true)}
+              data-testid="import-members"
+            >
+              <FileUp /> {tm("importExcel")}
             </Button>
           )}
           {canEdit && !groupArchived && (
@@ -311,6 +330,15 @@ export function MembersPanel({
         canCreateStudent={canCreateStudent}
         onSaved={refresh}
       />
+      <ImportDialog
+        open={importing}
+        onOpenChange={setImporting}
+        title={tm("importExcel")}
+        templatePath="/groups/import-template.xlsx"
+        importPath={`/groups/${groupId}/members/import`}
+        onDone={refresh}
+        testId="members-import-dialog"
+      />
       <ConfirmDialog
         open={!!removing}
         onOpenChange={(open) => {
@@ -331,14 +359,13 @@ export function MembersPanel({
           refresh();
         }}
       >
-        <div className="space-y-2">
-          <Label htmlFor="remove-reason">{t("students.remove.reason")}</Label>
-          <Input
-            id="remove-reason"
-            value={removeReason}
-            onChange={(e) => setRemoveReason(e.target.value)}
-          />
-        </div>
+        <LeaveReasonField
+          kind="LEAVE"
+          value={removeReason}
+          onChange={setRemoveReason}
+          active={!!removing}
+          id="remove-reason"
+        />
       </ConfirmDialog>
       <ConfirmDialog
         open={activating}

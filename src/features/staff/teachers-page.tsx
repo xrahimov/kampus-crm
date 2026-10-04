@@ -27,6 +27,7 @@ import { creatableBranches, type BranchOption } from "@/features/settings/shared
 import { RowActions } from "@/features/settings/shared/row-actions";
 import { SendSmsDialog } from "@/features/sms/send-sms-dialog";
 import { Link, usePathname, useRouter } from "@/i18n/navigation";
+import { ExcelLink } from "@/features/shared/excel-link";
 import { api } from "@/lib/api-client";
 import { parseDateOnly } from "@/lib/dates";
 import type { Page } from "@/lib/validation/common";
@@ -111,6 +112,12 @@ export function TeachersPage({
       <div className="flex flex-wrap items-start justify-between gap-3">
         <h1 className="text-2xl font-semibold tracking-tight">{t("teachers.title")}</h1>
         <div className="flex flex-wrap gap-2">
+          <ExcelLink
+            path="/teachers/export.xlsx"
+            params={searchParams}
+            size="default"
+            testId="teachers-excel"
+          />
           {canSms && (
             <Button
               variant="outline"

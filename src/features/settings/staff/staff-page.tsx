@@ -34,6 +34,8 @@ import type { RoleDto } from "@/server/services/staff/roles.service";
 import type { RoleCount, StaffDto } from "@/server/services/staff/staff.service";
 
 import { creatableBranches, type BranchOption } from "../shared/branch-select";
+import { ExcelLink } from "@/features/shared/excel-link";
+
 import { ListHeader } from "../shared/list-header";
 import { RowActions } from "../shared/row-actions";
 
@@ -112,6 +114,7 @@ export function StaffPage({
           />
           <Label htmlFor="staff-archived">{t("common.archived")}</Label>
         </div>
+        <ExcelLink path="/staff/export.xlsx" params={searchParams} testId="staff-excel" />
       </ListHeader>
 
       <div className="flex flex-wrap gap-2" role="group" aria-label={t("staff.filterByRole")}>

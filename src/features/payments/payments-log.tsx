@@ -14,6 +14,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { ExcelLink } from "@/features/shared/excel-link";
 import { usePathname, useRouter } from "@/i18n/navigation";
 import { useMoneyFormat } from "@/lib/use-money-format";
 import type { Page } from "@/lib/validation/common";
@@ -53,8 +54,13 @@ export function PaymentsLog({
   return (
     <Card>
       <CardHeader>
-        <CardTitle>{tl("title")}</CardTitle>
-        <CardDescription>{tl("description")}</CardDescription>
+        <div className="flex flex-wrap items-start justify-between gap-2">
+          <div>
+            <CardTitle>{tl("title")}</CardTitle>
+            <CardDescription>{tl("description")}</CardDescription>
+          </div>
+          <ExcelLink path="/payments/export.xlsx" params={searchParams} testId="payments-excel" />
+        </div>
       </CardHeader>
       <CardContent className="space-y-4">
         <div className="flex flex-wrap items-end gap-3">

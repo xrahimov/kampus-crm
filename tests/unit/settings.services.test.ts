@@ -133,7 +133,11 @@ describe("org settings", () => {
     });
     expect(after.attendanceComments).toBe(!before.attendanceComments);
     expect(after.scheduleStepMinutes).toBe(15);
-    expect(await getOrgSettings(ceo)).toEqual(after);
+    // Other test files toggle their own switches concurrently, so compare only ours.
+    expect(await getOrgSettings(ceo)).toMatchObject({
+      attendanceComments: after.attendanceComments,
+      scheduleStepMinutes: 15,
+    });
 
     const audit = await prisma.auditLog.findFirst({
       where: { action: "settings.org.update", entityId: before.organizationId },

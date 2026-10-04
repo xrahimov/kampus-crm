@@ -434,10 +434,12 @@ describe("students", () => {
     const old = (await listMembers(ceo, groupA, { archived: true })).find(
       (m) => m.id === aliceMembership,
     );
+    // Since Phase 12 a transfer is its own reason (A-92); the typed reason is kept as the note.
     expect(old).toMatchObject({
       status: "ARCHIVED",
       leftAt: "2026-10-20",
-      leaveReason: "schedule",
+      leaveReason: "transfer",
+      note: "schedule",
     });
     await expect(
       transferMember(ceo, aliceMembership, {

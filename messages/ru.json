@@ -32,7 +32,9 @@
       "range": "{from}–{to} из {total}",
       "previous": "Предыдущая страница",
       "next": "Следующая страница"
-    }
+    },
+    "yes": "Да",
+    "no": "Нет"
   },
   "nav": {
     "dashboard": "Главная",
@@ -130,7 +132,11 @@
     "testNotActive": "Результаты можно вводить только для активного теста.",
     "categoryHasTemplates": "В этой категории ещё есть шаблоны.",
     "webhookRejected": "Секрет вебхука отсутствует или неверен, либо интеграция выключена.",
-    "staffNotFound": "Сотрудник не найден."
+    "staffNotFound": "Сотрудник не найден.",
+    "importDuplicate": "Дублирует более раннюю строку",
+    "importExists": "Ученик с этим телефоном уже есть",
+    "importAlreadyIn": "Уже в этой группе",
+    "notGraduated": "Этот ученик не выпустился из группы"
   },
   "validation": {
     "phone": "Введите номер в формате +998 90 123 45 67.",
@@ -201,7 +207,8 @@
     "subDomain": "Только поддомен, например mycenter.",
     "categoryUnknown": "Неизвестная категория.",
     "branchUnknown": "Неизвестный филиал.",
-    "noRecipients": "Некому отправлять: в выборке нет номеров телефонов."
+    "noRecipients": "Некому отправлять: в выборке нет номеров телефонов.",
+    "importTooLarge": "Слишком много строк (макс. {max})"
   },
   "roles": {
     "CEO": "CEO",
@@ -806,7 +813,8 @@
       "payment": "Оплата",
       "transfer": "Перевести в другую группу",
       "toLead": "Вернуть в лиды",
-      "sms": "Сообщение (SMS)"
+      "sms": "Сообщение (SMS)",
+      "importExcel": "Добавить из Excel"
     },
     "notes": {
       "newNote": "Добавить заметку",
@@ -854,9 +862,9 @@
     "activeView": "Активные",
     "archiveView": "Архив",
     "activate": "Активировать",
-    "excel": "Excel (этап 12)",
+    "excel": "Excel",
     "sms": "Отправить SMS",
-    "importExcel": "Импорт из Excel (этап 12)",
+    "importExcel": "Импорт из Excel",
     "badges": "Бейджи",
     "filters": {
       "course": "Курс",
@@ -1067,7 +1075,8 @@
     "remove": {
       "title": "Убрать из группы?",
       "text": "«{name}» покинет группу. Оплаты и посещаемость сохранятся.",
-      "reason": "Причина"
+      "reason": "Причина",
+      "otherReason": "Другое (введите ниже)"
     },
     "badge": {
       "title": "Бейдж ученика",
@@ -1095,7 +1104,11 @@
       "lessons": "Уроки",
       "exams": "Результаты экзаменов",
       "noData": "Оценок и посещаемости пока нет.",
-      "noExams": "Экзаменов пока нет."
+      "noExams": "Экзаменов пока нет.",
+      "byGroup": "По группам",
+      "group": "Группа",
+      "course": "Курс",
+      "status": "Статус"
     }
   },
   "payments": {
@@ -1136,7 +1149,8 @@
       "receivedBy": "Принял",
       "createdAt": "Записано",
       "receipt": "Чек",
-      "total": "Итого: {amount}"
+      "total": "Итого: {amount}",
+      "excel": "Экспорт в Excel"
     },
     "log": {
       "title": "Оплаты",
@@ -1198,7 +1212,7 @@
     "createBoard": "Новая доска",
     "boardName": "Название доски",
     "sources": "Источники",
-    "excel": "Excel (этап 12)",
+    "excel": "Excel",
     "amocrm": "AmoCRM",
     "addColumn": "Добавить колонку",
     "columnName": "Название колонки",
@@ -1864,6 +1878,281 @@
       "leads": "Статистика лидов",
       "students": "Ученики",
       "statistics": "Статистика центра"
+    },
+    "filters": {
+      "all": "Все",
+      "allBranches": "Все филиалы",
+      "branch": "Филиал",
+      "year": "Год",
+      "month": "Месяц",
+      "from": "С",
+      "to": "По",
+      "search": "Поиск",
+      "searchStudent": "Имя или телефон ученика",
+      "group": "Группа",
+      "method": "Способ оплаты",
+      "teacher": "Учитель",
+      "course": "Курс",
+      "source": "Источник",
+      "status": "Статус",
+      "date": "Дата"
+    },
+    "payments": {
+      "title": "Отчёт по платежам",
+      "kpis": {
+        "total": "Всего платежей",
+        "onTime": "Оплачено вовремя",
+        "late": "Оплачено с опозданием",
+        "discounts": "Скидки",
+        "bonus": "Бонусы",
+        "refunds": "Возвраты",
+        "countPayments": "{count} платежей",
+        "countDiscounts": "{count} учеников",
+        "countRefunds": "{count} возвратов"
+      },
+      "tabs": {
+        "teachers": "По учителям",
+        "staff": "По сотрудникам"
+      },
+      "emptyTeachers": "В этом месяце нет учителей с платежами.",
+      "emptyStaff": "В этом месяце сотрудники не принимали платежи.",
+      "columns": {
+        "fullName": "ФИО",
+        "roles": "Роли",
+        "paymentsCount": "Платежей",
+        "total": "Сумма",
+        "refunds": "Возвраты",
+        "groups": "Группы",
+        "courses": "Курсы",
+        "students": "Ученики",
+        "debt": "Долг"
+      }
+    },
+    "studentPayments": {
+      "title": "Платежи учеников",
+      "summary": "{count} платежей · {amount}",
+      "byPaidAt": "По дате оплаты",
+      "bonus": "Бонус",
+      "withBonus": "С бонусом",
+      "withoutBonus": "Без бонуса",
+      "receivedBy": "Принял",
+      "empty": "Нет платежей по этим фильтрам.",
+      "columns": {
+        "student": "Ученик",
+        "group": "Группа",
+        "teacher": "Учитель",
+        "amount": "Сумма",
+        "bonus": "Бонус",
+        "paidAt": "Дата оплаты",
+        "effectiveMonth": "За месяц",
+        "comment": "Комментарий",
+        "receivedBy": "Принял",
+        "method": "Способ"
+      }
+    },
+    "churn": {
+      "title": "Ушедшие ученики",
+      "manageReasons": "Настроить причины",
+      "kpis": {
+        "churnRate": "Отток",
+        "leftCount": "Ушли",
+        "lostRevenue": "Потерянный доход",
+        "avgLifetime": "Средний срок обучения",
+        "ofActive": "из {count} активных на начало",
+        "perMonth": "в месяц",
+        "months": "{count} мес."
+      },
+      "dynamicsTitle": "Уходы по месяцам",
+      "reasonsTitle": "Причины",
+      "breakdownTitle": "Разбивка",
+      "breakdown": {
+        "course": "По курсам",
+        "teacher": "По учителям",
+        "branch": "По филиалам",
+        "status": "По статусам",
+        "reason": "По причинам",
+        "joinedThisMonth": "Пришли в этом месяце"
+      },
+      "transfersTitle": "Переводы между группами",
+      "transfers": {
+        "total": "Переводов",
+        "leftAfter": "ушли после перевода",
+        "why": "Причины переводов"
+      },
+      "discountsTitle": "Скидки",
+      "discounts": {
+        "withDiscount": "Ушли со скидкой",
+        "fullPrice": "Ушли по полной цене",
+        "has": "Да",
+        "none": "Нет"
+      },
+      "listTitle": "Кто ушёл",
+      "emptyList": "За этот период никто не ушёл.",
+      "noData": "Нет данных за период.",
+      "noReason": "Причина не указана",
+      "columns": {
+        "fullName": "Ученик",
+        "group": "Группа",
+        "course": "Курс",
+        "discount": "Скидка",
+        "teacher": "Учитель",
+        "reason": "Причина",
+        "leftAt": "Дата ухода",
+        "leftBy": "Удалил",
+        "note": "Заметка"
+      },
+      "reasons": {
+        "title": "Причины ухода и перевода",
+        "hint": "Эти причины предлагаются при удалении ученика из группы или переводе в другую.",
+        "empty": "Причин пока нет.",
+        "newReason": "Новая причина",
+        "kind": "Тип",
+        "kinds": {
+          "LEAVE": "Уход",
+          "TRANSFER": "Перевод"
+        },
+        "add": "Добавить"
+      }
+    },
+    "graduates": {
+      "title": "Выпускники",
+      "kpis": {
+        "count": "Выпускников",
+        "bestTeacher": "Лучший учитель",
+        "graduates": "{count} выпускников",
+        "avgIelts": "Средний IELTS",
+        "commonCefr": "Частый уровень CEFR",
+        "university": "Поступили в вуз",
+        "employed": "Трудоустроены"
+      },
+      "withResult": "С результатом",
+      "noResult": "Без результата",
+      "empty": "В этом месяце нет выпускников.",
+      "emptyHint": "Ученики появляются здесь, когда их статус в группе становится «Выпустился».",
+      "exam": "Экзамен: {score}",
+      "columns": {
+        "fullName": "Ученик",
+        "groupBranch": "Группа · филиал",
+        "teacher": "Учитель",
+        "graduatedAt": "Дата выпуска",
+        "results": "Результаты"
+      },
+      "record": {
+        "title": "Результаты: {name}",
+        "button": "Записать результат",
+        "ielts": "Балл IELTS",
+        "cefr": "Уровень CEFR",
+        "university": "Поступил в вуз",
+        "employed": "Трудоустроен",
+        "note": "Заметка"
+      }
+    },
+    "leads": {
+      "title": "Отчёт по лидам",
+      "kpis": {
+        "newLeads": "Новые лиды",
+        "conversions": "Стали учениками",
+        "lost": "Потеряны",
+        "bestSource": "Лучший источник",
+        "bestSalesperson": "Лучший продавец",
+        "leadsCount": "{count} лидов",
+        "conversionsCount": "{count} конверсий"
+      },
+      "funnelTitle": "Воронка",
+      "byMonthTitle": "Лиды за {year}",
+      "series": {
+        "created": "Создано",
+        "converted": "Конвертировано",
+        "lost": "Потеряно"
+      },
+      "byCourseTitle": "По курсам",
+      "bySourceTitle": "По источникам",
+      "noData": "Нет лидов за период.",
+      "funnel": {
+        "NEW": "Новый",
+        "CONTACTED": "Связались",
+        "UNREACHABLE": "Недоступен",
+        "LOST": "Потерян",
+        "CONVERTED": "Стал учеником"
+      }
+    },
+    "students": {
+      "title": "Отчёт по ученикам",
+      "kpis": {
+        "total": "Учеников",
+        "newInPeriod": "Новых за период",
+        "multiCourse": "На 2+ курсах",
+        "attendance": "Посещаемость",
+        "gradeAverage": "Средняя оценка",
+        "appUsage": "Использование приложения",
+        "noApp": "Приложения для учеников нет"
+      },
+      "tabs": {
+        "attendance": "Отчёт посещаемости",
+        "performance": "Успеваемость"
+      },
+      "notArchived": "Не удалённые",
+      "totals": {
+        "expected": "Ожидалось",
+        "present": "Присутствовали",
+        "absent": "Отсутствовали",
+        "unmarked": "Не отмечено"
+      },
+      "empty": "Нет данных по этим фильтрам.",
+      "columns": {
+        "group": "Группа",
+        "teacher": "Учитель",
+        "students": "Ученики",
+        "lessons": "Уроки",
+        "unmarked": "Не отмечено",
+        "absent": "Отсутствовали",
+        "present": "Присутствовали",
+        "student": "Ученик",
+        "groups": "Группы",
+        "teachers": "Учителя",
+        "courses": "Курсы",
+        "grades": "Оценки по группам",
+        "average": "Средняя"
+      }
+    },
+    "statistics": {
+      "title": "Статистика центра",
+      "period": "{from} – {to}, рабочие часы {start}–{end}",
+      "updateCapacities": "Обновить вместимость кабинетов",
+      "views": {
+        "monthly": "Месяц",
+        "weekly": "Неделя",
+        "daily": "День"
+      },
+      "hours": "{count} ч",
+      "kpis": {
+        "utilisation": "Загрузка кабинетов",
+        "freeHours": "Свободные часы",
+        "students": "Учеников",
+        "potentialRevenue": "Потенциальный доход",
+        "perMonth": "если заполнить все места",
+        "freeSeats": "Свободных мест",
+        "possibleStudents": "Возможно учеников"
+      },
+      "roomTotal": "Итого по кабинету",
+      "empty": "За период нет кабинетов с уроками.",
+      "emptyHint": "Добавьте кабинеты с вместимостью и назначьте их группам.",
+      "columns": {
+        "room": "Кабинет",
+        "capacity": "Вместимость",
+        "roomHours": "Часы кабинета",
+        "group": "Группа",
+        "students": "Ученики",
+        "freeSeats": "Свободных мест",
+        "lessonHours": "Часы уроков",
+        "price": "Цена",
+        "totalSum": "Итого",
+        "freeHours": "Свободных часов",
+        "seatHours": "Место-часы",
+        "actualSeatHours": "Факт место-часов",
+        "planSeatHours": "План место-часов",
+        "fik": "Загрузка"
+      }
     }
   },
   "sms": {
@@ -2179,5 +2468,131 @@
     "manualCheck": "Приход/уход: {name}",
     "scheduleFor": "График работы: {name}",
     "scheduleHint": "Отметьте рабочие дни и укажите ожидаемые часы."
+  },
+  "excel": {
+    "export": "Excel",
+    "import": "Импорт",
+    "importHint": "Скачайте шаблон, заполните по строке на запись и загрузите файл. Первая строка — заголовок.",
+    "downloadTemplate": "Скачать шаблон",
+    "file": "Файл Excel (.xlsx)",
+    "imported": "Импортировано: {count}, пропущено: {skipped}",
+    "skippedRow": "Строка {row}: {reason}",
+    "templateSheet": "Шаблон",
+    "files": {
+      "students": "ucheniki",
+      "studentsTemplate": "ucheniki-shablon",
+      "groups": "gruppy",
+      "members": "ucheniki-gruppy",
+      "membersTemplate": "ucheniki-gruppy-shablon",
+      "attendance": "poseschaemost",
+      "grades": "ocenki",
+      "leads": "lidy",
+      "staff": "sotrudniki",
+      "teachers": "uchitelya",
+      "payments": "platezhi",
+      "payroll": "zarplata",
+      "paymentsReport": "otchet-platezhi",
+      "studentPayments": "platezhi-uchenikov",
+      "churn": "ushedshie-ucheniki",
+      "graduates": "vypuskniki",
+      "leadsReport": "otchet-lidy",
+      "studentsReport": "otchet-ucheniki",
+      "statistics": "statistika-centra"
+    },
+    "example": {
+      "fullName": "<имя клиента>",
+      "gender": "MALE"
+    },
+    "marks": {
+      "present": "+",
+      "absent": "−",
+      "excused": "У"
+    },
+    "columns": {
+      "index": "№",
+      "fullName": "ФИО",
+      "roles": "Роли",
+      "paymentsCount": "Платежей",
+      "totalPayments": "Сумма платежей",
+      "refunded": "Возвращено",
+      "groupsCount": "Групп",
+      "courses": "Курсы",
+      "studentsCount": "Учеников",
+      "debt": "Долг",
+      "group": "Группа",
+      "teacher": "Учитель",
+      "course": "Курс",
+      "amount": "Сумма",
+      "bonus": "Бонус",
+      "paidAt": "Дата оплаты",
+      "effectiveMonth": "За месяц",
+      "comment": "Комментарий",
+      "receivedBy": "Принял",
+      "method": "Способ оплаты",
+      "discount": "Скидка",
+      "reason": "Причина",
+      "leftAt": "Дата ухода",
+      "leftBy": "Удалил",
+      "note": "Заметка",
+      "branch": "Филиал",
+      "graduatedAt": "Дата выпуска",
+      "examResult": "Результат экзамена",
+      "ielts": "IELTS",
+      "cefr": "CEFR",
+      "university": "Университет",
+      "employed": "Трудоустроен",
+      "phone": "Телефон",
+      "column": "Колонка",
+      "source": "Источник",
+      "status": "Статус",
+      "createdBy": "Создал",
+      "createdAt": "Создан",
+      "convertedAt": "Конвертирован",
+      "groups": "Группы",
+      "teachers": "Учителя",
+      "grades": "Оценки",
+      "gradeAverage": "Средняя оценка",
+      "lessons": "Уроков",
+      "unmarked": "Не отмечено",
+      "absent": "Отсутствовал",
+      "present": "Присутствовал",
+      "room": "Кабинет",
+      "capacity": "Вместимость",
+      "roomHours": "Часы кабинета",
+      "freeSeats": "Свободных мест",
+      "lessonHours": "Часы уроков",
+      "price": "Цена",
+      "totalSum": "Итого",
+      "freeHours": "Свободных часов",
+      "seatHours": "Место-часы",
+      "actualSeatHours": "Факт место-часов",
+      "planSeatHours": "План место-часов",
+      "fik": "Загрузка %",
+      "membershipStatus": "Статус в группе",
+      "nextPaymentDate": "Следующая оплата",
+      "name": "Название",
+      "pattern": "Дни",
+      "time": "Время",
+      "students": "Ученики",
+      "startDate": "Дата начала",
+      "endDate": "Дата окончания",
+      "joinedAt": "Дата вступления",
+      "customPrice": "Своя цена",
+      "balance": "Баланс",
+      "days": "Удобные дни",
+      "temperature": "Температура",
+      "hireDate": "Дата приёма",
+      "fixedSalary": "Фикс. оклад",
+      "percentShare": "Процент",
+      "fixed": "Фикс",
+      "percent": "Процент",
+      "perLesson": "За урок",
+      "perStudent": "За ученика",
+      "penalty": "Штраф",
+      "advance": "Аванс",
+      "net": "К выплате",
+      "gender": "Пол",
+      "birthDate": "Дата рождения"
+    }
   }
 }

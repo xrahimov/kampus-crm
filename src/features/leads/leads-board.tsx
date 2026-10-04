@@ -6,6 +6,7 @@ import { useSearchParams } from "next/navigation";
 import { useState, useTransition } from "react";
 
 import { ConfirmDialog } from "@/components/data/confirm-dialog";
+import { ExcelLink } from "@/features/shared/excel-link";
 import { SendSmsDialog } from "@/features/sms/send-sms-dialog";
 import { EmptyState } from "@/components/data/empty-state";
 import { SearchBox } from "@/components/data/search-box";
@@ -274,9 +275,7 @@ export function LeadsBoard({
               <UsersRound /> {tl("addToGroup.button", { count: selected.size })}
             </Button>
           )}
-          <Button variant="outline" size="sm" disabled title={tl("excel")}>
-            {tl("excel")}
-          </Button>
+          <ExcelLink path="/leads/export.xlsx" params={searchParams} testId="leads-excel" />
         </div>
       </div>
 

@@ -10,15 +10,19 @@ import { parseDateOnly } from "@/lib/dates";
 import { useDateFormat } from "@/lib/use-date-format";
 import type { MonthGridDto } from "@/server/services/groups/lessons.service";
 
+import { ExcelLink } from "@/features/shared/excel-link";
+
 import { MonthTabs } from "./month-tabs";
 
 /** EXP §5 BAHO: students × lesson dates with a score per cell and the average per student. */
 export function GradesGrid({
+  groupId,
   months,
   grid,
   gradingSystemName,
   canMark,
 }: {
+  groupId: string;
   months: string[];
   grid: MonthGridDto;
   gradingSystemName: string;
@@ -59,9 +63,16 @@ export function GradesGrid({
     <div className="space-y-3">
       <div className="flex flex-wrap items-center justify-between gap-2">
         <MonthTabs months={months} current={grid.month} />
-        <span className="text-xs text-muted-foreground">
-          {t("system")}: {gradingSystemName || "—"}
-        </span>
+        <div className="flex flex-wrap items-center gap-2">
+          <span className="text-xs text-muted-foreground">
+            {t("system")}: {gradingSystemName || "—"}
+          </span>
+          <ExcelLink
+            path={`/groups/${groupId}/grades.xlsx`}
+            params={{ month: grid.month }}
+            testId="grades-excel"
+          />
+        </div>
       </div>
       {error && (
         <p role="alert" className="text-sm text-destructive">

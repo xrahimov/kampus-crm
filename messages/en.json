@@ -32,7 +32,9 @@
       "range": "{from}–{to} of {total}",
       "previous": "Previous page",
       "next": "Next page"
-    }
+    },
+    "yes": "Yes",
+    "no": "No"
   },
   "nav": {
     "dashboard": "Home",
@@ -130,7 +132,11 @@
     "testNotActive": "Results can be entered only for an active test.",
     "categoryHasTemplates": "This category still has templates.",
     "webhookRejected": "The webhook secret is missing or wrong, or the integration is off.",
-    "staffNotFound": "Staff member not found."
+    "staffNotFound": "Staff member not found.",
+    "importDuplicate": "Duplicate of an earlier row",
+    "importExists": "A student with this phone already exists",
+    "importAlreadyIn": "Already in this group",
+    "notGraduated": "This membership is not graduated"
   },
   "validation": {
     "phone": "Enter a number like +998 90 123 45 67.",
@@ -201,7 +207,8 @@
     "subDomain": "Only the subdomain, e.g. mycenter.",
     "categoryUnknown": "Unknown category.",
     "branchUnknown": "Unknown branch.",
-    "noRecipients": "Nobody to send to: no phone numbers in this selection."
+    "noRecipients": "Nobody to send to: no phone numbers in this selection.",
+    "importTooLarge": "Too many rows (max {max})"
   },
   "roles": {
     "CEO": "CEO",
@@ -806,7 +813,8 @@
       "payment": "Payment",
       "transfer": "Move to another group",
       "toLead": "Return to leads",
-      "sms": "Message (SMS)"
+      "sms": "Message (SMS)",
+      "importExcel": "Add from Excel"
     },
     "notes": {
       "newNote": "Add note",
@@ -854,9 +862,9 @@
     "activeView": "Active",
     "archiveView": "Archive",
     "activate": "Activate",
-    "excel": "Excel (phase 12)",
+    "excel": "Excel",
     "sms": "Send SMS",
-    "importExcel": "Import from Excel (phase 12)",
+    "importExcel": "Import from Excel",
     "badges": "Badges",
     "filters": {
       "course": "Course",
@@ -1067,7 +1075,8 @@
     "remove": {
       "title": "Remove from group?",
       "text": "“{name}” leaves the group. Payments and attendance stay.",
-      "reason": "Reason"
+      "reason": "Reason",
+      "otherReason": "Other (type below)"
     },
     "badge": {
       "title": "Student badge",
@@ -1095,7 +1104,11 @@
       "lessons": "Lessons",
       "exams": "Exam results",
       "noData": "No grades or attendance yet.",
-      "noExams": "No exams yet."
+      "noExams": "No exams yet.",
+      "byGroup": "By group",
+      "group": "Group",
+      "course": "Course",
+      "status": "Status"
     }
   },
   "payments": {
@@ -1136,7 +1149,8 @@
       "receivedBy": "Received by",
       "createdAt": "Recorded",
       "receipt": "Receipt",
-      "total": "Total: {amount}"
+      "total": "Total: {amount}",
+      "excel": "Export to Excel"
     },
     "log": {
       "title": "Payments",
@@ -1198,7 +1212,7 @@
     "createBoard": "New board",
     "boardName": "Board name",
     "sources": "Sources",
-    "excel": "Excel (phase 12)",
+    "excel": "Excel",
     "amocrm": "AmoCRM",
     "addColumn": "Add column",
     "columnName": "Column name",
@@ -1864,6 +1878,281 @@
       "leads": "Lead statements",
       "students": "Students",
       "statistics": "Center statistics"
+    },
+    "filters": {
+      "all": "All",
+      "allBranches": "All branches",
+      "branch": "Branch",
+      "year": "Year",
+      "month": "Month",
+      "from": "From",
+      "to": "To",
+      "search": "Search",
+      "searchStudent": "Student name or phone",
+      "group": "Group",
+      "method": "Payment method",
+      "teacher": "Teacher",
+      "course": "Course",
+      "source": "Source",
+      "status": "Status",
+      "date": "Date"
+    },
+    "payments": {
+      "title": "Payments report",
+      "kpis": {
+        "total": "Total payments",
+        "onTime": "Paid on time",
+        "late": "Paid late",
+        "discounts": "Discounts",
+        "bonus": "Bonus",
+        "refunds": "Refunds",
+        "countPayments": "{count} payments",
+        "countDiscounts": "{count} students",
+        "countRefunds": "{count} refunds"
+      },
+      "tabs": {
+        "teachers": "By teachers",
+        "staff": "By staff"
+      },
+      "emptyTeachers": "No teachers with payments in this month.",
+      "emptyStaff": "No staff received payments in this month.",
+      "columns": {
+        "fullName": "Full name",
+        "roles": "Roles",
+        "paymentsCount": "Payments",
+        "total": "Total",
+        "refunds": "Refunds",
+        "groups": "Groups",
+        "courses": "Courses",
+        "students": "Students",
+        "debt": "Debt"
+      }
+    },
+    "studentPayments": {
+      "title": "Student payments",
+      "summary": "{count} payments · {amount}",
+      "byPaidAt": "By payment date",
+      "bonus": "Bonus",
+      "withBonus": "With bonus",
+      "withoutBonus": "Without bonus",
+      "receivedBy": "Received by",
+      "empty": "No payments match the filters.",
+      "columns": {
+        "student": "Student",
+        "group": "Group",
+        "teacher": "Teacher",
+        "amount": "Amount",
+        "bonus": "Bonus",
+        "paidAt": "Paid at",
+        "effectiveMonth": "For month",
+        "comment": "Comment",
+        "receivedBy": "Received by",
+        "method": "Method"
+      }
+    },
+    "churn": {
+      "title": "Left students",
+      "manageReasons": "Set up reasons",
+      "kpis": {
+        "churnRate": "Churn rate",
+        "leftCount": "Left",
+        "lostRevenue": "Lost revenue",
+        "avgLifetime": "Average lifetime",
+        "ofActive": "of {count} active at start",
+        "perMonth": "per month",
+        "months": "{count} months"
+      },
+      "dynamicsTitle": "Leavers by month",
+      "reasonsTitle": "Reasons",
+      "breakdownTitle": "Breakdown",
+      "breakdown": {
+        "course": "By course",
+        "teacher": "By teacher",
+        "branch": "By branch",
+        "status": "By status",
+        "reason": "By reason",
+        "joinedThisMonth": "Joined this month"
+      },
+      "transfersTitle": "Transfers between groups",
+      "transfers": {
+        "total": "Transfers",
+        "leftAfter": "left after a transfer",
+        "why": "Transfer reasons"
+      },
+      "discountsTitle": "Discounts",
+      "discounts": {
+        "withDiscount": "Left with a discount",
+        "fullPrice": "Left at full price",
+        "has": "Yes",
+        "none": "No"
+      },
+      "listTitle": "Who left",
+      "emptyList": "Nobody left in this period.",
+      "noData": "No data for this period.",
+      "noReason": "No reason given",
+      "columns": {
+        "fullName": "Student",
+        "group": "Group",
+        "course": "Course",
+        "discount": "Discount",
+        "teacher": "Teacher",
+        "reason": "Reason",
+        "leftAt": "Left on",
+        "leftBy": "Removed by",
+        "note": "Note"
+      },
+      "reasons": {
+        "title": "Leave and transfer reasons",
+        "hint": "These reasons are offered when a student is removed from a group or moved to another one.",
+        "empty": "No reasons yet.",
+        "newReason": "New reason",
+        "kind": "Kind",
+        "kinds": {
+          "LEAVE": "Leaving",
+          "TRANSFER": "Transfer"
+        },
+        "add": "Add"
+      }
+    },
+    "graduates": {
+      "title": "Graduates",
+      "kpis": {
+        "count": "Graduates",
+        "bestTeacher": "Top teacher",
+        "graduates": "{count} graduates",
+        "avgIelts": "Average IELTS",
+        "commonCefr": "Most common CEFR",
+        "university": "Went to university",
+        "employed": "Employed"
+      },
+      "withResult": "With a result",
+      "noResult": "No result",
+      "empty": "No graduates in this month.",
+      "emptyHint": "Students appear here when their group membership is marked Graduated.",
+      "exam": "Exam: {score}",
+      "columns": {
+        "fullName": "Student",
+        "groupBranch": "Group · branch",
+        "teacher": "Teacher",
+        "graduatedAt": "Graduated on",
+        "results": "Results"
+      },
+      "record": {
+        "title": "Results of {name}",
+        "button": "Record result",
+        "ielts": "IELTS score",
+        "cefr": "CEFR level",
+        "university": "Went to university",
+        "employed": "Employed",
+        "note": "Note"
+      }
+    },
+    "leads": {
+      "title": "Lead statements",
+      "kpis": {
+        "newLeads": "New leads",
+        "conversions": "Became students",
+        "lost": "Lost",
+        "bestSource": "Top source",
+        "bestSalesperson": "Top salesperson",
+        "leadsCount": "{count} leads",
+        "conversionsCount": "{count} conversions"
+      },
+      "funnelTitle": "Funnel",
+      "byMonthTitle": "Leads in {year}",
+      "series": {
+        "created": "Created",
+        "converted": "Converted",
+        "lost": "Lost"
+      },
+      "byCourseTitle": "By course",
+      "bySourceTitle": "By source",
+      "noData": "No leads in this period.",
+      "funnel": {
+        "NEW": "New",
+        "CONTACTED": "Contacted",
+        "UNREACHABLE": "Unreachable",
+        "LOST": "Lost",
+        "CONVERTED": "Became a student"
+      }
+    },
+    "students": {
+      "title": "Students report",
+      "kpis": {
+        "total": "Students",
+        "newInPeriod": "New in period",
+        "multiCourse": "In 2+ courses",
+        "attendance": "Attendance",
+        "gradeAverage": "Average grade",
+        "appUsage": "App usage",
+        "noApp": "No student app"
+      },
+      "tabs": {
+        "attendance": "Attendance report",
+        "performance": "Performance"
+      },
+      "notArchived": "Not removed",
+      "totals": {
+        "expected": "Expected",
+        "present": "Present",
+        "absent": "Absent",
+        "unmarked": "Unmarked"
+      },
+      "empty": "No data for these filters.",
+      "columns": {
+        "group": "Group",
+        "teacher": "Teacher",
+        "students": "Students",
+        "lessons": "Lessons",
+        "unmarked": "Unmarked",
+        "absent": "Absent",
+        "present": "Present",
+        "student": "Student",
+        "groups": "Groups",
+        "teachers": "Teachers",
+        "courses": "Courses",
+        "grades": "Grades by group",
+        "average": "Average"
+      }
+    },
+    "statistics": {
+      "title": "Center statistics",
+      "period": "{from} – {to}, working hours {start}–{end}",
+      "updateCapacities": "Update room capacities",
+      "views": {
+        "monthly": "Monthly",
+        "weekly": "Weekly",
+        "daily": "Daily"
+      },
+      "hours": "{count} h",
+      "kpis": {
+        "utilisation": "Room utilisation",
+        "freeHours": "Free room hours",
+        "students": "Students",
+        "potentialRevenue": "Potential revenue",
+        "perMonth": "if every seat were filled",
+        "freeSeats": "Free seats",
+        "possibleStudents": "Possible students"
+      },
+      "roomTotal": "Room total",
+      "empty": "No rooms with lessons in this period.",
+      "emptyHint": "Add rooms with capacities and assign them to groups.",
+      "columns": {
+        "room": "Room",
+        "capacity": "Capacity",
+        "roomHours": "Room hours",
+        "group": "Group",
+        "students": "Students",
+        "freeSeats": "Free seats",
+        "lessonHours": "Lesson hours",
+        "price": "Price",
+        "totalSum": "Total",
+        "freeHours": "Free hours",
+        "seatHours": "Seat-hours",
+        "actualSeatHours": "Actual seat-hours",
+        "planSeatHours": "Planned seat-hours",
+        "fik": "Utilisation"
+      }
     }
   },
   "sms": {
@@ -2179,5 +2468,131 @@
     "manualCheck": "Check-in/out: {name}",
     "scheduleFor": "Work schedule: {name}",
     "scheduleHint": "Tick the working days and set the expected hours."
+  },
+  "excel": {
+    "export": "Excel",
+    "import": "Import",
+    "importHint": "Download the template, fill one row per record and upload the file. The first row is the header.",
+    "downloadTemplate": "Download template",
+    "file": "Excel file (.xlsx)",
+    "imported": "{count} imported, {skipped} skipped",
+    "skippedRow": "Row {row}: {reason}",
+    "templateSheet": "Template",
+    "files": {
+      "students": "students",
+      "studentsTemplate": "students-template",
+      "groups": "groups",
+      "members": "group-students",
+      "membersTemplate": "group-students-template",
+      "attendance": "attendance",
+      "grades": "grades",
+      "leads": "leads",
+      "staff": "staff",
+      "teachers": "teachers",
+      "payments": "payments",
+      "payroll": "payroll",
+      "paymentsReport": "payments-report",
+      "studentPayments": "student-payments",
+      "churn": "left-students",
+      "graduates": "graduates",
+      "leadsReport": "leads-report",
+      "studentsReport": "students-report",
+      "statistics": "center-statistics"
+    },
+    "example": {
+      "fullName": "<client name>",
+      "gender": "MALE"
+    },
+    "marks": {
+      "present": "+",
+      "absent": "−",
+      "excused": "E"
+    },
+    "columns": {
+      "index": "№",
+      "fullName": "Full name",
+      "roles": "Roles",
+      "paymentsCount": "Payments",
+      "totalPayments": "Total payments",
+      "refunded": "Refunded",
+      "groupsCount": "Groups",
+      "courses": "Courses",
+      "studentsCount": "Students",
+      "debt": "Debt",
+      "group": "Group",
+      "teacher": "Teacher",
+      "course": "Course",
+      "amount": "Amount",
+      "bonus": "Bonus",
+      "paidAt": "Paid at",
+      "effectiveMonth": "For month",
+      "comment": "Comment",
+      "receivedBy": "Received by",
+      "method": "Payment method",
+      "discount": "Discount",
+      "reason": "Reason",
+      "leftAt": "Left on",
+      "leftBy": "Removed by",
+      "note": "Note",
+      "branch": "Branch",
+      "graduatedAt": "Graduated on",
+      "examResult": "Exam result",
+      "ielts": "IELTS",
+      "cefr": "CEFR",
+      "university": "University",
+      "employed": "Employed",
+      "phone": "Phone",
+      "column": "Column",
+      "source": "Source",
+      "status": "Status",
+      "createdBy": "Created by",
+      "createdAt": "Created at",
+      "convertedAt": "Converted at",
+      "groups": "Groups",
+      "teachers": "Teachers",
+      "grades": "Grades",
+      "gradeAverage": "Average grade",
+      "lessons": "Lessons",
+      "unmarked": "Unmarked",
+      "absent": "Absent",
+      "present": "Present",
+      "room": "Room",
+      "capacity": "Capacity",
+      "roomHours": "Room hours",
+      "freeSeats": "Free seats",
+      "lessonHours": "Lesson hours",
+      "price": "Price",
+      "totalSum": "Total",
+      "freeHours": "Free hours",
+      "seatHours": "Seat-hours",
+      "actualSeatHours": "Actual seat-hours",
+      "planSeatHours": "Planned seat-hours",
+      "fik": "Utilisation %",
+      "membershipStatus": "Status in group",
+      "nextPaymentDate": "Next payment",
+      "name": "Name",
+      "pattern": "Days",
+      "time": "Time",
+      "students": "Students",
+      "startDate": "Start date",
+      "endDate": "End date",
+      "joinedAt": "Joined on",
+      "customPrice": "Custom price",
+      "balance": "Balance",
+      "days": "Preferred days",
+      "temperature": "Temperature",
+      "hireDate": "Hired on",
+      "fixedSalary": "Fixed salary",
+      "percentShare": "Percent share",
+      "fixed": "Fixed",
+      "percent": "Percent",
+      "perLesson": "Per lesson",
+      "perStudent": "Per student",
+      "penalty": "Penalty",
+      "advance": "Advance",
+      "net": "Net",
+      "gender": "Gender",
+      "birthDate": "Birth date"
+    }
   }
 }

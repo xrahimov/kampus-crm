@@ -45,6 +45,7 @@ model Organization {
   callLogs          CallLog[]
   botRecipients     BotRecipient[]
   integrations      IntegrationSetting[]
+  leaveReasons      LeaveReason[]
 }
 
 model Branch {
@@ -141,13 +142,14 @@ model User {
   purchasesDecided PurchaseRequest[]  @relation("purchaseDecider")
   questionsWritten QuestionBankItem[] @relation("questionAuthor")
 
-  smsSent         SmsMessage[]      @relation("smsSender")
-  calls           CallLog[]         @relation("callStaff")
-  botRecipient    BotRecipient?
-  staffCheckIns   StaffAttendance[]
-  workSchedules   WorkSchedule[]
-  testsWritten    Test[]            @relation("testAuthor")
-  attemptsEntered TestAttempt[]     @relation("attemptEnteredBy")
+  smsSent           SmsMessage[]      @relation("smsSender")
+  calls             CallLog[]         @relation("callStaff")
+  botRecipient      BotRecipient?
+  staffCheckIns     StaffAttendance[]
+  workSchedules     WorkSchedule[]
+  membershipsClosed GroupMembership[] @relation("membershipsClosed")
+  testsWritten      Test[]            @relation("testAuthor")
+  attemptsEntered   TestAttempt[]     @relation("attemptEnteredBy")
 }
 
 /// A role is a named bundle of permission codes. System roles are seeded and
@@ -631,8 +633,12 @@ model GroupMembership {
   activatedAt DateTime?        @db.Date
   /// Set while FROZEN: lessons from this day on are not charged (A-59).
   frozenAt    DateTime?        @db.Date
-  /// Why the student left (EXP §10 churn report reasons); free text until Phase 12.
+  /// Why the student left (EXP §10 churn report reasons); picked from LeaveReason or typed.
   leaveReason String?
+  /// Who closed the membership ("KIM TOMONIDAN CHIQARILGAN" in the churn report).
+  leftById    String?
+  leftBy      User?            @relation("membershipsClosed", fields: [leftById], references: [id])
+  graduate    GraduateRecord?
   createdAt   DateTime         @default(now())
   updatedAt   DateTime         @updatedAt
 
@@ -1670,4 +1676,36 @@ model Job {
   doneAt    DateTime?
 
   @@index([status, runAt])
+}
+
+/// Phase 12: reasons offered when a student leaves or changes group ("SABABLARNI SOZLASH").
+enum LeaveReasonKind {
+  LEAVE
+  TRANSFER
+}
+
+model LeaveReason {
+  id             String          @id @default(cuid())
+  organizationId String
+  name           String
+  kind           LeaveReasonKind
+  isActive       Boolean         @default(true)
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+  organization   Organization    @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@unique([organizationId, kind, name])
+}
+
+/// Phase 12: outcomes behind the graduates report cards (IELTS, CEFR, university, employment).
+model GraduateRecord {
+  id           String          @id @default(cuid())
+  membershipId String          @unique
+  ieltsScore   Decimal?        @db.Decimal(3, 1)
+  cefrLevel    String?
+  university   Boolean?
+  employed     Boolean?
+  note         String?
+  updatedAt    DateTime        @updatedAt
+  membership   GroupMembership @relation(fields: [membershipId], references: [id], onDelete: Cascade)
 }

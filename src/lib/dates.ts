@@ -9,6 +9,7 @@ export type DateOptions =
   | { dateStyle: "medium"; timeStyle?: "short" }
   | { day: "numeric"; month: "short" }
   | { month: "short"; year: "numeric" }
+  | { month: "short" }
   | { weekday: "long" | "short" };
 
 export type DateFormatter = (date: Date, options: DateOptions) => string;
@@ -89,7 +90,8 @@ export function formatDateUz(date: Date, options: DateOptions, timeZone = APP_TI
   if ("day" in options) return `${p.day}-${UZ_MONTHS_SHORT[p.month - 1]}`;
   if ("month" in options) {
     const m = UZ_MONTHS_SHORT[p.month - 1]!;
-    return `${m.charAt(0).toUpperCase()}${m.slice(1)} ${p.year}`;
+    const name = `${m.charAt(0).toUpperCase()}${m.slice(1)}`;
+    return "year" in options ? `${name} ${p.year}` : name;
   }
   const base = `${p.day}-${UZ_MONTHS_SHORT[p.month - 1]}, ${p.year}`;
   return options.timeStyle ? `${base}, ${p.hour}:${p.minute}` : base;
