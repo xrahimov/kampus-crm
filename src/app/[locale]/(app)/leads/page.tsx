@@ -63,6 +63,7 @@ export default async function Page({
         update: can(current.actor, "leads.update"),
         delete: can(current.actor, "leads.delete"),
         groups: can(current.actor, "leads.update") && can(current.actor, "groups.update"),
+        sms: can(current.actor, "sms.send"),
       }}
     />
   );

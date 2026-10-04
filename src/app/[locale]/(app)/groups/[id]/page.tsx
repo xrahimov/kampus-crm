@@ -158,6 +158,7 @@ export default async function Page({ params, searchParams }: Props) {
         tests: can(current.actor, "tests.create"),
         giveCoins: can(current.actor, "coins.give"),
         manageCoins: can(current.actor, "coins.manage"),
+        sms: can(current.actor, "sms.send"),
       }}
     />
   );

@@ -911,6 +911,225 @@ async function seedLeads(organizationId: string, branches: Map<string, string>) 
   });
 }
 
+/** Phase 11: SMS templates and auto-SMS, a few sent messages and calls, bot recipient,
+ *  integration rows with obviously fake secrets, work schedules and FaceID check-ins. */
+async function seedIntegrations(organizationId: string, branches: Map<string, string>) {
+  const central = branches.get("Central")!;
+  const userByPhone = (phone: string) => prisma.user.findUniqueOrThrow({ where: { phone } });
+  const admin = await userByPhone("+998900000002");
+  const cashier = await userByPhone("+998900000003");
+  const teacher = await userByPhone("+998900000004");
+  const studentOne = await prisma.student.findFirstOrThrow({
+    where: { fullName: "Demo Student One" },
+  });
+  const groupA = await prisma.group.findFirstOrThrow({
+    where: { branchId: central, name: "GE-Morning A1" },
+  });
+
+  const categories: Array<[string, string[]]> = [
+    [
+      "To'lovlar",
+      [
+        "Hurmatli {studentName}, {groupName} guruhi uchun to'lov muddati {date}. {centerName}",
+        "{studentName}, {amount} to'lovingiz qabul qilindi. Rahmat! {centerName}",
+      ],
+    ],
+    [
+      "Darslar",
+      ["{studentName}, ertaga {groupName} guruhida dars bor. Kutib qolamiz! {centerName}"],
+    ],
+  ];
+  for (const [name, texts] of categories) {
+    const category = await prisma.smsCategory.upsert({
+      where: { organizationId_name: { organizationId, name } },
+      update: {},
+      create: { organizationId, name },
+    });
+    for (const text of texts) {
+      const exists = await prisma.smsTemplate.findFirst({
+        where: { categoryId: category.id, text },
+      });
+      if (!exists) {
+        await prisma.smsTemplate.create({
+          data: { organizationId, categoryId: category.id, text },
+        });
+      }
+    }
+  }
+
+  const autoDefaults: Record<string, string> = {
+    BIRTHDAY:
+      "Hurmatli {studentName}, {centerName} jamoasi sizni tug'ilgan kuningiz bilan tabriklaydi!",
+    EXAM_RESULT: "{studentName}, {groupName} guruhidagi imtihon natijangiz: {score}. {centerName}",
+    PAYMENT_MADE: "{studentName}, {date} kuni {amount} to'lovingiz qabul qilindi. {centerName}",
+    ABSENT: "{studentName} {date} kuni {groupName} guruhidagi darsga kelmadi. {centerName}",
+    PRESENT: "{studentName} {date} kuni {groupName} guruhidagi darsga keldi. {centerName}",
+    PAYMENT_DUE_SOON:
+      "{studentName}, {groupName} guruhi uchun keyingi to'lov sanasi {date}. {centerName}",
+    DEBTOR: "{studentName}, {groupName} guruhi bo'yicha qarzdorligingiz {debt}. {centerName}",
+    GRADES: "{studentName}, {date} kuni {groupName} guruhidagi bahoingiz: {score}. {centerName}",
+    DAY_BEFORE_FIRST_LESSON:
+      "{studentName}, {groupName} guruhidagi birinchi dars ertaga, {date}. {centerName}",
+    ADDED_TO_GROUP: "{studentName}, siz {groupName} guruhiga qo'shildingiz. {centerName}",
+  };
+  const activeEvents = new Set(["PAYMENT_MADE", "DEBTOR"]);
+  for (const [event, template] of Object.entries(autoDefaults)) {
+    const e = event as keyof typeof autoDefaults as Prisma.AutoSmsSettingCreateInput["event"];
+    await prisma.autoSmsSetting.upsert({
+      where: { organizationId_event: { organizationId, event: e } },
+      update: {},
+      create: { organizationId, event: e, template, isActive: activeEvents.has(event) },
+    });
+  }
+
+  // Integration rows. Secrets here are demo placeholders, never real credentials.
+  const integrations: Array<
+    [Prisma.IntegrationSettingCreateInput["provider"], boolean, Record<string, unknown>]
+  > = [
+    ["SMS", false, { email: "", password: "", sender: "4546" }],
+    ["TELEGRAM", false, { botToken: "", webhookSecret: "" }],
+    ["AMOCRM", false, { secretKey: "", integrationId: "", authorizationCode: "", subDomain: "" }],
+    ["TELEPHONY", true, { webhookSecret: "demo-telephony-secret" }],
+    ["FACE_ID", true, { webhookSecret: "demo-face-id-secret", lateAfterMinutes: 10 }],
+  ];
+  for (const [provider, isEnabled, config] of integrations) {
+    await prisma.integrationSetting.upsert({
+      where: { organizationId_provider: { organizationId, provider } },
+      update: {},
+      create: { organizationId, provider, isEnabled, config: config as Prisma.InputJsonValue },
+    });
+  }
+
+  await prisma.botRecipient.upsert({
+    where: { userId: admin.id },
+    update: {},
+    create: { organizationId, userId: admin.id, chatId: "100200300", branchIds: [] },
+  });
+
+  // Mon–Sat 09:00–18:00 for the Central staff; teachers start at 10:00.
+  for (const user of [admin, cashier, teacher]) {
+    const start = user.id === teacher.id ? "10:00" : "09:00";
+    for (const weekday of [1, 2, 3, 4, 5, 6]) {
+      await prisma.workSchedule.upsert({
+        where: { userId_weekday: { userId: user.id, weekday } },
+        update: { start, end: "18:00" },
+        create: { userId: user.id, weekday, start, end: "18:00" },
+      });
+    }
+  }
+
+  // FaceID check-ins for this month so far (UTC+5): admin on time, teacher late every third day,
+  // cashier absent on Wednesdays.
+  const now = new Date();
+  const local = new Date(now.getTime() + 5 * 60 * 60 * 1000);
+  const year = local.getUTCFullYear();
+  const month = local.getUTCMonth();
+  const today = local.getUTCDate();
+  const at = (day: number, hm: string) =>
+    new Date(Date.UTC(year, month, day, Number(hm.slice(0, 2)) - 5, Number(hm.slice(3, 5))));
+  for (let day = 1; day <= today; day++) {
+    const date = new Date(Date.UTC(year, month, day));
+    const weekday = date.getUTCDay();
+    if (weekday === 0) continue;
+    const rows: Array<[string, string | null, string | null]> = [
+      [admin.id, "08:55", day === today ? null : "18:05"],
+      [teacher.id, day % 3 === 0 ? "10:25" : "09:58", day === today ? null : "17:50"],
+      [cashier.id, weekday === 3 ? null : "09:02", weekday === 3 || day === today ? null : "18:00"],
+    ];
+    for (const [userId, checkIn, checkOut] of rows) {
+      if (!checkIn) continue;
+      await prisma.staffAttendance.upsert({
+        where: { userId_date: { userId, date } },
+        update: {},
+        create: {
+          userId,
+          branchId: central,
+          date,
+          checkIn: at(day, checkIn),
+          checkOut: checkOut ? at(day, checkOut) : null,
+          source: "FACE_ID",
+          deviceId: "demo-terminal-1",
+        },
+      });
+    }
+  }
+
+  // A few sent messages and calls for the logs and the student's SMS / CALLS tabs.
+  const messages: Array<[string, string, "SENT" | "FAILED", string | null, "PAYMENT_MADE" | null]> =
+    [
+      [
+        "demo:sms:1",
+        "Demo Student One, 2026-09-05 kuni 500 000 to'lovingiz qabul qilindi. Kampus Demo Learning Center",
+        "SENT",
+        null,
+        "PAYMENT_MADE",
+      ],
+      [
+        "demo:sms:2",
+        "Ertaga dars 10:00 da boshlanadi. Kampus Demo Learning Center",
+        "SENT",
+        admin.id,
+        null,
+      ],
+      [
+        "demo:sms:3",
+        "Hurmatli Demo Student One, to'lov muddati yaqinlashmoqda.",
+        "FAILED",
+        cashier.id,
+        null,
+      ],
+    ];
+  for (const [refKey, text, status, sentById, event] of messages) {
+    await prisma.smsMessage.upsert({
+      where: { refKey },
+      update: {},
+      create: {
+        organizationId,
+        branchId: central,
+        recipientType: "STUDENT",
+        recipientName: studentOne.fullName,
+        phone: studentOne.phone ?? "+998911000000",
+        studentId: studentOne.id,
+        text,
+        status,
+        sentById,
+        event,
+        refKey,
+        providerId: status === "SENT" ? `demo-${refKey}` : null,
+        error: status === "FAILED" ? "demo: provider rejected the number" : null,
+        sentAt: status === "SENT" ? new Date("2026-09-05T09:30:00Z") : null,
+        createdAt: new Date("2026-09-05T09:29:00Z"),
+      },
+    });
+  }
+  const calls: Array<[string, "INBOUND" | "OUTBOUND", "ANSWERED" | "MISSED", number, string]> = [
+    ["demo-call-1", "INBOUND", "ANSWERED", 185, "2026-09-10T05:12:00Z"],
+    ["demo-call-2", "INBOUND", "MISSED", 0, "2026-09-12T11:40:00Z"],
+    ["demo-call-3", "OUTBOUND", "ANSWERED", 64, "2026-09-15T08:05:00Z"],
+  ];
+  for (const [externalId, direction, status, durationSeconds, startedAt] of calls) {
+    const studentPhone = studentOne.phone ?? "+998911000000";
+    await prisma.callLog.upsert({
+      where: { externalId },
+      update: {},
+      create: {
+        organizationId,
+        branchId: central,
+        direction,
+        status,
+        fromPhone: direction === "INBOUND" ? studentPhone : admin.phone,
+        toPhone: direction === "INBOUND" ? admin.phone : studentPhone,
+        staffId: admin.id,
+        studentId: studentOne.id,
+        durationSeconds,
+        externalId,
+        startedAt: new Date(startedAt),
+      },
+    });
+  }
+  void groupA;
+}
+
 async function main() {
   const org = await prisma.organization.upsert({
     where: { id: "org_demo" },
@@ -983,6 +1202,7 @@ async function main() {
   await seedExams(branches);
   await seedFinance(org.id, branches);
   await seedCoinsAndTests(org.id, branches);
+  await seedIntegrations(org.id, branches);
 
   console.log(`Seeded ${DEMO_USERS.length} demo users across ${branchNames.length} branches.`);
   console.log(`Sign in with ${DEMO_USERS[0]!.phone} and the SEED_ADMIN_PASSWORD from .env.`);

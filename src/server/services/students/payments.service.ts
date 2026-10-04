@@ -7,6 +7,8 @@ import type {
   RefundInput,
 } from "@/lib/validation/students";
 import { recordAudit } from "@/server/audit/audit";
+import { notifyStaff } from "@/server/services/integrations/bot-recipients.service";
+import { queueAutoSms } from "@/server/services/sms/auto-sms.service";
 import { prisma, type DbClient } from "@/server/db/prisma";
 import { AppError } from "@/server/errors/app-error";
 import type { ParsedList } from "@/server/http/list-query";
@@ -187,6 +189,17 @@ export async function createPayment(
         method: dto.methodName,
       },
       branchId: m.group.branchId,
+    });
+    // "To'lov qilgandan so'ng sms yuborish" and the Telegram staff feed (A-88, A-85).
+    await queueAutoSms(tx, {
+      event: "PAYMENT_MADE",
+      studentId: m.studentId,
+      refKey: `payment:${row.id}`,
+      vars: { groupName: dto.groupName, amount: String(dto.amount), date: dto.paidAt },
+    });
+    await notifyStaff(tx, {
+      branchId: m.group.branchId,
+      text: `To'lov: ${dto.studentName} — ${dto.amount} (${dto.groupName}), ${actor.fullName}`,
     });
     return dto;
   });

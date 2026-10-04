@@ -67,18 +67,29 @@ import type {
 import type { StudentProgressDto } from "@/server/services/exams/exams.service";
 import type { StudentTestResultsDto } from "@/server/services/tests/tests.service";
 
+import { SendSmsDialog } from "@/features/sms/send-sms-dialog";
+import type { CallDto } from "@/server/services/calls/calls.service";
+import type { SmsLogRowDto } from "@/server/services/sms/sms.service";
+
+import { CallsTab } from "./calls-tab";
 import { CommentDialog } from "./comment-dialog";
+import { SmsTab } from "./sms-tab";
 import { ProgressTab } from "./progress-tab";
 import { TestResultsTab } from "./test-results-tab";
 import { GroupCard } from "./group-card";
 import { StudentDialog } from "./student-dialog";
 import { BalanceBadge } from "./students-page";
 
-const TABS = ["groups", "progress", "testResults", "comments", "history", "parents"] as const;
-const LATER_TABS: Array<{ key: string; phase: number }> = [
-  { key: "sms", phase: 11 },
-  { key: "calls", phase: 11 },
-];
+const TABS = [
+  "groups",
+  "progress",
+  "testResults",
+  "comments",
+  "sms",
+  "history",
+  "parents",
+  "calls",
+] as const;
 const LEFT: MembershipStatus[] = ["ARCHIVED", "GRADUATED"];
 const ALL = "__all";
 
@@ -91,6 +102,8 @@ export function StudentDetail({
   paymentGroupId,
   progress,
   testResults,
+  sms,
+  calls,
   qrSvg,
   options,
   paymentOptions,
@@ -104,6 +117,8 @@ export function StudentDetail({
   paymentGroupId: string | null;
   progress: StudentProgressDto;
   testResults: StudentTestResultsDto;
+  sms: SmsLogRowDto[];
+  calls: CallDto[];
   qrSvg: string;
   options: StudentOptions;
   paymentOptions: PaymentOptionsDto;
@@ -116,6 +131,7 @@ export function StudentDetail({
     refund: boolean;
     groups: boolean;
     leads: boolean;
+    sms: boolean;
   };
 }) {
   const t = useTranslations();
@@ -135,6 +151,7 @@ export function StudentDetail({
   const [removing, setRemoving] = useState<StudentDetailDto["groups"][number] | null>(null);
   const [returning, setReturning] = useState<StudentDetailDto["groups"][number] | null>(null);
   const [removeReason, setRemoveReason] = useState("");
+  const [parentsSms, setParentsSms] = useState(false);
   const [deletingParent, setDeletingParent] = useState<StudentDetailDto["parents"][number] | null>(
     null,
   );
@@ -344,16 +361,6 @@ export function StudentDetail({
                       {td(`tabs.${k}`)}
                     </TabsTrigger>
                   ))}
-                  {LATER_TABS.map((x) => (
-                    <TabsTrigger
-                      key={x.key}
-                      value={x.key}
-                      disabled
-                      title={td("laterPhase", { phase: x.phase })}
-                    >
-                      {td(`tabs.${x.key}`)}
-                    </TabsTrigger>
-                  ))}
                 </TabsList>
 
                 <TabsContent value="groups" className="space-y-4 pt-4">
@@ -396,6 +403,20 @@ export function StudentDetail({
                   <TestResultsTab studentId={student.id} initial={testResults} />
                 </TabsContent>
 
+                <TabsContent value="sms" className="pt-4">
+                  <SmsTab
+                    studentId={student.id}
+                    studentName={student.fullName}
+                    hasPhone={Boolean(student.phone)}
+                    messages={sms}
+                    canSend={can.sms && !student.isArchived}
+                  />
+                </TabsContent>
+
+                <TabsContent value="calls" className="pt-4">
+                  <CallsTab studentId={student.id} phone={student.phone} calls={calls} />
+                </TabsContent>
+
                 <TabsContent value="comments" className="space-y-4 pt-4">
                   <CommentsList comments={comments} onAdd={() => setDialog("comment")} />
                 </TabsContent>
@@ -408,14 +429,17 @@ export function StudentDetail({
                   <div className="flex flex-wrap items-center justify-between gap-2">
                     <h2 className="text-base font-semibold">{t("students.parents.title")}</h2>
                     <div className="flex gap-2">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        disabled
-                        title={t("students.parents.sms")}
-                      >
-                        {t("students.parents.sms")}
-                      </Button>
+                      {can.sms && (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          disabled={student.parents.length === 0}
+                          onClick={() => setParentsSms(true)}
+                          data-testid="parents-sms"
+                        >
+                          {t("students.parents.sms")}
+                        </Button>
+                      )}
                       {can.update && !student.isArchived && (
                         <Button
                           size="sm"
@@ -623,6 +647,12 @@ export function StudentDetail({
           await api(`/parents/${deletingParent.id}`, { method: "DELETE" });
           refresh();
         }}
+      />
+      <SendSmsDialog
+        open={parentsSms}
+        onOpenChange={setParentsSms}
+        target={{ kind: "parents", studentId: student.id }}
+        title={t("students.parents.smsTitle", { name: student.fullName })}
       />
     </div>
   );

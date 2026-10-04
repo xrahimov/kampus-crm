@@ -53,6 +53,22 @@ services:
       migrate:
         condition: service_completed_successfully
 
+  # Background jobs (A-21): auto-SMS, Telegram notifications, the daily scan.
+  worker:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+      target: worker
+    environment:
+      DATABASE_URL: postgresql://kampus:kampus@db:5432/kampus?schema=public
+      APP_URL: ${APP_URL:-http://localhost:3000}
+      WORKER_INTERVAL_MS: ${WORKER_INTERVAL_MS:-5000}
+    depends_on:
+      db:
+        condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
+
 volumes:
   db-data:
   uploads:

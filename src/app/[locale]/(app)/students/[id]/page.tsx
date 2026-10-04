@@ -17,6 +17,8 @@ import {
   listStudentComments,
   listStudentHistory,
 } from "@/server/services/students/students.service";
+import { listStudentCalls } from "@/server/services/calls/calls.service";
+import { listStudentSms } from "@/server/services/sms/sms.service";
 import { getStudentTestResults } from "@/server/services/tests/tests.service";
 
 type Props = {
@@ -58,21 +60,33 @@ export default async function Page({ params, searchParams }: Props) {
   const list = { page, pageSize, skip: (page - 1) * pageSize, take: pageSize };
   const paymentGroupId = str(sp.paymentGroup);
 
-  const [comments, history, payments, options, paymentOptions, qr, progress, testResults] =
-    await Promise.all([
-      listStudentComments(current.actor, id),
-      listStudentHistory(current.actor, id, list),
-      listPayments(
-        current.actor,
-        { ...list, sort: { field: "paidAt", direction: "desc" } },
-        { studentId: id, ...(paymentGroupId ? { groupId: paymentGroupId } : {}) },
-      ),
-      getStudentOptions(current.actor),
-      getPaymentOptions(current.actor),
-      qrSvg(`kampus:student:${id}`),
-      getStudentProgress(current.actor, id),
-      getStudentTestResults(current.actor, id, {}),
-    ]);
+  const [
+    comments,
+    history,
+    payments,
+    options,
+    paymentOptions,
+    qr,
+    progress,
+    testResults,
+    sms,
+    calls,
+  ] = await Promise.all([
+    listStudentComments(current.actor, id),
+    listStudentHistory(current.actor, id, list),
+    listPayments(
+      current.actor,
+      { ...list, sort: { field: "paidAt", direction: "desc" } },
+      { studentId: id, ...(paymentGroupId ? { groupId: paymentGroupId } : {}) },
+    ),
+    getStudentOptions(current.actor),
+    getPaymentOptions(current.actor),
+    qrSvg(`kampus:student:${id}`),
+    getStudentProgress(current.actor, id),
+    getStudentTestResults(current.actor, id, {}),
+    listStudentSms(current.actor, id),
+    listStudentCalls(current.actor, id),
+  ]);
 
   return (
     <StudentDetail
@@ -83,6 +97,8 @@ export default async function Page({ params, searchParams }: Props) {
       paymentGroupId={paymentGroupId}
       progress={progress}
       testResults={testResults}
+      sms={sms}
+      calls={calls}
       qrSvg={qr}
       options={options}
       paymentOptions={paymentOptions}
@@ -95,6 +111,7 @@ export default async function Page({ params, searchParams }: Props) {
         refund: can(current.actor, "payments.refund"),
         groups: can(current.actor, "groups.update"),
         leads: can(current.actor, "leads.create"),
+        sms: can(current.actor, "sms.send"),
       }}
     />
   );

@@ -11,6 +11,8 @@ import type {
   ToLeadInput,
 } from "@/lib/validation/leads";
 import { recordAudit } from "@/server/audit/audit";
+import { enqueue } from "@/server/jobs/queue";
+import { loadIntegrationConfig } from "@/server/services/integrations/integrations.service";
 import { prisma, type DbClient } from "@/server/db/prisma";
 import { AppError } from "@/server/errors/app-error";
 import { authorize, branchScope, type Actor } from "@/server/rbac/authorize";
@@ -322,6 +324,19 @@ export async function createLead(
         after: dto,
         branchId,
       });
+      // AmoCRM sync (A-20): a job per new lead when the integration is switched on.
+      const amo = await loadIntegrationConfig(tx, "AMOCRM");
+      if (amo?.isEnabled) {
+        await enqueue(tx, {
+          type: "amocrm.pushLead",
+          payload: {
+            name: dto.fullName,
+            phone: dto.phones[0] ?? null,
+            source: dto.sourceName ?? null,
+          },
+          uniqueKey: `amocrm:lead:${row.id}`,
+        });
+      }
       return dto;
     });
   } catch (error) {

@@ -1,6 +1,14 @@
 "use client";
 
-import { ArrowRightLeft, Eye, Flag, MoreHorizontal, Pencil, Trash2 } from "lucide-react";
+import {
+  ArrowRightLeft,
+  Eye,
+  Flag,
+  MoreHorizontal,
+  Pencil,
+  Trash2,
+  MessageSquare,
+} from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useSearchParams } from "next/navigation";
 import { useState, useTransition } from "react";
@@ -50,6 +58,8 @@ import {
 import type { GroupDto } from "@/server/services/groups/groups.service";
 import type { GroupFormOptions } from "@/server/services/groups/options.service";
 
+import { SendSmsDialog } from "@/features/sms/send-sms-dialog";
+
 import { GroupDialog } from "./group-dialog";
 import { MoveBranchDialog } from "./move-branch-dialog";
 import { weekdayLabel } from "./weekday";
@@ -85,7 +95,7 @@ export function GroupsPage({
   actorBranchIds: string[];
   activeBranchId: string | null;
   allBranches: boolean;
-  can: { create: boolean; update: boolean; delete: boolean };
+  can: { create: boolean; update: boolean; delete: boolean; sms: boolean };
 }) {
   const t = useTranslations();
   const fmt = useDateFormat();
@@ -99,6 +109,7 @@ export function GroupsPage({
   });
   const [moving, setMoving] = useState<GroupDto | null>(null);
   const [finishing, setFinishing] = useState<GroupDto | null>(null);
+  const [smsGroup, setSmsGroup] = useState<GroupDto | null>(null);
   const [archiving, setArchiving] = useState<GroupDto | null>(null);
   const { options: branchOptions, defaultId } = creatableBranches(
     branches,
@@ -280,6 +291,11 @@ export function GroupsPage({
                         <DropdownMenuItem onSelect={() => router.push(`/groups/${g.id}`)}>
                           <Eye /> {t("groups.actions.view")}
                         </DropdownMenuItem>
+                        {can.sms && (
+                          <DropdownMenuItem onSelect={() => setSmsGroup(g)} data-testid="group-sms">
+                            <MessageSquare /> {t("groups.actions.sms")}
+                          </DropdownMenuItem>
+                        )}
                         {can.update && g.status !== "ARCHIVED" && (
                           <>
                             <DropdownMenuItem onSelect={() => setDialog({ open: true, group: g })}>
@@ -358,6 +374,14 @@ export function GroupsPage({
           await api(`/groups/${archiving.id}`, { method: "DELETE" });
           refresh();
         }}
+      />
+      <SendSmsDialog
+        open={smsGroup !== null}
+        onOpenChange={(open) => {
+          if (!open) setSmsGroup(null);
+        }}
+        target={smsGroup ? { kind: "group", groupId: smsGroup.id } : null}
+        title={smsGroup ? t("sms.send.toStudent", { name: smsGroup.name }) : undefined}
       />
     </div>
   );

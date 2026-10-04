@@ -127,7 +127,10 @@
     "questionInUse": "The question is used in a test and cannot be deleted.",
     "testNotFound": "Test not found.",
     "testHasAttempts": "Results have been submitted for this test; its questions cannot change and it cannot be deleted.",
-    "testNotActive": "Results can be entered only for an active test."
+    "testNotActive": "Results can be entered only for an active test.",
+    "categoryHasTemplates": "This category still has templates.",
+    "webhookRejected": "The webhook secret is missing or wrong, or the integration is off.",
+    "staffNotFound": "Staff member not found."
   },
   "validation": {
     "phone": "Enter a number like +998 90 123 45 67.",
@@ -193,7 +196,12 @@
     "questionUnknown": "Unknown question.",
     "productInactive": "The product is inactive.",
     "outOfStock": "The product is out of stock.",
-    "notEnoughCoins": "The student does not have enough coins."
+    "notEnoughCoins": "The student does not have enough coins.",
+    "chatId": "Enter the numeric Telegram chat ID.",
+    "subDomain": "Only the subdomain, e.g. mycenter.",
+    "categoryUnknown": "Unknown category.",
+    "branchUnknown": "Unknown branch.",
+    "noRecipients": "Nobody to send to: no phone numbers in this selection."
   },
   "roles": {
     "CEO": "CEO",
@@ -236,7 +244,8 @@
       "smsLog": "Sent SMS",
       "bot": "Bot notifications",
       "amocrm": "AmoCRM",
-      "faceId": "FaceID"
+      "faceId": "FaceID",
+      "integrations": "Integrations"
     },
     "general": {
       "centerTitle": "Center settings",
@@ -246,7 +255,11 @@
       "workEnd": "Work ends",
       "scheduleStep": "Schedule step",
       "minutes": "{count} minutes",
-      "switchesTitle": "Behaviour"
+      "switchesTitle": "Behaviour",
+      "tabs": {
+        "center": "Center settings",
+        "sms": "Auto SMS settings"
+      }
     },
     "switches": {
       "spreadOverpayment": "Spread a student's overpayment over the next months",
@@ -445,7 +458,8 @@
       "groups": "Groups",
       "role": "Role"
     },
-    "noGroups": "No groups yet."
+    "noGroups": "No groups yet.",
+    "sms": "Send SMS"
   },
   "staff": {
     "title": "Staff",
@@ -521,7 +535,8 @@
       "staff": "Staff",
       "settings": "Settings",
       "logs": "Logs",
-      "coins": "Coins"
+      "coins": "Coins",
+      "sms": "SMS"
     },
     "names": {
       "dashboard": {
@@ -607,6 +622,9 @@
       "coins": {
         "give": "Give coins",
         "manage": "Coin settings, marketplace and purchase requests"
+      },
+      "sms": {
+        "send": "Send SMS"
       }
     }
   },
@@ -670,7 +688,8 @@
     "actions": {
       "view": "Open",
       "moveBranch": "Move to another branch",
-      "finish": "Finish group"
+      "finish": "Finish group",
+      "sms": "Send SMS"
     },
     "form": {
       "add": "New group",
@@ -786,7 +805,8 @@
       "activated": "{count} students activated.",
       "payment": "Payment",
       "transfer": "Move to another group",
-      "toLead": "Return to leads"
+      "toLead": "Return to leads",
+      "sms": "Message (SMS)"
     },
     "notes": {
       "newNote": "Add note",
@@ -835,7 +855,7 @@
     "archiveView": "Archive",
     "activate": "Activate",
     "excel": "Excel (phase 12)",
-    "sms": "Send SMS (phase 11)",
+    "sms": "Send SMS",
     "importExcel": "Import from Excel (phase 12)",
     "badges": "Badges",
     "filters": {
@@ -1029,12 +1049,13 @@
     "parents": {
       "title": "Parents",
       "add": "Add parent",
-      "sms": "Send SMS (phase 11)",
+      "sms": "Send SMS",
       "fullName": "Full name",
       "phone": "Phone",
       "empty": "No parents recorded.",
       "deleteTitle": "Remove parent?",
-      "deleteText": "“{name}” is removed from this student."
+      "deleteText": "“{name}” is removed from this student.",
+      "smsTitle": "SMS to the parents of {name}"
     },
     "transfer": {
       "title": "Move to another group",
@@ -1178,11 +1199,11 @@
     "boardName": "Board name",
     "sources": "Sources",
     "excel": "Excel (phase 12)",
-    "amocrm": "AmoCRM (phase 11)",
+    "amocrm": "AmoCRM",
     "addColumn": "Add column",
     "columnName": "Column name",
     "editColumn": "Rename column",
-    "columnSms": "SMS to the whole column (phase 11)",
+    "columnSms": "SMS to the whole column",
     "emptyColumn": "No leads here.",
     "noBoards": "No lead boards yet.",
     "noBoardsHint": "Create a board to start collecting leads.",
@@ -1271,7 +1292,8 @@
       "submit": "Send",
       "thanksTitle": "Thank you!",
       "thanksText": "We received your request and will contact you soon."
-    }
+    },
+    "amocrmHint": "AmoCRM sync is set up under Settings → Integrations"
   },
   "exams": {
     "title": "Exams",
@@ -1546,7 +1568,7 @@
         "TEST_RESULT": "Test result",
         "BIRTHDAY": "Birthday"
       },
-      "notWired": "Saved, but nothing triggers it yet (homework and birthdays arrive with phase 11).",
+      "notWired": "Saved, but nothing triggers it yet (a homework record arrives later).",
       "reasonsTitle": "Manual coin reasons",
       "reasonsDescription": "A teacher picks one of these when giving coins and cannot exceed its maximum.",
       "addReason": "Add reason",
@@ -1843,5 +1865,319 @@
       "students": "Students",
       "statistics": "Center statistics"
     }
+  },
+  "sms": {
+    "send": {
+      "title": "Send SMS",
+      "button": "Send SMS",
+      "toStudent": "SMS: {name}",
+      "recipients": "{count} recipients ({skipped} without a phone skipped)",
+      "counting": "Counting recipients…",
+      "result": "Sent: {sent}, failed: {failed}.",
+      "fakeAdapter": "No SMS gateway is configured, so the messages were recorded but not delivered (Settings → Integrations).",
+      "template": "Template",
+      "noTemplate": "No template",
+      "text": "Message",
+      "counter": "{chars} characters · {parts} SMS"
+    },
+    "statuses": {
+      "QUEUED": "Queued",
+      "SENT": "Sent",
+      "FAILED": "Failed"
+    },
+    "recipientTypes": {
+      "STUDENT": "Student",
+      "PARENT": "Parent",
+      "STAFF": "Staff",
+      "LEAD": "Lead",
+      "OTHER": "Other"
+    },
+    "autoEvents": {
+      "BIRTHDAY": "Birthday greeting",
+      "EXAM_RESULT": "Exam result",
+      "PAYMENT_MADE": "After a payment",
+      "ABSENT": "Absent from a lesson",
+      "PRESENT": "Came to a lesson",
+      "PAYMENT_DUE_SOON": "Payment due soon",
+      "DEBTOR": "Debtor warning",
+      "GRADES": "Grades",
+      "DAY_BEFORE_FIRST_LESSON": "Day before the first lesson",
+      "ADDED_TO_GROUP": "Added to a group"
+    },
+    "variables": {
+      "studentName": "Student name",
+      "groupName": "Group",
+      "date": "Date",
+      "amount": "Amount",
+      "debt": "Debt",
+      "score": "Score",
+      "centerName": "Center name"
+    },
+    "studentTab": {
+      "title": "SMS sent to the student",
+      "empty": "No SMS yet.",
+      "noPhone": "The student has no phone number."
+    },
+    "log": {
+      "title": "Sent SMS",
+      "description": "Every message the system or a staff member sent.",
+      "all": "All",
+      "system": "Sent by the system",
+      "empty": "No SMS yet.",
+      "columns": {
+        "recipient": "Recipient",
+        "text": "Message",
+        "sentBy": "Sent by",
+        "sentAt": "Sent at",
+        "status": "Status"
+      }
+    },
+    "templates": {
+      "title": "SMS templates",
+      "description": "Ready texts for the Send SMS dialog, grouped by category.",
+      "import": "Import from Eskiz",
+      "importNeedsCategory": "Create a category first; imported templates go into the first one.",
+      "imported": "Imported {count} templates into “{category}” ({adapter}).",
+      "addCategory": "Create category",
+      "addTemplate": "Create template",
+      "editTemplate": "Edit template",
+      "deleteTemplate": "Delete template?",
+      "deleteCategory": "Delete category?",
+      "empty": "No categories yet.",
+      "emptyHint": "Create a category, then add templates to it.",
+      "importedBadge": "imported",
+      "columns": {
+        "category": "Category",
+        "text": "SMS text"
+      },
+      "categoryName": "Category name",
+      "variablesHint": "Click a variable to insert it; it is replaced when the message is sent."
+    },
+    "auto": {
+      "title": "Auto SMS settings",
+      "description": "Each switch sends its template automatically when the event happens. Variables in braces are filled in.",
+      "templateFor": "Template: {event}"
+    }
+  },
+  "calls": {
+    "title": "Calls",
+    "description": "Calls recorded by the telephony integration and click-to-call.",
+    "refresh": "Refresh",
+    "all": "All",
+    "empty": "No calls found.",
+    "call": "Call",
+    "started": "The call was started.",
+    "startedFake": "The call was recorded; no telephony provider is connected yet.",
+    "studentTab": {
+      "title": "Calls",
+      "empty": "No calls yet."
+    },
+    "columns": {
+      "startedAt": "Time",
+      "direction": "Direction",
+      "phones": "Numbers",
+      "student": "Student",
+      "staff": "Staff",
+      "duration": "Duration",
+      "status": "Status"
+    },
+    "directions": {
+      "INBOUND": "Incoming",
+      "OUTBOUND": "Outgoing"
+    },
+    "statuses": {
+      "ANSWERED": "Answered",
+      "MISSED": "Missed",
+      "BUSY": "Busy",
+      "FAILED": "Failed"
+    }
+  },
+  "logs": {
+    "from": "From",
+    "to": "To",
+    "logins": {
+      "title": "Logins: {count}",
+      "description": "Who signed in, and failed attempts.",
+      "outcome": "Outcome",
+      "all": "All",
+      "success": "Signed in",
+      "failure": "Failed",
+      "empty": "No logins recorded.",
+      "columns": {
+        "name": "Name",
+        "phone": "Phone",
+        "at": "Signed in at",
+        "ip": "IP"
+      }
+    },
+    "actions": {
+      "title": "Action log",
+      "description": "Every change staff made, newest first.",
+      "entity": "Type",
+      "staff": "Staff",
+      "all": "All",
+      "empty": "Nothing recorded.",
+      "system": "System",
+      "entities": {
+        "Payment": "Payment",
+        "Refund": "Refund",
+        "Discount": "Discount",
+        "Student": "Student",
+        "GroupMembership": "Group membership",
+        "Group": "Group",
+        "Lesson": "Lesson",
+        "Lead": "Lead",
+        "Exam": "Exam",
+        "SmsMessage": "SMS"
+      },
+      "names": {
+        "payment.create": "Payment created",
+        "payment.refund": "Refund made",
+        "discount.create": "Discount given",
+        "membership.create": "Added to group",
+        "membership.status": "Status changed",
+        "membership.transfer": "Transferred",
+        "group.update": "Group details updated",
+        "group.create": "Group created",
+        "student.create": "Student created",
+        "student.update": "Student updated",
+        "attendance.mark": "Attendance marked",
+        "grades.set": "Grades set",
+        "lead.create": "Lead created",
+        "lead.move": "Lead moved",
+        "sms.send": "SMS sent",
+        "exam.results": "Exam results entered"
+      }
+    }
+  },
+  "bot": {
+    "title": "Bot notifications",
+    "description": "Staff in this list receive Telegram messages from the support bot about system actions (payments, new students).",
+    "add": "Create",
+    "empty": "Nobody receives bot notifications yet.",
+    "emptyHint": "Add a staff member with their Telegram chat ID.",
+    "columns": {
+      "staff": "Staff",
+      "chatId": "Special ID",
+      "branches": "Branches"
+    },
+    "allBranches": "All branches",
+    "chatIdHint": "The staff member sends /id to the bot and receives their special ID.",
+    "branchesHint": "Leave empty for every branch.",
+    "remove": "Remove recipient?"
+  },
+  "integrations": {
+    "enabled": "Enabled",
+    "webhookHint": "Webhook URL:",
+    "queue": {
+      "title": "Background jobs",
+      "description": "Auto-SMS and bot messages wait in a queue processed by the worker. Without a worker, run the queue here.",
+      "run": "Run queued jobs now",
+      "result": "Claimed {claimed}, done {done}, failed {failed}; {pending} still pending."
+    },
+    "SMS": {
+      "title": "SMS gateway (Eskiz)",
+      "description": "Credentials of the Eskiz account that sends SMS. When off, messages are only recorded.",
+      "fields": {
+        "email": "Email",
+        "password": "Password",
+        "sender": "Sender (from)"
+      }
+    },
+    "TELEGRAM": {
+      "title": "Telegram bot",
+      "description": "The support bot that notifies staff listed under Bot notifications.",
+      "fields": {
+        "botToken": "Bot token",
+        "webhookSecret": "Webhook secret"
+      }
+    },
+    "TELEPHONY": {
+      "title": "Telephony",
+      "description": "A PBX posts finished calls to the webhook; they appear under Calls.",
+      "fields": {
+        "webhookSecret": "Webhook secret"
+      }
+    },
+    "AMOCRM": {
+      "title": "AmoCRM",
+      "description": "New leads are pushed to amoCRM when enabled.",
+      "fields": {
+        "secretKey": "Secret Key",
+        "integrationId": "Integration ID",
+        "authorizationCode": "Authorization Code",
+        "subDomain": "Sub Domain"
+      },
+      "test": "Test connection",
+      "testOk": "Connected: {account}",
+      "testFake": "No credentials yet; the fake client answered.",
+      "connected": "Tokens are stored; the connection works.",
+      "notConnected": "Not connected yet."
+    },
+    "FACE_ID": {
+      "title": "FaceID",
+      "description": "Terminals post staff check-ins to the webhook; they feed the staff attendance report.",
+      "fields": {
+        "webhookSecret": "Webhook secret",
+        "lateAfterMinutes": "Late after (minutes)"
+      },
+      "payloadHint": "Payload: deviceId, phone (+998…), at (ISO time), kind IN or OUT."
+    }
+  },
+  "staffAttendance": {
+    "title": "Staff attendance dashboard",
+    "noStaff": "No staff in this branch.",
+    "filters": {
+      "month": "Month",
+      "year": "Year",
+      "branch": "Branch",
+      "date": "Day"
+    },
+    "kpis": {
+      "total": "Total staff",
+      "cameToday": "Came today",
+      "lateToday": "Late today",
+      "absentToday": "Absent today"
+    },
+    "tabs": {
+      "daily": "Daily",
+      "weekly": "Weekly",
+      "monthly": "Monthly",
+      "statistics": "Statistics",
+      "schedules": "Work schedules"
+    },
+    "columns": {
+      "staff": "Staff",
+      "branch": "Branch",
+      "expectedIn": "Expected in",
+      "checkIn": "Check-in",
+      "expectedOut": "Expected out",
+      "checkOut": "Check-out",
+      "late": "Late",
+      "earlyLeave": "Left early",
+      "worked": "Worked",
+      "status": "Status",
+      "workingDays": "Working days",
+      "presentDays": "Present",
+      "lateDays": "Late",
+      "absentDays": "Absent"
+    },
+    "statuses": {
+      "PRESENT": "Present",
+      "LATE": "Late",
+      "ABSENT": "Absent",
+      "NOT_WORKING_DAY": "Not a working day",
+      "NO_SCHEDULE": "No schedule"
+    },
+    "stats": {
+      "attendanceRate": "Attendance",
+      "punctualityRate": "On time",
+      "avgWorked": "Average worked per day",
+      "byDay": "By day",
+      "legend": "Green present, amber late, red absent."
+    },
+    "manualCheck": "Check-in/out: {name}",
+    "scheduleFor": "Work schedule: {name}",
+    "scheduleHint": "Tick the working days and set the expected hours."
   }
 }

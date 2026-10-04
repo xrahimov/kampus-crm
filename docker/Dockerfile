@@ -2,6 +2,7 @@
 # Multi-stage build. Targets:
 #   runner   — the production web server (Next.js standalone output)
 #   migrator — runs `prisma migrate deploy` (and optionally the seed) once
+#   worker   — the background job runner (auto-SMS, Telegram, daily scans)
 
 FROM node:22-alpine AS base
 WORKDIR /app
@@ -26,6 +27,15 @@ COPY src/lib ./src/lib
 COPY src/server/auth/password.ts ./src/server/auth/password.ts
 RUN npx prisma generate
 CMD ["npx", "prisma", "migrate", "deploy"]
+
+# --- worker: job queue process (A-21), runs the TypeScript source with tsx -----
+FROM deps AS worker
+ENV NODE_ENV=production
+COPY src ./src
+COPY scripts ./scripts
+COPY tsconfig.json ./
+RUN npx prisma generate
+CMD ["npx", "tsx", "scripts/worker.ts"]
 
 # --- runner: minimal production image ----------------------------------------
 FROM base AS runner

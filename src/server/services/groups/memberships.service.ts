@@ -6,6 +6,7 @@ import type {
 } from "@/lib/validation/groups";
 import type { TransferInput } from "@/lib/validation/students";
 import { recordAudit } from "@/server/audit/audit";
+import { queueAutoSms } from "@/server/services/sms/auto-sms.service";
 import { prisma, type DbClient } from "@/server/db/prisma";
 import { AppError } from "@/server/errors/app-error";
 import { authorize, branchScope, canAccessAllBranches, type Actor } from "@/server/rbac/authorize";
@@ -203,6 +204,13 @@ export async function addMember(
         entityId: row.id,
         after: dto,
         branchId: group.branchId,
+      });
+      // "Guruhga birinchi qo'shilganda" (A-88).
+      await queueAutoSms(tx, {
+        event: "ADDED_TO_GROUP",
+        studentId: studentId!,
+        refKey: `membership:${row.id}`,
+        vars: { groupName: group.name },
       });
       return dto;
     });

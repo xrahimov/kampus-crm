@@ -6,6 +6,7 @@ import { useSearchParams } from "next/navigation";
 import { useState, useTransition } from "react";
 
 import { ConfirmDialog } from "@/components/data/confirm-dialog";
+import { SendSmsDialog } from "@/features/sms/send-sms-dialog";
 import { EmptyState } from "@/components/data/empty-state";
 import { SearchBox } from "@/components/data/search-box";
 import { Button } from "@/components/ui/button";
@@ -70,7 +71,7 @@ export function LeadsBoard({
   actorBranchIds: string[];
   activeBranchId: string | null;
   allBranches: boolean;
-  can: { create: boolean; update: boolean; delete: boolean; groups: boolean };
+  can: { create: boolean; update: boolean; delete: boolean; groups: boolean; sms: boolean };
 }) {
   /** Branches a new board may be created in, and the one preselected. */
   const { options: branches, defaultId } = creatableBranches(
@@ -101,6 +102,7 @@ export function LeadsBoard({
   const [inlineError, setInlineError] = useState<string | null>(null);
   const [deletingLead, setDeletingLead] = useState<LeadDto | null>(null);
   const [deletingColumn, setDeletingColumn] = useState<BoardColumnDto | null>(null);
+  const [smsColumn, setSmsColumn] = useState<BoardColumnDto | null>(null);
   const [deletingBoard, setDeletingBoard] = useState(false);
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [addingToGroup, setAddingToGroup] = useState(false);
@@ -306,13 +308,13 @@ export function LeadsBoard({
           />
           {tl("filters.archive")}
         </label>
-        <label
-          className="flex h-8 items-center gap-2 text-xs text-muted-foreground"
-          title={tl("amocrm")}
+        <Link
+          href="/settings/integrations/amocrm"
+          className="flex h-8 items-center gap-2 text-xs text-muted-foreground hover:underline"
+          title={tl("amocrmHint")}
         >
-          <Switch checked={false} disabled />
           {tl("amocrm")}
-        </label>
+        </Link>
       </div>
 
       {error && (
@@ -376,7 +378,13 @@ export function LeadsBoard({
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
-                      <DropdownMenuItem disabled>{tl("columnSms")}</DropdownMenuItem>
+                      <DropdownMenuItem
+                        disabled={!can.sms || column.total === 0}
+                        onSelect={() => setSmsColumn(column)}
+                        data-testid="column-sms"
+                      >
+                        {tl("columnSms")}
+                      </DropdownMenuItem>
                       <DropdownMenuSeparator />
                       <DropdownMenuItem onSelect={() => setColumnDialog(column)}>
                         <Pencil /> {t("common.edit")}
@@ -601,6 +609,14 @@ export function LeadsBoard({
           }}
         />
       )}
+      <SendSmsDialog
+        open={smsColumn !== null}
+        onOpenChange={(open) => {
+          if (!open) setSmsColumn(null);
+        }}
+        target={smsColumn ? { kind: "leadColumn", columnId: smsColumn.id } : null}
+        title={smsColumn ? t("sms.send.toStudent", { name: smsColumn.name }) : undefined}
+      />
     </div>
   );
 }
