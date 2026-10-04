@@ -56,6 +56,8 @@ import type {
 } from "@/server/services/students/students.service";
 
 import { SendSmsDialog } from "@/features/sms/send-sms-dialog";
+import { ExcelLink } from "@/features/shared/excel-link";
+import { ImportDialog } from "@/features/shared/import-dialog";
 
 import { CommentDialog } from "./comment-dialog";
 import { StudentDialog } from "./student-dialog";
@@ -121,6 +123,7 @@ export function StudentsPage({
   const [blacklisting, setBlacklisting] = useState<StudentRowDto | null>(null);
   const [activating, setActivating] = useState(false);
   const [smsOpen, setSmsOpen] = useState(false);
+  const [importing, setImporting] = useState(false);
   const [notice, setNotice] = useState<string | null>(null);
   const { options: branchOptions, defaultId } = creatableBranches(
     branches,
@@ -182,9 +185,7 @@ export function StudentsPage({
           </p>
         </div>
         <div className="flex flex-wrap gap-2">
-          <Button variant="outline" size="sm" disabled title={ts("excel")}>
-            {ts("excel")}
-          </Button>
+          <ExcelLink path="/students/export.xlsx" params={searchParams} testId="students-excel" />
           {can.sms && (
             <Button
               variant="outline"
@@ -220,7 +221,12 @@ export function StudentsPage({
             </Button>
           )}
           {can.create && (
-            <Button variant="outline" size="sm" disabled title={ts("importExcel")}>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setImporting(true)}
+              data-testid="students-import"
+            >
               {ts("importExcel")}
             </Button>
           )}
@@ -495,6 +501,16 @@ export function StudentsPage({
           });
           refresh();
         }}
+      />
+      <ImportDialog
+        open={importing}
+        onOpenChange={setImporting}
+        title={ts("importExcel")}
+        templatePath="/students/import-template.xlsx"
+        importPath="/students/import"
+        fields={{ branchId: defaultId }}
+        onDone={refresh}
+        testId="students-import-dialog"
       />
       <SendSmsDialog
         open={smsOpen}

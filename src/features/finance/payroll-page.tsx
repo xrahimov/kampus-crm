@@ -25,6 +25,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { ExcelLink } from "@/features/shared/excel-link";
 import { Link, useRouter } from "@/i18n/navigation";
 import { api, ApiError } from "@/lib/api-client";
 import { parseDateOnly } from "@/lib/dates";
@@ -95,13 +96,16 @@ export function PayrollPage({
             {t(`statuses.${run.status}`)}
           </p>
         </div>
-        <Input
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-          placeholder={t("search")}
-          className="w-56"
-          aria-label={t("search")}
-        />
+        <div className="flex flex-wrap items-center gap-2">
+          <ExcelLink path={`/payroll/${run.month}/export.xlsx`} testId="payroll-excel" />
+          <Input
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder={t("search")}
+            className="w-56"
+            aria-label={t("search")}
+          />
+        </div>
       </div>
       <p className="text-xs text-muted-foreground">{t("rulesNote")}</p>
       {error && <Alert variant="destructive">{error}</Alert>}

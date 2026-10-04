@@ -32,7 +32,9 @@
       "range": "{total} tadan {from}–{to}",
       "previous": "Oldingi sahifa",
       "next": "Keyingi sahifa"
-    }
+    },
+    "yes": "Ha",
+    "no": "Yo'q"
   },
   "nav": {
     "dashboard": "Bosh sahifa",
@@ -130,7 +132,11 @@
     "testNotActive": "Natijalarni faqat faol testga kiritish mumkin.",
     "categoryHasTemplates": "Bu kategoriyada hali shablonlar bor.",
     "webhookRejected": "Webhook maxfiy kaliti yo'q yoki noto'g'ri, yoki integratsiya o'chirilgan.",
-    "staffNotFound": "Xodim topilmadi."
+    "staffNotFound": "Xodim topilmadi.",
+    "importDuplicate": "Oldingi qatorning takrori",
+    "importExists": "Bu telefonli o'quvchi allaqachon mavjud",
+    "importAlreadyIn": "Allaqachon bu guruhda",
+    "notGraduated": "Bu o'quvchi guruhni bitirmagan"
   },
   "validation": {
     "phone": "+998 90 123 45 67 ko‘rinishida raqam kiriting.",
@@ -201,7 +207,8 @@
     "subDomain": "Faqat subdomen, masalan mycenter.",
     "categoryUnknown": "Noma'lum kategoriya.",
     "branchUnknown": "Noma'lum filial.",
-    "noRecipients": "Yuboradigan kishi yo'q: tanlovda telefon raqamlari yo'q."
+    "noRecipients": "Yuboradigan kishi yo'q: tanlovda telefon raqamlari yo'q.",
+    "importTooLarge": "Qatorlar juda ko'p (maks. {max})"
   },
   "roles": {
     "CEO": "CEO",
@@ -806,7 +813,8 @@
       "payment": "To‘lov",
       "transfer": "Boshqa guruhga ko‘chirish",
       "toLead": "Lidlarga qaytarish",
-      "sms": "Xabar (SMS)"
+      "sms": "Xabar (SMS)",
+      "importExcel": "Excel orqali qo'shish"
     },
     "notes": {
       "newNote": "Eslatma qo'shish",
@@ -854,9 +862,9 @@
     "activeView": "Faol",
     "archiveView": "Arxiv",
     "activate": "Faollashtirish",
-    "excel": "Excel (12-bosqich)",
+    "excel": "Excel",
     "sms": "SMS yuborish",
-    "importExcel": "Excel orqali qo‘shish (12-bosqich)",
+    "importExcel": "Excel orqali import",
     "badges": "Beyjiklar",
     "filters": {
       "course": "Kurslar",
@@ -1067,7 +1075,8 @@
     "remove": {
       "title": "Guruhdan chiqarilsinmi?",
       "text": "“{name}” guruhdan chiqadi. To‘lovlar va davomat saqlanadi.",
-      "reason": "Sabab"
+      "reason": "Sabab",
+      "otherReason": "Boshqa (pastga yozing)"
     },
     "badge": {
       "title": "O‘quvchi beyjigi",
@@ -1095,7 +1104,11 @@
       "lessons": "Darslar",
       "exams": "Imtihon natijalari",
       "noData": "Hali baho va davomat yo'q.",
-      "noExams": "Hali imtihonlar yo'q."
+      "noExams": "Hali imtihonlar yo'q.",
+      "byGroup": "Guruhlar bo'yicha",
+      "group": "Guruh",
+      "course": "Kurs",
+      "status": "Holat"
     }
   },
   "payments": {
@@ -1136,7 +1149,8 @@
       "receivedBy": "Qabul qildi",
       "createdAt": "Yaratilgan vaqt",
       "receipt": "Chek",
-      "total": "Jami: {amount}"
+      "total": "Jami: {amount}",
+      "excel": "Excelga eksport qilish"
     },
     "log": {
       "title": "To‘lovlar",
@@ -1198,7 +1212,7 @@
     "createBoard": "Bo‘lim yaratish",
     "boardName": "Doska nomi",
     "sources": "Manba",
-    "excel": "Excel (12-bosqich)",
+    "excel": "Excel",
     "amocrm": "AmoCRM",
     "addColumn": "Qo‘shimcha ustun qo‘shish",
     "columnName": "Bo‘lim nomi",
@@ -1864,6 +1878,281 @@
       "leads": "Lid hisobotlari",
       "students": "O‘quvchilar",
       "statistics": "Markaz statistikasi"
+    },
+    "filters": {
+      "all": "Barchasi",
+      "allBranches": "Barcha filiallar",
+      "branch": "Filial",
+      "year": "Yil",
+      "month": "Oy",
+      "from": "Dan",
+      "to": "Gacha",
+      "search": "Qidirish",
+      "searchStudent": "O'quvchi ismi yoki telefoni",
+      "group": "Guruh",
+      "method": "To'lov usuli",
+      "teacher": "O'qituvchi",
+      "course": "Kurs",
+      "source": "Manba",
+      "status": "Holat",
+      "date": "Sana"
+    },
+    "payments": {
+      "title": "To'lovlar hisoboti",
+      "kpis": {
+        "total": "Jami to'lovlar",
+        "onTime": "O'z vaqtida to'langan",
+        "late": "Kechikib to'langan",
+        "discounts": "Chegirmalar",
+        "bonus": "Bonuslar",
+        "refunds": "Qaytarilganlar",
+        "countPayments": "{count} ta to'lov",
+        "countDiscounts": "{count} o'quvchi",
+        "countRefunds": "{count} ta qaytarish"
+      },
+      "tabs": {
+        "teachers": "O'qituvchilar bo'yicha",
+        "staff": "Xodimlar bo'yicha"
+      },
+      "emptyTeachers": "Bu oyda to'lovi bor o'qituvchilar yo'q.",
+      "emptyStaff": "Bu oyda xodimlar to'lov qabul qilmagan.",
+      "columns": {
+        "fullName": "F.I.Sh.",
+        "roles": "Rollar",
+        "paymentsCount": "To'lovlar",
+        "total": "Summa",
+        "refunds": "Qaytarilgan",
+        "groups": "Guruhlar",
+        "courses": "Kurslar",
+        "students": "O'quvchilar",
+        "debt": "Qarz"
+      }
+    },
+    "studentPayments": {
+      "title": "O'quvchi to'lovlari",
+      "summary": "{count} ta to'lov · {amount}",
+      "byPaidAt": "To'lov sanasi bo'yicha",
+      "bonus": "Bonus",
+      "withBonus": "Bonusli",
+      "withoutBonus": "Bonussiz",
+      "receivedBy": "Qabul qildi",
+      "empty": "Bu filtrlar bo'yicha to'lov yo'q.",
+      "columns": {
+        "student": "O'quvchi",
+        "group": "Guruh",
+        "teacher": "O'qituvchi",
+        "amount": "Summa",
+        "bonus": "Bonus",
+        "paidAt": "To'lov sanasi",
+        "effectiveMonth": "Oy uchun",
+        "comment": "Izoh",
+        "receivedBy": "Qabul qildi",
+        "method": "Usul"
+      }
+    },
+    "churn": {
+      "title": "Ketgan o'quvchilar",
+      "manageReasons": "Sabablarni sozlash",
+      "kpis": {
+        "churnRate": "Ketish darajasi",
+        "leftCount": "Ketganlar",
+        "lostRevenue": "Yo'qotilgan daromad",
+        "avgLifetime": "O'rtacha o'qish muddati",
+        "ofActive": "boshida {count} faoldan",
+        "perMonth": "oyiga",
+        "months": "{count} oy"
+      },
+      "dynamicsTitle": "Oylar bo'yicha ketganlar",
+      "reasonsTitle": "Sabablar",
+      "breakdownTitle": "Taqsimot",
+      "breakdown": {
+        "course": "Kurs bo'yicha",
+        "teacher": "O'qituvchi bo'yicha",
+        "branch": "Filial bo'yicha",
+        "status": "Holat bo'yicha",
+        "reason": "Sabab bo'yicha",
+        "joinedThisMonth": "Shu oyda qo'shilganlar"
+      },
+      "transfersTitle": "Guruhlar o'rtasida ko'chirishlar",
+      "transfers": {
+        "total": "Ko'chirishlar",
+        "leftAfter": "ko'chirishdan keyin ketgan",
+        "why": "Ko'chirish sabablari"
+      },
+      "discountsTitle": "Chegirmalar",
+      "discounts": {
+        "withDiscount": "Chegirma bilan ketgan",
+        "fullPrice": "To'liq narxda ketgan",
+        "has": "Ha",
+        "none": "Yo'q"
+      },
+      "listTitle": "Kim ketdi",
+      "emptyList": "Bu davrda hech kim ketmagan.",
+      "noData": "Bu davr uchun ma'lumot yo'q.",
+      "noReason": "Sabab ko'rsatilmagan",
+      "columns": {
+        "fullName": "O'quvchi",
+        "group": "Guruh",
+        "course": "Kurs",
+        "discount": "Chegirma",
+        "teacher": "O'qituvchi",
+        "reason": "Sabab",
+        "leftAt": "Ketgan sana",
+        "leftBy": "O'chirgan",
+        "note": "Eslatma"
+      },
+      "reasons": {
+        "title": "Ketish va ko'chirish sabablari",
+        "hint": "Bu sabablar o'quvchi guruhdan o'chirilganda yoki boshqa guruhga ko'chirilganda taklif qilinadi.",
+        "empty": "Hali sabablar yo'q.",
+        "newReason": "Yangi sabab",
+        "kind": "Turi",
+        "kinds": {
+          "LEAVE": "Ketish",
+          "TRANSFER": "Ko'chirish"
+        },
+        "add": "Qo'shish"
+      }
+    },
+    "graduates": {
+      "title": "Bitiruvchilar",
+      "kpis": {
+        "count": "Bitiruvchilar",
+        "bestTeacher": "Eng yaxshi o'qituvchi",
+        "graduates": "{count} bitiruvchi",
+        "avgIelts": "O'rtacha IELTS",
+        "commonCefr": "Ko'p uchragan CEFR",
+        "university": "Universitetga kirgan",
+        "employed": "Ishga joylashgan"
+      },
+      "withResult": "Natijasi bor",
+      "noResult": "Natijasi yo'q",
+      "empty": "Bu oyda bitiruvchilar yo'q.",
+      "emptyHint": "O'quvchilar guruhdagi holati «Bitirgan» bo'lganda bu yerda ko'rinadi.",
+      "exam": "Imtihon: {score}",
+      "columns": {
+        "fullName": "O'quvchi",
+        "groupBranch": "Guruh · filial",
+        "teacher": "O'qituvchi",
+        "graduatedAt": "Bitirgan sana",
+        "results": "Natijalar"
+      },
+      "record": {
+        "title": "{name} natijalari",
+        "button": "Natija kiritish",
+        "ielts": "IELTS bali",
+        "cefr": "CEFR darajasi",
+        "university": "Universitetga kirdi",
+        "employed": "Ishga joylashdi",
+        "note": "Eslatma"
+      }
+    },
+    "leads": {
+      "title": "Lidlar hisoboti",
+      "kpis": {
+        "newLeads": "Yangi lidlar",
+        "conversions": "O'quvchiga aylangan",
+        "lost": "Yo'qotilgan",
+        "bestSource": "Eng yaxshi manba",
+        "bestSalesperson": "Eng yaxshi sotuvchi",
+        "leadsCount": "{count} lid",
+        "conversionsCount": "{count} konversiya"
+      },
+      "funnelTitle": "Voronka",
+      "byMonthTitle": "{year}-yil lidlari",
+      "series": {
+        "created": "Yaratilgan",
+        "converted": "Aylangan",
+        "lost": "Yo'qotilgan"
+      },
+      "byCourseTitle": "Kurs bo'yicha",
+      "bySourceTitle": "Manba bo'yicha",
+      "noData": "Bu davrda lidlar yo'q.",
+      "funnel": {
+        "NEW": "Yangi",
+        "CONTACTED": "Bog'lanilgan",
+        "UNREACHABLE": "Aloqa yo'q",
+        "LOST": "Yo'qotilgan",
+        "CONVERTED": "O'quvchiga aylangan"
+      }
+    },
+    "students": {
+      "title": "O'quvchilar hisoboti",
+      "kpis": {
+        "total": "O'quvchilar",
+        "newInPeriod": "Davrda yangi",
+        "multiCourse": "2+ kursda",
+        "attendance": "Davomat",
+        "gradeAverage": "O'rtacha baho",
+        "appUsage": "Ilovadan foydalanish",
+        "noApp": "O'quvchi ilovasi yo'q"
+      },
+      "tabs": {
+        "attendance": "Davomatlar hisoboti",
+        "performance": "O'zlashtirish darajasi"
+      },
+      "notArchived": "O'chirilmaganlar",
+      "totals": {
+        "expected": "Kutilgan",
+        "present": "Kelgan",
+        "absent": "Kelmagan",
+        "unmarked": "Belgilanmagan"
+      },
+      "empty": "Bu filtrlar bo'yicha ma'lumot yo'q.",
+      "columns": {
+        "group": "Guruh",
+        "teacher": "O'qituvchi",
+        "students": "O'quvchilar",
+        "lessons": "Darslar",
+        "unmarked": "Belgilanmagan",
+        "absent": "Kelmagan",
+        "present": "Kelgan",
+        "student": "O'quvchi",
+        "groups": "Guruhlar",
+        "teachers": "O'qituvchilar",
+        "courses": "Kurslar",
+        "grades": "Guruhlar bo'yicha baholar",
+        "average": "O'rtacha"
+      }
+    },
+    "statistics": {
+      "title": "Markaz faoliyati statistikasi",
+      "period": "{from} – {to}, ish vaqti {start}–{end}",
+      "updateCapacities": "Xona sig'imlarini yangilash",
+      "views": {
+        "monthly": "Oylik",
+        "weekly": "Haftalik",
+        "daily": "Kunlik"
+      },
+      "hours": "{count} soat",
+      "kpis": {
+        "utilisation": "Xonalar bandligi",
+        "freeHours": "Bo'sh xona soatlari",
+        "students": "O'quvchilar",
+        "potentialRevenue": "Potentsial daromad",
+        "perMonth": "barcha joylar to'lsa",
+        "freeSeats": "Bo'sh joylar",
+        "possibleStudents": "Mumkin o'quvchilar"
+      },
+      "roomTotal": "Xona jami",
+      "empty": "Bu davrda darsi bor xonalar yo'q.",
+      "emptyHint": "Sig'imli xonalar qo'shing va ularni guruhlarga biriktiring.",
+      "columns": {
+        "room": "Xona",
+        "capacity": "Sig'im",
+        "roomHours": "Xona soatlari",
+        "group": "Guruh",
+        "students": "O'quvchilar",
+        "freeSeats": "Bo'sh joylar",
+        "lessonHours": "Dars soatlari",
+        "price": "Narx",
+        "totalSum": "Jami",
+        "freeHours": "Bo'sh soatlar",
+        "seatHours": "Joy-soat",
+        "actualSeatHours": "Haqiqiy joy-soat",
+        "planSeatHours": "Reja joy-soat",
+        "fik": "Bandlik"
+      }
     }
   },
   "sms": {
@@ -2179,5 +2468,129 @@
     "manualCheck": "Kirish/chiqish: {name}",
     "scheduleFor": "Ish jadvali: {name}",
     "scheduleHint": "Ish kunlarini belgilang va kutilayotgan soatlarni kiriting."
+  },
+  "excel": {
+    "export": "Excel",
+    "import": "Import",
+    "importHint": "Shablonni yuklab oling, har bir yozuv uchun bir qator to'ldiring va faylni yuklang. Birinchi qator — sarlavha.",
+    "downloadTemplate": "Shablonni yuklab olish",
+    "file": "Excel fayli (.xlsx)",
+    "imported": "{count} ta import qilindi, {skipped} ta o'tkazib yuborildi",
+    "skippedRow": "{row}-qator: {reason}",
+    "templateSheet": "Shablon",
+    "files": {
+      "students": "oquvchilar",
+      "studentsTemplate": "oquvchilar-shablon",
+      "groups": "guruhlar",
+      "members": "guruh-oquvchilari",
+      "membersTemplate": "guruh-oquvchilari-shablon",
+      "attendance": "davomat",
+      "grades": "baholar",
+      "leads": "lidlar",
+      "staff": "xodimlar",
+      "teachers": "oqituvchilar",
+      "payments": "tolovlar",
+      "payroll": "oylik",
+      "paymentsReport": "tolovlar-hisoboti",
+      "studentPayments": "oquvchi-tolovlari",
+      "churn": "ketgan-oquvchilar",
+      "graduates": "bitiruvchilar",
+      "leadsReport": "lidlar-hisoboti",
+      "studentsReport": "oquvchilar-hisoboti",
+      "statistics": "markaz-statistikasi"
+    },
+    "example": {
+      "fullName": "<mijoz ismi>",
+      "gender": "MALE"
+    },
+    "marks": {
+      "present": "+",
+      "absent": "−",
+      "excused": "S"
+    },
+    "columns": {
+      "index": "№",
+      "fullName": "F.I.Sh.",
+      "roles": "Rollar",
+      "paymentsCount": "To'lovlar",
+      "totalPayments": "Jami to'lovlar",
+      "refunded": "Qaytarilgan",
+      "groupsCount": "Guruhlar",
+      "courses": "Kurslar",
+      "studentsCount": "O'quvchilar",
+      "debt": "Qarz",
+      "group": "Guruh",
+      "teacher": "O'qituvchi",
+      "course": "Kurs",
+      "amount": "Summa",
+      "bonus": "Bonus",
+      "paidAt": "To'lov sanasi",
+      "effectiveMonth": "Oy uchun",
+      "comment": "Izoh",
+      "receivedBy": "Qabul qildi",
+      "method": "To'lov usuli",
+      "discount": "Chegirma",
+      "reason": "Sabab",
+      "leftAt": "Ketgan sana",
+      "leftBy": "O'chirgan",
+      "note": "Eslatma",
+      "branch": "Filial",
+      "graduatedAt": "Bitirgan sana",
+      "examResult": "Imtihon natijasi",
+      "ielts": "IELTS",
+      "cefr": "CEFR",
+      "university": "Universitet",
+      "employed": "Ishga joylashgan",
+      "phone": "Telefon",
+      "column": "Ustun",
+      "source": "Manba",
+      "status": "Holat",
+      "createdBy": "Yaratdi",
+      "createdAt": "Yaratilgan",
+      "convertedAt": "O'quvchiga aylangan",
+      "groups": "Guruhlar",
+      "teachers": "O'qituvchilar",
+      "grades": "Baholar",
+      "gradeAverage": "O'rtacha baho",
+      "lessons": "Darslar",
+      "unmarked": "Belgilanmagan",
+      "absent": "Kelmagan",
+      "present": "Kelgan",
+      "room": "Xona",
+      "capacity": "Sig'im",
+      "roomHours": "Xona soatlari",
+      "freeSeats": "Bo'sh joylar",
+      "lessonHours": "Dars soatlari",
+      "price": "Narx",
+      "totalSum": "Jami",
+      "freeHours": "Bo'sh soatlar",
+      "seatHours": "Joy-soat",
+      "actualSeatHours": "Haqiqiy joy-soat",
+      "planSeatHours": "Reja joy-soat",
+      "fik": "Bandlik %",
+      "membershipStatus": "Guruhdagi holat",
+      "nextPaymentDate": "Keyingi to'lov",
+      "name": "Nomi",
+      "pattern": "Kunlar",
+      "time": "Vaqt",
+      "students": "O'quvchilar",
+      "startDate": "Boshlanish sanasi",
+      "endDate": "Tugash sanasi",
+      "joinedAt": "Qo'shilgan sana",
+      "customPrice": "Alohida narx",
+      "balance": "Balans",
+      "days": "Qulay kunlar",
+      "temperature": "Darajasi",
+      "hireDate": "Ishga olingan",
+      "fixedSalary": "Fiks oylik",
+      "percentShare": "Foiz ulushi",
+      "fixed": "Fiks",
+      "percent": "Foiz",
+      "perLesson": "Dars uchun",
+      "perStudent": "O'quvchi uchun",
+      "penalty": "Jarima",
+      "advance": "Avans",
+      "net": "Qo'lga"
+    }
   }
 }

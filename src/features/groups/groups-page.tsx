@@ -3,13 +3,14 @@
 import {
   ArrowRightLeft,
   Eye,
+  FileSpreadsheet,
   Flag,
+  MessageSquare,
   MoreHorizontal,
   Pencil,
   Trash2,
-  MessageSquare,
 } from "lucide-react";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { useSearchParams } from "next/navigation";
 import { useState, useTransition } from "react";
 
@@ -44,6 +45,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { creatableBranches, type BranchOption } from "@/features/settings/shared/branch-select";
+import { ExcelLink } from "@/features/shared/excel-link";
 import { Link, usePathname, useRouter } from "@/i18n/navigation";
 import { api } from "@/lib/api-client";
 import { parseDateOnly } from "@/lib/dates";
@@ -102,6 +104,7 @@ export function GroupsPage({
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
+  const locale = useLocale();
   const [, startTransition] = useTransition();
   const [dialog, setDialog] = useState<{ open: boolean; group: GroupDto | null }>({
     open: false,
@@ -147,11 +150,14 @@ export function GroupsPage({
         <h1 className="text-2xl font-semibold tracking-tight">
           {t("groups.title")} <span className="text-muted-foreground">({page.total})</span>
         </h1>
-        {can.create && (
-          <Button onClick={() => setDialog({ open: true, group: null })} data-testid="add-button">
-            {t("groups.add")}
-          </Button>
-        )}
+        <div className="flex flex-wrap gap-2">
+          <ExcelLink path="/groups/export.xlsx" params={searchParams} testId="groups-excel" />
+          {can.create && (
+            <Button onClick={() => setDialog({ open: true, group: null })} data-testid="add-button">
+              {t("groups.add")}
+            </Button>
+          )}
+        </div>
       </div>
 
       <div className="flex flex-wrap items-center gap-3">
@@ -290,6 +296,15 @@ export function GroupsPage({
                       <DropdownMenuContent align="end">
                         <DropdownMenuItem onSelect={() => router.push(`/groups/${g.id}`)}>
                           <Eye /> {t("groups.actions.view")}
+                        </DropdownMenuItem>
+                        <DropdownMenuItem asChild>
+                          <a
+                            href={`/api/v1/groups/${g.id}/export.xlsx?locale=${locale}`}
+                            download
+                            data-testid="group-excel"
+                          >
+                            <FileSpreadsheet /> {t("excel.export")}
+                          </a>
                         </DropdownMenuItem>
                         {can.sms && (
                           <DropdownMenuItem onSelect={() => setSmsGroup(g)} data-testid="group-sms">

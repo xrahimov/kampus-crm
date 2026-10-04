@@ -229,6 +229,7 @@ async function findMembershipInScope(db: DbClient, actor: Actor, id: string) {
 function statusData(
   from: MembershipStatus,
   to: MembershipStatus,
+  actor?: Actor,
 ): Prisma.GroupMembershipUpdateInput {
   const now = isoToDate(today());
   const data: Prisma.GroupMembershipUpdateInput = { status: to };
@@ -237,7 +238,10 @@ function statusData(
     if (from === "NEW" || from === "TRIAL") data.activatedAt = now;
   }
   if (to === "FROZEN") data.frozenAt = now;
-  if (to === "ARCHIVED" || to === "GRADUATED") data.leftAt = now;
+  if (to === "ARCHIVED" || to === "GRADUATED") {
+    data.leftAt = now;
+    if (actor) data.leftBy = { connect: { id: actor.userId } };
+  }
   return data;
 }
 
@@ -262,7 +266,7 @@ export async function updateMembership(
       where: { id },
       data: {
         ...(input.status !== undefined && input.status !== row.status
-          ? statusData(row.status, input.status)
+          ? statusData(row.status, input.status, actor)
           : {}),
         ...(input.leaveReason !== undefined ? { leaveReason: input.leaveReason } : {}),
         ...(input.customPrice !== undefined ? { customPrice: input.customPrice } : {}),
@@ -378,7 +382,9 @@ export async function transferMember(
         data: {
           status: "ARCHIVED",
           leftAt: isoToDate(input.joinedAt),
-          leaveReason: input.reason ?? "transfer",
+          leaveReason: "transfer",
+          note: input.reason ?? row.note,
+          leftById: actor.userId,
         },
         include,
       });

@@ -20,6 +20,8 @@ import { todayIso } from "@/features/staff/password";
 import { api, ApiError } from "@/lib/api-client";
 import type { StudentOptions } from "@/server/services/students/students.service";
 
+import { LeaveReasonField } from "./leave-reason-field";
+
 /** "Boshqa guruhga ko'chirish" (EXP §5 row menu, A-63). */
 export function TransferDialog({
   open,
@@ -41,6 +43,7 @@ export function TransferDialog({
   const [groups, setGroups] = useState<StudentOptions["groups"]>([]);
   const [groupId, setGroupId] = useState("");
   const [customPrice, setCustomPrice] = useState(false);
+  const [reason, setReason] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [fields, setFields] = useState<Record<string, string[]>>({});
@@ -51,6 +54,7 @@ export function TransferDialog({
     if (open) {
       setGroupId("");
       setCustomPrice(false);
+      setReason("");
       setError(null);
       setFields({});
     }
@@ -84,7 +88,7 @@ export function TransferDialog({
           joinedAt: data.get("joinedAt"),
           customPrice: customPrice ? data.get("customPrice") : null,
           note: String(data.get("note") ?? "").trim() || null,
-          reason: String(data.get("reason") ?? "").trim() || null,
+          reason: reason.trim() || null,
         },
       });
       onOpenChange(false);
@@ -147,10 +151,13 @@ export function TransferDialog({
           />
         )}
       </div>
-      <div className="space-y-2">
-        <Label htmlFor="transfer-reason">{tt("reason")}</Label>
-        <Input id="transfer-reason" name="reason" />
-      </div>
+      <LeaveReasonField
+        kind="TRANSFER"
+        value={reason}
+        onChange={setReason}
+        active={open}
+        id="transfer-reason"
+      />
       <div className="space-y-2">
         <Label htmlFor="transfer-note">{t("groups.members.note")}</Label>
         <Textarea id="transfer-note" name="note" rows={2} />

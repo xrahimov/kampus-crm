@@ -734,6 +734,16 @@ export interface StudentProgressDto {
     attendancePercent: number | null;
     lessons: number;
   }>;
+  /** The same figures per group the student has been in (A-73). */
+  byGroup: Array<{
+    groupId: string;
+    groupName: string;
+    courseName: string;
+    status: string;
+    gradeAverage: number | null;
+    attendancePercent: number | null;
+    lessons: number;
+  }>;
   exams: Array<{
     examId: string;
     name: string;
@@ -766,17 +776,22 @@ export async function getStudentProgress(
   }
   const memberships = await db.groupMembership.findMany({
     where: { studentId },
-    select: { id: true },
+    select: {
+      id: true,
+      status: true,
+      group: { select: { id: true, name: true, course: { select: { name: true } } } },
+    },
+    orderBy: { joinedAt: "desc" },
   });
   const ids = memberships.map((m) => m.id);
   const [grades, attendance, results] = await Promise.all([
     db.grade.findMany({
       where: { membershipId: { in: ids } },
-      select: { score: true, lesson: { select: { date: true } } },
+      select: { score: true, membershipId: true, lesson: { select: { date: true } } },
     }),
     db.attendance.findMany({
       where: { membershipId: { in: ids }, status: { in: ["PRESENT", "ABSENT"] } },
-      select: { status: true, lesson: { select: { date: true } } },
+      select: { status: true, membershipId: true, lesson: { select: { date: true } } },
     }),
     db.examResult.findMany({
       where: { studentId },
@@ -792,22 +807,27 @@ export async function getStudentProgress(
     string,
     { scores: number[]; present: number; marked: number; lessons: Set<string> }
   >();
+  type Bucket = { scores: number[]; present: number; marked: number; lessons: Set<string> };
+  const empty = (): Bucket => ({ scores: [], present: 0, marked: 0, lessons: new Set() });
+  const perMembership = new Map<string, Bucket>(memberships.map((m) => [m.id, empty()]));
   const bucket = (date: Date) => {
     const key = dateToIso(date).slice(0, 7);
     let b = months.get(key);
-    if (!b) months.set(key, (b = { scores: [], present: 0, marked: 0, lessons: new Set() }));
+    if (!b) months.set(key, (b = empty()));
     return b;
   };
   for (const g of grades) {
-    const b = bucket(g.lesson.date);
-    b.scores.push(decimalToNumber(g.score));
-    b.lessons.add(dateToIso(g.lesson.date));
+    for (const b of [bucket(g.lesson.date), perMembership.get(g.membershipId)!]) {
+      b.scores.push(decimalToNumber(g.score));
+      b.lessons.add(dateToIso(g.lesson.date));
+    }
   }
   for (const a of attendance) {
-    const b = bucket(a.lesson.date);
-    b.marked += 1;
-    if (a.status === "PRESENT") b.present += 1;
-    b.lessons.add(dateToIso(a.lesson.date));
+    for (const b of [bucket(a.lesson.date), perMembership.get(a.membershipId)!]) {
+      b.marked += 1;
+      if (a.status === "PRESENT") b.present += 1;
+      b.lessons.add(dateToIso(a.lesson.date));
+    }
   }
   const avg = (xs: number[]) =>
     xs.length ? round1(xs.reduce((s, x) => s + x, 0) / xs.length) : null;
@@ -850,6 +870,18 @@ export async function getStudentProgress(
         attendancePercent: b.marked ? round1((b.present / b.marked) * 100) : null,
         lessons: b.lessons.size,
       })),
+    byGroup: memberships.map((m) => {
+      const b = perMembership.get(m.id)!;
+      return {
+        groupId: m.group.id,
+        groupName: m.group.name,
+        courseName: m.group.course.name,
+        status: m.status,
+        gradeAverage: avg(b.scores),
+        attendancePercent: b.marked ? round1((b.present / b.marked) * 100) : null,
+        lessons: b.lessons.size,
+      };
+    }),
     exams,
   };
 }

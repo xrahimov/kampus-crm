@@ -42,10 +42,12 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
 import { ToLeadDialog } from "@/features/groups/to-lead-dialog";
+import { LeaveReasonField } from "@/features/groups/leave-reason-field";
 import { TransferDialog } from "@/features/groups/transfer-dialog";
 import { PaymentDialog, type PayableMembership } from "@/features/payments/payment-dialog";
 import { PaymentsTable } from "@/features/payments/payments-table";
 import { RefundDialog } from "@/features/payments/refund-dialog";
+import { ExcelLink } from "@/features/shared/excel-link";
 import type { BranchOption } from "@/features/settings/shared/branch-select";
 import { FormDialog } from "@/features/settings/shared/form-dialog";
 import { todayIso } from "@/features/staff/password";
@@ -513,6 +515,12 @@ export function StudentDetail({
                   <span className="text-sm text-muted-foreground tabular-nums">
                     {t("payments.history.total", { amount: money(payments.totalAmount) })}
                   </span>
+                  <ExcelLink
+                    path="/payments/export.xlsx"
+                    params={{ studentId: student.id, groupId: paymentGroupId ?? null }}
+                    label={t("payments.history.excel")}
+                    testId="payments-history-excel"
+                  />
                 </div>
               </div>
               <div className="overflow-x-auto">
@@ -611,14 +619,13 @@ export function StudentDetail({
           refresh();
         }}
       >
-        <div className="space-y-2">
-          <Label htmlFor="remove-reason">{t("students.remove.reason")}</Label>
-          <Input
-            id="remove-reason"
-            value={removeReason}
-            onChange={(e) => setRemoveReason(e.target.value)}
-          />
-        </div>
+        <LeaveReasonField
+          kind="LEAVE"
+          value={removeReason}
+          onChange={setRemoveReason}
+          active={!!removing}
+          id="remove-reason"
+        />
       </ConfirmDialog>
       <ConfirmDialog
         open={dialog === "blacklist"}

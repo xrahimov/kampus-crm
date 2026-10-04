@@ -7,6 +7,8 @@ const nextConfig: NextConfig = {
   output: "standalone",
   reactStrictMode: true,
   poweredByHeader: false,
+  // exceljs is CommonJS with Node-only dependencies; keep it out of the server bundle.
+  serverExternalPackages: ["exceljs"],
 };
 
 export default withNextIntl(nextConfig);

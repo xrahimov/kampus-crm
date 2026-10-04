@@ -393,6 +393,7 @@ export function GroupDetail({
               </TabsContent>
               <TabsContent value="grades" className="pt-4">
                 <GradesGrid
+                  groupId={group.id}
                   months={group.months}
                   grid={grid}
                   gradingSystemName={group.gradingSystemName}

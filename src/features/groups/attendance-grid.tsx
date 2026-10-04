@@ -18,6 +18,8 @@ import type { AttendanceStatus } from "@/lib/validation/groups";
 import { useDateFormat } from "@/lib/use-date-format";
 import type { MonthGridDto } from "@/server/services/groups/lessons.service";
 
+import { ExcelLink } from "@/features/shared/excel-link";
+
 import { MonthTabs } from "./month-tabs";
 
 const CYCLE: AttendanceStatus[] = ["NOT_MARKED", "PRESENT", "ABSENT", "EXCUSED"];
@@ -76,16 +78,23 @@ export function AttendanceGrid({
     <div className="space-y-3">
       <div className="flex flex-wrap items-center justify-between gap-2">
         <MonthTabs months={months} current={grid.month} />
-        {canEdit && (
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setExtraOpen(true)}
-            data-testid="extra-lesson"
-          >
-            <Plus /> {t("groups.attendance.extraLesson")}
-          </Button>
-        )}
+        <div className="flex flex-wrap gap-2">
+          <ExcelLink
+            path={`/groups/${groupId}/attendance.xlsx`}
+            params={{ month: grid.month }}
+            testId="attendance-excel"
+          />
+          {canEdit && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setExtraOpen(true)}
+              data-testid="extra-lesson"
+            >
+              <Plus /> {t("groups.attendance.extraLesson")}
+            </Button>
+          )}
+        </div>
       </div>
       {error && (
         <p role="alert" className="text-sm text-destructive">
