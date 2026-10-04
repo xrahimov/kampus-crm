@@ -110,7 +110,12 @@
     "examHasResults": "У экзамена есть баллы. Сначала удалите их.",
     "examsHidden": "Расписание экзаменов скрыто для учителей.",
     "notMockExam": "Заявки принимают только mock-экзамены.",
-    "examFull": "В экзамене нет свободных мест."
+    "examFull": "В экзамене нет свободных мест.",
+    "categoryNotFound": "Раздел не найден.",
+    "categoryHasEntries": "В разделе есть записи. Сначала удалите или перенесите их.",
+    "entryNotFound": "Запись не найдена.",
+    "payrollNotFound": "Зарплата за этот месяц ещё не рассчитана.",
+    "payrollLineNotFound": "Строка зарплаты не найдена."
   },
   "validation": {
     "phone": "Введите номер в формате +998 90 123 45 67.",
@@ -161,7 +166,10 @@
     "groupsMin": "Выберите хотя бы одну группу.",
     "groupUnknown": "Неизвестная группа.",
     "examType": "Тип экзамена нельзя изменить.",
-    "scoreMax": "Балл превышает максимум."
+    "scoreMax": "Балл превышает максимум.",
+    "categoryKind": "Раздел относится к другому отчёту.",
+    "staffUnknown": "Неизвестный сотрудник.",
+    "entryType": "Тип записи нельзя изменить."
   },
   "roles": {
     "CEO": "CEO",
@@ -1336,6 +1344,160 @@
       "empty": "Учеников пока нет.",
       "full": "Мест больше нет.",
       "registrations": "{count} из {capacity}"
+    }
+  },
+  "finance": {
+    "title": "Финансы",
+    "overview": "Общие показатели",
+    "byMethod": "Поступления по способам оплаты",
+    "noMethod": "Без способа",
+    "yearly": "Обороты за {year}",
+    "planTitle": "План на {month}",
+    "effectiveTime": "Время эффекта",
+    "plan": {
+      "achieved": "Достигнуто",
+      "expected": "Ожидается",
+      "done": "выполнено {percent}%",
+      "left": "осталось {percent}%",
+      "progress": "Выполнение плана",
+      "monthlyPlan": "Месячный план",
+      "activeDebt": "Активный долг · должники",
+      "prepayments": "Предоплаты",
+      "currentShare": "Доля текущего месяца"
+    },
+    "expenseReport": "Отчёт по расходам",
+    "incomeReport": "Отчёт по доходам",
+    "addCategory": "Раздел",
+    "categoryDialog": "Создать раздел",
+    "categoryName": "Название раздела",
+    "sections": {
+      "advance": "Авансы",
+      "marketing": "Маркетинг",
+      "bonus": "Бонусы",
+      "penalty": "Штрафы",
+      "investment": "Инвестиции",
+      "expense": "Расходы",
+      "income": "Доходы"
+    },
+    "staffMoney": "Бонусы и штрафы сотрудников",
+    "kpis": {
+      "income": "Поступления",
+      "expenses": "Расходы",
+      "profit": "Прибыль",
+      "activeBalance": "Активный баланс",
+      "ltv": "LTV",
+      "cac": "CAC",
+      "marketingEfficiency": "Эффективность маркетинга",
+      "averagePayment": "Средний платёж"
+    },
+    "filters": {
+      "branch": "Филиал",
+      "year": "Год",
+      "month": "Месяц",
+      "wholeYear": "Весь год",
+      "method": "Тип оплаты",
+      "anyMethod": "Все типы",
+      "anyStaff": "Все сотрудники"
+    },
+    "titles": {
+      "EXPENSE": "Внести расход",
+      "INCOME": "Внести доход",
+      "ADVANCE": "Выдать аванс",
+      "MARKETING": "Добавить маркетинг",
+      "BONUS": "Выдать бонус",
+      "PENALTY": "Назначить штраф",
+      "INVESTMENT": "Создать инвестицию"
+    },
+    "editTitle": "Изменить запись",
+    "add": {
+      "EXPENSE": "Внести расход",
+      "INCOME": "Добавить",
+      "ADVANCE": "Выдать аванс",
+      "MARKETING": "Добавить маркетинг",
+      "BONUS": "Выдать бонус",
+      "PENALTY": "Назначить штраф",
+      "INVESTMENT": "Создать инвестицию"
+    },
+    "form": {
+      "branch": "Филиал",
+      "method": "Тип оплаты",
+      "category": "Раздел",
+      "party": "Контрагент",
+      "staff": "Сотрудник",
+      "student": "Ученик",
+      "studentSearch": "Имя или телефон…",
+      "counterparty": "Имя и фамилия",
+      "amount": "Сумма",
+      "date": "Дата",
+      "comment": "Комментарий"
+    },
+    "columns": {
+      "counterparty": "Сотрудник / ученик",
+      "method": "Тип оплаты",
+      "amount": "Сумма",
+      "date": "Дата",
+      "comment": "Комментарий",
+      "createdBy": "Кто создал"
+    },
+    "deleteTitle": "Удалить запись?",
+    "deleteText": "Запись на {amount} будет удалена.",
+    "payroll": {
+      "title": "Отчёты по зарплате",
+      "open": "Открыть {month}",
+      "rulesNote": "Расчёт: процент от цены курса × ученики; за урок × проведённые уроки; за ученика × ученики; плюс бонусы, минус штрафы и авансы.",
+      "empty": "Зарплата ещё не рассчитана. Откройте месяц, чтобы рассчитать.",
+      "columns": {
+        "month": "Месяц",
+        "staff": "Сотрудники",
+        "fixed": "Оклад",
+        "percent": "Процент",
+        "perLesson": "Уроки",
+        "perStudent": "Ученики",
+        "bonus": "Бонус",
+        "penalty": "Штрафы",
+        "advance": "Аванс",
+        "total": "Итого",
+        "staffMember": "Сотрудник",
+        "role": "Должность",
+        "penaltyCount": "Штрафы (кол-во)",
+        "net": "Зарплата"
+      },
+      "statuses": {
+        "DRAFT": "Черновик",
+        "SAVED": "Сохранено"
+      },
+      "lineStatuses": {
+        "MODERATION": "Модерация",
+        "APPROVED": "Утверждено"
+      },
+      "monthTitle": "Зарплата за {month}",
+      "summary": "{staff} сотрудников · {approved} утверждено",
+      "search": "Поиск сотрудника…",
+      "hints": {
+        "penaltyCount": "Количество штрафов за месяц",
+        "fixed": "Фиксированный оклад",
+        "percent": "Процент от цены курса × ученики",
+        "perLesson": "Ставка за урок × проведённые уроки",
+        "perStudent": "Ставка за ученика × ученики",
+        "bonus": "Бонусы за месяц",
+        "penalty": "Штрафы за месяц",
+        "advance": "Авансы за месяц"
+      },
+      "details": "Разбивка по группам",
+      "negative": "Отрицательная зарплата",
+      "approve": "Утвердить",
+      "noGroups": "В этом месяце групп нет.",
+      "shareTypes": {
+        "PERCENT": "{value}% × {price} × {students} уч.",
+        "PER_LESSON": "{value} × {lessons} ур.",
+        "PER_STUDENT": "{value} × {students} уч."
+      },
+      "total": "Итого",
+      "recalculate": "Пересчитать",
+      "recalculated": "Пересчитано.",
+      "saveDraft": "Сохранить черновик",
+      "savedDraft": "Черновик сохранён.",
+      "saved": "Зарплата сохранена."
     }
   }
 }

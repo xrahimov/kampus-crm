@@ -247,9 +247,8 @@ Every list endpoint takes the common query contract (§2). Every mutation is aud
 `GET /approvals` · `POST /approvals/:id/approve|reject` (A-09)
 
 **Finance (EXP §9)**
-`GET /finance/overview` · `GET /finance/plan` · `GET|POST /finance/categories` · `GET|POST /finance/categories/:id/entries` · `PATCH|DELETE /finance/entries/:id`
-`GET|POST /finance/advances` · `GET|POST /finance/marketing` · `GET|POST /finance/bonuses` · `GET|POST /finance/penalties` · `GET|POST /finance/investments`
-`GET /payroll` · `GET /payroll/:month` · `POST /payroll/:month/recalculate` · `PUT /payroll/:month/draft` · `POST /payroll/:month/lines/:id/approve` · `GET /payroll/:month/export.xlsx`
+✓ `GET /finance/overview?branchId&year&month&paymentMethodId` · `GET /finance/plan?…&effective` · `GET|POST /finance/categories` · `GET|PATCH|DELETE /finance/categories/:id` · `GET|POST /finance/entries?type&categoryId&…` (one ledger for advances, marketing, bonuses, penalties, investments and category rows, A-74) · `PATCH|DELETE /finance/entries/:id` · `GET /finance/options` · `GET /finance/students?q`
+✓ `GET /payroll` · `GET|PUT /payroll/:month` (PUT = draft/save status) · `POST /payroll/:month/recalculate` · `POST /payroll/:month/lines/:id/approve` · `GET /payroll/:month/export.xlsx` (Phase 12)
 
 **Reports (EXP §10)**
 `GET /reports/payments` · `GET /reports/student-payments` · `GET /reports/churn` · `GET|PUT /leave-reasons` · `GET /reports/graduates` · `GET /reports/staff-attendance?tab` · `GET|PUT /work-schedules` · `GET /reports/coins` · `GET|POST /marketplace/categories` · `GET|POST /marketplace/products` · `GET|PATCH /marketplace/purchase-requests/:id` · `GET /reports/leads` · `GET /reports/students?tab` · `GET /reports/center-statistics?view`
@@ -315,7 +314,7 @@ Kai asked for the site-map order. I've moved the Settings core forward and the D
 | 6     | Students + payments, refunds, receipts, parents, badges, discounts, student comments, transfer; Settings → receipt and payments log                         | §6, §11 TO'LOV            |
 | 7     | Leads (boards, columns, Kanban, add to group, return to leads), sources report, lead forms with a public page; students "Activate"                          | §2, §3, §8 Forms          |
 | 8     | Exams: group and mock exams, grading sheet with levels, mock registrations, finish/reopen; group IMTIHON tab; student Progress tab                          | §7, §5, §6                |
-| 9     | Finance + payroll                                                                                                                                           | §9                        |
+| 9     | Finance: overview figures and charts, monthly plan, categories and the ledger (advances, marketing, bonuses, fines, investments), payroll with approval     | §9                        |
 | 10    | Tests + question bank, coins + marketplace                                                                                                                  | §8 Tests/Coins, §10 Coins |
 | 11    | Integrations: SMS templates + auto-SMS (Eskiz), Telegram bot, AmoCRM, telephony/calls, FaceID + staff attendance, logs                                      | §8, §10                   |
 | 12    | Reports                                                                                                                                                     | §10                       |
