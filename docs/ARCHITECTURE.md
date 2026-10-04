@@ -207,7 +207,7 @@ Every list endpoint takes the common query contract (§2). Every mutation is aud
 `POST /auth/login` · `POST /auth/logout` · `GET /auth/me` · `POST /auth/active-branch`
 
 **Dashboard (EXP §1)**
-`GET /dashboard/kpis?branchId` · `GET /dashboard/schedule?weekday&step` · `GET /dashboard/finance?branchId&year&month&method`
+✓ `GET /dashboard/kpis?branchId` · ✓ `GET /dashboard/schedule?branchId&weekday&step` · ✓ `GET /dashboard/finance?branchId&year&month&paymentMethodId`
 
 **Leads (EXP §2–3)**
 ✓ `GET|POST /lead-boards` · `PATCH|DELETE /lead-boards/:id` · `POST /lead-boards/:id/columns` · `PATCH|DELETE /lead-columns/:id`
@@ -254,7 +254,7 @@ Every list endpoint takes the common query contract (§2). Every mutation is aud
 ✓ `GET /reports/payments?year&month&branchId` · ✓ `GET /reports/payments/export.xlsx?tab` · ✓ `GET /reports/student-payments?…&byPaidAt&groupId&teacherId&courseId&paymentMethodId&receivedById&bonus` · ✓ `GET /reports/student-payments/options` · ✓ `GET /reports/student-payments/export.xlsx` · ✓ `GET /reports/churn?from&to&branchId&courseId&teacherId&groupId&reason&discount` · ✓ `GET /reports/churn/export.xlsx` · ✓ `GET|POST /leave-reasons` · ✓ `PATCH|DELETE /leave-reasons/:id` · ✓ `GET /reports/graduates?…&groupId&teacherId&courseId&result` · ✓ `GET /reports/graduates/export.xlsx` · ✓ `PUT /memberships/:id/graduate` · ✓ `GET /reports/staff-attendance?year&month&branchId&date` · `PUT /work-schedules` · `PUT /staff-attendance/manual` · ✓ `GET /reports/coins` (page over `/coins/report`) · ✓ `GET|POST /marketplace/categories` · `DELETE /marketplace/categories/:id` · `GET|POST /marketplace/products` · `PATCH|DELETE /marketplace/products/:id` · `GET|POST /marketplace/purchase-requests` · `PATCH /marketplace/purchase-requests/:id` · ✓ `GET /reports/leads?…&sourceId` · ✓ `GET /reports/leads/export.xlsx` · ✓ `GET /reports/students?from&to&groupId&teacherId&status&page` · ✓ `GET /reports/students/export.xlsx?tab` · ✓ `GET /reports/statistics?view&date` · ✓ `GET /reports/statistics/export.xlsx`
 
 **Header widgets (EXP §11)**
-`GET /search?q` · `GET /notifications` · `POST /notifications/read`
+✓ `GET /search?q` · ✓ `GET /notifications?unread&page` · ✓ `POST /notifications/read`
 
 **Webhooks (integrations)**
 ✓ `POST /webhooks/telephony` · `POST /webhooks/face-id` · `POST /webhooks/telegram` (shared secret in `x-kampus-secret` or `?secret=`; `/webhooks/amocrm` is only the OAuth redirect URI)
@@ -318,5 +318,5 @@ Kai asked for the site-map order. I've moved the Settings core forward and the D
 | 10    | Tests + question bank (staff-entered results, group TEST and BILIM TAHLILI tabs, student TEST NATIJALARI), coins (settings, group COINLAR, auto attendance/test awards) + marketplace and purchase requests on the Coins report | §8 Tests/Coins, §10 Coins |
 | 11    | Integrations: SMS templates + auto-SMS (Eskiz), Telegram bot, AmoCRM, telephony/calls, FaceID + staff attendance, logs                                                                                                          | §8, §10                   |
 | 12    | Reports: payments, student payments, churn + leave reasons, graduates, leads, students, center statistics; every EXCEL export and the two Excel imports; progress-tab chart ✓ (PR #11)                                          | §10                       |
-| 13    | Dashboard, global search, notifications                                                                                                                                                                                         | §1, §11                   |
+| 13    | Dashboard (12 cards behind "show numbers", room schedule, finance summary), header search over students / leads / groups, in-app notifications with a bell and a page ✓ (PR #12)                                                | §1, §11                   |
 | Final | README, ASSUMPTIONS.md, TRACEABILITY.md (every EXP page → code + tests)                                                                                                                                                         |                           |

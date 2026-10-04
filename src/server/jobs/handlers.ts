@@ -4,6 +4,7 @@ import {
   getTelegramNotifier,
   saveAmoCrmTokens,
 } from "@/server/services/integrations/integrations.service";
+import { runDailyNotifications } from "@/server/services/dashboard/notifications.service";
 import { runDailyAutoSms } from "@/server/services/sms/auto-sms.service";
 import { deliverMessage } from "@/server/services/sms/sms.service";
 import { dateToIso } from "@/server/services/settings/shared";
@@ -41,6 +42,7 @@ export function registerJobHandlers(): void {
   registerJobHandler("auto-sms.daily", async (payload, db) => {
     const { date } = payloadOf<{ date?: string }>(payload);
     await runDailyAutoSms(db, date);
+    await runDailyNotifications(db, date ?? new Date().toISOString().slice(0, 10));
   });
 
   registerJobHandler("amocrm.pushLead", async (payload, db) => {

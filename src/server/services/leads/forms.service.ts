@@ -2,6 +2,7 @@ import type { LeadFormInput, PublicLeadInput } from "@/lib/validation/leads";
 import { recordAudit } from "@/server/audit/audit";
 import { prisma, type DbClient } from "@/server/db/prisma";
 import { AppError } from "@/server/errors/app-error";
+import { notifyUsers } from "@/server/services/dashboard/notifications.service";
 import { authorize, type Actor } from "@/server/rbac/authorize";
 import { getOrganizationId, mustFind, rethrowAsAppError } from "@/server/services/settings/shared";
 
@@ -209,7 +210,10 @@ export async function submitPublicForm(
 ): Promise<{ id: string }> {
   const form = await db.leadForm.findUnique({
     where: { slug },
-    include: { column: { select: { boardId: true, board: { select: { branchId: true } } } } },
+    include: {
+      column: { select: { name: true, boardId: true, board: { select: { branchId: true } } } },
+      source: { select: { name: true } },
+    },
   });
   if (!form || !form.isActive) throw AppError.notFound("errors.formNotFound");
   const key = `form:ip:${ip ?? "unknown"}`;
@@ -244,6 +248,18 @@ export async function submitPublicForm(
       entityId: lead.id,
       after: { fullName: lead.fullName, phone: input.phone, formId: form.id },
       branchId: form.column.board.branchId,
+    });
+    // The in-app bell for the branch's lead handlers (A-97), as for leads entered by staff.
+    await notifyUsers(tx, {
+      kind: "LEAD",
+      params: {
+        name: lead.fullName,
+        source: form.source?.name ?? form.name,
+        column: form.column.name,
+      },
+      href: `/leads?boardId=${form.column.boardId}&q=${encodeURIComponent(lead.fullName)}`,
+      branchId: form.column.board.branchId,
+      permission: "leads.view",
     });
     return { id: lead.id };
   });

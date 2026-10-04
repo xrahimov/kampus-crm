@@ -7,6 +7,7 @@ import type {
   RefundInput,
 } from "@/lib/validation/students";
 import { recordAudit } from "@/server/audit/audit";
+import { notifyUsers } from "@/server/services/dashboard/notifications.service";
 import { notifyStaff } from "@/server/services/integrations/bot-recipients.service";
 import { queueAutoSms } from "@/server/services/sms/auto-sms.service";
 import { prisma, type DbClient } from "@/server/db/prisma";
@@ -200,6 +201,20 @@ export async function createPayment(
     await notifyStaff(tx, {
       branchId: m.group.branchId,
       text: `To'lov: ${dto.studentName} — ${dto.amount} (${dto.groupName}), ${actor.fullName}`,
+    });
+    // The in-app bell for the branch's cashiers and managers (A-97).
+    await notifyUsers(tx, {
+      kind: "PAYMENT",
+      params: {
+        name: dto.studentName,
+        amount: dto.amount,
+        group: dto.groupName,
+        by: actor.fullName,
+      },
+      href: `/students/${m.studentId}`,
+      branchId: m.group.branchId,
+      permission: "payments.create",
+      excludeUserId: actor.userId,
     });
     return dto;
   });

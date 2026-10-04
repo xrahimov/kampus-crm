@@ -135,6 +135,7 @@ model User {
   financeCreated  FinanceEntry[] @relation("financeCreator")
   payrollLines    PayrollLine[]
   payrollApproved PayrollLine[]  @relation("payrollApprover")
+  notifications   Notification[]
   examsGraded     ExamResult[]   @relation("examGrader")
 
   coinsGiven       CoinTransaction[]  @relation("coinGiver")
@@ -1708,4 +1709,28 @@ model GraduateRecord {
   note         String?
   updatedAt    DateTime        @updatedAt
   membership   GroupMembership @relation(fields: [membershipId], references: [id], onDelete: Cascade)
+}
+
+/// Header bell (EXP §11 "Xabarnomalar", A-97): one row per recipient; the text is
+/// rendered client-side from `kind` and `params` in the viewer's language.
+enum NotificationKind {
+  PAYMENT
+  LEAD
+  DEBTORS
+  BIRTHDAY
+}
+
+model Notification {
+  id        String           @id @default(cuid())
+  userId    String
+  kind      NotificationKind
+  params    Json
+  href      String?
+  branchId  String?
+  readAt    DateTime?
+  createdAt DateTime         @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, readAt, createdAt])
 }

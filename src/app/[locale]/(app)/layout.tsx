@@ -25,6 +25,7 @@ export default async function AppLayout({
 
   return (
     <AppShell
+      actor={current.actor}
       user={current.user}
       roles={current.roles}
       permissions={current.actor.permissions}

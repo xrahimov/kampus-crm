@@ -66,9 +66,46 @@
   "dashboard": {
     "title": "Bosh sahifa",
     "welcome": "Xush kelibsiz, {name}",
+    "subtitle": "Bugungi raqamlar, xonalar jadvali va pul.",
     "yourRoles": "Rollaringiz",
     "yourBranches": "Filiallaringiz",
-    "phaseNote": "Ko‘rsatkichlar, haftalik jadval va moliya xulosasi 13-bosqichda qo‘shiladi."
+    "branch": "Filial",
+    "showNumbers": "Raqamlarni ko'rish",
+    "hideNumbers": "Raqamlarni yashirish",
+    "utilisation": "Markaz foydaliligi {percent}%",
+    "kpis": {
+      "activeLeads": "Faol lidlar",
+      "groups": "Guruhlar",
+      "remainingDebt": "Qolgan qarzlar",
+      "debtors": "Qarzdorlar",
+      "dueSoon": "To'lovi yaqin",
+      "activeStudents": "Faol talabalar",
+      "studentsInGroups": "Jami guruhdagi o'quvchilar",
+      "trial": "Sinov darsida",
+      "leftThisMonth": "Kelib ketganlar",
+      "teachers": "O'qituvchilar",
+      "exams": "Imtihonlar",
+      "newAdmissions": "Yangi guruhga qabul"
+    },
+    "schedule": {
+      "title": "Xonalar jadvali",
+      "step": "Vaqt oralig'i",
+      "minutes": "{count} daqiqa",
+      "teacher": "O'qituvchi",
+      "free": "Bo'sh",
+      "noRoom": "Xonasiz",
+      "empty": "Hali xonalar yo'q.",
+      "emptyHint": "Sozlamalarda xonalar qo'shing va guruh jadvalida tanlang.",
+      "hours": "Ish vaqti {start}–{end}",
+      "h": "soat"
+    },
+    "finance": {
+      "title": "Moliya",
+      "year": "Yil",
+      "month": "Oy",
+      "wholeYear": "Butun yil",
+      "method": "To'lov turi"
+    }
   },
   "errors": {
     "title": "Xatolik yuz berdi",
@@ -2593,6 +2630,32 @@
       "net": "Qo'lga",
       "gender": "Jinsi",
       "birthDate": "Tug'ilgan sana"
+    }
+  },
+  "search": {
+    "placeholder": "O'quvchi, lid, guruh qidirish…",
+    "searching": "Qidirilmoqda…",
+    "empty": "Hech narsa topilmadi.",
+    "groups": {
+      "students": "O'quvchilar",
+      "leads": "Lidlar",
+      "groups": "Guruhlar"
+    }
+  },
+  "notifications": {
+    "title": "Xabarnomalar",
+    "loading": "Yuklanmoqda…",
+    "empty": "Hali xabarnomalar yo'q.",
+    "markAllRead": "Barchasini o'qilgan deb belgilash",
+    "markRead": "O'qildi",
+    "viewAll": "Barcha xabarnomalarni ko'rish",
+    "unreadOnly": "Faqat o'qilmaganlar",
+    "unreadCount": "{count} ta o'qilmagan",
+    "kinds": {
+      "PAYMENT": "{name} {group} uchun {amount} to'ladi (qabul qildi: {by})",
+      "LEAD": "Yangi lid: {name}, {column} ({source})",
+      "DEBTORS": "Bugun {count} o'quvchi qarzdor",
+      "BIRTHDAY": "Bugun {name} tug'ilgan kuni"
     }
   }
 }

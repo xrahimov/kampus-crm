@@ -12,6 +12,7 @@ import type {
 } from "@/lib/validation/leads";
 import { recordAudit } from "@/server/audit/audit";
 import { enqueue } from "@/server/jobs/queue";
+import { notifyUsers } from "@/server/services/dashboard/notifications.service";
 import { loadIntegrationConfig } from "@/server/services/integrations/integrations.service";
 import { prisma, type DbClient } from "@/server/db/prisma";
 import { AppError } from "@/server/errors/app-error";
@@ -323,6 +324,15 @@ export async function createLead(
         entityId: row.id,
         after: dto,
         branchId,
+      });
+      // The in-app bell for the branch's lead handlers (A-97).
+      await notifyUsers(tx, {
+        kind: "LEAD",
+        params: { name: dto.fullName, source: dto.sourceName ?? "", column: column.name },
+        href: `/leads?boardId=${row.boardId}&q=${encodeURIComponent(dto.fullName)}`,
+        branchId,
+        permission: "leads.view",
+        excludeUserId: actor.userId || null,
       });
       // AmoCRM sync (A-20): a job per new lead when the integration is switched on.
       const amo = await loadIntegrationConfig(tx, "AMOCRM");
