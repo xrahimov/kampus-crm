@@ -1070,25 +1070,33 @@
     "history": {
       "empty": "No history yet.",
       "actions": {
-        "student.create": "Student created",
-        "student.update": "Student updated",
-        "student.archive": "Student archived",
-        "student.restore": "Student restored",
-        "student.blacklist": "Blacklist changed",
-        "student.comment": "Comment added",
-        "student.fieldSet": "Extra information saved",
-        "student.fieldRemove": "Extra information removed",
-        "student.parentAdd": "Parent added",
-        "student.parentRemove": "Parent removed",
-        "membership.create": "Added to group",
-        "membership.update": "Group membership changed",
-        "membership.transfer": "Moved to another group",
-        "payment.create": "Payment received",
-        "payment.refund": "Refund made",
-        "discount.give": "Discount given",
-        "discount.remove": "Discount removed",
-        "student.unblacklist": "Removed from blacklist",
-        "membership.toLead": "Returned to leads"
+        "student": {
+          "create": "Student created",
+          "update": "Student updated",
+          "archive": "Student archived",
+          "restore": "Student restored",
+          "blacklist": "Blacklist changed",
+          "comment": "Comment added",
+          "fieldSet": "Extra information saved",
+          "fieldRemove": "Extra information removed",
+          "parentAdd": "Parent added",
+          "parentRemove": "Parent removed",
+          "unblacklist": "Removed from blacklist"
+        },
+        "membership": {
+          "create": "Added to group",
+          "update": "Group membership changed",
+          "transfer": "Moved to another group",
+          "toLead": "Returned to leads"
+        },
+        "payment": {
+          "create": "Payment received",
+          "refund": "Refund made"
+        },
+        "discount": {
+          "give": "Discount given",
+          "remove": "Discount removed"
+        }
       }
     },
     "parents": {
@@ -2354,25 +2362,280 @@
         "Lesson": "Lesson",
         "Lead": "Lead",
         "Exam": "Exam",
-        "SmsMessage": "SMS"
+        "SmsMessage": "SMS",
+        "BotRecipient": "Bot recipient",
+        "Branch": "Branch",
+        "CallLog": "Call",
+        "CoinReason": "Coin reason",
+        "Course": "Course",
+        "DayOff": "Day off",
+        "FinanceCategory": "Finance category",
+        "FinanceEntry": "Finance entry",
+        "GradingSystem": "Grading system",
+        "IntegrationSetting": "Integration",
+        "LeadBoard": "Lead board",
+        "LeadColumn": "Lead column",
+        "LeadForm": "Lead form",
+        "LeadSource": "Lead source",
+        "LeaveReason": "Leave reason",
+        "OrgSettings": "Settings",
+        "Organization": "Settings",
+        "PaymentMethod": "Payment method",
+        "PayrollLine": "Payroll line",
+        "PayrollRun": "Payroll",
+        "Product": "Product",
+        "ProductCategory": "Product category",
+        "PurchaseRequest": "Purchase request",
+        "QuestionBankItem": "Question",
+        "Role": "Role",
+        "Room": "Room",
+        "School": "School",
+        "SmsCategory": "SMS category",
+        "SmsTemplate": "SMS template",
+        "StaffAttendance": "Staff attendance",
+        "Test": "Test",
+        "User": "Staff"
       },
       "names": {
-        "payment.create": "Payment created",
-        "payment.refund": "Refund made",
-        "discount.create": "Discount given",
-        "membership.create": "Added to group",
-        "membership.status": "Status changed",
-        "membership.transfer": "Transferred",
-        "group.update": "Group details updated",
-        "group.create": "Group created",
-        "student.create": "Student created",
-        "student.update": "Student updated",
-        "attendance.mark": "Attendance marked",
-        "grades.set": "Grades set",
-        "lead.create": "Lead created",
-        "lead.move": "Lead moved",
-        "sms.send": "SMS sent",
-        "exam.results": "Exam results entered"
+        "attendance": {
+          "mark": "Attendance marked"
+        },
+        "botRecipient": {
+          "create": "Bot recipient added",
+          "delete": "Bot recipient removed"
+        },
+        "branch": {
+          "create": "Branch created",
+          "update": "Branch updated"
+        },
+        "call": {
+          "start": "Call started"
+        },
+        "coinReason": {
+          "create": "Coin reason created",
+          "update": "Coin reason updated",
+          "delete": "Coin reason deleted"
+        },
+        "coinSettings": {
+          "update": "Coin settings updated"
+        },
+        "coins": {
+          "give": "Coins given"
+        },
+        "course": {
+          "create": "Course created",
+          "update": "Course updated"
+        },
+        "dayOff": {
+          "create": "Day off added",
+          "update": "Day off updated",
+          "delete": "Day off removed"
+        },
+        "discount": {
+          "give": "Discount given",
+          "remove": "Discount removed"
+        },
+        "exam": {
+          "create": "Exam created",
+          "update": "Exam updated",
+          "delete": "Exam deleted",
+          "register": "Registered for exam",
+          "unregister": "Exam registration removed",
+          "results": "Exam results entered",
+          "finish": "Exam finished",
+          "reopen": "Exam reopened"
+        },
+        "finance": {
+          "category": {
+            "create": "Finance category created",
+            "update": "Finance category updated",
+            "delete": "Finance category deleted"
+          },
+          "entry": {
+            "create": "Finance entry added",
+            "update": "Finance entry updated",
+            "delete": "Finance entry deleted"
+          }
+        },
+        "grades": {
+          "set": "Grades set"
+        },
+        "gradingSystem": {
+          "create": "Grading system created",
+          "update": "Grading system updated",
+          "delete": "Grading system deleted"
+        },
+        "graduate": {
+          "record": "Graduation recorded"
+        },
+        "group": {
+          "create": "Group created",
+          "update": "Group details updated",
+          "archive": "Group archived",
+          "finish": "Group finished",
+          "changeTeacher": "Group teacher changed",
+          "supportTeachers": "Support teachers changed",
+          "moveBranch": "Group moved to another branch",
+          "dayOff": "Group day off set",
+          "note": "Group note added"
+        },
+        "integration": {
+          "update": "Integration settings updated"
+        },
+        "lead": {
+          "create": "Lead created",
+          "update": "Lead updated",
+          "move": "Lead moved",
+          "archive": "Lead archived",
+          "restore": "Lead restored",
+          "delete": "Lead deleted",
+          "convert": "Lead added to a group"
+        },
+        "leadBoard": {
+          "create": "Lead board created",
+          "update": "Lead board updated",
+          "delete": "Lead board deleted"
+        },
+        "leadColumn": {
+          "create": "Lead column created",
+          "update": "Lead column updated",
+          "delete": "Lead column deleted"
+        },
+        "leadForm": {
+          "create": "Lead form created",
+          "update": "Lead form updated",
+          "delete": "Lead form deleted"
+        },
+        "leadSource": {
+          "create": "Lead source created",
+          "update": "Lead source updated",
+          "delete": "Lead source deleted"
+        },
+        "leaveReason": {
+          "create": "Leave reason created",
+          "update": "Leave reason updated",
+          "delete": "Leave reason deleted"
+        },
+        "lesson": {
+          "extra": "Extra lesson added",
+          "update": "Lesson updated"
+        },
+        "membership": {
+          "create": "Added to group",
+          "update": "Group membership changed",
+          "transfer": "Transferred to another group",
+          "toLead": "Returned to leads"
+        },
+        "payment": {
+          "create": "Payment received",
+          "refund": "Refund made"
+        },
+        "paymentMethod": {
+          "create": "Payment method created",
+          "update": "Payment method updated",
+          "delete": "Payment method deleted"
+        },
+        "payroll": {
+          "compute": "Payroll computed",
+          "recalculate": "Payroll recalculated",
+          "save": "Payroll saved",
+          "approve": "Payroll line approved"
+        },
+        "product": {
+          "create": "Product created",
+          "update": "Product updated",
+          "delete": "Product deleted"
+        },
+        "productCategory": {
+          "create": "Product category created",
+          "delete": "Product category deleted"
+        },
+        "purchase": {
+          "request": "Purchase requested",
+          "pending": "Purchase set to pending",
+          "approved": "Purchase approved",
+          "rejected": "Purchase rejected"
+        },
+        "question": {
+          "create": "Question created",
+          "update": "Question updated",
+          "delete": "Question deleted"
+        },
+        "receiptSettings": {
+          "update": "Receipt settings updated"
+        },
+        "role": {
+          "create": "Role created",
+          "update": "Role updated",
+          "delete": "Role deleted"
+        },
+        "room": {
+          "create": "Room created",
+          "update": "Room updated",
+          "delete": "Room deleted"
+        },
+        "school": {
+          "create": "School created",
+          "update": "School updated",
+          "delete": "School deleted"
+        },
+        "settings": {
+          "org": {
+            "update": "General settings updated"
+          },
+          "autoSms": {
+            "update": "Auto-SMS settings updated"
+          }
+        },
+        "sms": {
+          "send": "SMS sent"
+        },
+        "smsCategory": {
+          "create": "SMS category created",
+          "delete": "SMS category deleted"
+        },
+        "smsTemplate": {
+          "create": "SMS template created",
+          "update": "SMS template updated",
+          "delete": "SMS template deleted",
+          "import": "SMS templates imported"
+        },
+        "staff": {
+          "create": "Staff member created",
+          "update": "Staff member updated",
+          "archive": "Staff member archived"
+        },
+        "staffAttendance": {
+          "set": "Staff attendance set"
+        },
+        "student": {
+          "create": "Student created",
+          "update": "Student updated",
+          "archive": "Student archived",
+          "restore": "Student restored",
+          "blacklist": "Blacklist changed",
+          "unblacklist": "Removed from blacklist",
+          "comment": "Comment added",
+          "fieldSet": "Extra information saved",
+          "fieldRemove": "Extra information removed",
+          "parentAdd": "Parent added",
+          "parentRemove": "Parent removed"
+        },
+        "teacher": {
+          "create": "Teacher created",
+          "update": "Teacher updated",
+          "archive": "Teacher archived"
+        },
+        "test": {
+          "create": "Test created",
+          "update": "Test updated",
+          "delete": "Test deleted",
+          "status": "Test status changed",
+          "attempt": "Test result entered"
+        },
+        "workSchedule": {
+          "set": "Work schedule set"
+        }
       }
     }
   },

@@ -1070,25 +1070,33 @@
     "history": {
       "empty": "Tarix hali yo‘q.",
       "actions": {
-        "student.create": "O‘quvchi yaratildi",
-        "student.update": "O‘quvchi ma’lumotlari o‘zgartirildi",
-        "student.archive": "O‘quvchi arxivlandi",
-        "student.restore": "O‘quvchi tiklandi",
-        "student.blacklist": "Qora ro‘yxat o‘zgartirildi",
-        "student.comment": "Izoh qo‘shildi",
-        "student.fieldSet": "Qo‘shimcha ma’lumot saqlandi",
-        "student.fieldRemove": "Qo‘shimcha ma’lumot o‘chirildi",
-        "student.parentAdd": "Ota-ona qo‘shildi",
-        "student.parentRemove": "Ota-ona o‘chirildi",
-        "membership.create": "Guruhga qo‘shildi",
-        "membership.update": "Guruhdagi holati o‘zgartirildi",
-        "membership.transfer": "Boshqa guruhga ko‘chirildi",
-        "payment.create": "To‘lov qabul qilindi",
-        "payment.refund": "Pul qaytarildi",
-        "discount.give": "Chegirma berildi",
-        "discount.remove": "Chegirma o‘chirildi",
-        "student.unblacklist": "Qora ro‘yxatdan chiqarildi",
-        "membership.toLead": "Lidlarga qaytarildi"
+        "student": {
+          "create": "O‘quvchi yaratildi",
+          "update": "O‘quvchi ma’lumotlari o‘zgartirildi",
+          "archive": "O‘quvchi arxivlandi",
+          "restore": "O‘quvchi tiklandi",
+          "blacklist": "Qora ro‘yxat o‘zgartirildi",
+          "comment": "Izoh qo‘shildi",
+          "fieldSet": "Qo‘shimcha ma’lumot saqlandi",
+          "fieldRemove": "Qo‘shimcha ma’lumot o‘chirildi",
+          "parentAdd": "Ota-ona qo‘shildi",
+          "parentRemove": "Ota-ona o‘chirildi",
+          "unblacklist": "Qora ro‘yxatdan chiqarildi"
+        },
+        "membership": {
+          "create": "Guruhga qo‘shildi",
+          "update": "Guruhdagi holati o‘zgartirildi",
+          "transfer": "Boshqa guruhga ko‘chirildi",
+          "toLead": "Lidlarga qaytarildi"
+        },
+        "payment": {
+          "create": "To‘lov qabul qilindi",
+          "refund": "Pul qaytarildi"
+        },
+        "discount": {
+          "give": "Chegirma berildi",
+          "remove": "Chegirma o‘chirildi"
+        }
       }
     },
     "parents": {
@@ -2354,25 +2362,280 @@
         "Lesson": "Dars",
         "Lead": "Lid",
         "Exam": "Imtihon",
-        "SmsMessage": "SMS"
+        "SmsMessage": "SMS",
+        "BotRecipient": "Bot qabul qiluvchisi",
+        "Branch": "Filial",
+        "CallLog": "Qo'ng'iroq",
+        "CoinReason": "Coin sababi",
+        "Course": "Kurs",
+        "DayOff": "Dam olish kuni",
+        "FinanceCategory": "Moliya kategoriyasi",
+        "FinanceEntry": "Moliya yozuvi",
+        "GradingSystem": "Baholash tizimi",
+        "IntegrationSetting": "Integratsiya",
+        "LeadBoard": "Lidlar doskasi",
+        "LeadColumn": "Lid ustuni",
+        "LeadForm": "Lid formasi",
+        "LeadSource": "Lid manbasi",
+        "LeaveReason": "Ketish sababi",
+        "OrgSettings": "Sozlamalar",
+        "Organization": "Sozlamalar",
+        "PaymentMethod": "To'lov usuli",
+        "PayrollLine": "Ish haqi qatori",
+        "PayrollRun": "Ish haqi",
+        "Product": "Mahsulot",
+        "ProductCategory": "Mahsulot kategoriyasi",
+        "PurchaseRequest": "Xarid so'rovi",
+        "QuestionBankItem": "Savol",
+        "Role": "Rol",
+        "Room": "Xona",
+        "School": "Maktab",
+        "SmsCategory": "SMS kategoriyasi",
+        "SmsTemplate": "SMS shabloni",
+        "StaffAttendance": "Xodimlar davomati",
+        "Test": "Test",
+        "User": "Xodim"
       },
       "names": {
-        "payment.create": "To'lov yaratildi",
-        "payment.refund": "Qaytarish qilindi",
-        "discount.create": "Chegirma berildi",
-        "membership.create": "Guruhga qo'shildi",
-        "membership.status": "Status o'zgardi",
-        "membership.transfer": "Ko'chirildi",
-        "group.update": "Guruh ma'lumotlari yangilandi",
-        "group.create": "Guruh yaratildi",
-        "student.create": "O'quvchi yaratildi",
-        "student.update": "O'quvchi yangilandi",
-        "attendance.mark": "Davomat qo'yildi",
-        "grades.set": "Baholar qo'yildi",
-        "lead.create": "Lid yaratildi",
-        "lead.move": "Lid ko'chirildi",
-        "sms.send": "SMS yuborildi",
-        "exam.results": "Imtihon natijalari kiritildi"
+        "attendance": {
+          "mark": "Davomat qo'yildi"
+        },
+        "botRecipient": {
+          "create": "Bot qabul qiluvchisi qo'shildi",
+          "delete": "Bot qabul qiluvchisi o'chirildi"
+        },
+        "branch": {
+          "create": "Filial yaratildi",
+          "update": "Filial yangilandi"
+        },
+        "call": {
+          "start": "Qo'ng'iroq boshlandi"
+        },
+        "coinReason": {
+          "create": "Coin sababi yaratildi",
+          "update": "Coin sababi yangilandi",
+          "delete": "Coin sababi o'chirildi"
+        },
+        "coinSettings": {
+          "update": "Coin sozlamalari yangilandi"
+        },
+        "coins": {
+          "give": "Coinlar berildi"
+        },
+        "course": {
+          "create": "Kurs yaratildi",
+          "update": "Kurs yangilandi"
+        },
+        "dayOff": {
+          "create": "Dam olish kuni qo'shildi",
+          "update": "Dam olish kuni yangilandi",
+          "delete": "Dam olish kuni o'chirildi"
+        },
+        "discount": {
+          "give": "Chegirma berildi",
+          "remove": "Chegirma o'chirildi"
+        },
+        "exam": {
+          "create": "Imtihon yaratildi",
+          "update": "Imtihon yangilandi",
+          "delete": "Imtihon o'chirildi",
+          "register": "Imtihonga yozildi",
+          "unregister": "Imtihon ro'yxatidan chiqarildi",
+          "results": "Imtihon natijalari kiritildi",
+          "finish": "Imtihon yakunlandi",
+          "reopen": "Imtihon qayta ochildi"
+        },
+        "finance": {
+          "category": {
+            "create": "Moliya kategoriyasi yaratildi",
+            "update": "Moliya kategoriyasi yangilandi",
+            "delete": "Moliya kategoriyasi o'chirildi"
+          },
+          "entry": {
+            "create": "Moliya yozuvi qo'shildi",
+            "update": "Moliya yozuvi yangilandi",
+            "delete": "Moliya yozuvi o'chirildi"
+          }
+        },
+        "grades": {
+          "set": "Baholar qo'yildi"
+        },
+        "gradingSystem": {
+          "create": "Baholash tizimi yaratildi",
+          "update": "Baholash tizimi yangilandi",
+          "delete": "Baholash tizimi o'chirildi"
+        },
+        "graduate": {
+          "record": "Bitiruv qayd etildi"
+        },
+        "group": {
+          "create": "Guruh yaratildi",
+          "update": "Guruh ma'lumotlari yangilandi",
+          "archive": "Guruh arxivlandi",
+          "finish": "Guruh yakunlandi",
+          "changeTeacher": "Guruh o'qituvchisi o'zgartirildi",
+          "supportTeachers": "Yordamchi o'qituvchilar o'zgartirildi",
+          "moveBranch": "Guruh boshqa filialga ko'chirildi",
+          "dayOff": "Guruh dam olish kuni belgilandi",
+          "note": "Guruh izohi qo'shildi"
+        },
+        "integration": {
+          "update": "Integratsiya sozlamalari yangilandi"
+        },
+        "lead": {
+          "create": "Lid yaratildi",
+          "update": "Lid yangilandi",
+          "move": "Lid ko'chirildi",
+          "archive": "Lid arxivlandi",
+          "restore": "Lid tiklandi",
+          "delete": "Lid o'chirildi",
+          "convert": "Lid guruhga qo'shildi"
+        },
+        "leadBoard": {
+          "create": "Lidlar doskasi yaratildi",
+          "update": "Lidlar doskasi yangilandi",
+          "delete": "Lidlar doskasi o'chirildi"
+        },
+        "leadColumn": {
+          "create": "Lid ustuni yaratildi",
+          "update": "Lid ustuni yangilandi",
+          "delete": "Lid ustuni o'chirildi"
+        },
+        "leadForm": {
+          "create": "Lid formasi yaratildi",
+          "update": "Lid formasi yangilandi",
+          "delete": "Lid formasi o'chirildi"
+        },
+        "leadSource": {
+          "create": "Lid manbasi yaratildi",
+          "update": "Lid manbasi yangilandi",
+          "delete": "Lid manbasi o'chirildi"
+        },
+        "leaveReason": {
+          "create": "Ketish sababi yaratildi",
+          "update": "Ketish sababi yangilandi",
+          "delete": "Ketish sababi o'chirildi"
+        },
+        "lesson": {
+          "extra": "Qo'shimcha dars qo'shildi",
+          "update": "Dars yangilandi"
+        },
+        "membership": {
+          "create": "Guruhga qo'shildi",
+          "update": "Guruhdagi holati o'zgartirildi",
+          "transfer": "Boshqa guruhga ko'chirildi",
+          "toLead": "Lidlarga qaytarildi"
+        },
+        "payment": {
+          "create": "To'lov qabul qilindi",
+          "refund": "Pul qaytarildi"
+        },
+        "paymentMethod": {
+          "create": "To'lov usuli yaratildi",
+          "update": "To'lov usuli yangilandi",
+          "delete": "To'lov usuli o'chirildi"
+        },
+        "payroll": {
+          "compute": "Ish haqi hisoblandi",
+          "recalculate": "Ish haqi qayta hisoblandi",
+          "save": "Ish haqi saqlandi",
+          "approve": "Ish haqi qatori tasdiqlandi"
+        },
+        "product": {
+          "create": "Mahsulot yaratildi",
+          "update": "Mahsulot yangilandi",
+          "delete": "Mahsulot o'chirildi"
+        },
+        "productCategory": {
+          "create": "Mahsulot kategoriyasi yaratildi",
+          "delete": "Mahsulot kategoriyasi o'chirildi"
+        },
+        "purchase": {
+          "request": "Xarid so'rovi yuborildi",
+          "pending": "Xarid kutilmoqda deb belgilandi",
+          "approved": "Xarid tasdiqlandi",
+          "rejected": "Xarid rad etildi"
+        },
+        "question": {
+          "create": "Savol yaratildi",
+          "update": "Savol yangilandi",
+          "delete": "Savol o'chirildi"
+        },
+        "receiptSettings": {
+          "update": "Chek sozlamalari yangilandi"
+        },
+        "role": {
+          "create": "Rol yaratildi",
+          "update": "Rol yangilandi",
+          "delete": "Rol o'chirildi"
+        },
+        "room": {
+          "create": "Xona yaratildi",
+          "update": "Xona yangilandi",
+          "delete": "Xona o'chirildi"
+        },
+        "school": {
+          "create": "Maktab yaratildi",
+          "update": "Maktab yangilandi",
+          "delete": "Maktab o'chirildi"
+        },
+        "settings": {
+          "org": {
+            "update": "Umumiy sozlamalar yangilandi"
+          },
+          "autoSms": {
+            "update": "Avto-SMS sozlamalari yangilandi"
+          }
+        },
+        "sms": {
+          "send": "SMS yuborildi"
+        },
+        "smsCategory": {
+          "create": "SMS kategoriyasi yaratildi",
+          "delete": "SMS kategoriyasi o'chirildi"
+        },
+        "smsTemplate": {
+          "create": "SMS shabloni yaratildi",
+          "update": "SMS shabloni yangilandi",
+          "delete": "SMS shabloni o'chirildi",
+          "import": "SMS shablonlari import qilindi"
+        },
+        "staff": {
+          "create": "Xodim yaratildi",
+          "update": "Xodim yangilandi",
+          "archive": "Xodim arxivlandi"
+        },
+        "staffAttendance": {
+          "set": "Xodim davomati belgilandi"
+        },
+        "student": {
+          "create": "O'quvchi yaratildi",
+          "update": "O'quvchi ma'lumotlari o'zgartirildi",
+          "archive": "O'quvchi arxivlandi",
+          "restore": "O'quvchi tiklandi",
+          "blacklist": "Qora ro'yxat o'zgartirildi",
+          "unblacklist": "Qora ro'yxatdan chiqarildi",
+          "comment": "Izoh qo'shildi",
+          "fieldSet": "Qo'shimcha ma'lumot saqlandi",
+          "fieldRemove": "Qo'shimcha ma'lumot o'chirildi",
+          "parentAdd": "Ota-ona qo'shildi",
+          "parentRemove": "Ota-ona o'chirildi"
+        },
+        "teacher": {
+          "create": "O'qituvchi yaratildi",
+          "update": "O'qituvchi yangilandi",
+          "archive": "O'qituvchi arxivlandi"
+        },
+        "test": {
+          "create": "Test yaratildi",
+          "update": "Test yangilandi",
+          "delete": "Test o'chirildi",
+          "status": "Test holati o'zgartirildi",
+          "attempt": "Test natijasi kiritildi"
+        },
+        "workSchedule": {
+          "set": "Ish jadvali belgilandi"
+        }
       }
     }
   },

@@ -85,6 +85,11 @@ test.describe("students and payments", () => {
     await expect(page.getByTestId("parent-row")).toContainText("E2E Parent");
     await page.getByTestId("tab-history").click();
     await expect(page.getByTestId("history-row").first()).toBeVisible();
+    // Action names are translated, not raw audit keys such as "student.create".
+    await expect(
+      page.getByTestId("history-row").filter({ hasText: "Student created" }),
+    ).toBeVisible();
+    await expect(page.getByTestId("history-row").filter({ hasText: "Parent added" })).toBeVisible();
 
     // The student appears in the list with a balance chip and the group chip.
     await page.goto("/en/students?groupStatus=ACTIVE");

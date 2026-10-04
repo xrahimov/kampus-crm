@@ -23,7 +23,8 @@ export async function mustFind<T>(
   return record;
 }
 
-function prismaCode(error: unknown): string | null {
+/** The Prisma error code (`P2002`, `P2003`, …) of a thrown request error, if any. */
+export function prismaCode(error: unknown): string | null {
   if (error && typeof error === "object" && "code" in error) {
     const code = (error as { code: unknown }).code;
     return typeof code === "string" ? code : null;
