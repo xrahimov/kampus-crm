@@ -35,18 +35,20 @@ function DialogContent({
   children,
   side = "center",
   ...props
-}: React.ComponentProps<typeof DialogPrimitive.Content> & { side?: "center" | "right" }) {
+}: React.ComponentProps<typeof DialogPrimitive.Content> & { side?: "center" | "right" | "left" }) {
   const t = useTranslations("common");
   return (
     <DialogPrimitive.Portal>
       <DialogOverlay />
       <DialogPrimitive.Content
         className={cn(
-          "fixed z-50 grid w-full gap-4 border bg-card p-6 text-card-foreground shadow-lg duration-200 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0",
+          "fixed z-50 grid w-full gap-4 border bg-card p-6 text-card-foreground shadow-xl duration-200 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0",
           side === "center" &&
             "top-1/2 left-1/2 max-h-[calc(100vh-2rem)] max-w-lg -translate-x-1/2 -translate-y-1/2 overflow-y-auto rounded-xl data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95",
           side === "right" &&
             "inset-y-0 right-0 h-full max-w-md overflow-y-auto border-l data-[state=closed]:slide-out-to-right data-[state=open]:slide-in-from-right sm:max-w-lg",
+          side === "left" &&
+            "inset-y-0 left-0 h-full max-w-xs overflow-y-auto border-r data-[state=closed]:slide-out-to-left data-[state=open]:slide-in-from-left",
           className,
         )}
         {...props}
