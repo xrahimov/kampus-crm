@@ -1,0 +1,118 @@
+# Production stack for one server (docs/DEPLOY.md): PostgreSQL, migrations and
+# first-start bootstrap, the web app, the job worker, Caddy for HTTPS and a
+# nightly database dump. Settings come from .env (see .env.production.example).
+#
+#   docker compose -f docker-compose.prod.yml up -d --build
+
+name: kampus
+
+x-database-url: &database-url postgresql://kampus:${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in .env}@db:5432/kampus?schema=public
+
+services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: kampus
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in .env}
+      POSTGRES_DB: kampus
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U kampus -d kampus"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+  # Applies migrations on every start and creates the organisation and the
+  # first CEO account on the first start only (scripts/bootstrap.ts).
+  migrate:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+      target: migrator
+    environment:
+      DATABASE_URL: *database-url
+      BOOTSTRAP_ORG_NAME: ${BOOTSTRAP_ORG_NAME:-}
+      BOOTSTRAP_BRANCH_NAME: ${BOOTSTRAP_BRANCH_NAME:-}
+      BOOTSTRAP_CEO_NAME: ${BOOTSTRAP_CEO_NAME:-}
+      BOOTSTRAP_CEO_PHONE: ${BOOTSTRAP_CEO_PHONE:-}
+      BOOTSTRAP_CEO_PASSWORD: ${BOOTSTRAP_CEO_PASSWORD:-}
+      BOOTSTRAP_CASH_NAME: ${BOOTSTRAP_CASH_NAME:-}
+    command: sh -c "npx prisma migrate deploy && npx tsx scripts/bootstrap.ts"
+    depends_on:
+      db:
+        condition: service_healthy
+
+  app:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+      target: runner
+    restart: unless-stopped
+    environment:
+      DATABASE_URL: *database-url
+      APP_URL: ${APP_URL:?set APP_URL in .env}
+      COOKIE_SECURE: ${COOKIE_SECURE:-true}
+      UPLOAD_DIR: /data/uploads
+    volumes:
+      - uploads:/data/uploads
+    depends_on:
+      db:
+        condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
+
+  worker:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+      target: worker
+    restart: unless-stopped
+    environment:
+      DATABASE_URL: *database-url
+      APP_URL: ${APP_URL:?set APP_URL in .env}
+      WORKER_INTERVAL_MS: ${WORKER_INTERVAL_MS:-5000}
+    depends_on:
+      db:
+        condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
+
+  caddy:
+    image: caddy:2-alpine
+    restart: unless-stopped
+    environment:
+      DOMAIN: ${DOMAIN:?set DOMAIN in .env}
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./docker/Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy-data:/data
+      - caddy-config:/config
+    depends_on:
+      - app
+
+  backup:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      PGHOST: db
+      PGUSER: kampus
+      PGPASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in .env}
+      PGDATABASE: kampus
+      BACKUP_KEEP_DAYS: ${BACKUP_KEEP_DAYS:-14}
+    volumes:
+      - ./docker/backup.sh:/backup.sh:ro
+      - ./backups:/backups
+    entrypoint: ["sh", "/backup.sh"]
+    depends_on:
+      db:
+        condition: service_healthy
+
+volumes:
+  db-data:
+  uploads:
+  caddy-data:
+  caddy-config:
