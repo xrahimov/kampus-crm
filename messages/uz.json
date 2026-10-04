@@ -2590,7 +2590,9 @@
       "perStudent": "O'quvchi uchun",
       "penalty": "Jarima",
       "advance": "Avans",
-      "net": "Qo'lga"
+      "net": "Qo'lga",
+      "gender": "Jinsi",
+      "birthDate": "Tug'ilgan sana"
     }
   }
 }

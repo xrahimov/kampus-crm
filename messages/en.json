@@ -2590,7 +2590,9 @@
       "perStudent": "Per student",
       "penalty": "Penalty",
       "advance": "Advance",
-      "net": "Net"
+      "net": "Net",
+      "gender": "Gender",
+      "birthDate": "Birth date"
     }
   }
 }

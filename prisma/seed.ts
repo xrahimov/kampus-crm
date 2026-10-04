@@ -419,7 +419,26 @@ async function seedPayments(organizationId: string) {
       },
     });
   }
-  console.log(`Seeded ${memberships.length} demo payments.`);
+  // One payment received this month, so the payments report's staff tab has a row (Phase 12).
+  const now = new Date();
+  const thisMonth = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1));
+  if (memberships[0]) {
+    await prisma.payment.create({
+      data: {
+        studentId: memberships[0].studentId,
+        membershipId: memberships[0].id,
+        branchId: memberships[0].group.branchId,
+        paymentMethodId: cash.id,
+        amount: 450_000,
+        bonus: 0,
+        effectiveMonth: thisMonth,
+        paidAt: new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate())),
+        comment: null,
+        receivedById: cashier.id,
+      },
+    });
+  }
+  console.log(`Seeded ${memberships.length + 1} demo payments.`);
 }
 
 /** Phase 9: finance categories and a few ledger rows for the current month. */
