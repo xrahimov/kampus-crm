@@ -17,12 +17,15 @@ export function RowActions({
   onDelete,
   deleteLabel,
   name,
+  extra,
 }: {
   /** Omitted entries hide their menu item (the caller lacks the permission). */
   onEdit?: () => void;
   onDelete?: () => void;
   deleteLabel?: string;
   name: string;
+  /** Extra items shown above edit/delete, e.g. "Send SMS". */
+  extra?: Array<{ label: string; onSelect: () => void; testId?: string }>;
 }) {
   const t = useTranslations("common");
   return (
@@ -33,6 +36,11 @@ export function RowActions({
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
+        {extra?.map((item) => (
+          <DropdownMenuItem key={item.label} onSelect={item.onSelect} data-testid={item.testId}>
+            {item.label}
+          </DropdownMenuItem>
+        ))}
         {onEdit && (
           <DropdownMenuItem onSelect={onEdit}>
             <Pencil /> {t("edit")}

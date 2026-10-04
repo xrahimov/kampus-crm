@@ -7,6 +7,7 @@ import type {
   ExamType,
 } from "@/lib/validation/exams";
 import { recordAudit } from "@/server/audit/audit";
+import { queueAutoSms } from "@/server/services/sms/auto-sms.service";
 import { prisma, type DbClient } from "@/server/db/prisma";
 import { AppError } from "@/server/errors/app-error";
 import { authorize, branchScope, canAccessAllBranches, type Actor } from "@/server/rbac/authorize";
@@ -610,6 +611,15 @@ export async function setExamResults(
           gradedAt: graded ? new Date() : null,
         },
       });
+      if (graded) {
+        // "Imtihon natijasini sms yuborish" (A-88): once per exam and student.
+        await queueAutoSms(tx, {
+          event: "EXAM_RESULT",
+          studentId: r.studentId,
+          refKey: `exam:${id}:${r.studentId}`,
+          vars: { groupName: row.name, score: `${r.score}/${max}`, date: dateToIso(row.date) },
+        });
+      }
     }
     await recordAudit(tx, actor, {
       action: "exam.results",

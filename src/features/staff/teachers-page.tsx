@@ -25,6 +25,7 @@ import {
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { creatableBranches, type BranchOption } from "@/features/settings/shared/branch-select";
 import { RowActions } from "@/features/settings/shared/row-actions";
+import { SendSmsDialog } from "@/features/sms/send-sms-dialog";
 import { Link, usePathname, useRouter } from "@/i18n/navigation";
 import { api } from "@/lib/api-client";
 import { parseDateOnly } from "@/lib/dates";
@@ -52,6 +53,7 @@ export function TeachersPage({
   canCreate,
   canUpdate,
   canDelete,
+  canSms,
 }: {
   page: Page<TeacherRowDto>;
   kind: TeacherKind;
@@ -65,6 +67,7 @@ export function TeachersPage({
   canCreate: boolean;
   canUpdate: boolean;
   canDelete: boolean;
+  canSms: boolean;
 }) {
   const t = useTranslations();
   const formatMoney = useMoneyFormat();
@@ -78,6 +81,11 @@ export function TeachersPage({
     person: null,
   });
   const [archiving, setArchiving] = useState<StaffDto | null>(null);
+  const [sms, setSms] = useState<
+    | { kind: "teachers"; archived: boolean }
+    | { kind: "staff"; userIds: string[]; name: string }
+    | null
+  >(null);
   const { options, defaultId } = creatableBranches(
     branches,
     actorBranchIds,
@@ -102,11 +110,26 @@ export function TeachersPage({
     <div className="space-y-4">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <h1 className="text-2xl font-semibold tracking-tight">{t("teachers.title")}</h1>
-        {canCreate && (
-          <Button onClick={() => setDialog({ open: true, person: null })} data-testid="add-button">
-            {t("teachers.add")}
-          </Button>
-        )}
+        <div className="flex flex-wrap gap-2">
+          {canSms && (
+            <Button
+              variant="outline"
+              onClick={() => setSms({ kind: "teachers", archived })}
+              disabled={page.total === 0}
+              data-testid="teachers-sms"
+            >
+              {t("teachers.sms")}
+            </Button>
+          )}
+          {canCreate && (
+            <Button
+              onClick={() => setDialog({ open: true, person: null })}
+              data-testid="add-button"
+            >
+              {t("teachers.add")}
+            </Button>
+          )}
+        </div>
       </div>
 
       <Tabs value={kind} onValueChange={(v) => setParam("tab", v === "teachers" ? null : v)}>
@@ -203,11 +226,27 @@ export function TeachersPage({
                     </TableCell>
                   )}
                   <TableCell>
-                    {!person.isArchived && (canUpdate || canDelete) && (
+                    {!person.isArchived && (canUpdate || canDelete || canSms) && (
                       <RowActions
                         name={person.fullName}
-                        onEdit={() => setDialog({ open: true, person })}
-                        onDelete={() => setArchiving(person)}
+                        extra={
+                          canSms
+                            ? [
+                                {
+                                  label: t("teachers.sms"),
+                                  onSelect: () =>
+                                    setSms({
+                                      kind: "staff",
+                                      userIds: [person.id],
+                                      name: person.fullName,
+                                    }),
+                                  testId: "teacher-sms",
+                                },
+                              ]
+                            : undefined
+                        }
+                        onEdit={canUpdate ? () => setDialog({ open: true, person }) : undefined}
+                        onDelete={canDelete ? () => setArchiving(person) : undefined}
                         deleteLabel={t("common.archive")}
                       />
                     )}
@@ -243,6 +282,14 @@ export function TeachersPage({
           await api(`/teachers/${archiving.id}`, { method: "DELETE" });
           refresh();
         }}
+      />
+      <SendSmsDialog
+        open={sms !== null}
+        onOpenChange={(open) => {
+          if (!open) setSms(null);
+        }}
+        target={sms ? (sms.kind === "staff" ? { kind: "staff", userIds: sms.userIds } : sms) : null}
+        title={sms?.kind === "staff" ? t("sms.send.toStudent", { name: sms.name }) : undefined}
       />
     </div>
   );

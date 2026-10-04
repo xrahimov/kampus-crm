@@ -38,6 +38,13 @@ model Organization {
   products          Product[]
   questions         QuestionBankItem[]
   tests             Test[]
+  smsCategories     SmsCategory[]
+  smsTemplates      SmsTemplate[]
+  autoSmsSettings   AutoSmsSetting[]
+  smsMessages       SmsMessage[]
+  callLogs          CallLog[]
+  botRecipients     BotRecipient[]
+  integrations      IntegrationSetting[]
 }
 
 model Branch {
@@ -48,7 +55,7 @@ model Branch {
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
 
-  organization   Organization   @relation(fields: [organizationId], references: [id])
+  organization   Organization      @relation(fields: [organizationId], references: [id])
   users          UserBranch[]
   sessions       Session[]
   auditLogs      AuditLog[]
@@ -62,6 +69,9 @@ model Branch {
   leads          Lead[]
   exams          Exam[]
   financeEntries FinanceEntry[]
+  smsMessages    SmsMessage[]
+  callLogs       CallLog[]
+  staffCheckIns  StaffAttendance[]
 
   @@index([organizationId])
 }
@@ -130,8 +140,14 @@ model User {
   purchasesCreated PurchaseRequest[]  @relation("purchaseCreator")
   purchasesDecided PurchaseRequest[]  @relation("purchaseDecider")
   questionsWritten QuestionBankItem[] @relation("questionAuthor")
-  testsWritten     Test[]             @relation("testAuthor")
-  attemptsEntered  TestAttempt[]      @relation("attemptEnteredBy")
+
+  smsSent         SmsMessage[]      @relation("smsSender")
+  calls           CallLog[]         @relation("callStaff")
+  botRecipient    BotRecipient?
+  staffCheckIns   StaffAttendance[]
+  workSchedules   WorkSchedule[]
+  testsWritten    Test[]            @relation("testAuthor")
+  attemptsEntered TestAttempt[]     @relation("attemptEnteredBy")
 }
 
 /// A role is a named bundle of permission codes. System roles are seeded and
@@ -593,6 +609,8 @@ model Student {
   coins          CoinTransaction[]
   purchases      PurchaseRequest[]
   testAttempts   TestAttempt[]
+  smsMessages    SmsMessage[]
+  callLogs       CallLog[]
 
   @@index([branchId, isArchived])
   @@index([phone])
@@ -1408,4 +1426,248 @@ model TestAttempt {
   @@index([testId, studentId])
   @@index([studentId, submittedAt])
   @@index([groupId])
+}
+
+// ---------------------------------------------------------------------------
+// Phase 11: SMS (EXP §8 SMS shablonlari, Auto SMS, SMS log), calls, Telegram bot
+// recipients, integration settings, staff attendance (FaceID) and the job queue.
+// ---------------------------------------------------------------------------
+
+/// "Kategoriya" of SMS templates (EXP §8 SMS shablonlari).
+model SmsCategory {
+  id             String   @id @default(cuid())
+  organizationId String
+  name           String
+  createdAt      DateTime @default(now())
+
+  organization Organization  @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  templates    SmsTemplate[]
+
+  @@unique([organizationId, name])
+}
+
+model SmsTemplate {
+  id             String   @id @default(cuid())
+  organizationId String
+  categoryId     String
+  text           String
+  /// Set when the text came from "Eskizdan import qilish" (A-84).
+  providerId     String?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  category     SmsCategory  @relation(fields: [categoryId], references: [id])
+
+  @@index([categoryId])
+}
+
+/// The ten "AUTO SMS SOZLAMALARI" switches (EXP §8 General settings).
+enum AutoSmsEvent {
+  BIRTHDAY
+  EXAM_RESULT
+  PAYMENT_MADE
+  ABSENT
+  PRESENT
+  PAYMENT_DUE_SOON
+  DEBTOR
+  GRADES
+  DAY_BEFORE_FIRST_LESSON
+  ADDED_TO_GROUP
+}
+
+model AutoSmsSetting {
+  id             String       @id @default(cuid())
+  organizationId String
+  event          AutoSmsEvent
+  isActive       Boolean      @default(false)
+  template       String
+  updatedAt      DateTime     @updatedAt
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@unique([organizationId, event])
+}
+
+enum SmsRecipientType {
+  STUDENT
+  PARENT
+  STAFF
+  LEAD
+  OTHER
+}
+
+enum SmsStatus {
+  QUEUED
+  SENT
+  FAILED
+}
+
+/// One SMS to one phone (EXP §8 SMS log: Qabul qildi, Xabar, Yubordi, Yuborilgan vaqti).
+model SmsMessage {
+  id             String           @id @default(cuid())
+  organizationId String
+  branchId       String?
+  recipientType  SmsRecipientType
+  recipientName  String
+  phone          String
+  /// The student the message is about (also for parent messages), for the student's SMS tab.
+  studentId      String?
+  text           String
+  status         SmsStatus        @default(QUEUED)
+  /// Null = "Dastur tomonidan jo'natildi" (sent by the system).
+  sentById       String?
+  event          AutoSmsEvent?
+  providerId     String?
+  error          String?
+  /// One automatic message per event and subject (e.g. `absent:<lessonId>:<membershipId>`).
+  refKey         String?          @unique
+  createdAt      DateTime         @default(now())
+  sentAt         DateTime?
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  branch       Branch?      @relation(fields: [branchId], references: [id], onDelete: SetNull)
+  student      Student?     @relation(fields: [studentId], references: [id], onDelete: SetNull)
+  sentBy       User?        @relation("smsSender", fields: [sentById], references: [id], onDelete: SetNull)
+
+  @@index([organizationId, createdAt])
+  @@index([studentId, createdAt])
+  @@index([status])
+}
+
+enum CallDirection {
+  INBOUND
+  OUTBOUND
+}
+
+enum CallStatus {
+  ANSWERED
+  MISSED
+  BUSY
+  FAILED
+}
+
+/// "Qo'ng'iroqlar" (EXP §8 Calls): rows come from the telephony webhook or a click-to-call (A-86).
+model CallLog {
+  id              String        @id @default(cuid())
+  organizationId  String
+  branchId        String?
+  direction       CallDirection
+  status          CallStatus
+  fromPhone       String
+  toPhone         String
+  staffId         String?
+  studentId       String?
+  durationSeconds Int           @default(0)
+  recordingUrl    String?
+  externalId      String?       @unique
+  startedAt       DateTime
+  createdAt       DateTime      @default(now())
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  branch       Branch?      @relation(fields: [branchId], references: [id], onDelete: SetNull)
+  staff        User?        @relation("callStaff", fields: [staffId], references: [id], onDelete: SetNull)
+  student      Student?     @relation(fields: [studentId], references: [id], onDelete: SetNull)
+
+  @@index([organizationId, startedAt])
+  @@index([studentId, startedAt])
+}
+
+/// "Bot xabarnoma" (EXP §8): a staff member who gets Telegram notifications (Mahsus ID = chat id).
+model BotRecipient {
+  id             String   @id @default(cuid())
+  organizationId String
+  userId         String   @unique
+  chatId         String
+  /// Branches whose events this person hears about; empty = all branches.
+  branchIds      String[] @default([])
+  createdAt      DateTime @default(now())
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([organizationId])
+}
+
+enum IntegrationProvider {
+  SMS
+  TELEGRAM
+  AMOCRM
+  TELEPHONY
+  FACE_ID
+}
+
+/// One row per provider: enabled flag plus its settings (A-83). Secrets are masked in the API.
+model IntegrationSetting {
+  id             String              @id @default(cuid())
+  organizationId String
+  provider       IntegrationProvider
+  isEnabled      Boolean             @default(false)
+  config         Json
+  updatedAt      DateTime            @updatedAt
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@unique([organizationId, provider])
+}
+
+enum CheckSource {
+  FACE_ID
+  MANUAL
+}
+
+/// One staff member's check-in/out on one day (EXP §10 Hodimlar davomati). A-87.
+model StaffAttendance {
+  id       String      @id @default(cuid())
+  userId   String
+  branchId String
+  date     DateTime    @db.Date
+  checkIn  DateTime?
+  checkOut DateTime?
+  source   CheckSource @default(FACE_ID)
+  deviceId String?
+
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  branch Branch @relation(fields: [branchId], references: [id])
+
+  @@unique([userId, date])
+  @@index([branchId, date])
+}
+
+/// "Ish jadvallari": expected hours per weekday (0 = Sunday … 6 = Saturday); no row = day off.
+model WorkSchedule {
+  id      String @id @default(cuid())
+  userId  String
+  weekday Int
+  start   String // HH:mm
+  end     String // HH:mm
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, weekday])
+}
+
+enum JobStatus {
+  PENDING
+  RUNNING
+  DONE
+  FAILED
+}
+
+/// Postgres-backed job queue (A-21): auto-SMS, Telegram notifications, daily scans.
+model Job {
+  id        String    @id @default(cuid())
+  type      String
+  payload   Json
+  status    JobStatus @default(PENDING)
+  runAt     DateTime  @default(now())
+  attempts  Int       @default(0)
+  lastError String?
+  /// Prevents duplicates, e.g. `daily:2026-10-04`.
+  uniqueKey String?   @unique
+  lockedAt  DateTime?
+  createdAt DateTime  @default(now())
+  doneAt    DateTime?
+
+  @@index([status, runAt])
 }

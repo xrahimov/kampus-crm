@@ -49,6 +49,8 @@ export const PERMISSIONS = [
   "coins.give",
   "coins.manage",
 
+  "sms.send",
+
   "finance.view",
   "finance.create",
   "finance.update",

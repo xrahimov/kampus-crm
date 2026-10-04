@@ -211,7 +211,7 @@ Every list endpoint takes the common query contract (§2). Every mutation is aud
 
 **Leads (EXP §2–3)**
 ✓ `GET|POST /lead-boards` · `PATCH|DELETE /lead-boards/:id` · `POST /lead-boards/:id/columns` · `PATCH|DELETE /lead-columns/:id`
-✓ `GET /leads?boardId&q&lessonTime&teacherId&days&archived` (board view) · `POST /leads` · `GET|PATCH|DELETE /leads/:id` · `POST /leads/:id/move` · `POST /leads/:id/archive` · `POST /leads/:id/restore` · `POST /leads/add-to-group` · `GET /leads/options` · `POST /lead-columns/:id/sms` (Phase 11) · `GET /leads/export.xlsx` (Phase 12)
+✓ `GET /leads?boardId&q&lessonTime&teacherId&days&archived` (board view) · `POST /leads` · `GET|PATCH|DELETE /leads/:id` · `POST /leads/:id/move` · `POST /leads/:id/archive` · `POST /leads/:id/restore` · `POST /leads/add-to-group` · `GET /leads/options` · ✓ `POST /lead-columns/:id/sms` (as `POST /sms/send` with a column target) · `GET /leads/export.xlsx` (Phase 12)
 ✓ `GET /lead-sources?from&to` (catalogue with counts, EXP §3) · `POST /lead-sources` · `PATCH|DELETE /lead-sources/:id`
 ✓ `GET|POST /lead-forms` · `PATCH|DELETE /lead-forms/:id` · `GET|POST /public/lead-forms/:slug` (public, rate limited, no session); the page is `/forms/:slug`
 
@@ -228,22 +228,22 @@ Every list endpoint takes the common query contract (§2). Every mutation is aud
 **Students (EXP §6)** — Phase 6 ships the lines marked ✓ (A-59..A-65); the rest follow with their modules.
 ✓ `GET|POST /students?archived&courseId&schoolId&groupId&teacherId&groupStatus&paymentStatus` · `GET|PATCH|DELETE /students/:id` · `POST /students/:id/restore` · `POST /students/:id/blacklist` · `GET /students/options` · `POST /students/activate` (Phase 7 ✓) · `POST /students/import` · `GET /students/export.xlsx` · `POST /students/sms` (Phases 11–12) · badges are pages: `/students/:id/badge`, `/students/badges`
 ✓ `POST /students/:id/custom-fields` · `DELETE /custom-fields/:id` · `POST /students/:id/parents` · `DELETE /parents/:id` · `GET|POST /students/:id/comments` · `GET /students/:id/history` · `GET /memberships/:id/calendar?month` · `POST /groups/:id/activate-members`
-✓ `GET /students/:id/progress` · ✓ `GET /students/:id/test-results` · ✓ `GET /students/:id/coins` · `GET /students/:id/sms` · `GET /students/:id/calls` · `POST /students/:id/call` (Phase 11)
+✓ `GET /students/:id/progress` · ✓ `GET /students/:id/test-results` · ✓ `GET /students/:id/coins` · ✓ `GET /students/:id/sms` · ✓ `GET /students/:id/calls` · ✓ `POST /students/:id/call`
 ✓ `GET /payments?studentId&groupId&membershipId&paymentMethodId&receivedById&from&to` · `POST /payments` · `GET /payments/:id` · `POST /payments/:id/refund` · `GET /payments/options` · `GET /memberships/:id/payment-info` · `POST /memberships/:id/transfer` · `GET|PUT /settings/receipt` · the receipt is a page: `/payments/:id/receipt`
 
 **Exams (EXP §7)**
 ✓ `GET|POST /exams?type=GROUP|MOCK&status&groupId&from&to` · `GET|PATCH|DELETE /exams/:id` · `POST /exams/:id/finish|reopen` · `GET|PUT /exams/:id/results` · `POST|DELETE /exams/:id/registrations` (mock "Arizalar") · `GET /exams/:id/candidates?q` · `GET /exams/options`
 
 **Settings (EXP §8)**
-`GET|POST /sms-categories` · `GET|POST /sms-templates` · `PATCH|DELETE /sms-templates/:id` · `POST /sms-templates/import-eskiz`
+✓ `GET|POST /sms-categories` · `DELETE /sms-categories/:id` · `GET|POST /sms-templates` · `PATCH|DELETE /sms-templates/:id` · `POST /sms-templates/import` · `POST /sms/send` · `POST /sms/count`
 `GET|PUT /settings/receipt`
 `GET|POST /courses` · `PATCH|DELETE /courses/:id` · same CRUD for `/rooms`, `/days-off`, `/schools`, `/branches`, `/payment-methods`, `/grading-systems`
 ✓ `GET|PUT /settings/coins` · `GET|POST /coin-reasons` · `PATCH|DELETE /coin-reasons/:id` · `GET /coins/report` · `GET /coins/options` · `GET /coins/students?q`
 ✓ `GET|POST /tests` · `GET|PATCH|DELETE /tests/:id` · `POST /tests/:id/status` · `POST /tests/:id/attempts` · `GET /tests/options` · `GET|POST /question-bank` · `PATCH|DELETE /question-bank/:id` · `GET /question-bank/options`
-`GET|PUT /settings/org` · `GET|PUT /settings/auto-sms`
+✓ `GET|PUT /settings/org` · ✓ `GET|PUT /settings/auto-sms`
 `GET|POST /staff?role&archived` · `GET /staff/role-counts` · `GET|PATCH|DELETE /staff/:id` · `GET|POST /roles` · `PATCH|DELETE /roles/:id` · `GET /permissions` · `POST /uploads` · `GET /files/:key`
-`GET /calls` · `GET /logs/logins` · `GET /logs/actions` · `GET /logs/sms` · `GET|POST /bot-recipients` · `DELETE /bot-recipients/:id`
-`GET|PUT /integrations/amocrm` · `GET|PUT /integrations/face-id` · `GET|PUT /integrations/sms` · `GET|PUT /integrations/telegram` · `GET|PUT /integrations/telephony`
+✓ `GET /calls` · `GET /logs/logins` · `GET /logs/actions` · `GET /logs/sms` · `GET|POST /bot-recipients` · `DELETE /bot-recipients/:id` · `POST /jobs/run`
+✓ `GET /integrations` · `GET|PUT /integrations/:provider` (amocrm, face-id, sms, telegram, telephony) · `POST /integrations/amocrm-test`
 `GET /approvals` · `POST /approvals/:id/approve|reject` (A-09)
 
 **Finance (EXP §9)**
@@ -251,13 +251,13 @@ Every list endpoint takes the common query contract (§2). Every mutation is aud
 ✓ `GET /payroll` · `GET|PUT /payroll/:month` (PUT = draft/save status) · `POST /payroll/:month/recalculate` · `POST /payroll/:month/lines/:id/approve` · `GET /payroll/:month/export.xlsx` (Phase 12)
 
 **Reports (EXP §10)**
-`GET /reports/payments` · `GET /reports/student-payments` · `GET /reports/churn` · `GET|PUT /leave-reasons` · `GET /reports/graduates` · `GET /reports/staff-attendance?tab` · `GET|PUT /work-schedules` · ✓ `GET /reports/coins` (page over `/coins/report`) · ✓ `GET|POST /marketplace/categories` · `DELETE /marketplace/categories/:id` · `GET|POST /marketplace/products` · `PATCH|DELETE /marketplace/products/:id` · `GET|POST /marketplace/purchase-requests` · `PATCH /marketplace/purchase-requests/:id` · `GET /reports/leads` · `GET /reports/students?tab` · `GET /reports/center-statistics?view`
+`GET /reports/payments` · `GET /reports/student-payments` · `GET /reports/churn` · `GET|PUT /leave-reasons` · `GET /reports/graduates` · ✓ `GET /reports/staff-attendance?year&month&branchId&date` · `PUT /work-schedules` · `PUT /staff-attendance/manual` · ✓ `GET /reports/coins` (page over `/coins/report`) · ✓ `GET|POST /marketplace/categories` · `DELETE /marketplace/categories/:id` · `GET|POST /marketplace/products` · `PATCH|DELETE /marketplace/products/:id` · `GET|POST /marketplace/purchase-requests` · `PATCH /marketplace/purchase-requests/:id` · `GET /reports/leads` · `GET /reports/students?tab` · `GET /reports/center-statistics?view`
 
 **Header widgets (EXP §11)**
 `GET /search?q` · `GET /notifications` · `POST /notifications/read`
 
 **Webhooks (integrations)**
-`POST /webhooks/amocrm` · `POST /webhooks/telephony` · `POST /webhooks/face-id` · `POST /webhooks/telegram` (each one signature- or secret-verified)
+✓ `POST /webhooks/telephony` · `POST /webhooks/face-id` · `POST /webhooks/telegram` (shared secret in `x-kampus-secret` or `?secret=`; `/webhooks/amocrm` is only the OAuth redirect URI)
 
 ## 6. Folder structure
 

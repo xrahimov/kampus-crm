@@ -33,7 +33,7 @@ import { CoinReasonDialog } from "./coin-reason-dialog";
 type RuleDraft = { event: CoinEvent; amount: string; isActive: boolean };
 
 /** Rules without a trigger in v1 (A-79): shown, saved, not yet fired. */
-const UNWIRED: CoinEvent[] = ["HOMEWORK", "BIRTHDAY"];
+const UNWIRED: CoinEvent[] = ["HOMEWORK"];
 
 /** Settings → "Coin sozlamalari" (EXP §8): automatic rules and manual reasons. */
 export function CoinsSettingsPage({

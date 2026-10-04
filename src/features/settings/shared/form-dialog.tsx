@@ -25,6 +25,7 @@ export function FormDialog({
   children,
   side,
   testId,
+  submitLabel,
 }: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -36,6 +37,8 @@ export function FormDialog({
   children: React.ReactNode;
   side?: "center" | "right";
   testId?: string;
+  /** Replaces the default "Save" on the submit button. */
+  submitLabel?: string;
 }) {
   const t = useTranslations();
   return (
@@ -55,7 +58,7 @@ export function FormDialog({
               {t("common.cancel")}
             </Button>
             <Button type="submit" disabled={submitting}>
-              {submitting ? t("common.saving") : t("common.save")}
+              {submitting ? t("common.saving") : (submitLabel ?? t("common.save"))}
             </Button>
           </DialogFooter>
         </form>

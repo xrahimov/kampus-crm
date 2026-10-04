@@ -2,6 +2,7 @@ import type { Prisma } from "@/generated/prisma/client";
 import type { AttendanceStatus, MembershipStatus } from "@/lib/validation/groups";
 import { recordAudit } from "@/server/audit/audit";
 import { awardAutoCoins } from "@/server/services/coins/coins.service";
+import { queueAutoSms } from "@/server/services/sms/auto-sms.service";
 import { prisma, type DbClient } from "@/server/db/prisma";
 import { AppError } from "@/server/errors/app-error";
 import { authorize, canAccessAllBranches, type Actor } from "@/server/rbac/authorize";
@@ -109,13 +110,15 @@ export async function getMonthGrid(
   };
 }
 
-type LessonRow = Prisma.LessonGetPayload<{ include: { group: { select: { branchId: true } } } }>;
+type LessonRow = Prisma.LessonGetPayload<{
+  include: { group: { select: { branchId: true; name: true } } };
+}>;
 
 async function findLessonInScope(db: DbClient, actor: Actor, lessonId: string): Promise<LessonRow> {
   const lesson = await mustFind(
     db.lesson.findUnique({
       where: { id: lessonId },
-      include: { group: { select: { branchId: true } } },
+      include: { group: { select: { branchId: true, name: true } } },
     }),
   );
   if (!canAccessAllBranches(actor) && !actor.branchIds.includes(lesson.group.branchId)) {
@@ -248,6 +251,15 @@ export async function markAttendance(
           refKey: `attendance:${lessonId}:${mark.membershipId}`,
           revoke: mark.status !== "PRESENT",
         });
+        // "Darsga kelmaganlarga sms" / "Darsga kelganlarga sms" (A-88), once per lesson and mark.
+        if (mark.status === "ABSENT" || mark.status === "PRESENT") {
+          await queueAutoSms(tx, {
+            event: mark.status,
+            studentId,
+            refKey: `${mark.status.toLowerCase()}:${lessonId}:${mark.membershipId}`,
+            vars: { groupName: lesson.group.name, date: dateToIso(lesson.date) },
+          });
+        }
       }
     }
     await recordAudit(tx, actor, {
@@ -273,9 +285,28 @@ export async function setGrades(
     lesson.groupId,
     grades.map((g) => g.membershipId),
   );
+  const graded = await db.groupMembership.findMany({
+    where: { id: { in: grades.map((g) => g.membershipId) } },
+    select: { id: true, studentId: true },
+  });
+  const studentOfGrade = new Map(graded.map((m) => [m.id, m.studentId]));
   await db.$transaction(async (tx) => {
     for (const grade of grades) {
       const where = { lessonId_membershipId: { lessonId, membershipId: grade.membershipId } };
+      const studentId = studentOfGrade.get(grade.membershipId);
+      if (grade.score !== null && studentId) {
+        // "O'quvchi baholarini yuborish" (A-88): the first grade of a lesson texts the student.
+        await queueAutoSms(tx, {
+          event: "GRADES",
+          studentId,
+          refKey: `grade:${lessonId}:${grade.membershipId}`,
+          vars: {
+            groupName: lesson.group.name,
+            date: dateToIso(lesson.date),
+            score: String(grade.score),
+          },
+        });
+      }
       if (grade.score === null) {
         await tx.grade.deleteMany({ where: { lessonId, membershipId: grade.membershipId } });
       } else {

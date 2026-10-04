@@ -79,6 +79,7 @@ export default async function Page({
         create: can(current.actor, "groups.create"),
         update: can(current.actor, "groups.update"),
         delete: can(current.actor, "groups.delete"),
+        sms: can(current.actor, "sms.send"),
       }}
     />
   );

@@ -127,7 +127,10 @@
     "questionInUse": "Savol testda ishlatilgan, o‘chirib bo‘lmaydi.",
     "testNotFound": "Test topilmadi.",
     "testHasAttempts": "Test bo‘yicha natijalar kiritilgan; savollarni o‘zgartirib va testni o‘chirib bo‘lmaydi.",
-    "testNotActive": "Natijalarni faqat faol testga kiritish mumkin."
+    "testNotActive": "Natijalarni faqat faol testga kiritish mumkin.",
+    "categoryHasTemplates": "Bu kategoriyada hali shablonlar bor.",
+    "webhookRejected": "Webhook maxfiy kaliti yo'q yoki noto'g'ri, yoki integratsiya o'chirilgan.",
+    "staffNotFound": "Xodim topilmadi."
   },
   "validation": {
     "phone": "+998 90 123 45 67 ko‘rinishida raqam kiriting.",
@@ -193,7 +196,12 @@
     "questionUnknown": "Noma‘lum savol.",
     "productInactive": "Mahsulot faol emas.",
     "outOfStock": "Mahsulot zaxirada yo‘q.",
-    "notEnoughCoins": "O‘quvchida coin yetarli emas."
+    "notEnoughCoins": "O‘quvchida coin yetarli emas.",
+    "chatId": "Telegram chat ID raqamini kiriting.",
+    "subDomain": "Faqat subdomen, masalan mycenter.",
+    "categoryUnknown": "Noma'lum kategoriya.",
+    "branchUnknown": "Noma'lum filial.",
+    "noRecipients": "Yuboradigan kishi yo'q: tanlovda telefon raqamlari yo'q."
   },
   "roles": {
     "CEO": "CEO",
@@ -236,7 +244,8 @@
       "smsLog": "Yuborilgan SMS lar",
       "bot": "Bot xabarnoma",
       "amocrm": "AmoCRM",
-      "faceId": "FaceID"
+      "faceId": "FaceID",
+      "integrations": "Integratsiyalar"
     },
     "general": {
       "centerTitle": "Markaz sozlamalari",
@@ -246,7 +255,11 @@
       "workEnd": "Ish tugash vaqti",
       "scheduleStep": "Vaqt intervali",
       "minutes": "{count} daqiqa",
-      "switchesTitle": "Qoidalar"
+      "switchesTitle": "Qoidalar",
+      "tabs": {
+        "center": "Markaz sozlamalari",
+        "sms": "Auto SMS sozlamalari"
+      }
     },
     "switches": {
       "spreadOverpayment": "O‘quvchining ortiqcha to‘lovi keyingi oylarga bo‘lib yuborilsin",
@@ -445,7 +458,8 @@
       "groups": "Guruhlar",
       "role": "Rol"
     },
-    "noGroups": "Hozircha guruh yo'q."
+    "noGroups": "Hozircha guruh yo'q.",
+    "sms": "SMS yuborish"
   },
   "staff": {
     "title": "Xodimlar",
@@ -521,7 +535,8 @@
       "staff": "Xodimlar",
       "settings": "Sozlamalar",
       "logs": "Jurnallar",
-      "coins": "Coinlar"
+      "coins": "Coinlar",
+      "sms": "SMS"
     },
     "names": {
       "dashboard": {
@@ -607,6 +622,9 @@
       "coins": {
         "give": "Coin berish",
         "manage": "Coin sozlamalari, marketplace va xarid so‘rovlari"
+      },
+      "sms": {
+        "send": "SMS yuborish"
       }
     }
   },
@@ -670,7 +688,8 @@
     "actions": {
       "view": "Ochish",
       "moveBranch": "Boshqa filialga o'tkazish",
-      "finish": "Guruhni tugatish"
+      "finish": "Guruhni tugatish",
+      "sms": "SMS yuborish"
     },
     "form": {
       "add": "Yangi guruh",
@@ -786,7 +805,8 @@
       "activated": "{count} o‘quvchi faollashtirildi.",
       "payment": "To‘lov",
       "transfer": "Boshqa guruhga ko‘chirish",
-      "toLead": "Lidlarga qaytarish"
+      "toLead": "Lidlarga qaytarish",
+      "sms": "Xabar (SMS)"
     },
     "notes": {
       "newNote": "Eslatma qo'shish",
@@ -835,7 +855,7 @@
     "archiveView": "Arxiv",
     "activate": "Faollashtirish",
     "excel": "Excel (12-bosqich)",
-    "sms": "SMS yuborish (11-bosqich)",
+    "sms": "SMS yuborish",
     "importExcel": "Excel orqali qo‘shish (12-bosqich)",
     "badges": "Beyjiklar",
     "filters": {
@@ -1029,12 +1049,13 @@
     "parents": {
       "title": "Ota-onalari",
       "add": "Yaratish",
-      "sms": "SMS yuborish (11-bosqich)",
+      "sms": "SMS yuborish",
       "fullName": "Ism familiya",
       "phone": "Telefon raqam",
       "empty": "Ota-ona kiritilmagan.",
       "deleteTitle": "Ota-ona o‘chirilsinmi?",
-      "deleteText": "“{name}” bu o‘quvchidan o‘chiriladi."
+      "deleteText": "“{name}” bu o‘quvchidan o‘chiriladi.",
+      "smsTitle": "Ota-onalarga SMS: {name}"
     },
     "transfer": {
       "title": "Boshqa guruhga ko‘chirish",
@@ -1178,11 +1199,11 @@
     "boardName": "Doska nomi",
     "sources": "Manba",
     "excel": "Excel (12-bosqich)",
-    "amocrm": "AmoCRM (11-bosqich)",
+    "amocrm": "AmoCRM",
     "addColumn": "Qo‘shimcha ustun qo‘shish",
     "columnName": "Bo‘lim nomi",
     "editColumn": "Ustun nomini o‘zgartirish",
-    "columnSms": "Ustundagi barcha lidlarga SMS (11-bosqich)",
+    "columnSms": "Bo'limdagi barcha lidlarga SMS yuborish",
     "emptyColumn": "Bo‘sh kanban",
     "noBoards": "Hali lid doskalari yo‘q.",
     "noBoardsHint": "Lidlarni yig‘ish uchun doska yarating.",
@@ -1271,7 +1292,8 @@
       "submit": "Yuborish",
       "thanksTitle": "Rahmat!",
       "thanksText": "So‘rovingizni qabul qildik va tez orada bog‘lanamiz."
-    }
+    },
+    "amocrmHint": "AmoCRM sinxronizatsiyasi Sozlamalar → Integratsiyalar bo'limida"
   },
   "exams": {
     "title": "Imtihonlar",
@@ -1546,7 +1568,7 @@
         "TEST_RESULT": "Test natijasi",
         "BIRTHDAY": "Tug‘ilgan kun"
       },
-      "notWired": "Saqlanadi, lekin hozircha ishga tushirilmaydi (uy vazifasi va tug‘ilgan kunlar 11-bosqichda).",
+      "notWired": "Saqlandi, lekin hali hech narsa ishga tushirmaydi (uy vazifasi yozuvi keyinroq).",
       "reasonsTitle": "Qo‘lda beriladigan coin sabablari",
       "reasonsDescription": "O‘qituvchi coin berishda shulardan birini tanlaydi va maksimumdan oshira olmaydi.",
       "addReason": "Sabab qo‘shish",
@@ -1843,5 +1865,319 @@
       "students": "O‘quvchilar",
       "statistics": "Markaz statistikasi"
     }
+  },
+  "sms": {
+    "send": {
+      "title": "SMS yuborish",
+      "button": "SMS yuborish",
+      "toStudent": "SMS: {name}",
+      "recipients": "Qabul qiluvchilar: {count} (telefonsiz {skipped} tashlab ketildi)",
+      "counting": "Qabul qiluvchilar sanalmoqda…",
+      "result": "Yuborildi: {sent}, yetmadi: {failed}.",
+      "fakeAdapter": "SMS shlyuzi sozlanmagan: xabarlar yozib qo'yildi, lekin yetkazilmadi (Sozlamalar → Integratsiyalar).",
+      "template": "Shablon",
+      "noTemplate": "Shablonsiz",
+      "text": "Xabar",
+      "counter": "{chars} belgi · {parts} SMS"
+    },
+    "statuses": {
+      "QUEUED": "Navbatda",
+      "SENT": "Yuborildi",
+      "FAILED": "Xatolik"
+    },
+    "recipientTypes": {
+      "STUDENT": "O'quvchi",
+      "PARENT": "Ota-ona",
+      "STAFF": "Xodim",
+      "LEAD": "Lid",
+      "OTHER": "Boshqa"
+    },
+    "autoEvents": {
+      "BIRTHDAY": "Tug'ilgan kunda sms bilan tabriklash",
+      "EXAM_RESULT": "Imtihon natijasini sms yuborish",
+      "PAYMENT_MADE": "To'lov qilgandan so'ng sms yuborish",
+      "ABSENT": "Darsga kelmaganlarga sms",
+      "PRESENT": "Darsga kelganlarga sms",
+      "PAYMENT_DUE_SOON": "To'lovi yaqin qolganlarni ogohlantirish",
+      "DEBTOR": "Qarzdorlarni ogohlantirish",
+      "GRADES": "O'quvchi baholarini yuborish",
+      "DAY_BEFORE_FIRST_LESSON": "Birinchi dars sanasiga bir kun qolganda",
+      "ADDED_TO_GROUP": "Guruhga birinchi qo'shilganda"
+    },
+    "variables": {
+      "studentName": "Talaba ismi",
+      "groupName": "Guruh",
+      "date": "Sana",
+      "amount": "Summa",
+      "debt": "Qarzdorlik summasi",
+      "score": "Ball",
+      "centerName": "Markaz nomi"
+    },
+    "studentTab": {
+      "title": "O'quvchiga yuborilgan SMSlar",
+      "empty": "Hali SMS yo'q.",
+      "noPhone": "O'quvchining telefon raqami yo'q."
+    },
+    "log": {
+      "title": "Yuborilgan SMSlar",
+      "description": "Dastur yoki xodimlar yuborgan barcha xabarlar.",
+      "all": "Barchasi",
+      "system": "Dastur tomonidan jo'natildi",
+      "empty": "Hali SMS yo'q.",
+      "columns": {
+        "recipient": "Qabul qildi",
+        "text": "Xabar",
+        "sentBy": "Yubordi",
+        "sentAt": "Yuborilgan vaqti",
+        "status": "Holati"
+      }
+    },
+    "templates": {
+      "title": "SMS shablonlari",
+      "description": "SMS yuborish oynasi uchun tayyor matnlar, kategoriyalar bo'yicha.",
+      "import": "Eskizdan import qilish",
+      "importNeedsCategory": "Avval kategoriya yarating: import qilingan shablonlar birinchisiga tushadi.",
+      "imported": "{count} shablon «{category}» ichiga import qilindi ({adapter}).",
+      "addCategory": "Kategoriya yaratish",
+      "addTemplate": "Shablon yaratish",
+      "editTemplate": "Shablonni tahrirlash",
+      "deleteTemplate": "Shablon o'chirilsinmi?",
+      "deleteCategory": "Kategoriya o'chirilsinmi?",
+      "empty": "Hali kategoriya yo'q.",
+      "emptyHint": "Kategoriya yarating, so'ng unga shablonlar qo'shing.",
+      "importedBadge": "import",
+      "columns": {
+        "category": "Kategoriya",
+        "text": "SMS matni"
+      },
+      "categoryName": "Kategoriya nomi",
+      "variablesHint": "O'zgaruvchini qo'shish uchun ustiga bosing; yuborishda qiymat bilan almashadi."
+    },
+    "auto": {
+      "title": "Auto SMS sozlamalari",
+      "description": "Har bir tugma o'z shablonini voqea sodir bo'lganda avtomatik yuboradi. Figurali qavsdagi o'zgaruvchilar to'ldiriladi.",
+      "templateFor": "Shablon: {event}"
+    }
+  },
+  "calls": {
+    "title": "Qo'ng'iroqlar",
+    "description": "Telefoniya integratsiyasi va «Qo'ng'iroq» tugmasidan yozilgan qo'ng'iroqlar.",
+    "refresh": "Yangilash",
+    "all": "Barchasi",
+    "empty": "Qo'ng'iroqlar topilmadi",
+    "call": "Qo'ng'iroq qilish",
+    "started": "Qo'ng'iroq boshlandi.",
+    "startedFake": "Qo'ng'iroq yozib olindi; telefoniya provayderi hali ulanmagan.",
+    "studentTab": {
+      "title": "Qo'ng'iroqlar",
+      "empty": "Hali qo'ng'iroq yo'q."
+    },
+    "columns": {
+      "startedAt": "Vaqt",
+      "direction": "Yo'nalish",
+      "phones": "Raqamlar",
+      "student": "O'quvchi",
+      "staff": "Xodim",
+      "duration": "Davomiyligi",
+      "status": "Holati"
+    },
+    "directions": {
+      "INBOUND": "Kiruvchi",
+      "OUTBOUND": "Chiquvchi"
+    },
+    "statuses": {
+      "ANSWERED": "Javob berildi",
+      "MISSED": "O'tkazib yuborildi",
+      "BUSY": "Band",
+      "FAILED": "Xatolik"
+    }
+  },
+  "logs": {
+    "from": "Dan",
+    "to": "Gacha",
+    "logins": {
+      "title": "Kirishlar soni: {count}",
+      "description": "Tizimga kim kirgani va muvaffaqiyatsiz urinishlar.",
+      "outcome": "Natija",
+      "all": "Barchasi",
+      "success": "Kirdi",
+      "failure": "Muvaffaqiyatsiz",
+      "empty": "Kirishlar yozilmagan.",
+      "columns": {
+        "name": "Ism",
+        "phone": "Telefon raqam",
+        "at": "Kirgan sanasi",
+        "ip": "IP"
+      }
+    },
+    "actions": {
+      "title": "Amallar jurnali",
+      "description": "Xodimlar qilgan barcha o'zgarishlar, yangilari yuqorida.",
+      "entity": "Turi",
+      "staff": "Xodim",
+      "all": "Barchasi",
+      "empty": "Yozuvlar yo'q.",
+      "system": "Tizim",
+      "entities": {
+        "Payment": "To'lov",
+        "Refund": "Qaytarish",
+        "Discount": "Chegirma",
+        "Student": "O'quvchi",
+        "GroupMembership": "Guruh a'zoligi",
+        "Group": "Guruh",
+        "Lesson": "Dars",
+        "Lead": "Lid",
+        "Exam": "Imtihon",
+        "SmsMessage": "SMS"
+      },
+      "names": {
+        "payment.create": "To'lov yaratildi",
+        "payment.refund": "Qaytarish qilindi",
+        "discount.create": "Chegirma berildi",
+        "membership.create": "Guruhga qo'shildi",
+        "membership.status": "Status o'zgardi",
+        "membership.transfer": "Ko'chirildi",
+        "group.update": "Guruh ma'lumotlari yangilandi",
+        "group.create": "Guruh yaratildi",
+        "student.create": "O'quvchi yaratildi",
+        "student.update": "O'quvchi yangilandi",
+        "attendance.mark": "Davomat qo'yildi",
+        "grades.set": "Baholar qo'yildi",
+        "lead.create": "Lid yaratildi",
+        "lead.move": "Lid ko'chirildi",
+        "sms.send": "SMS yuborildi",
+        "exam.results": "Imtihon natijalari kiritildi"
+      }
+    }
+  },
+  "bot": {
+    "title": "Bot xabarnoma",
+    "description": "Bu ro'yxatdagi xodimlar tizimdagi amallar (to'lovlar, yangi o'quvchilar) haqida Telegram support botidan xabar oladi.",
+    "add": "Yaratish",
+    "empty": "Hali hech kim bot xabarnomalarini olmaydi.",
+    "emptyHint": "Xodimni Telegram chat ID bilan qo'shing.",
+    "columns": {
+      "staff": "Xodim",
+      "chatId": "Mahsus ID",
+      "branches": "Filiallar"
+    },
+    "allBranches": "Barcha filiallar",
+    "chatIdHint": "Xodim botga /id yuboradi va o'zining mahsus ID sini oladi.",
+    "branchesHint": "Barcha filiallar uchun bo'sh qoldiring.",
+    "remove": "Qabul qiluvchi o'chirilsinmi?"
+  },
+  "integrations": {
+    "enabled": "Yoqilgan",
+    "webhookHint": "Webhook manzili:",
+    "queue": {
+      "title": "Fon vazifalari",
+      "description": "Auto-SMS va bot xabarlari navbatda turadi, uni worker bajaradi. Worker bo'lmasa, navbatni shu yerda ishga tushiring.",
+      "run": "Navbatdagi vazifalarni bajarish",
+      "result": "Olindi {claimed}, bajarildi {done}, xatolik {failed}; kutmoqda {pending}."
+    },
+    "SMS": {
+      "title": "SMS shlyuzi (Eskiz)",
+      "description": "SMS yuboradigan Eskiz hisobining ma'lumotlari. O'chirilganda xabarlar faqat yozib qo'yiladi.",
+      "fields": {
+        "email": "Email",
+        "password": "Parol",
+        "sender": "Jo'natuvchi (from)"
+      }
+    },
+    "TELEGRAM": {
+      "title": "Telegram bot",
+      "description": "«Bot xabarnoma» ro'yxatidagi xodimlarga xabar beradigan support bot.",
+      "fields": {
+        "botToken": "Bot tokeni",
+        "webhookSecret": "Webhook maxfiy kaliti"
+      }
+    },
+    "TELEPHONY": {
+      "title": "Telefoniya",
+      "description": "ATS tugagan qo'ng'iroqlarni webhookga yuboradi; ular «Qo'ng'iroqlar»da ko'rinadi.",
+      "fields": {
+        "webhookSecret": "Webhook maxfiy kaliti"
+      }
+    },
+    "AMOCRM": {
+      "title": "AmoCRM",
+      "description": "Yoqilganda yangi lidlar amoCRM ga yuboriladi.",
+      "fields": {
+        "secretKey": "Secret Key",
+        "integrationId": "Integration ID",
+        "authorizationCode": "Authorization Code",
+        "subDomain": "Sub Domain"
+      },
+      "test": "Ulanishni tekshirish",
+      "testOk": "Ulandi: {account}",
+      "testFake": "Hali ma'lumotlar yo'q; sinov klienti javob berdi.",
+      "connected": "Tokenlar saqlangan; ulanish ishlaydi.",
+      "notConnected": "Hali ulanmagan."
+    },
+    "FACE_ID": {
+      "title": "FaceID",
+      "description": "Terminallar xodimlarning kirish-chiqishini webhookga yuboradi; ular xodimlar davomati hisobotiga tushadi.",
+      "fields": {
+        "webhookSecret": "Webhook maxfiy kaliti",
+        "lateAfterMinutes": "Kechikish hisoblanadi (daqiqadan so'ng)"
+      },
+      "payloadHint": "Ma'lumot: deviceId, phone (+998…), at (ISO vaqt), kind IN yoki OUT."
+    }
+  },
+  "staffAttendance": {
+    "title": "Hodimlar davomati boshqaruv paneli",
+    "noStaff": "Bu filialda xodim yo'q.",
+    "filters": {
+      "month": "Oy",
+      "year": "Yil",
+      "branch": "Filial",
+      "date": "Kun"
+    },
+    "kpis": {
+      "total": "Jami hodimlar",
+      "cameToday": "Bugun kelganlar",
+      "lateToday": "Bugun kechikkanlar",
+      "absentToday": "Bugun kelmaganlar"
+    },
+    "tabs": {
+      "daily": "Kunlik",
+      "weekly": "Haftalik",
+      "monthly": "Oylik",
+      "statistics": "Statistika",
+      "schedules": "Ish jadvallari"
+    },
+    "columns": {
+      "staff": "Hodim",
+      "branch": "Filial",
+      "expectedIn": "Kutilayotgan kirish vaqti",
+      "checkIn": "Kirish vaqti",
+      "expectedOut": "Kutilayotgan chiqish vaqti",
+      "checkOut": "Chiqish vaqti",
+      "late": "Kechikish",
+      "earlyLeave": "Erta ketish",
+      "worked": "Ishlangan vaqt",
+      "status": "Holat",
+      "workingDays": "Ish kunlari",
+      "presentDays": "Kelgan",
+      "lateDays": "Kechikkan",
+      "absentDays": "Kelmagan"
+    },
+    "statuses": {
+      "PRESENT": "Kelgan",
+      "LATE": "Kechikkan",
+      "ABSENT": "Kelmagan",
+      "NOT_WORKING_DAY": "Ish kuni emas",
+      "NO_SCHEDULE": "Jadval yo'q"
+    },
+    "stats": {
+      "attendanceRate": "Davomat",
+      "punctualityRate": "O'z vaqtida",
+      "avgWorked": "Kuniga o'rtacha ishlangan",
+      "byDay": "Kunlar bo'yicha",
+      "legend": "Yashil kelgan, sariq kechikkan, qizil kelmagan."
+    },
+    "manualCheck": "Kirish/chiqish: {name}",
+    "scheduleFor": "Ish jadvali: {name}",
+    "scheduleHint": "Ish kunlarini belgilang va kutilayotgan soatlarni kiriting."
   }
 }

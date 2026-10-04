@@ -144,6 +144,7 @@ export function GroupDetail({
     tests: boolean;
     giveCoins: boolean;
     manageCoins: boolean;
+    sms: boolean;
   };
 }) {
   const t = useTranslations();
@@ -364,6 +365,7 @@ export function GroupDetail({
                 canCreateStudent={can.createStudent}
                 canPay={can.pay}
                 canLeads={can.leads}
+                canSms={can.sms}
                 paymentOptions={paymentOptions}
               />
             </CardContent>

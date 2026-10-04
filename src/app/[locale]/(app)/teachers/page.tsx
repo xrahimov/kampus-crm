@@ -56,6 +56,7 @@ export default async function Page({
       canCreate={can(current.actor, "teachers.create")}
       canUpdate={can(current.actor, "teachers.update")}
       canDelete={can(current.actor, "teachers.delete")}
+      canSms={can(current.actor, "sms.send")}
     />
   );
 }

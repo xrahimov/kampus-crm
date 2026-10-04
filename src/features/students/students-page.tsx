@@ -55,6 +55,8 @@ import type {
   StudentRowDto,
 } from "@/server/services/students/students.service";
 
+import { SendSmsDialog } from "@/features/sms/send-sms-dialog";
+
 import { CommentDialog } from "./comment-dialog";
 import { StudentDialog } from "./student-dialog";
 import { MemberStatusBadge } from "./status-badge";
@@ -94,7 +96,14 @@ export function StudentsPage({
   actorBranchIds: string[];
   activeBranchId: string | null;
   allBranches: boolean;
-  can: { create: boolean; update: boolean; delete: boolean; blacklist: boolean; activate: boolean };
+  can: {
+    create: boolean;
+    update: boolean;
+    delete: boolean;
+    blacklist: boolean;
+    activate: boolean;
+    sms: boolean;
+  };
 }) {
   const t = useTranslations();
   const ts = useTranslations("students");
@@ -111,6 +120,7 @@ export function StudentsPage({
   const [archiving, setArchiving] = useState<StudentRowDto | null>(null);
   const [blacklisting, setBlacklisting] = useState<StudentRowDto | null>(null);
   const [activating, setActivating] = useState(false);
+  const [smsOpen, setSmsOpen] = useState(false);
   const [notice, setNotice] = useState<string | null>(null);
   const { options: branchOptions, defaultId } = creatableBranches(
     branches,
@@ -175,9 +185,17 @@ export function StudentsPage({
           <Button variant="outline" size="sm" disabled title={ts("excel")}>
             {ts("excel")}
           </Button>
-          <Button variant="outline" size="sm" disabled title={ts("sms")}>
-            {ts("sms")}
-          </Button>
+          {can.sms && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setSmsOpen(true)}
+              disabled={page.total === 0}
+              data-testid="students-sms"
+            >
+              {ts("sms")}
+            </Button>
+          )}
           <Button
             variant={archived ? "default" : "outline"}
             size="sm"
@@ -477,6 +495,16 @@ export function StudentsPage({
           });
           refresh();
         }}
+      />
+      <SendSmsDialog
+        open={smsOpen}
+        onOpenChange={setSmsOpen}
+        target={{
+          kind: "studentFilter",
+          ...filters,
+          q: searchParams.get("q") ?? undefined,
+        }}
+        onSent={refresh}
       />
     </div>
   );

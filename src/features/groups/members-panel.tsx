@@ -5,6 +5,7 @@ import { useTranslations } from "next-intl";
 import { useEffect, useState, useTransition } from "react";
 
 import { ConfirmDialog } from "@/components/data/confirm-dialog";
+import { SendSmsDialog } from "@/features/sms/send-sms-dialog";
 import { EmptyState } from "@/components/data/empty-state";
 import { FieldError } from "@/components/data/field-error";
 import { Badge } from "@/components/ui/badge";
@@ -69,6 +70,7 @@ export function MembersPanel({
   canCreateStudent,
   canPay,
   canLeads,
+  canSms,
   paymentOptions,
 }: {
   groupId: string;
@@ -81,6 +83,8 @@ export function MembersPanel({
   canPay: boolean;
   /** `leads.create`: shows "Return to leads" (Phase 7). */
   canLeads: boolean;
+  /** `sms.send`: shows "Xabar (sms) +" on a member (Phase 11). */
+  canSms: boolean;
   paymentOptions: PaymentOptionsDto;
 }) {
   const t = useTranslations();
@@ -98,6 +102,7 @@ export function MembersPanel({
   const [paying, setPaying] = useState<MembershipDto | null>(null);
   const [transferring, setTransferring] = useState<MembershipDto | null>(null);
   const [returning, setReturning] = useState<MembershipDto | null>(null);
+  const [messaging, setMessaging] = useState<MembershipDto | null>(null);
   const [activating, setActivating] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const refresh = () => startTransition(() => router.refresh());
@@ -271,6 +276,11 @@ export function MembersPanel({
                         {tm("toLead")}
                       </DropdownMenuItem>
                     )}
+                    {canSms && (
+                      <DropdownMenuItem onSelect={() => setMessaging(m)} data-testid="member-sms">
+                        {tm("sms")}
+                      </DropdownMenuItem>
+                    )}
                     <DropdownMenuSeparator />
                     <DropdownMenuItem
                       onSelect={() => setRemoving(m)}
@@ -286,6 +296,14 @@ export function MembersPanel({
         </ul>
       )}
 
+      <SendSmsDialog
+        open={messaging !== null}
+        onOpenChange={(open) => {
+          if (!open) setMessaging(null);
+        }}
+        target={messaging ? { kind: "student", studentId: messaging.studentId } : null}
+        title={messaging ? t("sms.send.toStudent", { name: messaging.fullName }) : undefined}
+      />
       <AddMemberDialog
         groupId={groupId}
         open={adding}
