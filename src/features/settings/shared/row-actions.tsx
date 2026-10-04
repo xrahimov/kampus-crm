@@ -18,8 +18,9 @@ export function RowActions({
   deleteLabel,
   name,
 }: {
-  onEdit: () => void;
-  onDelete: () => void;
+  /** Omitted entries hide their menu item (the caller lacks the permission). */
+  onEdit?: () => void;
+  onDelete?: () => void;
   deleteLabel?: string;
   name: string;
 }) {
@@ -32,12 +33,16 @@ export function RowActions({
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
-        <DropdownMenuItem onSelect={onEdit}>
-          <Pencil /> {t("edit")}
-        </DropdownMenuItem>
-        <DropdownMenuItem onSelect={onDelete} className="text-destructive focus:text-destructive">
-          <Trash2 /> {deleteLabel ?? t("delete")}
-        </DropdownMenuItem>
+        {onEdit && (
+          <DropdownMenuItem onSelect={onEdit}>
+            <Pencil /> {t("edit")}
+          </DropdownMenuItem>
+        )}
+        {onDelete && (
+          <DropdownMenuItem onSelect={onDelete} className="text-destructive focus:text-destructive">
+            <Trash2 /> {deleteLabel ?? t("delete")}
+          </DropdownMenuItem>
+        )}
       </DropdownMenuContent>
     </DropdownMenu>
   );

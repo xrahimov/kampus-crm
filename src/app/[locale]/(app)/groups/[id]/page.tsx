@@ -8,6 +8,7 @@ import type { SearchParams } from "@/features/settings/list-params";
 import { requireCurrentUser } from "@/server/auth/current-user";
 import { isAppError } from "@/server/errors/app-error";
 import { can, canAccessAllBranches } from "@/server/rbac/authorize";
+import { listCoinReasons, listGroupCoins } from "@/server/services/coins/coins.service";
 import { getExamOptions, listGroupExams } from "@/server/services/exams/exams.service";
 import {
   getGroup,
@@ -21,6 +22,11 @@ import { getGroupFormOptions } from "@/server/services/groups/options.service";
 import { listGroupDiscounts } from "@/server/services/students/discounts.service";
 import { getPaymentOptions } from "@/server/services/students/payments.service";
 import { listGroupComments } from "@/server/services/students/students.service";
+import {
+  getGroupKnowledge,
+  getTestOptions,
+  listGroupTests,
+} from "@/server/services/tests/tests.service";
 
 type Props = {
   params: Promise<{ locale: string; id: string }>;
@@ -79,6 +85,11 @@ export default async function Page({ params, searchParams }: Props) {
     paymentOptions,
     exams,
     examOptions,
+    tests,
+    testOptions,
+    knowledge,
+    coins,
+    coinReasons,
   ] = await Promise.all([
     getMonthGrid(current.actor, id, month),
     listMembers(current.actor, id, { archived: str(sp.archived) === "1" }),
@@ -102,6 +113,13 @@ export default async function Page({ params, searchParams }: Props) {
         })
       : null,
     can(current.actor, "exams.view") ? getExamOptions(current.actor) : null,
+    can(current.actor, "tests.view") ? listGroupTests(current.actor, id) : null,
+    can(current.actor, "tests.view") ? getTestOptions(current.actor) : null,
+    can(current.actor, "tests.view") ? getGroupKnowledge(current.actor, id, {}) : null,
+    listGroupCoins(current.actor, id),
+    can(current.actor, "coins.give")
+      ? listCoinReasons(current.actor, { activeOnly: true })
+      : Promise.resolve([]),
   ]);
 
   return (
@@ -116,6 +134,11 @@ export default async function Page({ params, searchParams }: Props) {
       comments={comments}
       exams={exams}
       examOptions={examOptions}
+      tests={tests}
+      testOptions={testOptions}
+      knowledge={knowledge}
+      coins={coins}
+      coinReasons={coinReasons}
       paymentOptions={paymentOptions}
       options={options}
       branches={current.branches}
@@ -132,6 +155,9 @@ export default async function Page({ params, searchParams }: Props) {
         comment: can(current.actor, "students.view"),
         leads: can(current.actor, "leads.create"),
         exams: can(current.actor, "exams.create"),
+        tests: can(current.actor, "tests.create"),
+        giveCoins: can(current.actor, "coins.give"),
+        manageCoins: can(current.actor, "coins.manage"),
       }}
     />
   );

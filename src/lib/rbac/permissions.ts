@@ -46,6 +46,9 @@ export const PERMISSIONS = [
   "tests.update",
   "tests.delete",
 
+  "coins.give",
+  "coins.manage",
+
   "finance.view",
   "finance.create",
   "finance.update",

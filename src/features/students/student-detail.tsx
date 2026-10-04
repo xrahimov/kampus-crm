@@ -65,16 +65,17 @@ import type {
 } from "@/server/services/students/students.service";
 
 import type { StudentProgressDto } from "@/server/services/exams/exams.service";
+import type { StudentTestResultsDto } from "@/server/services/tests/tests.service";
 
 import { CommentDialog } from "./comment-dialog";
 import { ProgressTab } from "./progress-tab";
+import { TestResultsTab } from "./test-results-tab";
 import { GroupCard } from "./group-card";
 import { StudentDialog } from "./student-dialog";
 import { BalanceBadge } from "./students-page";
 
-const TABS = ["groups", "progress", "comments", "history", "parents"] as const;
+const TABS = ["groups", "progress", "testResults", "comments", "history", "parents"] as const;
 const LATER_TABS: Array<{ key: string; phase: number }> = [
-  { key: "testResults", phase: 10 },
   { key: "sms", phase: 11 },
   { key: "calls", phase: 11 },
 ];
@@ -89,6 +90,7 @@ export function StudentDetail({
   payments,
   paymentGroupId,
   progress,
+  testResults,
   qrSvg,
   options,
   paymentOptions,
@@ -101,6 +103,7 @@ export function StudentDetail({
   payments: Page<PaymentDto> & { totalAmount: number };
   paymentGroupId: string | null;
   progress: StudentProgressDto;
+  testResults: StudentTestResultsDto;
   qrSvg: string;
   options: StudentOptions;
   paymentOptions: PaymentOptionsDto;
@@ -388,6 +391,9 @@ export function StudentDetail({
 
                 <TabsContent value="progress" className="pt-4">
                   <ProgressTab progress={progress} />
+                </TabsContent>
+                <TabsContent value="testResults" className="pt-4">
+                  <TestResultsTab studentId={student.id} initial={testResults} />
                 </TabsContent>
 
                 <TabsContent value="comments" className="space-y-4 pt-4">

@@ -15,6 +15,7 @@ import { useSearchParams } from "next/navigation";
 import { useState, useTransition } from "react";
 
 import { ConfirmDialog } from "@/components/data/confirm-dialog";
+import { Alert } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -52,8 +53,17 @@ import { DiscountsTab } from "./discounts-tab";
 import { GradesGrid } from "./grades-grid";
 import { GroupDialog } from "./group-dialog";
 import { ChangeTeacherDialog, DayOffDialog, SupportTeachersDialog } from "./group-dialogs";
+import { GroupCoinsTab } from "@/features/coins/group-coins-tab";
 import { GroupExamsTab } from "@/features/exams/group-exams-tab";
+import { GroupKnowledgeTab } from "@/features/tests/group-knowledge-tab";
+import { GroupTestsTab } from "@/features/tests/group-tests-tab";
+import type { CoinReasonDto, GroupCoinRowDto } from "@/server/services/coins/coins.service";
 import type { ExamDto, ExamOptions } from "@/server/services/exams/exams.service";
+import type {
+  GroupKnowledgeDto,
+  TestDto,
+  TestOptions,
+} from "@/server/services/tests/tests.service";
 
 import { GroupStatusBadge } from "./groups-page";
 import { MembersPanel } from "./members-panel";
@@ -64,18 +74,15 @@ import { weekdayLabel } from "./weekday";
 const TABS = [
   "attendance",
   "grades",
+  "tests",
+  "knowledge",
   "notes",
-  "history",
   "exams",
   "discounts",
+  "coins",
   "comments",
+  "history",
 ] as const;
-/** EXP §5 tabs that belong to later phases; shown disabled with the phase number. */
-const LATER_TABS: Array<{ key: string; phase: number }> = [
-  { key: "tests", phase: 10 },
-  { key: "knowledge", phase: 10 },
-  { key: "coins", phase: 10 },
-];
 
 /** EXP §5 "/groups/:id": info card and members on the left, tabs on the right. */
 export function GroupDetail({
@@ -89,6 +96,11 @@ export function GroupDetail({
   comments,
   exams,
   examOptions,
+  tests,
+  testOptions,
+  knowledge,
+  coins,
+  coinReasons,
   paymentOptions,
   options,
   branches,
@@ -107,6 +119,12 @@ export function GroupDetail({
   comments: StudentCommentDto[];
   exams: ExamDto[] | null;
   examOptions: ExamOptions | null;
+  /** null when the user may not see tests. */
+  tests: TestDto[] | null;
+  testOptions: TestOptions | null;
+  knowledge: GroupKnowledgeDto | null;
+  coins: GroupCoinRowDto[];
+  coinReasons: CoinReasonDto[];
   paymentOptions: PaymentOptionsDto;
   options: GroupFormOptions;
   branches: BranchOption[];
@@ -123,6 +141,9 @@ export function GroupDetail({
     comment: boolean;
     leads: boolean;
     exams: boolean;
+    tests: boolean;
+    giveCoins: boolean;
+    manageCoins: boolean;
   };
 }) {
   const t = useTranslations();
@@ -358,16 +379,6 @@ export function GroupDetail({
                     {td(`tabs.${k}`)}
                   </TabsTrigger>
                 ))}
-                {LATER_TABS.map((x) => (
-                  <TabsTrigger
-                    key={x.key}
-                    value={x.key}
-                    disabled
-                    title={td("laterPhase", { phase: x.phase })}
-                  >
-                    {td(`tabs.${x.key}`)}
-                  </TabsTrigger>
-                ))}
               </TabsList>
               <TabsContent value="attendance" className="pt-4">
                 <AttendanceGrid
@@ -391,6 +402,34 @@ export function GroupDetail({
               </TabsContent>
               <TabsContent value="history" className="pt-4">
                 <HistoryTab history={history} />
+              </TabsContent>
+              <TabsContent value="tests" className="pt-4">
+                {tests === null ? (
+                  <Alert>{t("tests.hidden")}</Alert>
+                ) : (
+                  <GroupTestsTab
+                    groupId={group.id}
+                    tests={tests}
+                    options={testOptions}
+                    canCreate={can.tests && !archived}
+                  />
+                )}
+              </TabsContent>
+              <TabsContent value="knowledge" className="pt-4">
+                {knowledge === null ? (
+                  <Alert>{t("tests.hidden")}</Alert>
+                ) : (
+                  <GroupKnowledgeTab groupId={group.id} initial={knowledge} />
+                )}
+              </TabsContent>
+              <TabsContent value="coins" className="pt-4">
+                <GroupCoinsTab
+                  groupId={group.id}
+                  rows={coins}
+                  reasons={coinReasons}
+                  canGive={can.giveCoins && !archived}
+                  canExceed={can.manageCoins}
+                />
               </TabsContent>
               <TabsContent value="exams" className="pt-4">
                 <GroupExamsTab

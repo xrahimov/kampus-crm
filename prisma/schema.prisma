@@ -32,6 +32,12 @@ model Organization {
   leadForms         LeadForm[]
   financeCategories FinanceCategory[]
   payrollRuns       PayrollRun[]
+  coinRules         CoinRule[]
+  coinReasons       CoinReason[]
+  productCategories ProductCategory[]
+  products          Product[]
+  questions         QuestionBankItem[]
+  tests             Test[]
 }
 
 model Branch {
@@ -119,6 +125,13 @@ model User {
   payrollLines    PayrollLine[]
   payrollApproved PayrollLine[]  @relation("payrollApprover")
   examsGraded     ExamResult[]   @relation("examGrader")
+
+  coinsGiven       CoinTransaction[]  @relation("coinGiver")
+  purchasesCreated PurchaseRequest[]  @relation("purchaseCreator")
+  purchasesDecided PurchaseRequest[]  @relation("purchaseDecider")
+  questionsWritten QuestionBankItem[] @relation("questionAuthor")
+  testsWritten     Test[]             @relation("testAuthor")
+  attemptsEntered  TestAttempt[]      @relation("attemptEnteredBy")
 }
 
 /// A role is a named bundle of permission codes. System roles are seeded and
@@ -255,6 +268,8 @@ model OrgSettings {
   teacherCanAddStudents      Boolean @default(false)
   bookAnySupportTeacher      Boolean @default(false)
   groupSupportSessions       Boolean @default(false)
+  /// "Avtomatik coin tizimi" (EXP §8 Coins); manual coins work regardless.
+  autoCoins                  Boolean @default(false)
 
   workStart           String @default("08:00") // HH:mm, schedule grid start
   workEnd             String @default("20:00") // HH:mm, schedule grid end
@@ -459,6 +474,9 @@ model Group {
   studentComments StudentComment[]
   exams           Exam[]
   mockExams       ExamGroup[]
+  coins           CoinTransaction[]
+  tests           TestGroup[]
+  testAttempts    TestAttempt[]
 
   @@index([branchId, status])
   @@index([courseId])
@@ -572,6 +590,9 @@ model Student {
   leads          Lead[]
   examResults    ExamResult[]
   financeEntries FinanceEntry[]
+  coins          CoinTransaction[]
+  purchases      PurchaseRequest[]
+  testAttempts   TestAttempt[]
 
   @@index([branchId, isArchived])
   @@index([phone])
@@ -1153,4 +1174,238 @@ model PayrollLine {
   approvedBy User?      @relation("payrollApprover", fields: [approvedById], references: [id], onDelete: SetNull)
 
   @@unique([runId, userId])
+}
+
+// ---------------------------------------------------------------------------
+// Phase 10: coins and marketplace (EXP §5 COINLAR, §8 Coin sozlamalari,
+// §10 Coins report), tests and question bank (EXP §5 TEST / BILIM TAHLILI,
+// §6 TEST NATIJALARI, §8 Test sozlamalari). See ASSUMPTIONS A-78..A-82.
+// ---------------------------------------------------------------------------
+
+/// "Avtomatik coin qoidalari": one row per event, seeded with the reference's amounts.
+enum CoinEvent {
+  ATTENDANCE
+  HOMEWORK
+  TEST_RESULT
+  BIRTHDAY
+}
+
+model CoinRule {
+  id             String    @id @default(cuid())
+  organizationId String
+  event          CoinEvent
+  amount         Int
+  isActive       Boolean   @default(true)
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@unique([organizationId, event])
+}
+
+/// "Qo'lda beriladigan coin sabablari": a reason with the cap a teacher may give.
+model CoinReason {
+  id             String   @id @default(cuid())
+  organizationId String
+  name           String
+  maxCoins       Int
+  isActive       Boolean  @default(true)
+  createdAt      DateTime @default(now())
+
+  organization Organization      @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  transactions CoinTransaction[]
+
+  @@unique([organizationId, name])
+}
+
+enum CoinTransactionKind {
+  MANUAL
+  AUTO
+  PURCHASE
+}
+
+/// Every coin movement. Positive = earned, negative = spent (A-78).
+model CoinTransaction {
+  id        String              @id @default(cuid())
+  studentId String
+  groupId   String?
+  kind      CoinTransactionKind
+  amount    Int
+  reasonId  String?
+  event     CoinEvent?
+  /// Idempotency key for automatic awards, e.g. `attendance:<lessonId>:<membershipId>`.
+  refKey    String?             @unique
+  comment   String?
+  givenById String?
+  createdAt DateTime            @default(now())
+
+  student  Student          @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  group    Group?           @relation(fields: [groupId], references: [id], onDelete: SetNull)
+  reason   CoinReason?      @relation(fields: [reasonId], references: [id], onDelete: SetNull)
+  givenBy  User?            @relation("coinGiver", fields: [givenById], references: [id], onDelete: SetNull)
+  purchase PurchaseRequest?
+
+  @@index([studentId, createdAt])
+  @@index([groupId])
+}
+
+model ProductCategory {
+  id             String   @id @default(cuid())
+  organizationId String
+  name           String
+  createdAt      DateTime @default(now())
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  products     Product[]
+
+  @@unique([organizationId, name])
+}
+
+/// Marketplace item ("Yangi mahsulot": image, name, category, price in coins, stock, active).
+model Product {
+  id             String   @id @default(cuid())
+  organizationId String
+  categoryId     String
+  name           String
+  imageUrl       String?
+  priceCoins     Int
+  stock          Int      @default(0)
+  isActive       Boolean  @default(true)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  organization Organization      @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  category     ProductCategory   @relation(fields: [categoryId], references: [id])
+  requests     PurchaseRequest[]
+
+  @@index([organizationId, isActive])
+  @@index([categoryId])
+}
+
+enum PurchaseStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+/// "Xarid so'rovlari": a student's request to buy a product with coins (A-80).
+model PurchaseRequest {
+  id            String         @id @default(cuid())
+  studentId     String
+  productId     String
+  coins         Int
+  status        PurchaseStatus @default(PENDING)
+  createdById   String?
+  decidedById   String?
+  decidedAt     DateTime?
+  transactionId String?        @unique
+  createdAt     DateTime       @default(now())
+
+  student     Student          @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  product     Product          @relation(fields: [productId], references: [id])
+  createdBy   User?            @relation("purchaseCreator", fields: [createdById], references: [id], onDelete: SetNull)
+  decidedBy   User?            @relation("purchaseDecider", fields: [decidedById], references: [id], onDelete: SetNull)
+  transaction CoinTransaction? @relation(fields: [transactionId], references: [id], onDelete: SetNull)
+
+  @@index([status, createdAt])
+  @@index([studentId])
+}
+
+/// Question bank item: one multiple-choice question under a subject and topic (A-81).
+model QuestionBankItem {
+  id             String   @id @default(cuid())
+  organizationId String
+  subject        String
+  topic          String
+  text           String
+  /// Answer options in order; `correctIndex` points into this list.
+  options        Json
+  correctIndex   Int
+  createdById    String?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  organization Organization   @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  createdBy    User?          @relation("questionAuthor", fields: [createdById], references: [id], onDelete: SetNull)
+  usages       TestQuestion[]
+
+  @@index([organizationId, subject, topic])
+}
+
+enum TestStatus {
+  DRAFT
+  ACTIVE
+  CLOSED
+}
+
+/// A test built from question-bank items and assigned to groups (A-81).
+model Test {
+  id               String     @id @default(cuid())
+  organizationId   String
+  name             String
+  subject          String
+  timeLimitMinutes Int?
+  passPercent      Int        @default(60)
+  deadline         DateTime?  @db.Date
+  status           TestStatus @default(DRAFT)
+  createdById      String?
+  createdAt        DateTime   @default(now())
+  updatedAt        DateTime   @updatedAt
+
+  organization Organization   @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  createdBy    User?          @relation("testAuthor", fields: [createdById], references: [id], onDelete: SetNull)
+  questions    TestQuestion[]
+  groups       TestGroup[]
+  attempts     TestAttempt[]
+
+  @@index([organizationId, status])
+}
+
+model TestQuestion {
+  id         String @id @default(cuid())
+  testId     String
+  questionId String
+  points     Int    @default(1)
+  sortOrder  Int    @default(0)
+
+  test     Test             @relation(fields: [testId], references: [id], onDelete: Cascade)
+  question QuestionBankItem @relation(fields: [questionId], references: [id])
+
+  @@unique([testId, questionId])
+}
+
+/// "Guruhga test berish": the groups a test is assigned to.
+model TestGroup {
+  testId  String
+  groupId String
+
+  test  Test  @relation(fields: [testId], references: [id], onDelete: Cascade)
+  group Group @relation(fields: [groupId], references: [id], onDelete: Cascade)
+
+  @@id([testId, groupId])
+  @@index([groupId])
+}
+
+/// One submitted test by one student; answers are entered by staff in v1 (A-82).
+model TestAttempt {
+  id              String   @id @default(cuid())
+  testId          String
+  studentId       String
+  groupId         String?
+  /// `{ [questionId]: chosenIndex }`; a missing key means unanswered.
+  answers         Json
+  score           Int
+  maxScore        Int
+  percent         Decimal  @db.Decimal(5, 2)
+  durationSeconds Int?
+  submittedAt     DateTime @default(now())
+  enteredById     String?
+
+  test      Test    @relation(fields: [testId], references: [id], onDelete: Cascade)
+  student   Student @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  group     Group?  @relation(fields: [groupId], references: [id], onDelete: SetNull)
+  enteredBy User?   @relation("attemptEnteredBy", fields: [enteredById], references: [id], onDelete: SetNull)
+
+  @@index([testId, studentId])
+  @@index([studentId, submittedAt])
+  @@index([groupId])
 }
