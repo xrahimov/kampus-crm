@@ -25,6 +25,7 @@ RUN npx prisma generate && npm run build
 FROM deps AS migrator
 COPY src/lib ./src/lib
 COPY src/server/auth/password.ts ./src/server/auth/password.ts
+COPY scripts/bootstrap.ts ./scripts/bootstrap.ts
 RUN npx prisma generate
 CMD ["npx", "prisma", "migrate", "deploy"]
 

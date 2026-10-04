@@ -64,6 +64,13 @@ SEED=true docker compose up --build
 Starts PostgreSQL, runs migrations (and the demo seed when `SEED=true`), then the app and the worker
 on `http://localhost:3000`.
 
+## Deploying
+
+[docs/DEPLOY.md](docs/DEPLOY.md) walks through a single-server deployment (Hetzner CX23 or any Ubuntu
+VPS) with `docker-compose.prod.yml`: Caddy for HTTPS, the worker, nightly database dumps and a
+first-start bootstrap (`npm run db:bootstrap`) that creates the organisation and the CEO login from
+environment variables instead of demo data.
+
 ## Integrations
 
 Provider credentials are entered in the app under Settings → Integrations (and Settings → Bot,
@@ -85,6 +92,7 @@ app and its tests run without any external account. Webhooks: `POST /api/v1/webh
 | `npm run db:migrate`   | Create/apply a migration in development        |
 | `npm run db:deploy`    | Apply committed migrations                     |
 | `npm run db:seed`      | Load fake demo data                            |
+| `npm run db:bootstrap` | First-start setup from `BOOTSTRAP_*` variables |
 | `npm run worker`       | Background job worker                          |
 
 ## Testing and CI

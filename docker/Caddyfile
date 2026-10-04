@@ -1,0 +1,7 @@
+# Reverse proxy in front of the app (docs/DEPLOY.md).
+# DOMAIN=crm.example.uz  -> automatic HTTPS with a Let's Encrypt certificate.
+# DOMAIN=:80             -> plain HTTP on the server's IP (then set COOKIE_SECURE=false).
+{$DOMAIN}
+
+encode gzip
+reverse_proxy app:3000
