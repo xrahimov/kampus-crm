@@ -1,6 +1,7 @@
 import type { Prisma } from "@/generated/prisma/client";
 import type { AttendanceStatus, MembershipStatus } from "@/lib/validation/groups";
 import { recordAudit } from "@/server/audit/audit";
+import { awardAutoCoins } from "@/server/services/coins/coins.service";
 import { prisma, type DbClient } from "@/server/db/prisma";
 import { AppError } from "@/server/errors/app-error";
 import { authorize, canAccessAllBranches, type Actor } from "@/server/rbac/authorize";
@@ -214,6 +215,11 @@ export async function markAttendance(
     lesson.groupId,
     marks.map((m) => m.membershipId),
   );
+  const members = await db.groupMembership.findMany({
+    where: { id: { in: marks.map((m) => m.membershipId) } },
+    select: { id: true, studentId: true },
+  });
+  const studentOf = new Map(members.map((m) => [m.id, m.studentId]));
   await db.$transaction(async (tx) => {
     for (const mark of marks) {
       await tx.attendance.upsert({
@@ -232,6 +238,17 @@ export async function markAttendance(
           markedAt: new Date(),
         },
       });
+      // Automatic "Davomat" coins follow the mark: given once per lesson, taken back if it changes (A-79).
+      const studentId = studentOf.get(mark.membershipId);
+      if (studentId) {
+        await awardAutoCoins(tx, {
+          event: "ATTENDANCE",
+          studentId,
+          groupId: lesson.groupId,
+          refKey: `attendance:${lessonId}:${mark.membershipId}`,
+          revoke: mark.status !== "PRESENT",
+        });
+      }
     }
     await recordAudit(tx, actor, {
       action: "attendance.mark",

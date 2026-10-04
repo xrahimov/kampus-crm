@@ -618,6 +618,161 @@ async function seedExams(branches: Map<string, string>) {
 }
 
 /** Phase 7: one "Website" board per branch, a few invented leads and a public form. */
+/** Phase 10: coin rules and reasons, a few awards, marketplace items, a test with results. */
+async function seedCoinsAndTests(organizationId: string, branches: Map<string, string>) {
+  const central = branches.get("Central")!;
+  const rules: Array<["ATTENDANCE" | "HOMEWORK" | "TEST_RESULT" | "BIRTHDAY", number]> = [
+    ["ATTENDANCE", 5],
+    ["HOMEWORK", 10],
+    ["TEST_RESULT", 20],
+    ["BIRTHDAY", 50],
+  ];
+  for (const [event, amount] of rules) {
+    await prisma.coinRule.upsert({
+      where: { organizationId_event: { organizationId, event } },
+      update: {},
+      create: { organizationId, event, amount },
+    });
+  }
+  const reasons: Array<[string, number]> = [
+    ["Faollik", 20],
+    ["Uy vazifasi", 15],
+    ["Yordam", 10],
+  ];
+  const reasonIds = new Map<string, string>();
+  for (const [name, maxCoins] of reasons) {
+    const row = await prisma.coinReason.upsert({
+      where: { organizationId_name: { organizationId, name } },
+      update: {},
+      create: { organizationId, name, maxCoins },
+    });
+    reasonIds.set(name, row.id);
+  }
+
+  const category = await prisma.productCategory.upsert({
+    where: { organizationId_name: { organizationId, name: "Kanselyariya" } },
+    update: {},
+    create: { organizationId, name: "Kanselyariya" },
+  });
+  if ((await prisma.product.count({ where: { organizationId } })) === 0) {
+    await prisma.product.createMany({
+      data: [
+        { organizationId, categoryId: category.id, name: "Daftar", priceCoins: 30, stock: 20 },
+        { organizationId, categoryId: category.id, name: "Ruchka", priceCoins: 15, stock: 50 },
+        { organizationId, categoryId: category.id, name: "Kitob", priceCoins: 120, stock: 5 },
+      ],
+    });
+  }
+
+  const morning = await prisma.group.findFirst({
+    where: { branchId: central, name: "GE-Morning A1" },
+    include: {
+      memberships: {
+        where: { status: { notIn: ["ARCHIVED", "GRADUATED"] } },
+        orderBy: { createdAt: "asc" },
+      },
+      teachers: { take: 1 },
+    },
+  });
+  if (!morning || morning.memberships.length === 0) return;
+  const teacherId = morning.teachers[0]?.userId ?? null;
+  const students = morning.memberships.map((m) => m.studentId);
+
+  if ((await prisma.coinTransaction.count({ where: { groupId: morning.id } })) === 0) {
+    const faollik = reasonIds.get("Faollik")!;
+    await prisma.coinTransaction.createMany({
+      data: students.slice(0, 3).map((studentId, i) => ({
+        studentId,
+        groupId: morning.id,
+        kind: "MANUAL" as const,
+        amount: 20 - i * 5,
+        reasonId: faollik,
+        comment: "Darsda faol qatnashdi",
+        givenById: teacherId,
+      })),
+    });
+  }
+
+  if ((await prisma.questionBankItem.count({ where: { organizationId } })) === 0) {
+    const bank: Array<[string, string, string[], number]> = [
+      ["Present Simple", "She ___ to school every day.", ["go", "goes", "going", "gone"], 1],
+      ["Present Simple", "They ___ football on Sundays.", ["plays", "play", "playing"], 1],
+      ["Articles", "I saw ___ elephant at the zoo.", ["a", "an", "the", "—"], 1],
+      ["Articles", "___ sun rises in the east.", ["A", "An", "The"], 2],
+      ["Vocabulary", "The opposite of 'cheap' is ___.", ["expensive", "big", "old"], 0],
+    ];
+    await prisma.questionBankItem.createMany({
+      data: bank.map(([topic, text, options, correctIndex]) => ({
+        organizationId,
+        subject: "English",
+        topic,
+        text,
+        options,
+        correctIndex,
+        createdById: teacherId,
+      })),
+    });
+  }
+  if ((await prisma.test.count({ where: { organizationId } })) > 0) return;
+  const questions = await prisma.questionBankItem.findMany({
+    where: { organizationId, subject: "English" },
+    orderBy: { createdAt: "asc" },
+  });
+  const test = await prisma.test.create({
+    data: {
+      organizationId,
+      name: "Unit 1 grammar check",
+      subject: "English",
+      timeLimitMinutes: 20,
+      passPercent: 60,
+      status: "ACTIVE",
+      createdById: teacherId,
+      groups: { create: [{ groupId: morning.id }] },
+      questions: {
+        create: questions.map((q, i) => ({ questionId: q.id, points: 1, sortOrder: i })),
+      },
+    },
+  });
+  await prisma.test.create({
+    data: {
+      organizationId,
+      name: "Vocabulary quiz (draft)",
+      subject: "English",
+      passPercent: 50,
+      status: "DRAFT",
+      createdById: teacherId,
+      groups: { create: [{ groupId: morning.id }] },
+    },
+  });
+  // Two submitted results: one strong, one weak on articles.
+  const answerSets: Array<Record<string, number>> = [
+    Object.fromEntries(questions.map((q) => [q.id, q.correctIndex])),
+    Object.fromEntries(
+      questions.map((q) => [
+        q.id,
+        q.topic === "Articles" ? (q.correctIndex + 1) % 3 : q.correctIndex,
+      ]),
+    ),
+  ];
+  for (const [i, studentId] of students.slice(0, 2).entries()) {
+    const answers = answerSets[i]!;
+    const score = questions.filter((q) => answers[q.id] === q.correctIndex).length;
+    await prisma.testAttempt.create({
+      data: {
+        testId: test.id,
+        studentId,
+        groupId: morning.id,
+        answers,
+        score,
+        maxScore: questions.length,
+        percent: Math.round((score / questions.length) * 10000) / 100,
+        durationSeconds: 600 + i * 120,
+        enteredById: teacherId,
+      },
+    });
+  }
+}
+
 async function seedLeads(organizationId: string, branches: Map<string, string>) {
   const sources = new Map(
     (await prisma.leadSource.findMany({ where: { organizationId } })).map((s) => [s.name, s.id]),
@@ -827,6 +982,7 @@ async function main() {
   await seedLeads(org.id, branches);
   await seedExams(branches);
   await seedFinance(org.id, branches);
+  await seedCoinsAndTests(org.id, branches);
 
   console.log(`Seeded ${DEMO_USERS.length} demo users across ${branchNames.length} branches.`);
   console.log(`Sign in with ${DEMO_USERS[0]!.phone} and the SEED_ADMIN_PASSWORD from .env.`);

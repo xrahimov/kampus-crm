@@ -17,6 +17,7 @@ import {
   listStudentComments,
   listStudentHistory,
 } from "@/server/services/students/students.service";
+import { getStudentTestResults } from "@/server/services/tests/tests.service";
 
 type Props = {
   params: Promise<{ locale: string; id: string }>;
@@ -57,19 +58,21 @@ export default async function Page({ params, searchParams }: Props) {
   const list = { page, pageSize, skip: (page - 1) * pageSize, take: pageSize };
   const paymentGroupId = str(sp.paymentGroup);
 
-  const [comments, history, payments, options, paymentOptions, qr, progress] = await Promise.all([
-    listStudentComments(current.actor, id),
-    listStudentHistory(current.actor, id, list),
-    listPayments(
-      current.actor,
-      { ...list, sort: { field: "paidAt", direction: "desc" } },
-      { studentId: id, ...(paymentGroupId ? { groupId: paymentGroupId } : {}) },
-    ),
-    getStudentOptions(current.actor),
-    getPaymentOptions(current.actor),
-    qrSvg(`kampus:student:${id}`),
-    getStudentProgress(current.actor, id),
-  ]);
+  const [comments, history, payments, options, paymentOptions, qr, progress, testResults] =
+    await Promise.all([
+      listStudentComments(current.actor, id),
+      listStudentHistory(current.actor, id, list),
+      listPayments(
+        current.actor,
+        { ...list, sort: { field: "paidAt", direction: "desc" } },
+        { studentId: id, ...(paymentGroupId ? { groupId: paymentGroupId } : {}) },
+      ),
+      getStudentOptions(current.actor),
+      getPaymentOptions(current.actor),
+      qrSvg(`kampus:student:${id}`),
+      getStudentProgress(current.actor, id),
+      getStudentTestResults(current.actor, id, {}),
+    ]);
 
   return (
     <StudentDetail
@@ -79,6 +82,7 @@ export default async function Page({ params, searchParams }: Props) {
       payments={payments}
       paymentGroupId={paymentGroupId}
       progress={progress}
+      testResults={testResults}
       qrSvg={qr}
       options={options}
       paymentOptions={paymentOptions}

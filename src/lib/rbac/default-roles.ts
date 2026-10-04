@@ -40,6 +40,8 @@ export const DEFAULT_ROLE_PERMISSIONS: Record<SystemRole, PermissionGrant[]> = {
     "discounts.give",
     ...crud("exams"),
     ...crud("tests"),
+    "coins.give",
+    "coins.manage",
     "reports.view",
     "reports.payments",
     "reports.leads",
@@ -61,6 +63,8 @@ export const DEFAULT_ROLE_PERMISSIONS: Record<SystemRole, PermissionGrant[]> = {
     "discounts.give",
     ...crud("exams"),
     ...crud("tests"),
+    "coins.give",
+    "coins.manage",
     ...edit("finance"),
     "reports.view",
     "reports.payments",
@@ -87,6 +91,7 @@ export const DEFAULT_ROLE_PERMISSIONS: Record<SystemRole, PermissionGrant[]> = {
     "students.view",
     "exams.view",
     ...edit("tests"),
+    "coins.give",
   ],
   SUPPORT_TEACHER: [
     "groups.view",
@@ -94,6 +99,7 @@ export const DEFAULT_ROLE_PERMISSIONS: Record<SystemRole, PermissionGrant[]> = {
     "students.view",
     "exams.view",
     ...edit("tests"),
+    "coins.give",
   ],
   MARKETER: [
     "dashboard.view",

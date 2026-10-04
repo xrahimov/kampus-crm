@@ -222,13 +222,13 @@ Every list endpoint takes the common query contract (§2). Every mutation is aud
 ✓ `GET|POST /groups?status&teacherId&courseId&weekdayPattern` · `GET|PATCH|DELETE /groups/:id` · `POST /groups/:id/finish` · `POST /groups/:id/move-branch` · `POST /groups/:id/change-teacher` · `POST /groups/:id/support-teachers` · `GET|POST /groups/:id/day-off` · `GET /groups/teacher-options` · `GET /groups/export.xlsx` (Phase 12)
 ✓ `GET|POST /groups/:id/members?archived&q&sort` · `PATCH /memberships/:id` (status, custom price, note) · `POST /memberships/:id/remove` · `GET /students/search?q` · `POST /memberships/:id/transfer` (Phase 6) · `POST /memberships/:id/to-lead` (Phase 7 ✓) · `POST /groups/:id/members/import` (xlsx, Phase 12) · `GET /groups/members/import-template.xlsx` (Phase 12)
 ✓ `GET /groups/:id/lessons?month` · `POST /groups/:id/lessons/extra` · `PATCH /lessons/:id` (topic, attachment) · `PUT /lessons/:id/attendance` · `PUT /lessons/:id/grades`
-✓ `GET|POST /groups/:id/notes` · `GET /groups/:id/history` · `GET|POST /groups/:id/discounts` (Phase 6) · `DELETE /discounts/:id` (Phase 6) · `GET /groups/:id/coins` · `POST /coins/give` (Phase 10) · `GET|POST /groups/:id/student-comments` (Phase 6)
-`GET /groups/:id/tests` · `GET /groups/:id/knowledge` (Phase 10) · ✓ `GET|POST /groups/:id/exams`
+✓ `GET|POST /groups/:id/notes` · `GET /groups/:id/history` · `GET|POST /groups/:id/discounts` (Phase 6) · `DELETE /discounts/:id` (Phase 6) · ✓ `GET /groups/:id/coins` · ✓ `POST /coins/give` · `GET|POST /groups/:id/student-comments` (Phase 6)
+✓ `GET /groups/:id/tests` · ✓ `GET /groups/:id/knowledge` · ✓ `GET|POST /groups/:id/exams`
 
 **Students (EXP §6)** — Phase 6 ships the lines marked ✓ (A-59..A-65); the rest follow with their modules.
 ✓ `GET|POST /students?archived&courseId&schoolId&groupId&teacherId&groupStatus&paymentStatus` · `GET|PATCH|DELETE /students/:id` · `POST /students/:id/restore` · `POST /students/:id/blacklist` · `GET /students/options` · `POST /students/activate` (Phase 7 ✓) · `POST /students/import` · `GET /students/export.xlsx` · `POST /students/sms` (Phases 11–12) · badges are pages: `/students/:id/badge`, `/students/badges`
 ✓ `POST /students/:id/custom-fields` · `DELETE /custom-fields/:id` · `POST /students/:id/parents` · `DELETE /parents/:id` · `GET|POST /students/:id/comments` · `GET /students/:id/history` · `GET /memberships/:id/calendar?month` · `POST /groups/:id/activate-members`
-✓ `GET /students/:id/progress` · `GET /students/:id/test-results` (Phase 10) · `GET /students/:id/sms` · `GET /students/:id/calls` · `POST /students/:id/call` (Phase 11)
+✓ `GET /students/:id/progress` · ✓ `GET /students/:id/test-results` · ✓ `GET /students/:id/coins` · `GET /students/:id/sms` · `GET /students/:id/calls` · `POST /students/:id/call` (Phase 11)
 ✓ `GET /payments?studentId&groupId&membershipId&paymentMethodId&receivedById&from&to` · `POST /payments` · `GET /payments/:id` · `POST /payments/:id/refund` · `GET /payments/options` · `GET /memberships/:id/payment-info` · `POST /memberships/:id/transfer` · `GET|PUT /settings/receipt` · the receipt is a page: `/payments/:id/receipt`
 
 **Exams (EXP §7)**
@@ -238,8 +238,8 @@ Every list endpoint takes the common query contract (§2). Every mutation is aud
 `GET|POST /sms-categories` · `GET|POST /sms-templates` · `PATCH|DELETE /sms-templates/:id` · `POST /sms-templates/import-eskiz`
 `GET|PUT /settings/receipt`
 `GET|POST /courses` · `PATCH|DELETE /courses/:id` · same CRUD for `/rooms`, `/days-off`, `/schools`, `/branches`, `/payment-methods`, `/grading-systems`
-`GET|PUT /settings/coins` · `GET|POST /coin-reasons` · `PATCH|DELETE /coin-reasons/:id`
-`GET|POST /tests` · `PATCH|DELETE /tests/:id` · `GET|POST /question-bank` · `PATCH|DELETE /question-bank/:id`
+✓ `GET|PUT /settings/coins` · `GET|POST /coin-reasons` · `PATCH|DELETE /coin-reasons/:id` · `GET /coins/report` · `GET /coins/options` · `GET /coins/students?q`
+✓ `GET|POST /tests` · `GET|PATCH|DELETE /tests/:id` · `POST /tests/:id/status` · `POST /tests/:id/attempts` · `GET /tests/options` · `GET|POST /question-bank` · `PATCH|DELETE /question-bank/:id` · `GET /question-bank/options`
 `GET|PUT /settings/org` · `GET|PUT /settings/auto-sms`
 `GET|POST /staff?role&archived` · `GET /staff/role-counts` · `GET|PATCH|DELETE /staff/:id` · `GET|POST /roles` · `PATCH|DELETE /roles/:id` · `GET /permissions` · `POST /uploads` · `GET /files/:key`
 `GET /calls` · `GET /logs/logins` · `GET /logs/actions` · `GET /logs/sms` · `GET|POST /bot-recipients` · `DELETE /bot-recipients/:id`
@@ -251,7 +251,7 @@ Every list endpoint takes the common query contract (§2). Every mutation is aud
 ✓ `GET /payroll` · `GET|PUT /payroll/:month` (PUT = draft/save status) · `POST /payroll/:month/recalculate` · `POST /payroll/:month/lines/:id/approve` · `GET /payroll/:month/export.xlsx` (Phase 12)
 
 **Reports (EXP §10)**
-`GET /reports/payments` · `GET /reports/student-payments` · `GET /reports/churn` · `GET|PUT /leave-reasons` · `GET /reports/graduates` · `GET /reports/staff-attendance?tab` · `GET|PUT /work-schedules` · `GET /reports/coins` · `GET|POST /marketplace/categories` · `GET|POST /marketplace/products` · `GET|PATCH /marketplace/purchase-requests/:id` · `GET /reports/leads` · `GET /reports/students?tab` · `GET /reports/center-statistics?view`
+`GET /reports/payments` · `GET /reports/student-payments` · `GET /reports/churn` · `GET|PUT /leave-reasons` · `GET /reports/graduates` · `GET /reports/staff-attendance?tab` · `GET|PUT /work-schedules` · ✓ `GET /reports/coins` (page over `/coins/report`) · ✓ `GET|POST /marketplace/categories` · `DELETE /marketplace/categories/:id` · `GET|POST /marketplace/products` · `PATCH|DELETE /marketplace/products/:id` · `GET|POST /marketplace/purchase-requests` · `PATCH /marketplace/purchase-requests/:id` · `GET /reports/leads` · `GET /reports/students?tab` · `GET /reports/center-statistics?view`
 
 **Header widgets (EXP §11)**
 `GET /search?q` · `GET /notifications` · `POST /notifications/read`
@@ -305,18 +305,18 @@ kampus-crm/
 
 Kai asked for the site-map order. I've moved the Settings core forward and the Dashboard to the end, because groups need courses, rooms and staff to exist first, and the dashboard only aggregates other modules. Everything else follows the site map.
 
-| #     | Phase                                                                                                                                                       | EXP sections              |
-| ----- | ----------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------- |
-| 2     | Skeleton: auth, sessions, RBAC, roles/staff basics, layout + nav + branch selector, i18n (uz/ru/en), audit, error handling, list contract, Docker, CI, seed | §0, §8 Staff/Roles        |
-| 3     | Settings core: org settings, branches, payment methods, grading systems, courses, rooms, days off, schools                                                  | §8                        |
-| 4     | Teachers                                                                                                                                                    | §4                        |
-| 5     | Groups (schedule, members, attendance, grades, notes, history; minimal students). Discounts and student comments moved to Phase 6 (A-49)                    | §5                        |
-| 6     | Students + payments, refunds, receipts, parents, badges, discounts, student comments, transfer; Settings → receipt and payments log                         | §6, §11 TO'LOV            |
-| 7     | Leads (boards, columns, Kanban, add to group, return to leads), sources report, lead forms with a public page; students "Activate"                          | §2, §3, §8 Forms          |
-| 8     | Exams: group and mock exams, grading sheet with levels, mock registrations, finish/reopen; group IMTIHON tab; student Progress tab                          | §7, §5, §6                |
-| 9     | Finance: overview figures and charts, monthly plan, categories and the ledger (advances, marketing, bonuses, fines, investments), payroll with approval     | §9                        |
-| 10    | Tests + question bank, coins + marketplace                                                                                                                  | §8 Tests/Coins, §10 Coins |
-| 11    | Integrations: SMS templates + auto-SMS (Eskiz), Telegram bot, AmoCRM, telephony/calls, FaceID + staff attendance, logs                                      | §8, §10                   |
-| 12    | Reports                                                                                                                                                     | §10                       |
-| 13    | Dashboard, global search, notifications                                                                                                                     | §1, §11                   |
-| Final | README, ASSUMPTIONS.md, TRACEABILITY.md (every EXP page → code + tests)                                                                                     |                           |
+| #     | Phase                                                                                                                                                                                                                           | EXP sections              |
+| ----- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------- |
+| 2     | Skeleton: auth, sessions, RBAC, roles/staff basics, layout + nav + branch selector, i18n (uz/ru/en), audit, error handling, list contract, Docker, CI, seed                                                                     | §0, §8 Staff/Roles        |
+| 3     | Settings core: org settings, branches, payment methods, grading systems, courses, rooms, days off, schools                                                                                                                      | §8                        |
+| 4     | Teachers                                                                                                                                                                                                                        | §4                        |
+| 5     | Groups (schedule, members, attendance, grades, notes, history; minimal students). Discounts and student comments moved to Phase 6 (A-49)                                                                                        | §5                        |
+| 6     | Students + payments, refunds, receipts, parents, badges, discounts, student comments, transfer; Settings → receipt and payments log                                                                                             | §6, §11 TO'LOV            |
+| 7     | Leads (boards, columns, Kanban, add to group, return to leads), sources report, lead forms with a public page; students "Activate"                                                                                              | §2, §3, §8 Forms          |
+| 8     | Exams: group and mock exams, grading sheet with levels, mock registrations, finish/reopen; group IMTIHON tab; student Progress tab                                                                                              | §7, §5, §6                |
+| 9     | Finance: overview figures and charts, monthly plan, categories and the ledger (advances, marketing, bonuses, fines, investments), payroll with approval                                                                         | §9                        |
+| 10    | Tests + question bank (staff-entered results, group TEST and BILIM TAHLILI tabs, student TEST NATIJALARI), coins (settings, group COINLAR, auto attendance/test awards) + marketplace and purchase requests on the Coins report | §8 Tests/Coins, §10 Coins |
+| 11    | Integrations: SMS templates + auto-SMS (Eskiz), Telegram bot, AmoCRM, telephony/calls, FaceID + staff attendance, logs                                                                                                          | §8, §10                   |
+| 12    | Reports                                                                                                                                                                                                                         | §10                       |
+| 13    | Dashboard, global search, notifications                                                                                                                                                                                         | §1, §11                   |
+| Final | README, ASSUMPTIONS.md, TRACEABILITY.md (every EXP page → code + tests)                                                                                                                                                         |                           |

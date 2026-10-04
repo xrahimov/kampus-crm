@@ -115,7 +115,19 @@
     "categoryHasEntries": "This category has entries. Delete or move them first.",
     "entryNotFound": "Entry not found.",
     "payrollNotFound": "Payroll for this month is not computed yet.",
-    "payrollLineNotFound": "Payroll row not found."
+    "payrollLineNotFound": "Payroll row not found.",
+    "coinReasonNotFound": "Coin reason not found.",
+    "coinReasonUsed": "This reason has already been used and cannot be deleted.",
+    "categoryHasProducts": "The category still has products.",
+    "productNotFound": "Product not found.",
+    "productHasRequests": "The product has purchase requests and cannot be deleted.",
+    "purchaseNotFound": "Purchase request not found.",
+    "purchaseDecided": "This request has already been decided.",
+    "questionNotFound": "Question not found.",
+    "questionInUse": "The question is used in a test and cannot be deleted.",
+    "testNotFound": "Test not found.",
+    "testHasAttempts": "Results have been submitted for this test; its questions cannot change and it cannot be deleted.",
+    "testNotActive": "Results can be entered only for an active test."
   },
   "validation": {
     "phone": "Enter a number like +998 90 123 45 67.",
@@ -169,7 +181,19 @@
     "scoreMax": "The score exceeds the maximum.",
     "categoryKind": "The category belongs to the other report.",
     "staffUnknown": "Unknown staff member.",
-    "entryType": "The entry type cannot be changed."
+    "entryType": "The entry type cannot be changed.",
+    "integer": "Enter a whole number.",
+    "minOptions": "At least two options are required.",
+    "correctIndex": "Mark one of the options as correct.",
+    "noQuestions": "An active test needs at least one question.",
+    "duplicateQuestion": "A question is listed twice.",
+    "reasonInactive": "This reason is inactive.",
+    "coinsAboveMax": "More than this reason allows.",
+    "notMember": "The student is not an active member of this group.",
+    "questionUnknown": "Unknown question.",
+    "productInactive": "The product is inactive.",
+    "outOfStock": "The product is out of stock.",
+    "notEnoughCoins": "The student does not have enough coins."
   },
   "roles": {
     "CEO": "CEO",
@@ -496,7 +520,8 @@
       "reports": "Reports",
       "staff": "Staff",
       "settings": "Settings",
-      "logs": "Logs"
+      "logs": "Logs",
+      "coins": "Coins"
     },
     "names": {
       "dashboard": {
@@ -578,6 +603,10 @@
       },
       "logs": {
         "view": "View logs"
+      },
+      "coins": {
+        "give": "Give coins",
+        "manage": "Coin settings, marketplace and purchase requests"
       }
     }
   },
@@ -699,7 +728,7 @@
         "notes": "Notes",
         "history": "History",
         "tests": "Tests",
-        "knowledge": "Knowledge",
+        "knowledge": "Knowledge analysis",
         "exams": "Exams",
         "discounts": "Discounts",
         "coins": "Coins",
@@ -1498,6 +1527,321 @@
       "saveDraft": "Save draft",
       "savedDraft": "Draft saved.",
       "saved": "Payroll saved."
+    }
+  },
+  "coins": {
+    "settings": {
+      "title": "Coin settings",
+      "description": "Automatic coin rules and the reasons staff may give coins for (reference: Sozlamalar → Coin sozlamalari).",
+      "autoCoins": "Automatic coin system",
+      "autoCoinsHint": "When off no automatic coins are given; manual coins still work.",
+      "rulesTitle": "Automatic coin rules",
+      "columns": {
+        "event": "Event",
+        "amount": "Coins"
+      },
+      "events": {
+        "ATTENDANCE": "Attendance",
+        "HOMEWORK": "Homework",
+        "TEST_RESULT": "Test result",
+        "BIRTHDAY": "Birthday"
+      },
+      "notWired": "Saved, but nothing triggers it yet (homework and birthdays arrive with phase 11).",
+      "reasonsTitle": "Manual coin reasons",
+      "reasonsDescription": "A teacher picks one of these when giving coins and cannot exceed its maximum.",
+      "addReason": "Add reason",
+      "editReason": "Edit reason",
+      "reasonName": "Reason",
+      "maxCoins": "Maximum coins",
+      "maxCoinsHint": "A teacher cannot give more than this.",
+      "reasonActive": "Active",
+      "upTo": "up to {max}",
+      "deleteReasonTitle": "Delete reason?",
+      "deleteReasonText": "“{name}” will be removed. Reasons already used cannot be deleted."
+    },
+    "give": {
+      "title": "Give coins",
+      "reason": "Reason",
+      "pickReason": "Pick a reason",
+      "noReasons": "No active reasons. Add one in Settings → Coin settings.",
+      "amount": "Coins",
+      "maxHint": "Up to {max} for this reason.",
+      "upTo": "up to {max}",
+      "comment": "Comment"
+    },
+    "group": {
+      "columns": {
+        "rank": "Rank",
+        "student": "Student",
+        "total": "Total coins",
+        "groupCoins": "In this group",
+        "comment": "Comment"
+      },
+      "give": "Give coins",
+      "noMembers": "No active students in this group."
+    },
+    "report": {
+      "title": "Coins",
+      "kpis": {
+        "totalGiven": "Coins given",
+        "totalSpent": "Coins spent",
+        "purchases": "Marketplace purchases",
+        "activeStudents": "Students with coins"
+      },
+      "tabs": {
+        "rating": "Rating",
+        "marketplace": "Marketplace",
+        "requests": "Purchase requests"
+      },
+      "periods": {
+        "WEEK": "Weekly",
+        "MONTH": "Monthly",
+        "ALL": "All time"
+      },
+      "filters": {
+        "branch": "Branch",
+        "anyBranch": "All branches",
+        "course": "Course",
+        "anyCourse": "All courses",
+        "group": "Group",
+        "anyGroup": "All groups"
+      },
+      "columns": {
+        "rank": "Rank",
+        "student": "Student",
+        "branch": "Branch",
+        "balance": "Current coins",
+        "earned": "Earned",
+        "spent": "Spent",
+        "lastActivity": "Last activity"
+      },
+      "view": "View",
+      "balance": "Balance: {count} coins",
+      "history": {
+        "date": "Date",
+        "amount": "Coins",
+        "reason": "Reason",
+        "by": "Given by"
+      },
+      "kinds": {
+        "MANUAL": "Manual",
+        "AUTO": "Automatic",
+        "PURCHASE": "Purchase"
+      },
+      "events": {
+        "ATTENDANCE": "Attendance",
+        "HOMEWORK": "Homework",
+        "TEST_RESULT": "Test result",
+        "BIRTHDAY": "Birthday"
+      }
+    },
+    "marketplace": {
+      "categories": "Categories",
+      "categoryName": "Category name",
+      "noCategories": "Add a category first.",
+      "addProduct": "Add product",
+      "editProduct": "Edit product",
+      "productName": "Name",
+      "category": "Category",
+      "price": "Price (coins)",
+      "stock": "Stock",
+      "active": "Active",
+      "image": "Image",
+      "empty": "No products yet.",
+      "columns": {
+        "image": "Image",
+        "name": "Name",
+        "category": "Category",
+        "price": "Price (coins)",
+        "purchased": "Purchased",
+        "stock": "Stock"
+      },
+      "deleteTitle": "Delete product?",
+      "deleteText": "“{name}” will be removed. Products with purchase requests cannot be deleted."
+    },
+    "requests": {
+      "add": "New request",
+      "student": "Student",
+      "product": "Product",
+      "pickProduct": "Pick a product",
+      "approve": "Approve",
+      "reject": "Reject",
+      "filters": {
+        "status": "Status",
+        "anyStatus": "All statuses"
+      },
+      "statuses": {
+        "PENDING": "Pending",
+        "APPROVED": "Approved",
+        "REJECTED": "Rejected"
+      },
+      "columns": {
+        "student": "Student",
+        "product": "Product",
+        "coins": "Coins",
+        "date": "Date"
+      }
+    }
+  },
+  "tests": {
+    "title": "Tests",
+    "description": "Tests built from the question bank and given to groups; results are entered by staff.",
+    "tabs": {
+      "tests": "Tests",
+      "bank": "Question bank"
+    },
+    "kpis": {
+      "total": "Total tests",
+      "active": "Active tests",
+      "attempts": "Submissions",
+      "accuracy": "Average accuracy"
+    },
+    "filters": {
+      "status": "Status",
+      "anyStatus": "All statuses",
+      "subject": "Subject",
+      "anySubject": "All subjects",
+      "topic": "Topic",
+      "anyTopic": "All topics",
+      "recent": "Newest first"
+    },
+    "statuses": {
+      "DRAFT": "Draft",
+      "ACTIVE": "Active",
+      "CLOSED": "Closed"
+    },
+    "columns": {
+      "name": "Test and coverage",
+      "subject": "Subject",
+      "questions": "Questions",
+      "points": "Points",
+      "attempts": "Submissions / accuracy",
+      "accuracy": "Accuracy",
+      "deadline": "Deadline",
+      "status": "Status",
+      "text": "Question",
+      "topic": "Topic",
+      "options": "Options",
+      "usedIn": "Used in tests"
+    },
+    "points": "{count, plural, one {# point} other {# points}}",
+    "noGroups": "Not given to any group",
+    "add": "Create test",
+    "edit": "Edit test",
+    "deleteTitle": "Delete test?",
+    "deleteText": "“{name}” will be deleted. Tests with submissions cannot be deleted.",
+    "searchQuestions": "Search questions…",
+    "hidden": "Tests are not available for this user.",
+    "actions": {
+      "activate": "Activate",
+      "close": "Close",
+      "reopen": "Reopen"
+    },
+    "form": {
+      "name": "Test name",
+      "subject": "Subject",
+      "status": "Status",
+      "timeLimit": "Time limit (minutes)",
+      "passPercent": "Pass mark (%)",
+      "deadline": "Deadline",
+      "groups": "Groups",
+      "noGroups": "No groups available.",
+      "questions": "Questions",
+      "searchQuestions": "Search…",
+      "noQuestions": "No questions for this subject. Add some to the question bank.",
+      "points": "Points",
+      "lockedQuestions": "Results have been submitted, so the questions cannot change."
+    },
+    "questionForm": {
+      "add": "Add question",
+      "edit": "Edit question",
+      "subject": "Subject",
+      "topic": "Topic",
+      "text": "Question",
+      "options": "Answer options",
+      "optionsHint": "Mark the correct option.",
+      "correct": "Correct",
+      "optionN": "Option {n}",
+      "addOption": "Add option",
+      "removeOption": "Remove option",
+      "deleteTitle": "Delete question?",
+      "deleteText": "The question will be removed from the bank. Questions used in tests cannot be deleted."
+    },
+    "detail": {
+      "questions": "Questions",
+      "noQuestions": "No questions in this test.",
+      "attempts": "Submissions",
+      "noAttempts": "No submissions yet.",
+      "record": "Enter result",
+      "student": "Student",
+      "pickStudent": "Pick a student",
+      "noCandidates": "No active students in the assigned groups.",
+      "group": "Group",
+      "score": "Score",
+      "result": "Result",
+      "date": "Date",
+      "passed": "Passed",
+      "failed": "Failed",
+      "durationMinutes": "Time spent (minutes)",
+      "minutes": "{count} min",
+      "pointsShort": "{count} pt"
+    },
+    "groupTab": {
+      "empty": "No tests have been given to this group yet."
+    },
+    "knowledge": {
+      "subject": "Subject",
+      "anySubject": "All subjects",
+      "test": "Test",
+      "anyTest": "All tests",
+      "from": "From",
+      "to": "To",
+      "topic": "Topic",
+      "questions": "Questions",
+      "answered": "Answered",
+      "correct": "Correct",
+      "accuracy": "Accuracy",
+      "empty": "No submitted tests for this selection.",
+      "summary": "{attempts} submissions from {students} students"
+    },
+    "results": {
+      "total": "Tests taken",
+      "average": "Average result",
+      "best": "Best result",
+      "worst": "Lowest result",
+      "averageTime": "Average time",
+      "minutes": "{count} min",
+      "level": "Thinking level",
+      "levels": {
+        "LOW": "Needs support",
+        "MEDIUM": "Developing",
+        "HIGH": "Strong"
+      },
+      "problemTopics": "Problem topics",
+      "noProblemTopics": "No weak topics.",
+      "strongTopics": "Well-learned topics",
+      "noStrongTopics": "No strong topics yet.",
+      "dynamics": "Result dynamics",
+      "attempts": "Submitted tests",
+      "test": "Test",
+      "subject": "Subject",
+      "empty": "No submitted tests yet."
+    }
+  },
+  "reports": {
+    "title": "Reports",
+    "description": "Reports from the reference's Hisobotlar menu.",
+    "phase": "Phase {phase}",
+    "items": {
+      "payments": "Payments",
+      "studentPayments": "Student payments",
+      "churn": "Left students",
+      "graduates": "Graduates",
+      "staffAttendance": "Staff attendance",
+      "coins": "Coins",
+      "leads": "Lead statements",
+      "students": "Students",
+      "statistics": "Center statistics"
     }
   }
 }

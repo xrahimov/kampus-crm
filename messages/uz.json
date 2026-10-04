@@ -115,7 +115,19 @@
     "categoryHasEntries": "Bu bo'limda yozuvlar bor. Avval ularni o'chiring yoki ko'chiring.",
     "entryNotFound": "Yozuv topilmadi.",
     "payrollNotFound": "Bu oy uchun ish haqi hali hisoblanmagan.",
-    "payrollLineNotFound": "Ish haqi qatori topilmadi."
+    "payrollLineNotFound": "Ish haqi qatori topilmadi.",
+    "coinReasonNotFound": "Sabab topilmadi.",
+    "coinReasonUsed": "Bu sabab ishlatilgan, o‘chirib bo‘lmaydi.",
+    "categoryHasProducts": "Kategoriyada hali mahsulotlar bor.",
+    "productNotFound": "Mahsulot topilmadi.",
+    "productHasRequests": "Mahsulotning so‘rovlari bor, o‘chirib bo‘lmaydi.",
+    "purchaseNotFound": "So‘rov topilmadi.",
+    "purchaseDecided": "Bu so‘rov bo‘yicha qaror qabul qilingan.",
+    "questionNotFound": "Savol topilmadi.",
+    "questionInUse": "Savol testda ishlatilgan, o‘chirib bo‘lmaydi.",
+    "testNotFound": "Test topilmadi.",
+    "testHasAttempts": "Test bo‘yicha natijalar kiritilgan; savollarni o‘zgartirib va testni o‘chirib bo‘lmaydi.",
+    "testNotActive": "Natijalarni faqat faol testga kiritish mumkin."
   },
   "validation": {
     "phone": "+998 90 123 45 67 ko‘rinishida raqam kiriting.",
@@ -169,7 +181,19 @@
     "scoreMax": "Ball maksimaldan katta.",
     "categoryKind": "Bo'lim boshqa hisobotga tegishli.",
     "staffUnknown": "Noma'lum xodim.",
-    "entryType": "Yozuv turini o'zgartirib bo'lmaydi."
+    "entryType": "Yozuv turini o'zgartirib bo'lmaydi.",
+    "integer": "Butun son kiriting.",
+    "minOptions": "Kamida ikkita variant kerak.",
+    "correctIndex": "Variantlardan birini to‘g‘ri deb belgilang.",
+    "noQuestions": "Faol testda kamida bitta savol bo‘lishi kerak.",
+    "duplicateQuestion": "Savol ikki marta ko‘rsatilgan.",
+    "reasonInactive": "Bu sabab faol emas.",
+    "coinsAboveMax": "Sabab ruxsat etganidan ko‘p.",
+    "notMember": "O‘quvchi bu guruhning faol a‘zosi emas.",
+    "questionUnknown": "Noma‘lum savol.",
+    "productInactive": "Mahsulot faol emas.",
+    "outOfStock": "Mahsulot zaxirada yo‘q.",
+    "notEnoughCoins": "O‘quvchida coin yetarli emas."
   },
   "roles": {
     "CEO": "CEO",
@@ -496,7 +520,8 @@
       "reports": "Hisobotlar",
       "staff": "Xodimlar",
       "settings": "Sozlamalar",
-      "logs": "Jurnallar"
+      "logs": "Jurnallar",
+      "coins": "Coinlar"
     },
     "names": {
       "dashboard": {
@@ -578,6 +603,10 @@
       },
       "logs": {
         "view": "Jurnallarni ko'rish"
+      },
+      "coins": {
+        "give": "Coin berish",
+        "manage": "Coin sozlamalari, marketplace va xarid so‘rovlari"
       }
     }
   },
@@ -698,8 +727,8 @@
         "grades": "Baho",
         "notes": "Eslatmalar",
         "history": "Guruh tarixi",
-        "tests": "Testlar",
-        "knowledge": "Bilim",
+        "tests": "Test",
+        "knowledge": "Bilim tahlili",
         "exams": "Imtihonlar",
         "discounts": "Chegirmalar",
         "coins": "Coinlar",
@@ -1498,6 +1527,321 @@
       "saveDraft": "Vaqtincha saqlash",
       "savedDraft": "Qoralama saqlandi.",
       "saved": "Ish haqi saqlandi."
+    }
+  },
+  "coins": {
+    "settings": {
+      "title": "Coin sozlamalari",
+      "description": "Avtomatik coin qoidalari va xodimlar coin berishda tanlaydigan sabablar.",
+      "autoCoins": "Avtomatik coin tizimi",
+      "autoCoinsHint": "O‘chirilganda avtomatik coinlar berilmaydi; qo‘lda berish ishlaydi.",
+      "rulesTitle": "Avtomatik coin qoidalari",
+      "columns": {
+        "event": "Hodisa",
+        "amount": "Coin miqdori"
+      },
+      "events": {
+        "ATTENDANCE": "Davomat",
+        "HOMEWORK": "Uy vazifasi",
+        "TEST_RESULT": "Test natijasi",
+        "BIRTHDAY": "Tug‘ilgan kun"
+      },
+      "notWired": "Saqlanadi, lekin hozircha ishga tushirilmaydi (uy vazifasi va tug‘ilgan kunlar 11-bosqichda).",
+      "reasonsTitle": "Qo‘lda beriladigan coin sabablari",
+      "reasonsDescription": "O‘qituvchi coin berishda shulardan birini tanlaydi va maksimumdan oshira olmaydi.",
+      "addReason": "Sabab qo‘shish",
+      "editReason": "Sababni tahrirlash",
+      "reasonName": "Sabab nomi",
+      "maxCoins": "Ruxsat etilgan maksimal coin",
+      "maxCoinsHint": "O‘qituvchi bundan ortiq bera olmaydi.",
+      "reasonActive": "Faol",
+      "upTo": "{max} gacha",
+      "deleteReasonTitle": "Sabab o‘chirilsinmi?",
+      "deleteReasonText": "“{name}” o‘chiriladi. Ishlatilgan sabablarni o‘chirib bo‘lmaydi."
+    },
+    "give": {
+      "title": "Coin berish",
+      "reason": "Sabab",
+      "pickReason": "Sababni tanlang",
+      "noReasons": "Faol sabablar yo‘q. Sozlamalar → Coin sozlamalarida qo‘shing.",
+      "amount": "Coin miqdori",
+      "maxHint": "Bu sabab uchun {max} gacha.",
+      "upTo": "{max} gacha",
+      "comment": "Izoh"
+    },
+    "group": {
+      "columns": {
+        "rank": "O‘rin",
+        "student": "Talaba ismi",
+        "total": "Jami coinlar",
+        "groupCoins": "Shu guruhda",
+        "comment": "Izoh"
+      },
+      "give": "Coin berish",
+      "noMembers": "Guruhda faol o‘quvchilar yo‘q."
+    },
+    "report": {
+      "title": "Coinlar",
+      "kpis": {
+        "totalGiven": "Jami berilgan coinlar",
+        "totalSpent": "Jami ishlatilgan",
+        "purchases": "Marketplace xaridlari",
+        "activeStudents": "Coinli faol o‘quvchilar"
+      },
+      "tabs": {
+        "rating": "Reyting",
+        "marketplace": "Marketplace",
+        "requests": "Xarid so‘rovlari"
+      },
+      "periods": {
+        "WEEK": "Haftalik",
+        "MONTH": "Oylik",
+        "ALL": "Barchasi"
+      },
+      "filters": {
+        "branch": "Filial",
+        "anyBranch": "Barcha filiallar",
+        "course": "Kurs",
+        "anyCourse": "Barcha kurslar",
+        "group": "Guruh",
+        "anyGroup": "Barcha guruhlar"
+      },
+      "columns": {
+        "rank": "O‘rin",
+        "student": "O‘quvchi",
+        "branch": "Filial",
+        "balance": "Joriy coin",
+        "earned": "Jami yig‘ilgan",
+        "spent": "Jami sarflangan",
+        "lastActivity": "So‘nggi faollik"
+      },
+      "view": "Ko‘rish",
+      "balance": "Balans: {count} coin",
+      "history": {
+        "date": "Sana",
+        "amount": "Coin",
+        "reason": "Sabab",
+        "by": "Kim berdi"
+      },
+      "kinds": {
+        "MANUAL": "Qo‘lda",
+        "AUTO": "Avtomatik",
+        "PURCHASE": "Xarid"
+      },
+      "events": {
+        "ATTENDANCE": "Davomat",
+        "HOMEWORK": "Uy vazifasi",
+        "TEST_RESULT": "Test natijasi",
+        "BIRTHDAY": "Tug‘ilgan kun"
+      }
+    },
+    "marketplace": {
+      "categories": "Kategoriyalar",
+      "categoryName": "Kategoriya nomi",
+      "noCategories": "Avval kategoriya qo‘shing.",
+      "addProduct": "Mahsulot qo‘shish",
+      "editProduct": "Mahsulotni tahrirlash",
+      "productName": "Nomi",
+      "category": "Kategoriya",
+      "price": "Narxi (coin)",
+      "stock": "Zaxira",
+      "active": "Faol",
+      "image": "Rasm",
+      "empty": "Hozircha mahsulotlar yo‘q.",
+      "columns": {
+        "image": "Rasm",
+        "name": "Nomi",
+        "category": "Kategoriya",
+        "price": "Narxi (coin)",
+        "purchased": "Xarid qilingan",
+        "stock": "Zaxira"
+      },
+      "deleteTitle": "Mahsulot o‘chirilsinmi?",
+      "deleteText": "“{name}” o‘chiriladi. So‘rovlari bor mahsulotni o‘chirib bo‘lmaydi."
+    },
+    "requests": {
+      "add": "Yangi so‘rov",
+      "student": "O‘quvchi",
+      "product": "Mahsulot",
+      "pickProduct": "Mahsulotni tanlang",
+      "approve": "Tasdiqlash",
+      "reject": "Rad etish",
+      "filters": {
+        "status": "Holat",
+        "anyStatus": "Barcha holatlar"
+      },
+      "statuses": {
+        "PENDING": "Kutilmoqda",
+        "APPROVED": "Tasdiqlangan",
+        "REJECTED": "Rad etilgan"
+      },
+      "columns": {
+        "student": "O‘quvchi",
+        "product": "Mahsulot",
+        "coins": "Coin",
+        "date": "Sana"
+      }
+    }
+  },
+  "tests": {
+    "title": "Testlar",
+    "description": "Testlar savollar bankidan tuziladi va guruhlarga beriladi; natijalarni xodimlar kiritadi.",
+    "tabs": {
+      "tests": "Testlar",
+      "bank": "Savollar banki"
+    },
+    "kpis": {
+      "total": "Jami testlar",
+      "active": "Faol testlar",
+      "attempts": "Topshirganlar soni",
+      "accuracy": "O‘rtacha aniqlik"
+    },
+    "filters": {
+      "status": "Holat",
+      "anyStatus": "Barcha holatlar",
+      "subject": "Fan",
+      "anySubject": "Barcha fanlar",
+      "topic": "Mavzu",
+      "anyTopic": "Barcha mavzular",
+      "recent": "Yangi qo‘shilganlar"
+    },
+    "statuses": {
+      "DRAFT": "Qoralama",
+      "ACTIVE": "Faol",
+      "CLOSED": "Yopilgan"
+    },
+    "columns": {
+      "name": "Test nomi va qamrov",
+      "subject": "Fan",
+      "questions": "Savollar",
+      "points": "Ball",
+      "attempts": "Topshirganlar / aniqlik",
+      "accuracy": "Aniqlik",
+      "deadline": "Muddati",
+      "status": "Holat",
+      "text": "Savol",
+      "topic": "Mavzu",
+      "options": "Variantlar",
+      "usedIn": "Testlarda"
+    },
+    "points": "{count} ball",
+    "noGroups": "Guruhga berilmagan",
+    "add": "Test yaratish",
+    "edit": "Testni tahrirlash",
+    "deleteTitle": "Test o‘chirilsinmi?",
+    "deleteText": "“{name}” o‘chiriladi. Natijalari bor testni o‘chirib bo‘lmaydi.",
+    "searchQuestions": "Savollarni qidirish…",
+    "hidden": "Testlar bu foydalanuvchi uchun mavjud emas.",
+    "actions": {
+      "activate": "Faollashtirish",
+      "close": "Yopish",
+      "reopen": "Qayta ochish"
+    },
+    "form": {
+      "name": "Test nomi",
+      "subject": "Fan",
+      "status": "Holat",
+      "timeLimit": "Vaqt chegarasi (daqiqa)",
+      "passPercent": "O‘tish bali (%)",
+      "deadline": "Muddati",
+      "groups": "Guruhlar",
+      "noGroups": "Guruhlar yo‘q.",
+      "questions": "Savollar",
+      "searchQuestions": "Qidirish…",
+      "noQuestions": "Bu fan bo‘yicha savollar yo‘q. Savollar bankiga qo‘shing.",
+      "points": "Ball",
+      "lockedQuestions": "Natijalar kiritilgan, shuning uchun savollarni o‘zgartirib bo‘lmaydi."
+    },
+    "questionForm": {
+      "add": "Savol qo‘shish",
+      "edit": "Savolni tahrirlash",
+      "subject": "Fan",
+      "topic": "Mavzu",
+      "text": "Savol",
+      "options": "Javob variantlari",
+      "optionsHint": "To‘g‘ri variantni belgilang.",
+      "correct": "To‘g‘ri",
+      "optionN": "{n}-variant",
+      "addOption": "Variant qo‘shish",
+      "removeOption": "Variantni o‘chirish",
+      "deleteTitle": "Savol o‘chirilsinmi?",
+      "deleteText": "Savol bankdan o‘chiriladi. Testlarda ishlatilgan savollarni o‘chirib bo‘lmaydi."
+    },
+    "detail": {
+      "questions": "Savollar",
+      "noQuestions": "Testda savollar yo‘q.",
+      "attempts": "Topshirishlar",
+      "noAttempts": "Hali topshirilmagan.",
+      "record": "Natija kiritish",
+      "student": "O‘quvchi",
+      "pickStudent": "O‘quvchini tanlang",
+      "noCandidates": "Biriktirilgan guruhlarda faol o‘quvchilar yo‘q.",
+      "group": "Guruh",
+      "score": "Ball",
+      "result": "Natija",
+      "date": "Sana",
+      "passed": "O‘tdi",
+      "failed": "O‘tmadi",
+      "durationMinutes": "Sarflangan vaqt (daqiqa)",
+      "minutes": "{count} daq",
+      "pointsShort": "{count} ball"
+    },
+    "groupTab": {
+      "empty": "Bu guruhga hali test berilmagan."
+    },
+    "knowledge": {
+      "subject": "Fan",
+      "anySubject": "Barcha fanlar",
+      "test": "Test",
+      "anyTest": "Barcha testlar",
+      "from": "Boshlanish",
+      "to": "Tugash",
+      "topic": "Mavzu",
+      "questions": "Savollar",
+      "answered": "Javob berilgan",
+      "correct": "To‘g‘ri",
+      "accuracy": "Aniqlik",
+      "empty": "Bu tanlov bo‘yicha topshirilgan testlar yo‘q.",
+      "summary": "{students} o‘quvchidan {attempts} topshirish"
+    },
+    "results": {
+      "total": "Jami testlar",
+      "average": "O‘rtacha natija",
+      "best": "Eng yaxshi natija",
+      "worst": "Eng past natija",
+      "averageTime": "O‘rtacha vaqt",
+      "minutes": "{count} daq",
+      "level": "Fikrlash darajasi",
+      "levels": {
+        "LOW": "Yordam kerak",
+        "MEDIUM": "Rivojlanmoqda",
+        "HIGH": "Kuchli"
+      },
+      "problemTopics": "Muammoli mavzular",
+      "noProblemTopics": "Zaif mavzular yo‘q.",
+      "strongTopics": "Yaxshi o‘zlashtirilgan mavzular",
+      "noStrongTopics": "Hozircha kuchli mavzular yo‘q.",
+      "dynamics": "Natijalar dinamikasi",
+      "attempts": "Topshirilgan testlar",
+      "test": "Test",
+      "subject": "Fan",
+      "empty": "Hali topshirilgan testlar yo‘q."
+    }
+  },
+  "reports": {
+    "title": "Hisobotlar",
+    "description": "Namunaning Hisobotlar menyusidagi hisobotlar.",
+    "phase": "{phase}-bosqich",
+    "items": {
+      "payments": "To‘lovlar",
+      "studentPayments": "O‘quvchi to‘lovlari",
+      "churn": "Ketgan o‘quvchilar",
+      "graduates": "Bitiruvchilar",
+      "staffAttendance": "Xodimlar davomati",
+      "coins": "Coinlar",
+      "leads": "Lid hisobotlari",
+      "students": "O‘quvchilar",
+      "statistics": "Markaz statistikasi"
     }
   }
 }
