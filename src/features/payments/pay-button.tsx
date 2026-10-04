@@ -80,7 +80,7 @@ export function PayButton() {
 
   return (
     <>
-      <Button variant="outline" size="sm" onClick={() => setOpen(true)} data-testid="pay-button">
+      <Button variant="saffron" size="sm" onClick={() => setOpen(true)} data-testid="pay-button">
         <Wallet /> <span className="hidden sm:inline">{tp("pay")}</span>
       </Button>
       <Dialog open={open && !picked} onOpenChange={setOpen}>

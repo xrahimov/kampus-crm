@@ -30,7 +30,7 @@ export function SettingsSidebar({ permissions }: { permissions: string[] }) {
                   className={cn(base, "cursor-default text-muted-foreground opacity-70")}
                 >
                   <span>{t(item.key)}</span>
-                  <span className="rounded bg-muted px-1.5 py-0.5 text-[10px] font-medium uppercase text-muted-foreground">
+                  <span className="rounded bg-muted px-1.5 py-0.5 text-[11px] font-medium text-muted-foreground">
                     {t("phase", { phase: item.phase })}
                   </span>
                 </span>
@@ -45,7 +45,7 @@ export function SettingsSidebar({ permissions }: { permissions: string[] }) {
                 className={cn(
                   base,
                   active
-                    ? "bg-primary/10 font-medium text-primary"
+                    ? "bg-accent font-medium text-accent-foreground"
                     : "text-muted-foreground hover:bg-secondary hover:text-foreground",
                 )}
               >

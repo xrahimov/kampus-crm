@@ -88,7 +88,7 @@ export function GlobalSearch() {
   }
 
   return (
-    <div ref={boxRef} className="relative hidden md:block">
+    <div ref={boxRef} className="relative ml-2 hidden md:block">
       <Search className="pointer-events-none absolute top-1/2 left-2.5 size-4 -translate-y-1/2 text-muted-foreground" />
       <Input
         type="search"
@@ -114,7 +114,7 @@ export function GlobalSearch() {
         }}
         placeholder={t("placeholder")}
         aria-label={t("placeholder")}
-        className="h-9 w-56 pl-8 lg:w-72"
+        className="h-9 w-56 border-transparent bg-secondary pl-8 hover:bg-muted focus-visible:bg-card lg:w-80"
         data-testid="global-search"
       />
       {open && term.length >= 2 && (
@@ -133,7 +133,7 @@ export function GlobalSearch() {
               if (rows.length === 0) return null;
               return (
                 <div key={group} className="py-1">
-                  <p className="px-2 pb-1 text-[11px] font-medium tracking-wide text-muted-foreground uppercase">
+                  <p className="px-2 pb-1 text-xs font-medium text-muted-foreground">
                     {t(`groups.${group}`)}
                   </p>
                   {rows.map((h) => {

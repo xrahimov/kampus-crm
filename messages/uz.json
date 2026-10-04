@@ -34,7 +34,8 @@
       "next": "Keyingi sahifa"
     },
     "yes": "Ha",
-    "no": "Yo'q"
+    "no": "Yo'q",
+    "openMenu": "Menyuni ochish"
   },
   "nav": {
     "dashboard": "Bosh sahifa",

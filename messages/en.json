@@ -34,7 +34,8 @@
       "next": "Next page"
     },
     "yes": "Yes",
-    "no": "No"
+    "no": "No",
+    "openMenu": "Open menu"
   },
   "nav": {
     "dashboard": "Home",

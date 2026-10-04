@@ -10,3 +10,6 @@ test-results
 package-lock.json
 AGENTS.md
 CLAUDE.md
+
+# Vendored skills are kept byte-identical to upstream
+.claude/skills/
