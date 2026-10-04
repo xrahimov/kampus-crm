@@ -9,6 +9,7 @@ import { requireCurrentUser } from "@/server/auth/current-user";
 import { isAppError } from "@/server/errors/app-error";
 import { qrSvg } from "@/server/qr/qr";
 import { can } from "@/server/rbac/authorize";
+import { getStudentProgress } from "@/server/services/exams/exams.service";
 import { getPaymentOptions, listPayments } from "@/server/services/students/payments.service";
 import {
   getStudent,
@@ -56,7 +57,7 @@ export default async function Page({ params, searchParams }: Props) {
   const list = { page, pageSize, skip: (page - 1) * pageSize, take: pageSize };
   const paymentGroupId = str(sp.paymentGroup);
 
-  const [comments, history, payments, options, paymentOptions, qr] = await Promise.all([
+  const [comments, history, payments, options, paymentOptions, qr, progress] = await Promise.all([
     listStudentComments(current.actor, id),
     listStudentHistory(current.actor, id, list),
     listPayments(
@@ -67,6 +68,7 @@ export default async function Page({ params, searchParams }: Props) {
     getStudentOptions(current.actor),
     getPaymentOptions(current.actor),
     qrSvg(`kampus:student:${id}`),
+    getStudentProgress(current.actor, id),
   ]);
 
   return (
@@ -76,6 +78,7 @@ export default async function Page({ params, searchParams }: Props) {
       history={history}
       payments={payments}
       paymentGroupId={paymentGroupId}
+      progress={progress}
       qrSvg={qr}
       options={options}
       paymentOptions={paymentOptions}

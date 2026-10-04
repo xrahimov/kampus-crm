@@ -223,16 +223,16 @@ Every list endpoint takes the common query contract (§2). Every mutation is aud
 ✓ `GET|POST /groups/:id/members?archived&q&sort` · `PATCH /memberships/:id` (status, custom price, note) · `POST /memberships/:id/remove` · `GET /students/search?q` · `POST /memberships/:id/transfer` (Phase 6) · `POST /memberships/:id/to-lead` (Phase 7 ✓) · `POST /groups/:id/members/import` (xlsx, Phase 12) · `GET /groups/members/import-template.xlsx` (Phase 12)
 ✓ `GET /groups/:id/lessons?month` · `POST /groups/:id/lessons/extra` · `PATCH /lessons/:id` (topic, attachment) · `PUT /lessons/:id/attendance` · `PUT /lessons/:id/grades`
 ✓ `GET|POST /groups/:id/notes` · `GET /groups/:id/history` · `GET|POST /groups/:id/discounts` (Phase 6) · `DELETE /discounts/:id` (Phase 6) · `GET /groups/:id/coins` · `POST /coins/give` (Phase 10) · `GET|POST /groups/:id/student-comments` (Phase 6)
-`GET /groups/:id/tests` · `GET /groups/:id/knowledge` (Phase 10) · `GET|POST /groups/:id/exams` (Phase 8)
+`GET /groups/:id/tests` · `GET /groups/:id/knowledge` (Phase 10) · ✓ `GET|POST /groups/:id/exams`
 
 **Students (EXP §6)** — Phase 6 ships the lines marked ✓ (A-59..A-65); the rest follow with their modules.
 ✓ `GET|POST /students?archived&courseId&schoolId&groupId&teacherId&groupStatus&paymentStatus` · `GET|PATCH|DELETE /students/:id` · `POST /students/:id/restore` · `POST /students/:id/blacklist` · `GET /students/options` · `POST /students/activate` (Phase 7 ✓) · `POST /students/import` · `GET /students/export.xlsx` · `POST /students/sms` (Phases 11–12) · badges are pages: `/students/:id/badge`, `/students/badges`
 ✓ `POST /students/:id/custom-fields` · `DELETE /custom-fields/:id` · `POST /students/:id/parents` · `DELETE /parents/:id` · `GET|POST /students/:id/comments` · `GET /students/:id/history` · `GET /memberships/:id/calendar?month` · `POST /groups/:id/activate-members`
-`GET /students/:id/progress` (Phase 8) · `GET /students/:id/test-results` (Phase 10) · `GET /students/:id/sms` · `GET /students/:id/calls` · `POST /students/:id/call` (Phase 11)
+✓ `GET /students/:id/progress` · `GET /students/:id/test-results` (Phase 10) · `GET /students/:id/sms` · `GET /students/:id/calls` · `POST /students/:id/call` (Phase 11)
 ✓ `GET /payments?studentId&groupId&membershipId&paymentMethodId&receivedById&from&to` · `POST /payments` · `GET /payments/:id` · `POST /payments/:id/refund` · `GET /payments/options` · `GET /memberships/:id/payment-info` · `POST /memberships/:id/transfer` · `GET|PUT /settings/receipt` · the receipt is a page: `/payments/:id/receipt`
 
 **Exams (EXP §7)**
-`GET|POST /exams?type=group|mock` · `GET|PATCH|DELETE /exams/:id` · `PUT /exams/:id/results`
+✓ `GET|POST /exams?type=GROUP|MOCK&status&groupId&from&to` · `GET|PATCH|DELETE /exams/:id` · `POST /exams/:id/finish|reopen` · `GET|PUT /exams/:id/results` · `POST|DELETE /exams/:id/registrations` (mock "Arizalar") · `GET /exams/:id/candidates?q` · `GET /exams/options`
 
 **Settings (EXP §8)**
 `GET|POST /sms-categories` · `GET|POST /sms-templates` · `PATCH|DELETE /sms-templates/:id` · `POST /sms-templates/import-eskiz`
@@ -314,7 +314,7 @@ Kai asked for the site-map order. I've moved the Settings core forward and the D
 | 5     | Groups (schedule, members, attendance, grades, notes, history; minimal students). Discounts and student comments moved to Phase 6 (A-49)                    | §5                        |
 | 6     | Students + payments, refunds, receipts, parents, badges, discounts, student comments, transfer; Settings → receipt and payments log                         | §6, §11 TO'LOV            |
 | 7     | Leads (boards, columns, Kanban, add to group, return to leads), sources report, lead forms with a public page; students "Activate"                          | §2, §3, §8 Forms          |
-| 8     | Exams                                                                                                                                                       | §7                        |
+| 8     | Exams: group and mock exams, grading sheet with levels, mock registrations, finish/reopen; group IMTIHON tab; student Progress tab                          | §7, §5, §6                |
 | 9     | Finance + payroll                                                                                                                                           | §9                        |
 | 10    | Tests + question bank, coins + marketplace                                                                                                                  | §8 Tests/Coins, §10 Coins |
 | 11    | Integrations: SMS templates + auto-SMS (Eskiz), Telegram bot, AmoCRM, telephony/calls, FaceID + staff attendance, logs                                      | §8, §10                   |

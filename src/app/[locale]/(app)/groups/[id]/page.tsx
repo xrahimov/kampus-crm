@@ -8,6 +8,7 @@ import type { SearchParams } from "@/features/settings/list-params";
 import { requireCurrentUser } from "@/server/auth/current-user";
 import { isAppError } from "@/server/errors/app-error";
 import { can, canAccessAllBranches } from "@/server/rbac/authorize";
+import { getExamOptions, listGroupExams } from "@/server/services/exams/exams.service";
 import {
   getGroup,
   listGroupDaysOff,
@@ -66,23 +67,42 @@ export default async function Page({ params, searchParams }: Props) {
   const historyPage = Math.max(1, Number(str(sp.page) ?? 1) || 1);
   const pageSize = 20;
 
-  const [grid, members, daysOff, notes, history, options, discounts, comments, paymentOptions] =
-    await Promise.all([
-      getMonthGrid(current.actor, id, month),
-      listMembers(current.actor, id, { archived: str(sp.archived) === "1" }),
-      listGroupDaysOff(current.actor, id),
-      listGroupNotes(current.actor, id),
-      listGroupHistory(current.actor, id, {
-        page: historyPage,
-        pageSize,
-        skip: (historyPage - 1) * pageSize,
-        take: pageSize,
-      }),
-      getGroupFormOptions(current.actor),
-      listGroupDiscounts(current.actor, id),
-      listGroupComments(current.actor, id),
-      getPaymentOptions(current.actor),
-    ]);
+  const [
+    grid,
+    members,
+    daysOff,
+    notes,
+    history,
+    options,
+    discounts,
+    comments,
+    paymentOptions,
+    exams,
+    examOptions,
+  ] = await Promise.all([
+    getMonthGrid(current.actor, id, month),
+    listMembers(current.actor, id, { archived: str(sp.archived) === "1" }),
+    listGroupDaysOff(current.actor, id),
+    listGroupNotes(current.actor, id),
+    listGroupHistory(current.actor, id, {
+      page: historyPage,
+      pageSize,
+      skip: (historyPage - 1) * pageSize,
+      take: pageSize,
+    }),
+    getGroupFormOptions(current.actor),
+    listGroupDiscounts(current.actor, id),
+    listGroupComments(current.actor, id),
+    getPaymentOptions(current.actor),
+    // Teachers may be denied the exam schedule (EXP §8 switch); the tab then explains why.
+    can(current.actor, "exams.view")
+      ? listGroupExams(current.actor, id).catch((error: unknown) => {
+          if (isAppError(error) && error.code === "FORBIDDEN") return null;
+          throw error;
+        })
+      : null,
+    can(current.actor, "exams.view") ? getExamOptions(current.actor) : null,
+  ]);
 
   return (
     <GroupDetail
@@ -94,6 +114,8 @@ export default async function Page({ params, searchParams }: Props) {
       history={history}
       discounts={discounts}
       comments={comments}
+      exams={exams}
+      examOptions={examOptions}
       paymentOptions={paymentOptions}
       options={options}
       branches={current.branches}
@@ -109,6 +131,7 @@ export default async function Page({ params, searchParams }: Props) {
         discount: can(current.actor, "discounts.give"),
         comment: can(current.actor, "students.view"),
         leads: can(current.actor, "leads.create"),
+        exams: can(current.actor, "exams.create"),
       }}
     />
   );

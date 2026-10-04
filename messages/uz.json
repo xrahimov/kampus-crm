@@ -105,7 +105,12 @@
     "formNotFound": "Bunday forma yo‘q yoki o‘chirilgan.",
     "boardHasLeads": "Doskada hali lidlar bor.",
     "columnHasLeads": "Ustunda hali lidlar bor.",
-    "lastColumn": "Doskada kamida bitta ustun bo‘lishi kerak."
+    "lastColumn": "Doskada kamida bitta ustun bo‘lishi kerak.",
+    "examNotFound": "Imtihon topilmadi.",
+    "examHasResults": "Bu imtihonda ballar bor. Avval ularni o'chiring.",
+    "examsHidden": "Imtihon jadvali ustozlarga ko'rinmaydi.",
+    "notMockExam": "Arizalar faqat mock imtihonlar uchun.",
+    "examFull": "Imtihonda bo'sh joy yo'q."
   },
   "validation": {
     "phone": "+998 90 123 45 67 ko‘rinishida raqam kiriting.",
@@ -151,7 +156,12 @@
     "sameGroup": "Boshqa guruhni tanlang.",
     "leadsMin": "Kamida bitta lidni tanlang.",
     "columnBranch": "Ustun boshqa filialga tegishli.",
-    "slug": "Lotin harflari, raqamlar va chiziqchadan foydalaning."
+    "slug": "Lotin harflari, raqamlar va chiziqchadan foydalaning.",
+    "passScore": "O'tish bali maksimal baldan katta bo'lmasin.",
+    "groupsMin": "Kamida bitta guruh tanlang.",
+    "groupUnknown": "Noma'lum guruh.",
+    "examType": "Imtihon turini o'zgartirib bo'lmaydi.",
+    "scoreMax": "Ball maksimaldan katta."
   },
   "roles": {
     "CEO": "CEO",
@@ -1017,7 +1027,18 @@
     },
     "activateTitle": "O‘quvchilar faollashtirilsinmi?",
     "activateText": "Ro‘yxatdagi {count} o‘quvchi orasidagi har bir yangi va sinovdagi o‘quvchi bugun faol bo‘ladi.",
-    "activated": "{count} a‘zolik faollashtirildi."
+    "activated": "{count} a‘zolik faollashtirildi.",
+    "progress": {
+      "gradeAverage": "O'rtacha ball",
+      "attendance": "Davomat",
+      "examAverage": "O'rtacha imtihon bali",
+      "byMonth": "Oylar bo'yicha",
+      "month": "Oy",
+      "lessons": "Darslar",
+      "exams": "Imtihon natijalari",
+      "noData": "Hali baho va davomat yo'q.",
+      "noExams": "Hali imtihonlar yo'q."
+    }
   },
   "payments": {
     "pay": "To‘lov",
@@ -1213,6 +1234,108 @@
       "submit": "Yuborish",
       "thanksTitle": "Rahmat!",
       "thanksText": "So‘rovingizni qabul qildik va tez orada bog‘lanamiz."
+    }
+  },
+  "exams": {
+    "title": "Imtihonlar",
+    "add": "Imtihon qo'shish",
+    "edit": "Imtihonni tahrirlash",
+    "tabs": {
+      "GROUP": "Guruh imtihonlari",
+      "MOCK": "Mock imtihonlar"
+    },
+    "types": {
+      "GROUP": "Guruh imtihoni",
+      "MOCK": "Mock imtihon"
+    },
+    "statuses": {
+      "NOT_STARTED": "Boshlanmagan",
+      "FINISHED": "Yakunlangan"
+    },
+    "filters": {
+      "anyStatus": "Barcha holatlar",
+      "group": "Guruh",
+      "anyGroup": "Barcha guruhlar",
+      "from": "Dan",
+      "to": "Gacha"
+    },
+    "columns": {
+      "name": "Imtihon nomi",
+      "type": "Turi",
+      "group": "Guruh",
+      "groups": "Guruhlar",
+      "date": "Sana",
+      "examiner": "Imtihon oluvchi",
+      "room": "Xona",
+      "time": "Vaqt",
+      "students": "O'quvchilar",
+      "registrations": "Arizalar",
+      "capacity": "Sig'imi",
+      "price": "Narxi",
+      "passScore": "Min. ball",
+      "maxScore": "Maks. ball",
+      "retake": "Qayta topshirish"
+    },
+    "actions": {
+      "results": "Natijalar",
+      "finish": "Yakunlash",
+      "reopen": "Qayta ochish"
+    },
+    "deleteTitle": "Imtihon o'chirilsinmi?",
+    "deleteText": "\"{name}\" arizalari bilan birga o'chiriladi.",
+    "hidden": "Imtihon jadvali ustozlarga ko'rinmaydi. Administrator uni Sozlamalar → Umumiy bo'limida yoqishi mumkin.",
+    "form": {
+      "type": "Imtihon turi",
+      "name": "Imtihon nomi",
+      "group": "Guruh",
+      "retake": "Qayta topshirish",
+      "date": "Imtihon sanasi",
+      "startTime": "Boshlanish vaqti",
+      "endTime": "Tugash vaqti",
+      "more": "Qo'shimcha ma'lumotlar",
+      "examiner": "Imtihon oluvchi",
+      "room": "Xona",
+      "none": "Hech biri",
+      "gradingSystem": "Baholash tizimi",
+      "custom": "Maxsus",
+      "passScore": "O'tish ball",
+      "maxScore": "Maksimal ball",
+      "price": "Narxi (ixtiyoriy)",
+      "priceHint": "Bo'sh qoldirsa 0 bo'ladi",
+      "capacity": "Sig'imi",
+      "pick": "Guruhlarni saralash",
+      "course": "Kurs",
+      "anyCourse": "Barcha kurslar",
+      "allBranches": "Barcha filiallar",
+      "minMonths": "Minimal o'qish oyi",
+      "pickAll": "Saralash va barchasini tanlash",
+      "selected": "Tanlangan guruhlar",
+      "selectedCount": "{count} ta tanlandi",
+      "noGroups": "Filtrga mos guruh yo'q."
+    },
+    "results": {
+      "back": "Imtihonlarga qaytish",
+      "student": "O'quvchi",
+      "group": "Guruh",
+      "present": "Kelgan",
+      "absent": "Kelmagan",
+      "score": "Ball",
+      "scoreFor": "{name} uchun ball",
+      "level": "Daraja",
+      "result": "Natija",
+      "passed": "O'tdi",
+      "failed": "O'tmadi",
+      "notGraded": "Baholanmagan",
+      "comment": "Izoh",
+      "save": "Natijalarni saqlash",
+      "saved": "Natijalar saqlandi.",
+      "register": "O'quvchi yozish",
+      "search": "Ism yoki telefon bo'yicha qidirish…",
+      "noCandidates": "O'quvchi topilmadi.",
+      "remove": "Arizani olib tashlash",
+      "empty": "Hali o'quvchilar yo'q.",
+      "full": "Joylar tugadi.",
+      "registrations": "{capacity} dan {count}"
     }
   }
 }
