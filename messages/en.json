@@ -174,7 +174,11 @@
     "importDuplicate": "Duplicate of an earlier row",
     "importExists": "A student with this phone already exists",
     "importAlreadyIn": "Already in this group",
-    "notGraduated": "This membership is not graduated"
+    "notGraduated": "This membership is not graduated",
+    "videoDisabled": "Video lessons are switched off in Settings → Integrations.",
+    "videoFull": "The lesson is full. Ask the centre to raise the limit in Settings → Integrations.",
+    "videoEnded": "This video lesson has already ended.",
+    "videoNotStarted": "The teacher has not started the lesson yet."
   },
   "validation": {
     "phone": "Enter a number like +998 90 123 45 67.",
@@ -246,7 +250,10 @@
     "categoryUnknown": "Unknown category.",
     "branchUnknown": "Unknown branch.",
     "noRecipients": "Nobody to send to: no phone numbers in this selection.",
-    "importTooLarge": "Too many rows (max {max})"
+    "importTooLarge": "Too many rows (max {max})",
+    "iceUrl": "Enter addresses starting with stun:, turn: or turns:, separated by commas.",
+    "linkPlaceholder": "The text must contain '{link}'.",
+    "lessonUnknown": "This lesson does not belong to the group."
   },
   "roles": {
     "CEO": "CEO",
@@ -2395,7 +2402,8 @@
         "SmsTemplate": "SMS template",
         "StaffAttendance": "Staff attendance",
         "Test": "Test",
-        "User": "Staff"
+        "User": "Staff",
+        "VideoRoom": "Video lesson"
       },
       "names": {
         "attendance": {
@@ -2636,6 +2644,12 @@
         },
         "workSchedule": {
           "set": "Work schedule set"
+        },
+        "video": {
+          "start": "Video lesson started",
+          "end": "Video lesson ended",
+          "resetLink": "Student's video link replaced",
+          "smsLinks": "Video links sent by SMS"
         }
       }
     }
@@ -2712,6 +2726,19 @@
         "lateAfterMinutes": "Late after (minutes)"
       },
       "payloadHint": "Payload: deviceId, phone (+998…), at (ISO time), kind IN or OUT."
+    },
+    "VIDEO": {
+      "title": "Video lessons",
+      "description": "Teachers start a call from the group page and students join from their personal link. Video goes directly between browsers; Kampus only connects them.",
+      "fields": {
+        "stunUrls": "STUN servers",
+        "turnUrls": "TURN relay servers (optional)",
+        "turnUsername": "TURN username",
+        "turnCredential": "TURN password",
+        "turnSecret": "TURN shared secret (instead of username and password)",
+        "maxParticipants": "Most people in one call"
+      },
+      "hint": "Works without setup using free public STUN servers. Some mobile and office networks block direct calls; for those, add a TURN relay (for example Cloudflare Calls TURN, Metered or your own coturn)."
     }
   },
   "staffAttendance": {
@@ -2920,6 +2947,97 @@
       "LEAD": "New lead {name} in {column} ({source})",
       "DEBTORS": "{count} students owe money today",
       "BIRTHDAY": "{name} has a birthday today"
+    }
+  },
+  "video": {
+    "title": "Video lesson",
+    "backToGroup": "Back to the group",
+    "staff": {
+      "startedBy": "Started by {name}. Check your camera and microphone, then join."
+    },
+    "roles": {
+      "HOST": "Teacher",
+      "STAFF": "Guest",
+      "STUDENT": "Student"
+    },
+    "lobby": {
+      "opening": "Opening camera…",
+      "micOn": "Turn microphone on",
+      "micOff": "Turn microphone off",
+      "cameraOn": "Turn camera on",
+      "cameraOff": "Turn camera off",
+      "partial": "The browser gave access to only part of your devices. You can still join; allow the camera and microphone in the address bar to use both.",
+      "denied": "No camera or microphone is available. You can join to watch and listen; allow access in the address bar and reload to take part.",
+      "join": "Join lesson",
+      "joining": "Joining…"
+    },
+    "room": {
+      "muted": "Microphone off",
+      "sharing": "Sharing screen",
+      "you": "{name} (you)",
+      "pin": "Show large",
+      "unpin": "Stop showing large",
+      "failed": "Could not connect. Their network may block direct calls; a relay server in Settings → Integrations → Video lessons fixes this.",
+      "connecting": "Connecting…",
+      "joining": "Joining…",
+      "inCall": "{count, plural, one {# person} other {# people}} in the lesson",
+      "people": "People",
+      "mute": "Turn microphone off",
+      "unmute": "Turn microphone on",
+      "cameraOff": "Turn camera off",
+      "cameraOn": "Turn camera on",
+      "shareScreen": "Share screen",
+      "stopSharing": "Stop sharing",
+      "leave": "Leave",
+      "endForAll": "End for everyone",
+      "endTitle": "End the video lesson?",
+      "endText": "Everyone in the call is disconnected. Students can rejoin only after a new lesson is started."
+    },
+    "done": {
+      "left": "You left the lesson.",
+      "ended": "The video lesson has ended.",
+      "gone": "You joined this lesson from another tab or device, so this one was closed.",
+      "error": "The connection to Kampus was lost. Check the internet and join again.",
+      "rejoin": "Join again"
+    },
+    "class": {
+      "hello": "Hello, {name}",
+      "group": "{group} · {center}",
+      "disabled": "Video lessons are switched off at your learning centre.",
+      "waiting": "Your teacher has not started the lesson yet. This page lets you in as soon as they do.",
+      "schedule": "Lesson times"
+    },
+    "card": {
+      "title": "Video lesson",
+      "live": "Live now",
+      "disabled": "Video lessons are switched off in Settings → Integrations.",
+      "liveSince": "{name} started it at {time}.",
+      "online": "{count, plural, =0 {Nobody is in the call right now.} one {# person in the call.} other {# people in the call.}}",
+      "join": "Join",
+      "end": "End for everyone",
+      "today": "Today's lesson is {start}–{end}.",
+      "noLessonToday": "No lesson today; you can still start a call.",
+      "start": "Start video lesson",
+      "starting": "Starting…",
+      "links": "Students' links",
+      "last": "Last video lesson {date}: {count, plural, =0 {no students joined} one {# student joined} other {# students joined}}",
+      "minutes": "{count} min"
+    },
+    "links": {
+      "title": "Students' video lesson links",
+      "description": "Each student has a personal link that works for every lesson of this group. Students open it on a phone or computer; no app or account is needed.",
+      "empty": "The group has no current students.",
+      "copy": "Copy {name}'s link",
+      "reset": "Make a new link for {name}",
+      "resetDone": "{name} has a new link; the old one no longer works.",
+      "copyAll": "Copy all links",
+      "copyFailed": "The browser did not allow copying. Select the link and copy it by hand.",
+      "smsLabel": "Send links by SMS",
+      "smsDefault": "{studentName}, your video lesson link: {link}",
+      "smsHint": "{link} and {studentName} are filled in for each student. Students without a phone number are skipped.",
+      "sending": "Sending…",
+      "sendSms": "Send SMS",
+      "smsResult": "Sent {sent}, failed {failed}, skipped {skipped} without a phone number."
     }
   }
 }

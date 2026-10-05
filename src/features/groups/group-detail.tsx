@@ -57,6 +57,8 @@ import { GroupCoinsTab } from "@/features/coins/group-coins-tab";
 import { GroupExamsTab } from "@/features/exams/group-exams-tab";
 import { GroupKnowledgeTab } from "@/features/tests/group-knowledge-tab";
 import { GroupTestsTab } from "@/features/tests/group-tests-tab";
+import { GroupVideoCard } from "@/features/video/group-video-card";
+import type { GroupVideoDto } from "@/server/services/video/video.service";
 import type { CoinReasonDto, GroupCoinRowDto } from "@/server/services/coins/coins.service";
 import type { ExamDto, ExamOptions } from "@/server/services/exams/exams.service";
 import type {
@@ -101,6 +103,7 @@ export function GroupDetail({
   knowledge,
   coins,
   coinReasons,
+  video,
   paymentOptions,
   options,
   branches,
@@ -125,6 +128,7 @@ export function GroupDetail({
   knowledge: GroupKnowledgeDto | null;
   coins: GroupCoinRowDto[];
   coinReasons: CoinReasonDto[];
+  video: GroupVideoDto;
   paymentOptions: PaymentOptionsDto;
   options: GroupFormOptions;
   branches: BranchOption[];
@@ -352,6 +356,13 @@ export function GroupDetail({
               )}
             </CardContent>
           </Card>
+
+          <GroupVideoCard
+            groupId={group.id}
+            initial={video}
+            canHost={can.mark && !archived}
+            canSms={can.sms}
+          />
 
           <Card>
             <CardContent className="pt-6">

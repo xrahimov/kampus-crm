@@ -143,14 +143,16 @@ model User {
   purchasesDecided PurchaseRequest[]  @relation("purchaseDecider")
   questionsWritten QuestionBankItem[] @relation("questionAuthor")
 
-  smsSent           SmsMessage[]      @relation("smsSender")
-  calls             CallLog[]         @relation("callStaff")
+  smsSent           SmsMessage[]       @relation("smsSender")
+  calls             CallLog[]          @relation("callStaff")
   botRecipient      BotRecipient?
   staffCheckIns     StaffAttendance[]
   workSchedules     WorkSchedule[]
-  membershipsClosed GroupMembership[] @relation("membershipsClosed")
-  testsWritten      Test[]            @relation("testAuthor")
-  attemptsEntered   TestAttempt[]     @relation("attemptEnteredBy")
+  membershipsClosed GroupMembership[]  @relation("membershipsClosed")
+  testsWritten      Test[]             @relation("testAuthor")
+  attemptsEntered   TestAttempt[]      @relation("attemptEnteredBy")
+  videoRoomsStarted VideoRoom[]        @relation("videoRoomStarter")
+  videoPeers        VideoParticipant[]
 }
 
 /// A role is a named bundle of permission codes. System roles are seeded and
@@ -496,6 +498,7 @@ model Group {
   coins           CoinTransaction[]
   tests           TestGroup[]
   testAttempts    TestAttempt[]
+  videoRooms      VideoRoom[]
 
   @@index([branchId, status])
   @@index([courseId])
@@ -572,6 +575,7 @@ model Lesson {
   group       Group        @relation(fields: [groupId], references: [id], onDelete: Cascade)
   attendances Attendance[]
   grades      Grade[]
+  videoRooms  VideoRoom[]
 
   @@unique([groupId, date, startTime])
   @@index([groupId, date])
@@ -614,6 +618,7 @@ model Student {
   testAttempts   TestAttempt[]
   smsMessages    SmsMessage[]
   callLogs       CallLog[]
+  videoPeers     VideoParticipant[]
 
   @@index([branchId, isArchived])
   @@index([phone])
@@ -640,6 +645,8 @@ model GroupMembership {
   leftById    String?
   leftBy      User?            @relation("membershipsClosed", fields: [leftById], references: [id])
   graduate    GraduateRecord?
+  /// Personal link to the group's video lessons (/class/<token>); made on first use.
+  videoToken  String?          @unique
   createdAt   DateTime         @default(now())
   updatedAt   DateTime         @updatedAt
 
@@ -1602,6 +1609,7 @@ enum IntegrationProvider {
   AMOCRM
   TELEPHONY
   FACE_ID
+  VIDEO
 }
 
 /// One row per provider: enabled flag plus its settings (A-83). Secrets are masked in the API.
@@ -1733,4 +1741,80 @@ model Notification {
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId, readAt, createdAt])
+}
+
+// ---------------------------------------------------------------------------
+// Video lessons: browser-to-browser (WebRTC) calls tied to a group's lessons.
+// The server only relays connection messages; audio and video never pass through it.
+// ---------------------------------------------------------------------------
+
+enum VideoRoomStatus {
+  LIVE
+  ENDED
+}
+
+enum VideoPeerRole {
+  HOST
+  STAFF
+  STUDENT
+}
+
+/// One video lesson of a group. At most one LIVE room per group (checked in the service).
+model VideoRoom {
+  id          String          @id @default(cuid())
+  groupId     String
+  lessonId    String?
+  status      VideoRoomStatus @default(LIVE)
+  startedById String
+  startedAt   DateTime        @default(now())
+  endedAt     DateTime?
+
+  group        Group              @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  lesson       Lesson?            @relation(fields: [lessonId], references: [id], onDelete: SetNull)
+  startedBy    User               @relation("videoRoomStarter", fields: [startedById], references: [id])
+  participants VideoParticipant[]
+  signals      VideoSignal[]
+
+  @@index([groupId, status])
+  @@index([lessonId])
+}
+
+/// One browser in a room. Its id is the peer id other browsers address; the
+/// secret (stored hashed) proves the browser owns it.
+model VideoParticipant {
+  id          String        @id @default(cuid())
+  roomId      String
+  role        VideoPeerRole
+  userId      String?
+  studentId   String?
+  displayName String
+  secretHash  String
+  /// Last reported { audio, video, screen } switches, for the icons others see.
+  media       Json?
+  joinedAt    DateTime      @default(now())
+  lastSeenAt  DateTime      @default(now())
+  leftAt      DateTime?
+
+  room    VideoRoom @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  user    User?     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  student Student?  @relation(fields: [studentId], references: [id], onDelete: Cascade)
+
+  @@index([roomId, lastSeenAt])
+  @@index([userId])
+  @@index([studentId])
+}
+
+/// Offer, answer or ICE candidate from one browser to another; deleted once read.
+model VideoSignal {
+  id        Int      @id @default(autoincrement())
+  roomId    String
+  fromId    String
+  toId      String
+  kind      String
+  payload   Json
+  createdAt DateTime @default(now())
+
+  room VideoRoom @relation(fields: [roomId], references: [id], onDelete: Cascade)
+
+  @@index([roomId, toId, id])
 }
