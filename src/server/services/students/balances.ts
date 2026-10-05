@@ -115,51 +115,58 @@ export async function syncCharges(db: DbClient, membershipIds: string[]): Promis
       givenAt: dateToIso(d.givenAt),
       used: d._count.charges,
     }));
-    for (const month of months) {
-      const has = existing.has(month);
-      if (has && month !== currentMonth) continue;
-      const { total, counted } = countLessons(lessons, window, month);
-      let discount = null;
-      if (!has) {
-        discount = discountFor(discounts, month);
-        if (discount) discount.used += 1;
-      }
-      const price = discount ? discount.discountedPrice : basePrice;
-      const amount = chargeAmount(price, total, counted);
-      if (has) {
-        // The current month moves with the membership until it ends; the price it
-        // was charged at (and any discount) stays.
-        await db.charge.update({
-          where: { membershipId_month: { membershipId: m.id, month: isoToDate(month) } },
-          data: { lessonsTotal: total, lessonsCounted: counted, amount },
-        });
-      } else {
-        try {
-          await db.charge.create({
-            data: {
-              membershipId: m.id,
-              month: isoToDate(month),
-              price,
-              amount,
-              lessonsTotal: total,
-              lessonsCounted: counted,
-              discountId: discount?.id ?? null,
-            },
+    try {
+      for (const month of months) {
+        const has = existing.has(month);
+        if (has && month !== currentMonth) continue;
+        const { total, counted } = countLessons(lessons, window, month);
+        let discount = null;
+        if (!has) {
+          discount = discountFor(discounts, month);
+          if (discount) discount.used += 1;
+        }
+        const price = discount ? discount.discountedPrice : basePrice;
+        const amount = chargeAmount(price, total, counted);
+        if (has) {
+          // The current month moves with the membership until it ends; the price it
+          // was charged at (and any discount) stays.
+          await db.charge.update({
+            where: { membershipId_month: { membershipId: m.id, month: isoToDate(month) } },
+            data: { lessonsTotal: total, lessonsCounted: counted, amount },
           });
-        } catch (error) {
-          // Balances are computed on demand from many places at once (a page,
-          // the daily job, a report), so another caller may have written this
-          // month's row between our read and this insert. It used the same
-          // inputs, so keep its row; only the moving current month is refreshed.
-          if (prismaCode(error) !== "P2002") throw error;
-          if (month === currentMonth) {
-            await db.charge.update({
-              where: { membershipId_month: { membershipId: m.id, month: isoToDate(month) } },
-              data: { lessonsTotal: total, lessonsCounted: counted, amount },
+        } else {
+          try {
+            await db.charge.create({
+              data: {
+                membershipId: m.id,
+                month: isoToDate(month),
+                price,
+                amount,
+                lessonsTotal: total,
+                lessonsCounted: counted,
+                discountId: discount?.id ?? null,
+              },
             });
+          } catch (error) {
+            // Balances are computed on demand from many places at once (a page,
+            // the daily job, a report), so another caller may have written this
+            // month's row between our read and this insert. It used the same
+            // inputs, so keep its row; only the moving current month is refreshed.
+            if (prismaCode(error) !== "P2002") throw error;
+            if (month === currentMonth) {
+              await db.charge.update({
+                where: { membershipId_month: { membershipId: m.id, month: isoToDate(month) } },
+                data: { lessonsTotal: total, lessonsCounted: counted, amount },
+              });
+            }
           }
         }
       }
+    } catch (error) {
+      // The membership was deleted meanwhile (e.g. its group was removed); it
+      // no longer has a balance, so skip it instead of failing every caller.
+      const code = prismaCode(error);
+      if (code !== "P2003" && code !== "P2025") throw error;
     }
   }
 }

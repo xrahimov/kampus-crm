@@ -35,7 +35,11 @@ const SECRET_FIELDS: Record<IntegrationProvider, readonly string[]> = {
   AMOCRM: ["secretKey", "authorizationCode"],
   TELEPHONY: ["webhookSecret"],
   FACE_ID: ["webhookSecret"],
+  VIDEO: ["turnCredential", "turnSecret"],
 };
+
+/** Providers that work without any setup and are therefore on until switched off. */
+const ON_BY_DEFAULT: readonly IntegrationProvider[] = ["VIDEO"];
 
 type Config<P extends IntegrationProvider> = Omit<IntegrationInput<P>, "isEnabled">;
 
@@ -72,7 +76,8 @@ async function loadRow<P extends IntegrationProvider>(db: DbClient, provider: P)
   const stored = (row?.config ?? {}) as Record<string, unknown>;
   const { isEnabled: _ignored, ...configDefaults } = base;
   const config = { ...configDefaults, ...stored } as Config<P> & Record<string, unknown>;
-  return { organizationId, row, isEnabled: row?.isEnabled ?? false, config };
+  const isEnabled = row?.isEnabled ?? ON_BY_DEFAULT.includes(provider);
+  return { organizationId, row, isEnabled, config };
 }
 
 /** The raw configuration for the adapters; never returned to clients. */
@@ -81,7 +86,7 @@ export async function loadIntegrationConfig<P extends IntegrationProvider>(
   provider: P,
 ): Promise<(Config<P> & { isEnabled: boolean }) | null> {
   const { row, isEnabled, config } = await loadRow(db, provider);
-  if (!row) return null;
+  if (!row && !ON_BY_DEFAULT.includes(provider)) return null;
   return { ...config, isEnabled } as Config<P> & { isEnabled: boolean };
 }
 

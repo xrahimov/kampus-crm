@@ -7,8 +7,8 @@ import { locales, routing } from "@/i18n/routing";
 const intl = createIntlMiddleware(routing);
 
 const PUBLIC_PATHS = new Set(["/login"]);
-/** Path prefixes anyone may open (public lead forms, Phase 7). */
-const PUBLIC_PREFIXES = ["/forms/"];
+/** Path prefixes anyone may open (public lead forms, students' video lesson links). */
+const PUBLIC_PREFIXES = ["/forms/", "/class/"];
 
 function stripLocale(pathname: string): { locale: string | null; rest: string } {
   const match = pathname.match(/^\/([a-z]{2})(\/.*)?$/);

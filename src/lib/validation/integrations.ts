@@ -186,7 +186,14 @@ export const botRecipientSchema = z.object({
 });
 export type BotRecipientInput = z.infer<typeof botRecipientSchema>;
 
-export const INTEGRATION_PROVIDERS = ["SMS", "TELEGRAM", "AMOCRM", "TELEPHONY", "FACE_ID"] as const;
+export const INTEGRATION_PROVIDERS = [
+  "SMS",
+  "TELEGRAM",
+  "AMOCRM",
+  "TELEPHONY",
+  "FACE_ID",
+  "VIDEO",
+] as const;
 export type IntegrationProvider = (typeof INTEGRATION_PROVIDERS)[number];
 
 const secret = z.string().trim().max(500);
@@ -227,12 +234,48 @@ export const faceIdIntegrationSchema = z.object({
   lateAfterMinutes: z.coerce.number().int().min(0).max(240).default(0),
 });
 
+/** Public STUN servers that need no account; used until the centre sets its own. */
+export const DEFAULT_STUN_URLS = "stun:stun.l.google.com:19302, stun:stun.cloudflare.com:3478";
+
+/** Comma- or space-separated `stun:`/`turn:`/`turns:` URLs. */
+const iceUrlList = (schemes: RegExp) =>
+  z
+    .string()
+    .trim()
+    .max(1000)
+    .refine(
+      (v) =>
+        v
+          .split(/[\s,]+/)
+          .filter(Boolean)
+          .every((u) => schemes.test(u)),
+      "validation.iceUrl",
+    );
+
+/**
+ * Video lessons (browser-to-browser WebRTC). STUN finds each browser's public
+ * address; a TURN relay is optional and only needed behind strict networks.
+ * `turnSecret` is coturn's `static-auth-secret`: when set, short-lived TURN
+ * passwords are minted per call and the secret never reaches a browser.
+ */
+export const videoIntegrationSchema = z.object({
+  isEnabled: z.boolean(),
+  stunUrls: iceUrlList(/^stuns?:\S+$/).default(DEFAULT_STUN_URLS),
+  turnUrls: iceUrlList(/^turns?:\S+$/).default(""),
+  turnUsername: z.string().trim().max(200).default(""),
+  turnCredential: secret.default(""),
+  turnSecret: secret.default(""),
+  /** People in one call; every browser sends its video to every other one. */
+  maxParticipants: z.coerce.number().int().min(2).max(30).default(12),
+});
+
 export const integrationSchemas = {
   SMS: smsIntegrationSchema,
   TELEGRAM: telegramIntegrationSchema,
   AMOCRM: amoCrmIntegrationSchema,
   TELEPHONY: telephonyIntegrationSchema,
   FACE_ID: faceIdIntegrationSchema,
+  VIDEO: videoIntegrationSchema,
 } as const;
 export type IntegrationInput<P extends IntegrationProvider> = z.infer<
   (typeof integrationSchemas)[P]

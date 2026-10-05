@@ -174,7 +174,11 @@
     "importDuplicate": "Oldingi qatorning takrori",
     "importExists": "Bu telefonli o'quvchi allaqachon mavjud",
     "importAlreadyIn": "Allaqachon bu guruhda",
-    "notGraduated": "Bu o'quvchi guruhni bitirmagan"
+    "notGraduated": "Bu o'quvchi guruhni bitirmagan",
+    "videoDisabled": "Video darslar Sozlamalar → Integratsiyalarda o‘chirilgan.",
+    "videoFull": "Dars to‘lgan. Markazdan Sozlamalar → Integratsiyalarda chegarani oshirishni so‘rang.",
+    "videoEnded": "Bu video dars allaqachon yakunlangan.",
+    "videoNotStarted": "O‘qituvchi hali darsni boshlamadi."
   },
   "validation": {
     "phone": "+998 90 123 45 67 ko‘rinishida raqam kiriting.",
@@ -246,7 +250,10 @@
     "categoryUnknown": "Noma'lum kategoriya.",
     "branchUnknown": "Noma'lum filial.",
     "noRecipients": "Yuboradigan kishi yo'q: tanlovda telefon raqamlari yo'q.",
-    "importTooLarge": "Qatorlar juda ko'p (maks. {max})"
+    "importTooLarge": "Qatorlar juda ko'p (maks. {max})",
+    "iceUrl": "stun:, turn: yoki turns: bilan boshlanadigan manzillarni vergul bilan kiriting.",
+    "linkPlaceholder": "Matnda '{link}' bo‘lishi kerak.",
+    "lessonUnknown": "Bu dars guruhga tegishli emas."
   },
   "roles": {
     "CEO": "CEO",
@@ -2395,7 +2402,8 @@
         "SmsTemplate": "SMS shabloni",
         "StaffAttendance": "Xodimlar davomati",
         "Test": "Test",
-        "User": "Xodim"
+        "User": "Xodim",
+        "VideoRoom": "Video dars"
       },
       "names": {
         "attendance": {
@@ -2636,6 +2644,12 @@
         },
         "workSchedule": {
           "set": "Ish jadvali belgilandi"
+        },
+        "video": {
+          "start": "Video dars boshlandi",
+          "end": "Video dars yakunlandi",
+          "resetLink": "O‘quvchining video havolasi almashtirildi",
+          "smsLinks": "Video havolalar SMS orqali yuborildi"
         }
       }
     }
@@ -2712,6 +2726,19 @@
         "lateAfterMinutes": "Kechikish hisoblanadi (daqiqadan so'ng)"
       },
       "payloadHint": "Ma'lumot: deviceId, phone (+998…), at (ISO vaqt), kind IN yoki OUT."
+    },
+    "VIDEO": {
+      "title": "Video darslar",
+      "description": "O‘qituvchi guruh sahifasidan qo‘ng‘iroqni boshlaydi, o‘quvchilar shaxsiy havola orqali qo‘shiladi. Video brauzerlar o‘rtasida to‘g‘ridan-to‘g‘ri uzatiladi; Kampus faqat ularni ulaydi.",
+      "fields": {
+        "stunUrls": "STUN serverlar",
+        "turnUrls": "TURN relay serverlar (ixtiyoriy)",
+        "turnUsername": "TURN login",
+        "turnCredential": "TURN parol",
+        "turnSecret": "TURN umumiy kaliti (login va parol o‘rniga)",
+        "maxParticipants": "Bir qo‘ng‘iroqdagi eng ko‘p odam"
+      },
+      "hint": "Bepul ommaviy STUN serverlar bilan sozlamasiz ishlaydi. Ba’zi mobil va ofis tarmoqlari to‘g‘ridan-to‘g‘ri qo‘ng‘iroqlarni to‘sadi; ular uchun TURN relay qo‘shing (masalan Cloudflare Calls TURN, Metered yoki o‘z coturn serveringiz)."
     }
   },
   "staffAttendance": {
@@ -2920,6 +2947,97 @@
       "LEAD": "Yangi lid: {name}, {column} ({source})",
       "DEBTORS": "Bugun {count} o'quvchi qarzdor",
       "BIRTHDAY": "Bugun {name} tug'ilgan kuni"
+    }
+  },
+  "video": {
+    "title": "Video dars",
+    "backToGroup": "Guruhga qaytish",
+    "staff": {
+      "startedBy": "{name} boshladi. Kamera va mikrofonni tekshirib, qo‘shiling."
+    },
+    "roles": {
+      "HOST": "O‘qituvchi",
+      "STAFF": "Mehmon",
+      "STUDENT": "O‘quvchi"
+    },
+    "lobby": {
+      "opening": "Kamera yoqilmoqda…",
+      "micOn": "Mikrofonni yoqish",
+      "micOff": "Mikrofonni o‘chirish",
+      "cameraOn": "Kamerani yoqish",
+      "cameraOff": "Kamerani o‘chirish",
+      "partial": "Brauzer qurilmalarning faqat bir qismiga ruxsat berdi. Baribir qo‘shilish mumkin; kamera va mikrofonni manzil satrida ruxsat bering.",
+      "denied": "Kamera yoki mikrofon topilmadi. Ko‘rish va eshitish uchun qo‘shilishingiz mumkin; qatnashish uchun manzil satrida ruxsat bering va sahifani yangilang.",
+      "join": "Darsga qo‘shilish",
+      "joining": "Qo‘shilmoqda…"
+    },
+    "room": {
+      "muted": "Mikrofon o‘chiq",
+      "sharing": "Ekranni ko‘rsatmoqda",
+      "you": "{name} (siz)",
+      "pin": "Katta ko‘rsatish",
+      "unpin": "Katta ko‘rsatishni bekor qilish",
+      "failed": "Ulanib bo‘lmadi. Uning tarmog‘i to‘g‘ridan-to‘g‘ri qo‘ng‘iroqlarni to‘sayotgan bo‘lishi mumkin; Sozlamalar → Integratsiyalar → Video darslarda relay server qo‘shsangiz hal bo‘ladi.",
+      "connecting": "Ulanmoqda…",
+      "joining": "Qo‘shilmoqda…",
+      "inCall": "Darsda {count} kishi",
+      "people": "Qatnashchilar",
+      "mute": "Mikrofonni o‘chirish",
+      "unmute": "Mikrofonni yoqish",
+      "cameraOff": "Kamerani o‘chirish",
+      "cameraOn": "Kamerani yoqish",
+      "shareScreen": "Ekranni ko‘rsatish",
+      "stopSharing": "Ko‘rsatishni to‘xtatish",
+      "leave": "Chiqish",
+      "endForAll": "Hamma uchun yakunlash",
+      "endTitle": "Video darsni yakunlaysizmi?",
+      "endText": "Qo‘ng‘iroqdagi hamma uziladi. O‘quvchilar faqat yangi dars boshlanganda qayta kira oladi."
+    },
+    "done": {
+      "left": "Siz darsdan chiqdingiz.",
+      "ended": "Video dars yakunlandi.",
+      "gone": "Siz darsga boshqa oyna yoki qurilmadan qo‘shildingiz, shuning uchun bu yerda yopildi.",
+      "error": "Kampus bilan aloqa uzildi. Internetni tekshirib, qayta qo‘shiling.",
+      "rejoin": "Qayta qo‘shilish"
+    },
+    "class": {
+      "hello": "Assalomu alaykum, {name}",
+      "group": "{group} · {center}",
+      "disabled": "O‘quv markazingizda video darslar o‘chirilgan.",
+      "waiting": "O‘qituvchi hali darsni boshlamadi. Dars boshlanishi bilan bu sahifa sizni kiritadi.",
+      "schedule": "Dars vaqtlari"
+    },
+    "card": {
+      "title": "Video dars",
+      "live": "Hozir efirda",
+      "disabled": "Video darslar Sozlamalar → Integratsiyalarda o‘chirilgan.",
+      "liveSince": "{name} soat {time} da boshladi.",
+      "online": "{count, plural, =0 {Hozir qo‘ng‘iroqda hech kim yo‘q.} other {Qo‘ng‘iroqda {count} kishi.}}",
+      "join": "Qo‘shilish",
+      "end": "Hamma uchun yakunlash",
+      "today": "Bugungi dars: {start}–{end}.",
+      "noLessonToday": "Bugun dars yo‘q; baribir qo‘ng‘iroq boshlash mumkin.",
+      "start": "Video darsni boshlash",
+      "starting": "Boshlanmoqda…",
+      "links": "O‘quvchilar havolalari",
+      "last": "Oxirgi video dars {date}: {count, plural, =0 {o‘quvchilar qo‘shilmadi} other {{count} o‘quvchi qo‘shildi}}",
+      "minutes": "{count} daq"
+    },
+    "links": {
+      "title": "O‘quvchilarning video dars havolalari",
+      "description": "Har bir o‘quvchining shu guruhning barcha darslari uchun shaxsiy havolasi bor. Uni telefon yoki kompyuterda ochadi; ilova yoki akkaunt kerak emas.",
+      "empty": "Guruhda hozirgi o‘quvchilar yo‘q.",
+      "copy": "Havolani nusxalash: {name}",
+      "reset": "Yangi havola: {name}",
+      "resetDone": "{name} uchun yangi havola yaratildi; eskisi endi ishlamaydi.",
+      "copyAll": "Barcha havolalarni nusxalash",
+      "copyFailed": "Brauzer nusxalashga ruxsat bermadi. Havolani belgilab, qo‘lda nusxalang.",
+      "smsLabel": "Havolalarni SMS orqali yuborish",
+      "smsDefault": "{studentName}, video dars havolangiz: {link}",
+      "smsHint": "{link} va {studentName} har bir o‘quvchi uchun to‘ldiriladi. Telefon raqami yo‘q o‘quvchilar o‘tkazib yuboriladi.",
+      "sending": "Yuborilmoqda…",
+      "sendSms": "SMS yuborish",
+      "smsResult": "Yuborildi {sent}, xato {failed}, raqamsiz o‘tkazib yuborildi {skipped}."
     }
   }
 }

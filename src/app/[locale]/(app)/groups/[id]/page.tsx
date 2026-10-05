@@ -27,6 +27,7 @@ import {
   getTestOptions,
   listGroupTests,
 } from "@/server/services/tests/tests.service";
+import { getGroupVideo } from "@/server/services/video/video.service";
 
 type Props = {
   params: Promise<{ locale: string; id: string }>;
@@ -90,6 +91,7 @@ export default async function Page({ params, searchParams }: Props) {
     knowledge,
     coins,
     coinReasons,
+    video,
   ] = await Promise.all([
     getMonthGrid(current.actor, id, month),
     listMembers(current.actor, id, { archived: str(sp.archived) === "1" }),
@@ -120,6 +122,7 @@ export default async function Page({ params, searchParams }: Props) {
     can(current.actor, "coins.give")
       ? listCoinReasons(current.actor, { activeOnly: true })
       : Promise.resolve([]),
+    getGroupVideo(current.actor, id),
   ]);
 
   return (
@@ -139,6 +142,7 @@ export default async function Page({ params, searchParams }: Props) {
       knowledge={knowledge}
       coins={coins}
       coinReasons={coinReasons}
+      video={video}
       paymentOptions={paymentOptions}
       options={options}
       branches={current.branches}

@@ -12,7 +12,7 @@ import type { IntegrationDto } from "@/server/services/integrations/integrations
 
 import { IntegrationForm, WebhookHint } from "./integration-form";
 
-/** Settings → Integrations: SMS gateway, Telegram bot, telephony, and the job queue (A-83). */
+/** Settings → Integrations: SMS gateway, Telegram bot, telephony, video lessons, and the job queue (A-83). */
 export function IntegrationsPage({ integrations }: { integrations: IntegrationDto[] }) {
   const t = useTranslations("integrations");
   const by = (p: IntegrationDto["provider"]) => integrations.find((i) => i.provider === p)!;
@@ -59,6 +59,20 @@ export function IntegrationsPage({ integrations }: { integrations: IntegrationDt
         fields={[{ key: "webhookSecret", secret: true }]}
         extra={<WebhookHint path="telephony" />}
         testId="integration-telephony"
+      />
+      <IntegrationForm
+        provider="VIDEO"
+        dto={by("VIDEO")}
+        fields={[
+          { key: "stunUrls" },
+          { key: "turnUrls" },
+          { key: "turnUsername" },
+          { key: "turnCredential", secret: true },
+          { key: "turnSecret", secret: true },
+          { key: "maxParticipants", type: "number" },
+        ]}
+        extra={<p className="text-xs text-muted-foreground">{t("VIDEO.hint")}</p>}
+        testId="integration-video"
       />
       <Card>
         <CardHeader>
