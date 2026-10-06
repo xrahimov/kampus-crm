@@ -493,7 +493,8 @@ export async function joinVideoRoomAsStaff(
   );
 }
 
-async function membershipByToken(db: DbClient, token: string) {
+/** The membership a student link belongs to; null when the link, student or group is no longer valid. */
+export async function membershipByToken(db: DbClient, token: string) {
   if (!/^[A-Za-z0-9_-]{20,64}$/.test(token)) return null;
   const membership = await db.groupMembership.findUnique({
     where: { videoToken: token },

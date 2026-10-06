@@ -22,18 +22,20 @@ export default async function Page({ params }: Props) {
   if (!form) notFound();
   const t = await getTranslations("leads.publicForm");
   return (
-    <Card>
-      <CardHeader>
-        {form.logoUrl && (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img src={form.logoUrl} alt="" className="mb-2 h-12 w-auto self-start" />
-        )}
-        <CardTitle>{form.name}</CardTitle>
-        <CardDescription>{t("intro", { organization: form.organizationName })}</CardDescription>
-      </CardHeader>
-      <CardContent>
-        <PublicLeadForm slug={slug} />
-      </CardContent>
-    </Card>
+    <div className="mx-auto w-full max-w-md">
+      <Card>
+        <CardHeader>
+          {form.logoUrl && (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={form.logoUrl} alt="" className="mb-2 h-12 w-auto self-start" />
+          )}
+          <CardTitle>{form.name}</CardTitle>
+          <CardDescription>{t("intro", { organization: form.organizationName })}</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <PublicLeadForm slug={slug} />
+        </CardContent>
+      </Card>
+    </div>
   );
 }

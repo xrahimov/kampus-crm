@@ -2,7 +2,8 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { setRequestLocale } from "next-intl/server";
 
-import { ClassPage } from "@/features/video/class-page";
+import { PortalPage } from "@/features/portal/portal-page";
+import { getPortal } from "@/server/services/portal/portal.service";
 import { getClassPage } from "@/server/services/video/video.service";
 
 type Props = { params: Promise<{ locale: string; token: string }> };
@@ -13,11 +14,18 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   return page ? { title: `${page.groupName} · ${page.organizationName}`, robots: "noindex" } : {};
 }
 
-/** `/class/:token`: a student's personal link to their group's video lessons. */
+/**
+ * `/class/:token`: a student's personal page. The link was made for video
+ * lessons; it now also shows the student's lessons, marks, money and results.
+ */
 export default async function Page({ params }: Props) {
   const { locale, token } = await params;
   setRequestLocale(locale);
-  const page = await getClassPage(token);
-  if (!page) notFound();
-  return <ClassPage token={token} initial={page} />;
+  const [page, portal] = await Promise.all([getClassPage(token), getPortal(token)]);
+  if (!page || !portal) notFound();
+  return (
+    <div className="mx-auto w-full max-w-2xl">
+      <PortalPage token={token} initial={page} portal={portal} />
+    </div>
+  );
 }
