@@ -276,6 +276,8 @@ export const videoIntegrationSchema = z.object({
   turnSecret: secret.default(""),
   /** People in one call; every browser sends its video to every other one. */
   maxParticipants: z.coerce.number().int().min(2).max(30).default(12),
+  /** Lesson recordings older than this are deleted with their file; 0 keeps them forever. */
+  recordingKeepDays: z.coerce.number().int().min(0).max(3650).default(90),
 });
 
 /**

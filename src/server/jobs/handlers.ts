@@ -5,6 +5,7 @@ import {
   saveAmoCrmTokens,
 } from "@/server/services/integrations/integrations.service";
 import { runDailyNotifications } from "@/server/services/dashboard/notifications.service";
+import { purgeOldRecordings } from "@/server/services/materials/materials.service";
 import { runDailyAutoSms } from "@/server/services/sms/auto-sms.service";
 import {
   reminderSlotKey,
@@ -48,6 +49,9 @@ export function registerJobHandlers(): void {
     const { date } = payloadOf<{ date?: string }>(payload);
     await runDailyAutoSms(db, date);
     await runDailyNotifications(db, date ?? new Date().toISOString().slice(0, 10));
+    // Old lesson recordings go once a day too (Settings → Integrations → Video lessons).
+    const purged = await purgeOldRecordings(db);
+    if (purged > 0) console.log(`[worker] deleted ${purged} old lesson recording(s)`);
   });
 
   registerJobHandler("telegram.reminders", async (_payload, db) => {

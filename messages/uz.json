@@ -2828,9 +2828,11 @@
         "turnUsername": "TURN login",
         "turnCredential": "TURN parol",
         "turnSecret": "TURN umumiy kaliti (login va parol o‘rniga)",
-        "maxParticipants": "Bir qo‘ng‘iroqdagi eng ko‘p odam"
+        "maxParticipants": "Bir qo‘ng‘iroqdagi eng ko‘p odam",
+        "recordingKeepDays": "Dars yozuvlarini saqlash muddati (kun)"
       },
-      "hint": "Bepul ommaviy STUN serverlar bilan sozlamasiz ishlaydi. Ba’zi mobil va ofis tarmoqlari to‘g‘ridan-to‘g‘ri qo‘ng‘iroqlarni to‘sadi; ular uchun TURN relay qo‘shing (masalan Cloudflare Calls TURN, Metered yoki o‘z coturn serveringiz)."
+      "hint": "Bepul ommaviy STUN serverlar bilan sozlamasiz ishlaydi. Ba’zi mobil va ofis tarmoqlari to‘g‘ridan-to‘g‘ri qo‘ng‘iroqlarni to‘sadi; ular uchun TURN relay qo‘shing (masalan Cloudflare Calls TURN, Metered yoki o‘z coturn serveringiz).",
+      "retentionHint": "Bundan eski yozuvlar har kecha video fayli bilan birga o'chiriladi, shunda server diski to'lib qolmaydi. 0 — doimiy saqlash."
     },
     "PAYME": {
       "title": "Payme",

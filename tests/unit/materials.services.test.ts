@@ -22,6 +22,7 @@ import {
   deleteMaterial,
   listGroupMaterials,
   listPortalMaterials,
+  purgeOldRecordings,
   saveRecording,
 } from "@/server/services/materials/materials.service";
 import { createBranch } from "@/server/services/settings/branches.service";
@@ -284,6 +285,36 @@ describe("lesson materials", () => {
     await deleteMaterial(teacher, saved.id);
     expect(await storage.getRange(key)).toBeNull();
     expect(await prisma.lessonMaterial.count({ where: { id: saved.id } })).toBe(0);
+  });
+
+  it("deletes recordings older than the video settings allow, with their files", async () => {
+    const room = await startVideoRoom(teacher, groupId, { lessonId });
+    const record = () =>
+      saveRecording(teacher, room.id, {
+        contentType: "video/webm",
+        body: bodyOf(100),
+        durationSec: 5,
+      });
+    const old = await record();
+    const recent = await record();
+    const now = new Date();
+    await prisma.lessonMaterial.update({
+      where: { id: old.id },
+      data: { createdAt: new Date(now.getTime() - 91 * 24 * 60 * 60 * 1000) },
+    });
+    const storage = new LocalStorage(uploadDir);
+    const keyOf = (url: string) => url.slice("/api/v1/files/".length);
+
+    // Default: 90 days.
+    expect(await purgeOldRecordings(prisma, now)).toBeGreaterThanOrEqual(1);
+    expect(await prisma.lessonMaterial.count({ where: { id: old.id } })).toBe(0);
+    expect(await storage.getRange(keyOf(old.url))).toBeNull();
+    expect(await prisma.lessonMaterial.count({ where: { id: recent.id } })).toBe(1);
+    expect(await storage.getRange(keyOf(recent.url))).not.toBeNull();
+    expect(
+      await prisma.auditLog.count({ where: { entityId: old.id, action: "material.delete" } }),
+    ).toBe(1);
+    await deleteMaterial(teacher, recent.id);
   });
 
   it("refuses recordings over the size limit and keeps nothing", async () => {
