@@ -97,7 +97,7 @@ export interface PeerDto {
   displayName: string;
   role: VideoPeerRole;
   joinedAt: string;
-  media: { audio: boolean; video: boolean; screen: boolean } | null;
+  media: { audio: boolean; video: boolean; screen: boolean; hand?: boolean } | null;
 }
 
 export interface SyncDto {
@@ -132,15 +132,22 @@ interface VideoConfig {
   maxParticipants: number;
 }
 
-export async function loadVideoConfig(db: DbClient = prisma): Promise<VideoConfig> {
+export async function loadVideoConfig(
+  db: DbClient = prisma,
+  env: Record<string, string | undefined> = process.env,
+): Promise<VideoConfig> {
   const c = await loadIntegrationConfig(db, "VIDEO");
+  const turnUrls = splitUrls(c?.turnUrls);
+  // No relay in Settings: fall back to the one the deployment ships (docker-compose
+  // `turn` service with TURN_URLS and TURN_SECRET), so a fresh server relays at once.
+  const envRelay = turnUrls.length === 0 && env.TURN_URLS && env.TURN_SECRET;
   return {
     enabled: c?.isEnabled ?? true,
     stunUrls: splitUrls(c?.stunUrls ?? DEFAULT_STUN_URLS),
-    turnUrls: splitUrls(c?.turnUrls),
-    turnUsername: c?.turnUsername ?? "",
-    turnCredential: c?.turnCredential ?? "",
-    turnSecret: c?.turnSecret ?? "",
+    turnUrls: envRelay ? splitUrls(env.TURN_URLS) : turnUrls,
+    turnUsername: envRelay ? "" : (c?.turnUsername ?? ""),
+    turnCredential: envRelay ? "" : (c?.turnCredential ?? ""),
+    turnSecret: envRelay ? env.TURN_SECRET! : (c?.turnSecret ?? ""),
     maxParticipants: c?.maxParticipants ?? 12,
   };
 }
@@ -610,7 +617,10 @@ export async function syncVideoPeer(
 
   const peers = (await onlinePeers(db, me.roomId, now)).filter((p) => p.id !== me.id);
   const peerIds = new Set(peers.map((p) => p.id));
-  const outgoing = input.signals.filter((s) => peerIds.has(s.to));
+  // Only the teacher may switch other people's microphones off.
+  const outgoing = input.signals.filter(
+    (s) => peerIds.has(s.to) && (s.kind !== "mute" || me.role === "HOST"),
+  );
   if (outgoing.length > 0) {
     await db.videoSignal.createMany({
       data: outgoing.map((s) => ({

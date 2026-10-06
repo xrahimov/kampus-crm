@@ -3143,7 +3143,17 @@
       "leave": "Leave",
       "endForAll": "End for everyone",
       "endTitle": "End the video lesson?",
-      "endText": "Everyone in the call is disconnected. Students can rejoin only after a new lesson is started."
+      "endText": "Everyone in the call is disconnected. Students can rejoin only after a new lesson is started.",
+      "handRaised": "Hand raised",
+      "raiseHand": "Raise hand",
+      "lowerHand": "Lower hand",
+      "chat": "Chat",
+      "chatEmpty": "No messages yet. Messages stay only while the lesson is open.",
+      "chatPlaceholder": "Write a message…",
+      "send": "Send",
+      "muteAll": "Turn everyone's microphone off",
+      "mutePerson": "Turn {name}'s microphone off",
+      "mutedBy": "{name} turned your microphone off. You can turn it back on."
     },
     "done": {
       "left": "You left the lesson.",
