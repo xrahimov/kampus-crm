@@ -2949,6 +2949,58 @@
       "BIRTHDAY": "{name} has a birthday today"
     }
   },
+  "portal": {
+    "teacher": "Teacher: {names}",
+    "nextLesson": "Next lesson: {date}, {start}–{end}. This page lets you in as soon as your teacher starts it.",
+    "stats": {
+      "attendance": "Attendance",
+      "grade": "Average grade",
+      "lessons": "Lessons held",
+      "coins": "Coins"
+    },
+    "tabs": {
+      "lessons": "Lessons",
+      "money": "Payments",
+      "results": "Results",
+      "schedule": "Schedule"
+    },
+    "lessons": {
+      "empty": "No lessons yet.",
+      "date": "Date",
+      "topic": "Topic",
+      "attendance": "Attendance",
+      "grade": "Grade"
+    },
+    "money": {
+      "balance": "Balance",
+      "monthly": "Monthly fee",
+      "nextPayment": "Next payment",
+      "debt": "You owe {amount}. Please pay at your learning centre.",
+      "empty": "No payments yet.",
+      "date": "Date",
+      "month": "For month",
+      "method": "Method",
+      "amount": "Amount"
+    },
+    "results": {
+      "exams": "Exams",
+      "noExams": "No exams yet.",
+      "tests": "Tests",
+      "noTests": "No tests yet.",
+      "date": "Date",
+      "name": "Name",
+      "score": "Score",
+      "outcome": "Result",
+      "missed": "Missed",
+      "pending": "Not graded yet",
+      "passed": "Passed",
+      "failed": "Not passed"
+    },
+    "schedule": {
+      "empty": "The group has no fixed lesson times.",
+      "until": "The group runs until {date}."
+    }
+  },
   "video": {
     "title": "Video lesson",
     "backToGroup": "Back to the group",

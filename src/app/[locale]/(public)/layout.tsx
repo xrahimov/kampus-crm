@@ -1,6 +1,6 @@
 import { setRequestLocale } from "next-intl/server";
 
-/** Pages anyone may open without signing in (public lead forms). No app shell. */
+/** Pages anyone may open without signing in (lead forms, students' pages). No app shell; each page sets its width. */
 export default async function PublicLayout({
   children,
   params,
@@ -12,7 +12,7 @@ export default async function PublicLayout({
   setRequestLocale(locale);
   return (
     <div className="flex min-h-screen items-start justify-center bg-muted/40 px-4 py-10">
-      <div className="w-full max-w-md">{children}</div>
+      <div className="w-full">{children}</div>
     </div>
   );
 }

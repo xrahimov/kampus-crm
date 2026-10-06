@@ -2949,6 +2949,58 @@
       "BIRTHDAY": "Bugun {name} tug'ilgan kuni"
     }
   },
+  "portal": {
+    "teacher": "O‘qituvchi: {names}",
+    "nextLesson": "Keyingi dars: {date}, {start}–{end}. O‘qituvchi darsni boshlashi bilan bu sahifa sizni kiritadi.",
+    "stats": {
+      "attendance": "Davomat",
+      "grade": "O‘rtacha baho",
+      "lessons": "O‘tilgan darslar",
+      "coins": "Coinlar"
+    },
+    "tabs": {
+      "lessons": "Darslar",
+      "money": "To‘lovlar",
+      "results": "Natijalar",
+      "schedule": "Jadval"
+    },
+    "lessons": {
+      "empty": "Hali darslar yo‘q.",
+      "date": "Sana",
+      "topic": "Mavzu",
+      "attendance": "Davomat",
+      "grade": "Baho"
+    },
+    "money": {
+      "balance": "Balans",
+      "monthly": "Oylik to‘lov",
+      "nextPayment": "Keyingi to‘lov",
+      "debt": "Qarzdorligingiz: {amount}. O‘quv markazida to‘lang.",
+      "empty": "Hali to‘lovlar yo‘q.",
+      "date": "Sana",
+      "month": "Qaysi oy uchun",
+      "method": "Usul",
+      "amount": "Summa"
+    },
+    "results": {
+      "exams": "Imtihonlar",
+      "noExams": "Hali imtihonlar yo‘q.",
+      "tests": "Testlar",
+      "noTests": "Hali testlar yo‘q.",
+      "date": "Sana",
+      "name": "Nomi",
+      "score": "Ball",
+      "outcome": "Natija",
+      "missed": "Qatnashmadi",
+      "pending": "Hali baholanmagan",
+      "passed": "O‘tdi",
+      "failed": "O‘tmadi"
+    },
+    "schedule": {
+      "empty": "Guruhning doimiy dars vaqti yo‘q.",
+      "until": "Guruh {date} gacha o‘qiydi."
+    }
+  },
   "video": {
     "title": "Video dars",
     "backToGroup": "Guruhga qaytish",
