@@ -193,6 +193,8 @@ export const INTEGRATION_PROVIDERS = [
   "TELEPHONY",
   "FACE_ID",
   "VIDEO",
+  "PAYME",
+  "CLICK",
 ] as const;
 export type IntegrationProvider = (typeof INTEGRATION_PROVIDERS)[number];
 
@@ -276,6 +278,29 @@ export const videoIntegrationSchema = z.object({
   maxParticipants: z.coerce.number().int().min(2).max(30).default(12),
 });
 
+/**
+ * Payme Business merchant: students pay from their personal link, Payme calls
+ * the Merchant API webhook with `Paycom:<key>` basic auth (A-106).
+ */
+export const paymeIntegrationSchema = z.object({
+  isEnabled: z.boolean(),
+  merchantId: z.string().trim().max(64).default(""),
+  key: secret.default(""),
+  /** Test cashboxes use https://checkout.test.paycom.uz. */
+  checkoutUrl: z
+    .union([z.literal(""), z.string().trim().url("validation.url").max(200)])
+    .default("")
+    .transform((v) => v || "https://checkout.paycom.uz"),
+});
+/** Click merchant (SHOP API): prepare/complete webhooks signed with the secret key (A-106). */
+export const clickIntegrationSchema = z.object({
+  isEnabled: z.boolean(),
+  serviceId: z.string().trim().max(32).default(""),
+  merchantId: z.string().trim().max(32).default(""),
+  merchantUserId: z.string().trim().max(32).default(""),
+  secretKey: secret.default(""),
+});
+
 export const integrationSchemas = {
   SMS: smsIntegrationSchema,
   TELEGRAM: telegramIntegrationSchema,
@@ -283,6 +308,8 @@ export const integrationSchemas = {
   TELEPHONY: telephonyIntegrationSchema,
   FACE_ID: faceIdIntegrationSchema,
   VIDEO: videoIntegrationSchema,
+  PAYME: paymeIntegrationSchema,
+  CLICK: clickIntegrationSchema,
 } as const;
 export type IntegrationInput<P extends IntegrationProvider> = z.infer<
   (typeof integrationSchemas)[P]

@@ -24,10 +24,12 @@ import { useMoneyFormat } from "@/lib/use-money-format";
 
 import { PortalHomeworkTab } from "./homework-tab";
 import { PortalMaterialsTab } from "./materials-tab";
+import { PayCard } from "./pay-card";
 import { TelegramCard } from "./telegram-card";
 import type { Weekday } from "@/lib/validation/groups";
 import type { PortalHomeworkDto } from "@/server/services/homework/homework.service";
 import type { MaterialDto } from "@/server/services/materials/materials.service";
+import type { PortalPayOptionsDto } from "@/server/services/payments/online-payments.service";
 import type { PortalDto } from "@/server/services/portal/portal.service";
 import type { PortalTelegramDto } from "@/server/services/telegram/student-telegram.service";
 import type { ClassPageDto, JoinDto } from "@/server/services/video/video.service";
@@ -61,6 +63,8 @@ export function PortalPage({
   homework,
   telegram,
   materials,
+  pay,
+  initialTab = "lessons",
 }: {
   token: string;
   initial: ClassPageDto;
@@ -68,6 +72,8 @@ export function PortalPage({
   homework: PortalHomeworkDto[];
   telegram: PortalTelegramDto;
   materials: MaterialDto[];
+  pay: PortalPayOptionsDto;
+  initialTab?: "lessons" | "money";
 }) {
   const t = useTranslations("portal");
   const tc = useTranslations("video.class");
@@ -96,8 +102,12 @@ export function PortalPage({
   const openHomework = homework.filter(
     (h) => !h.submission || h.submission.status === "RETURNED",
   ).length;
+  const canPay = pay.providers.length > 0 && portal.money.monthlyPrice > 0;
   const showMoney =
-    portal.money.monthlyPrice > 0 || portal.money.balance !== 0 || portal.money.payments.length > 0;
+    canPay ||
+    portal.money.monthlyPrice > 0 ||
+    portal.money.balance !== 0 ||
+    portal.money.payments.length > 0;
 
   return (
     <div className="space-y-4" data-testid="portal">
@@ -150,7 +160,7 @@ export function PortalPage({
 
       <Card>
         <CardContent className="pt-6">
-          <Tabs defaultValue="lessons">
+          <Tabs defaultValue={initialTab === "money" && showMoney ? "money" : "lessons"}>
             <TabsList className="w-full justify-start overflow-x-auto">
               <TabsTrigger value="lessons">{t("tabs.lessons")}</TabsTrigger>
               <TabsTrigger value="homework" data-testid="portal-tab-homework">
@@ -235,6 +245,7 @@ export function PortalPage({
                 {portal.money.balance < 0 && (
                   <Alert>{t("money.debt", { amount: money(-portal.money.balance) })}</Alert>
                 )}
+                {canPay && <PayCard token={token} options={pay} />}
                 {portal.money.payments.length === 0 ? (
                   <p className="text-sm text-muted-foreground">{t("money.empty")}</p>
                 ) : (

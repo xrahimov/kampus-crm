@@ -179,7 +179,8 @@
     "videoFull": "The lesson is full. Ask the centre to raise the limit in Settings → Integrations.",
     "videoEnded": "This video lesson has already ended.",
     "videoNotStarted": "The teacher has not started the lesson yet.",
-    "homeworkAccepted": "This answer was already accepted."
+    "homeworkAccepted": "This answer was already accepted.",
+    "onlinePaymentsOff": "Online payments are not switched on at your learning centre."
   },
   "validation": {
     "phone": "Enter a number like +998 90 123 45 67.",
@@ -2830,6 +2831,27 @@
         "maxParticipants": "Most people in one call"
       },
       "hint": "Works without setup using free public STUN servers. Some mobile and office networks block direct calls; for those, add a TURN relay (for example Cloudflare Calls TURN, Metered or your own coturn)."
+    },
+    "PAYME": {
+      "title": "Payme",
+      "description": "Students pay their course fee from their personal link; Payme confirms through the webhook and the payment appears in Kampus by itself.",
+      "fields": {
+        "merchantId": "Merchant ID (cashbox)",
+        "key": "Merchant key",
+        "checkoutUrl": "Checkout URL (empty = production)"
+      },
+      "hint": "In Payme Business, create a cashbox with the account field “order_id”, set this webhook as the endpoint URL and copy the key here. Use https://checkout.test.paycom.uz and the test key to try it first."
+    },
+    "CLICK": {
+      "title": "Click",
+      "description": "Students pay their course fee from their personal link; Click confirms through prepare and complete calls to the webhook.",
+      "fields": {
+        "serviceId": "Service ID",
+        "merchantId": "Merchant ID",
+        "merchantUserId": "Merchant user ID",
+        "secretKey": "Secret key"
+      },
+      "hint": "In the Click merchant cabinet, set this webhook as both the prepare and the complete URL."
     }
   },
   "staffAttendance": {
@@ -3132,6 +3154,19 @@
       "download": "Download",
       "recording": "Lesson recording",
       "duration": "{minutes} min"
+    },
+    "pay": {
+      "title": "Pay online",
+      "intro": "Pay your course fee with your card; the payment shows up here as soon as the provider confirms it.",
+      "amount": "Amount",
+      "month": "For month",
+      "payWith": "Pay with {provider}",
+      "redirecting": "Opening {provider}…",
+      "checking": "Checking your payment…",
+      "paid": "Your payment of {amount} was received. Thank you!",
+      "cancelled": "The payment was not completed. You can try again.",
+      "pending": "The payment is still being confirmed. This page updates by itself.",
+      "failed": "Could not start the payment. Try again in a moment."
     }
   },
   "telegramBot": {
@@ -3145,7 +3180,8 @@
     "homeworkAccepted": "{group}: your homework for the lesson of {date} was accepted.{comment}",
     "homeworkReturned": "{group}: your homework for the lesson of {date} was returned, please look at it again.{comment}",
     "debtor": "{group}: your balance is {debt} short. Please pay at the learning centre.",
-    "materialAdded": "{group}: new {kind, select, RECORDING {lesson recording} LINK {link} other {file}}: {title}. Open your page: {link}"
+    "materialAdded": "{group}: new {kind, select, RECORDING {lesson recording} LINK {link} other {file}}: {title}. Open your page: {link}",
+    "paymentReceived": "{group}: your payment of {amount} so'm was received. Thank you!"
   },
   "video": {
     "title": "Video lesson",
