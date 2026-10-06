@@ -27,6 +27,7 @@ import {
   getGroupVideo,
   getVideoRoom,
   iceServersFor,
+  loadVideoConfig,
   joinVideoRoomAsStaff,
   joinVideoRoomAsStudent,
   listStudentLinks,
@@ -194,6 +195,29 @@ describe("pure helpers", () => {
     );
   });
 
+  it("uses the deployment's relay when Settings name none", async () => {
+    await prisma.integrationSetting.deleteMany({ where: { provider: "VIDEO" } });
+    const env = {
+      TURN_URLS: "turn:1.2.3.4:3478?transport=udp, turn:1.2.3.4:3478?transport=tcp",
+      TURN_SECRET: "env-secret",
+    };
+    const fromEnv = await loadVideoConfig(prisma, env);
+    expect(fromEnv.turnUrls).toEqual([
+      "turn:1.2.3.4:3478?transport=udp",
+      "turn:1.2.3.4:3478?transport=tcp",
+    ]);
+    expect(fromEnv.turnSecret).toBe("env-secret");
+    expect(await loadVideoConfig(prisma, {})).toMatchObject({ turnUrls: [], turnSecret: "" });
+    await updateIntegration(
+      ceo,
+      "VIDEO",
+      videoIntegrationSchema.parse({ isEnabled: true, turnUrls: "turn:own:3478", turnSecret: "s" }),
+    );
+    const fromSettings = await loadVideoConfig(prisma, env);
+    expect(fromSettings).toMatchObject({ turnUrls: ["turn:own:3478"], turnSecret: "s" });
+    await prisma.integrationSetting.deleteMany({ where: { provider: "VIDEO" } });
+  });
+
   it("shrinks each upload as the room grows", () => {
     expect(videoBitrate("HOST", 2)).toBeGreaterThan(videoBitrate("HOST", 10));
     expect(videoBitrate("STUDENT", 1)).toBe(400_000);
@@ -280,7 +304,7 @@ describe("video lessons", () => {
 
     const first = await sync(student.participantId, student.secret, {
       signals: [{ to: host.participantId, kind: "offer", payload: { type: "offer", sdp: "x" } }],
-      state: { audio: true, video: false, screen: false },
+      state: { audio: true, video: false, screen: false, hand: true },
     });
     expect(first.status).toBe("LIVE");
     expect(first.peers.map((p) => p.id).sort()).toEqual(
@@ -294,10 +318,28 @@ describe("video lessons", () => {
       audio: true,
       video: false,
       screen: false,
+      hand: true,
     });
     const acked = await sync(host.participantId, host.secret, { after: got.signals[0]!.id });
     expect(acked.signals).toHaveLength(0);
     expect(await prisma.videoSignal.count({ where: { roomId } })).toBe(0);
+
+    // Chat reaches anyone; "mute" is kept only when the teacher sends it.
+    await sync(student.participantId, student.secret, {
+      signals: [
+        { to: host.participantId, kind: "chat", payload: { text: "hi" } },
+        { to: guest.participantId, kind: "mute", payload: null },
+      ],
+    });
+    await sync(host.participantId, host.secret, {
+      signals: [{ to: guest.participantId, kind: "mute", payload: null }],
+    });
+    const guestInbox = await sync(guest.participantId, guest.secret);
+    expect(guestInbox.signals.map((s) => [s.from, s.kind])).toEqual([[host.participantId, "mute"]]);
+    const hostInbox = await sync(host.participantId, host.secret);
+    expect(hostInbox.signals.map((s) => s.kind)).toEqual(["chat"]);
+    await sync(host.participantId, host.secret, { after: hostInbox.signals[0]!.id });
+    await sync(guest.participantId, guest.secret, { after: guestInbox.signals[0]!.id });
 
     await expect(sync(host.participantId, "wrong-secret-wrong-secret")).rejects.toMatchObject({
       code: "FORBIDDEN",

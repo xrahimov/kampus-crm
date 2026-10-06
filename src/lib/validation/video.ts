@@ -10,8 +10,11 @@ export const startVideoSchema = z.object({
 });
 export type StartVideoInput = z.infer<typeof startVideoSchema>;
 
-/** WebRTC messages one browser sends another through the server. */
-export const SIGNAL_KINDS = ["offer", "answer", "candidate", "restart"] as const;
+/**
+ * Messages one browser sends another through the server: the WebRTC handshake,
+ * plus in-call chat lines and the teacher's "mute" request.
+ */
+export const SIGNAL_KINDS = ["offer", "answer", "candidate", "restart", "chat", "mute"] as const;
 export type SignalKind = (typeof SIGNAL_KINDS)[number];
 
 export const videoSyncSchema = z.object({
@@ -33,9 +36,14 @@ export const videoSyncSchema = z.object({
     .default([]),
   /** The browser is closing: mark the participant gone at once. */
   leave: z.boolean().default(false),
-  /** Shown to others as muted / camera off icons. */
+  /** Shown to others as muted / camera off / sharing / raised-hand marks. */
   state: z
-    .object({ audio: z.boolean(), video: z.boolean(), screen: z.boolean().default(false) })
+    .object({
+      audio: z.boolean(),
+      video: z.boolean(),
+      screen: z.boolean().default(false),
+      hand: z.boolean().default(false),
+    })
     .optional(),
 });
 export type VideoSyncInput = z.infer<typeof videoSyncSchema>;

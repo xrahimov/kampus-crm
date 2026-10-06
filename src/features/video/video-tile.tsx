@@ -1,6 +1,6 @@
 "use client";
 
-import { MicOff, MonitorUp, Pin, VideoOff } from "lucide-react";
+import { Hand, MicOff, MonitorUp, Pin, VideoOff } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useEffect, useRef, useState } from "react";
 
@@ -53,6 +53,7 @@ export function VideoTile({
   audioOn,
   videoOn,
   screen = false,
+  hand = false,
   status,
   pinned = false,
   onPin,
@@ -65,6 +66,7 @@ export function VideoTile({
   audioOn: boolean;
   videoOn: boolean;
   screen?: boolean;
+  hand?: boolean;
   /** Shown over the picture while the connection is not up. */
   status?: string | null;
   pinned?: boolean;
@@ -118,6 +120,16 @@ export function VideoTile({
           <span className="grid size-16 place-items-center rounded-full bg-sidebar text-xl font-semibold text-sidebar-foreground sm:size-20 sm:text-2xl">
             {initials || "?"}
           </span>
+        </div>
+      )}
+      {hand && (
+        <div
+          className="absolute top-2 left-2 grid size-8 place-items-center rounded-md bg-amber-400 text-sidebar shadow"
+          aria-label={t("handRaised")}
+          role="img"
+          data-testid="hand-mark"
+        >
+          <Hand className="size-4" />
         </div>
       )}
       {status && (

@@ -3143,7 +3143,17 @@
       "leave": "Chiqish",
       "endForAll": "Hamma uchun yakunlash",
       "endTitle": "Video darsni yakunlaysizmi?",
-      "endText": "Qo‘ng‘iroqdagi hamma uziladi. O‘quvchilar faqat yangi dars boshlanganda qayta kira oladi."
+      "endText": "Qo‘ng‘iroqdagi hamma uziladi. O‘quvchilar faqat yangi dars boshlanganda qayta kira oladi.",
+      "handRaised": "Qo‘l ko‘tarilgan",
+      "raiseHand": "Qo‘l ko‘tarish",
+      "lowerHand": "Qo‘lni tushirish",
+      "chat": "Chat",
+      "chatEmpty": "Hali xabar yo‘q. Xabarlar faqat dars davomida saqlanadi.",
+      "chatPlaceholder": "Xabar yozing…",
+      "send": "Yuborish",
+      "muteAll": "Hammaning mikrofonini o‘chirish",
+      "mutePerson": "{name} mikrofonini o‘chirish",
+      "mutedBy": "{name} mikrofoningizni o‘chirdi. Uni qayta yoqishingiz mumkin."
     },
     "done": {
       "left": "Siz darsdan chiqdingiz.",

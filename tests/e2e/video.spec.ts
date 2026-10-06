@@ -86,6 +86,40 @@ test.describe("video lessons", () => {
       timeout: 10_000,
     });
 
+    // A raised hand shows on the teacher's screen.
+    await student.getByTestId("toggle-mic").click();
+    await student.getByTestId("toggle-hand").click();
+    await expect(teacher.getByTestId("tile-peer").getByTestId("hand-mark")).toBeVisible({
+      timeout: 10_000,
+    });
+
+    // Chat goes both ways; the student sees an unread badge first.
+    await teacher.getByTestId("toggle-chat").click();
+    await teacher.getByTestId("chat-input").fill("Open page 12");
+    await teacher.getByTestId("chat-send").click();
+    await expect(teacher.getByTestId("chat-message")).toContainText("Open page 12");
+    await expect(student.getByTestId("chat-unread")).toHaveText("1", { timeout: 10_000 });
+    await student.getByTestId("toggle-chat").click();
+    await expect(student.getByTestId("chat-message")).toContainText("Open page 12");
+    await expect(student.getByTestId("chat-unread")).toHaveCount(0);
+    await student.getByTestId("chat-input").fill("Done");
+    await student.getByTestId("chat-input").press("Enter");
+    await expect(teacher.getByTestId("chat-message")).toHaveCount(2, { timeout: 10_000 });
+
+    // The teacher switches everyone's microphone off.
+    await expect(student.getByTestId("toggle-mic")).toHaveAttribute(
+      "aria-label",
+      "Turn microphone off",
+    );
+    await teacher.getByTestId("mute-all").click();
+    await expect(student.getByTestId("muted-notice")).toContainText("Demo Teacher", {
+      timeout: 10_000,
+    });
+    await expect(student.getByTestId("toggle-mic")).toHaveAttribute(
+      "aria-label",
+      "Turn microphone on",
+    );
+
     await teacher.getByTestId("end-call").click();
     await teacher
       .getByRole("alertdialog")

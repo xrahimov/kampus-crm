@@ -14,8 +14,9 @@ server with Docker works the same way.
    (shared vCPU, x86). Add an **SSH key** (the public key of whoever will
    deploy). Optional but recommended: enable **Backups** (about 20 % extra).
 2. Create a **Firewall** in the Hetzner console and apply it to the server:
-   allow inbound TCP 22, 80 and 443; nothing else. (If you prefer `ufw` on the
-   server: `ufw allow 22,80,443/tcp && ufw enable`.)
+   allow inbound TCP 22, 80 and 443, plus TCP and UDP 3478 and UDP 49160–49200
+   for the video relay; nothing else. (If you prefer `ufw` on the server:
+   `ufw allow 22,80,443/tcp && ufw allow 3478 && ufw allow 49160:49200/udp && ufw enable`.)
 3. Point a DNS **A record** at the server's public IP, for example
    `crm.yourcenter.uz`. Without your own domain, use the free wildcard DNS
    service sslip.io: the host name `203-0-113-10.sslip.io` resolves to
@@ -86,14 +87,15 @@ payment methods, staff and the integrations.
 
 What runs:
 
-| Service   | Role                                                                                      |
-| --------- | ----------------------------------------------------------------------------------------- |
-| `caddy`   | Ports 80/443, HTTPS certificate from Let's Encrypt, proxies to the app                    |
-| `app`     | Next.js server                                                                            |
-| `worker`  | Job queue: SMS sending, AmoCRM pushes, the daily scan for auto-SMS, birthdays and debtors |
-| `migrate` | Runs once per start: `prisma migrate deploy`, then the first-start bootstrap              |
-| `db`      | PostgreSQL 16, data in the `db-data` volume                                               |
-| `backup`  | Nightly `pg_dump` into `./backups`, kept for `BACKUP_KEEP_DAYS` days (default 14)         |
+| Service   | Role                                                                                         |
+| --------- | -------------------------------------------------------------------------------------------- |
+| `caddy`   | Ports 80/443, HTTPS certificate from Let's Encrypt, proxies to the app                       |
+| `app`     | Next.js server                                                                               |
+| `worker`  | Job queue: SMS sending, AmoCRM pushes, the daily scan for auto-SMS, birthdays and debtors    |
+| `turn`    | coturn relay for video lessons on 3478 and UDP 49160–49200 (`TURN_PUBLIC_IP`, `TURN_SECRET`) |
+| `migrate` | Runs once per start: `prisma migrate deploy`, then the first-start bootstrap                 |
+| `db`      | PostgreSQL 16, data in the `db-data` volume                                                  |
+| `backup`  | Nightly `pg_dump` into `./backups`, kept for `BACKUP_KEEP_DAYS` days (default 14)            |
 
 Uploaded photos live in the `uploads` volume.
 

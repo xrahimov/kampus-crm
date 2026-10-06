@@ -15,7 +15,21 @@ export interface MediaState {
   audio: boolean;
   video: boolean;
   screen: boolean;
+  /** Raised hand: "I want to say something". */
+  hand: boolean;
 }
+
+/** One line of the in-call chat; it lives only as long as the tab does. */
+export interface ChatMessage {
+  id: number;
+  /** null when this browser wrote it. */
+  from: string | null;
+  name: string;
+  text: string;
+  at: Date;
+}
+
+export const CHAT_MAX_LENGTH = 500;
 
 export interface RemotePeer {
   id: string;
@@ -66,6 +80,12 @@ export class CallEngine {
   private camera: MediaStreamTrack | null;
   private screen: MediaStreamTrack | null = null;
   media: MediaState;
+  chat: ChatMessage[] = [];
+  /** Chat lines received while the panel was closed. */
+  unread = 0;
+  /** Set when the teacher switched this microphone off; the room shows a notice. */
+  mutedBy: { name: string; at: number } | null = null;
+  private chatSeq = 0;
 
   private listeners = new Set<() => void>();
   /** Bumped on every change; the snapshot for useSyncExternalStore. */
@@ -79,6 +99,7 @@ export class CallEngine {
       audio: local.getAudioTracks().some((t) => t.enabled),
       video: Boolean(this.camera?.enabled),
       screen: false,
+      hand: false,
     };
   }
 
@@ -105,7 +126,7 @@ export class CallEngine {
         displayName: l.info.displayName,
         role: l.info.role,
         joinedAt: l.info.joinedAt,
-        media: l.info.media,
+        media: l.info.media ? { hand: false, ...l.info.media } : null,
         stream: l.stream,
         connection: l.pc.connectionState,
       }))
@@ -128,6 +149,40 @@ export class CallEngine {
     if (this.camera) this.camera.enabled = on;
     this.media = { ...this.media, video: on && Boolean(this.camera) };
     this.changed(true);
+  }
+
+  setHand(on: boolean): void {
+    this.media = { ...this.media, hand: on };
+    this.changed(true);
+  }
+
+  /** Posts a chat line to everyone in the room (new arrivals do not see earlier lines). */
+  sendChat(text: string): void {
+    const clean = text.trim().slice(0, CHAT_MAX_LENGTH);
+    if (!clean) return;
+    const at = new Date();
+    this.chat.push({
+      id: ++this.chatSeq,
+      from: null,
+      name: this.self.displayName,
+      text: clean,
+      at,
+    });
+    for (const id of this.links.keys())
+      this.send(id, "chat", { text: clean, at: at.toISOString() });
+    this.onChange();
+  }
+
+  markChatRead(): void {
+    if (this.unread === 0) return;
+    this.unread = 0;
+    this.onChange();
+  }
+
+  /** Teacher only: asks one person, or everyone, to switch their microphone off. */
+  mutePeers(ids: string[] = [...this.links.keys()]): void {
+    if (this.self.role !== "HOST") return;
+    for (const id of ids) if (this.links.has(id)) this.send(id, "mute", null);
   }
 
   /** Sends the screen instead of the camera until sharing stops. */
@@ -380,6 +435,23 @@ export class CallEngine {
         else link.pending.push(payload as RTCIceCandidateInit);
       } else if (kind === "restart" && link.offerer) {
         await this.makeOffer(link, true);
+      } else if (kind === "chat") {
+        const { text, at } = payload as { text: string; at: string };
+        if (typeof text !== "string" || !text.trim()) return;
+        this.chat.push({
+          id: ++this.chatSeq,
+          from: from,
+          name: link.info.displayName,
+          text: text.slice(0, CHAT_MAX_LENGTH),
+          at: new Date(at ?? Date.now()),
+        });
+        this.unread += 1;
+      } else if (kind === "mute" && link.info.role === "HOST" && this.self.role !== "HOST") {
+        // Only the teacher's request counts (the server also drops others').
+        if (this.media.audio) {
+          this.mutedBy = { name: link.info.displayName, at: Date.now() };
+          this.setAudio(false);
+        }
       }
     } catch {
       // A stale or malformed message; the connection recovers through a restart if needed.

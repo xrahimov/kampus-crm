@@ -1,26 +1,31 @@
 "use client";
 
 import {
+  Hand,
+  MessageSquare,
   Mic,
   MicOff,
   MonitorUp,
   MonitorX,
   PhoneOff,
+  SendHorizontal,
   Square,
   Users,
   Video,
   VideoOff,
+  X,
 } from "lucide-react";
-import { useTranslations } from "next-intl";
-import { useEffect, useState, useSyncExternalStore } from "react";
+import { useFormatter, useTranslations } from "next-intl";
+import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 
 import { ConfirmDialog } from "@/components/data/confirm-dialog";
 import { cn } from "@/lib/utils";
 
-import type { CallEngine, RemotePeer } from "./call-engine";
+import { CHAT_MAX_LENGTH, type CallEngine, type RemotePeer } from "./call-engine";
 import { VideoTile } from "./video-tile";
 
 const SELF = "self";
+type Panel = "people" | "chat" | null;
 
 /**
  * The call screen: a stage for the teacher (or whoever shares a screen, or the
@@ -40,7 +45,9 @@ export function CallRoom({
   useSyncExternalStore(engine.subscribe, engine.getVersion, engine.getVersion);
   const [pinned, setPinned] = useState<string | null>(null);
   const [confirmEnd, setConfirmEnd] = useState(false);
-  const [showPeople, setShowPeople] = useState(false);
+  const [panel, setPanel] = useState<Panel>(null);
+  // The teacher's "mute" shows a notice for a few seconds (keyed by when it came).
+  const [noticeShownFor, setNoticeShownFor] = useState<number | null>(null);
   const canShare =
     typeof navigator !== "undefined" && Boolean(navigator.mediaDevices?.getDisplayMedia);
 
@@ -53,6 +60,23 @@ export function CallRoom({
   const peers = engine.peers();
   const self = engine.self;
   const media = engine.media;
+  const isHost = self.role === "HOST";
+  const mutedBy = engine.mutedBy;
+
+  // Chat lines count as read while the panel is open.
+  useEffect(() => {
+    if (panel === "chat") engine.markChatRead();
+  }, [engine, panel, engine.unread]);
+
+  const mutedNotice = mutedBy && noticeShownFor !== mutedBy.at ? mutedBy.name : null;
+  useEffect(() => {
+    if (!mutedBy) return;
+    const timer = setTimeout(() => setNoticeShownFor(mutedBy.at), 6000);
+    return () => clearTimeout(timer);
+  }, [mutedBy]);
+
+  const togglePanel = (next: Exclude<Panel, null>) =>
+    setPanel((cur) => (cur === next ? null : next));
   const hasAudio = engine.localStream.getAudioTracks().length > 0;
   const hasCamera = engine.localStream.getVideoTracks().length > 0 || media.screen;
 
@@ -82,6 +106,7 @@ export function CallRoom({
           audioOn={media.audio}
           videoOn={media.video || media.screen}
           screen={media.screen}
+          hand={media.hand}
           pinned={pinnedId === SELF}
           onPin={togglePin}
           className={big ? "size-full" : "aspect-video"}
@@ -99,6 +124,7 @@ export function CallRoom({
         audioOn={p.media?.audio ?? true}
         videoOn={(p.media?.video ?? true) || Boolean(p.media?.screen)}
         screen={Boolean(p.media?.screen)}
+        hand={Boolean(p.media?.hand)}
         status={statusText(p)}
         pinned={pinnedId === p.id}
         onPin={togglePin}
@@ -132,15 +158,46 @@ export function CallRoom({
               : t("inCall", { count: peers.length + 1 })}
           </p>
         </div>
-        <button
-          type="button"
-          onClick={() => setShowPeople((v) => !v)}
-          aria-expanded={showPeople}
-          className="flex items-center gap-2 rounded-md px-3 py-1.5 text-sm hover:bg-sidebar-muted focus-visible:outline-2 focus-visible:outline-sidebar-active"
-        >
-          <Users className="size-4" /> {t("people")}
-        </button>
+        <div className="flex items-center gap-1">
+          <HeaderButton
+            active={panel === "people"}
+            onClick={() => togglePanel("people")}
+            testId="toggle-people"
+          >
+            <Users className="size-4" />
+            <span className="hidden sm:inline">{t("people")}</span>
+            {peers.some((p) => p.media?.hand) && (
+              <Hand className="size-3.5 text-amber-400" aria-label={t("handRaised")} />
+            )}
+          </HeaderButton>
+          <HeaderButton
+            active={panel === "chat"}
+            onClick={() => togglePanel("chat")}
+            testId="toggle-chat"
+          >
+            <MessageSquare className="size-4" />
+            <span className="hidden sm:inline">{t("chat")}</span>
+            {engine.unread > 0 && (
+              <span
+                className="grid min-w-5 place-items-center rounded-full bg-sidebar-active px-1 text-xs font-semibold text-white"
+                data-testid="chat-unread"
+              >
+                {engine.unread}
+              </span>
+            )}
+          </HeaderButton>
+        </div>
       </header>
+
+      {mutedNotice && (
+        <p
+          className="mx-4 mb-2 rounded-md bg-sidebar-muted px-3 py-2 text-center text-sm text-white"
+          role="status"
+          data-testid="muted-notice"
+        >
+          {t("mutedBy", { name: mutedNotice })}
+        </p>
+      )}
 
       <div className="flex min-h-0 flex-1 gap-3 px-3 pb-3 sm:px-4">
         <main className="min-h-0 min-w-0 flex-1">
@@ -169,27 +226,46 @@ export function CallRoom({
             </div>
           )}
         </main>
-        {showPeople && (
-          <aside
-            className="hidden w-64 shrink-0 overflow-y-auto rounded-lg bg-sidebar-muted p-3 md:block"
-            aria-label={t("people")}
-          >
-            <ul className="space-y-1.5 text-sm">
-              <li className="flex items-center justify-between gap-2 text-white">
-                <span className="truncate">{t("you", { name: self.displayName })}</span>
-                <RoleMark role={self.role} />
-              </li>
-              {peers.map((p) => (
-                <li key={p.id} className="flex items-center justify-between gap-2">
+        {panel && (
+          <SidePanel title={t(panel)} onClose={() => setPanel(null)} testId={`${panel}-panel`}>
+            {panel === "people" ? (
+              <ul className="space-y-1.5 text-sm">
+                <li className="flex items-center justify-between gap-2 text-white">
                   <span className="flex min-w-0 items-center gap-1.5">
-                    {p.media && !p.media.audio && <MicOff className="size-3.5 shrink-0" />}
-                    <span className="truncate">{p.displayName}</span>
+                    {media.hand && <Hand className="size-3.5 shrink-0 text-amber-400" />}
+                    <span className="truncate">{t("you", { name: self.displayName })}</span>
                   </span>
-                  <RoleMark role={p.role} />
+                  <RoleMark role={self.role} />
                 </li>
-              ))}
-            </ul>
-          </aside>
+                {peers.map((p) => (
+                  <li key={p.id} className="flex items-center justify-between gap-2">
+                    <span className="flex min-w-0 items-center gap-1.5">
+                      {p.media?.hand && <Hand className="size-3.5 shrink-0 text-amber-400" />}
+                      {p.media && !p.media.audio && <MicOff className="size-3.5 shrink-0" />}
+                      <span className="truncate">{p.displayName}</span>
+                    </span>
+                    <span className="flex shrink-0 items-center gap-1.5">
+                      <RoleMark role={p.role} />
+                      {isHost && p.role !== "HOST" && (p.media?.audio ?? true) && (
+                        <button
+                          type="button"
+                          onClick={() => engine.mutePeers([p.id])}
+                          aria-label={t("mutePerson", { name: p.displayName })}
+                          title={t("mutePerson", { name: p.displayName })}
+                          data-testid="mute-peer"
+                          className="grid size-7 place-items-center rounded-md hover:bg-sidebar hover:text-white focus-visible:outline-2 focus-visible:outline-sidebar-active"
+                        >
+                          <MicOff className="size-3.5" />
+                        </button>
+                      )}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <ChatPanel engine={engine} />
+            )}
+          </SidePanel>
         )}
       </div>
 
@@ -212,6 +288,26 @@ export function CallRoom({
         >
           {media.video ? <Video /> : <VideoOff />}
         </ControlButton>
+        <ControlButton
+          active={!media.hand}
+          onClick={() => engine.setHand(!media.hand)}
+          label={media.hand ? t("lowerHand") : t("raiseHand")}
+          testId="toggle-hand"
+          className={cn(!media.hand || "!bg-amber-400 !text-sidebar hover:!bg-amber-300")}
+        >
+          <Hand />
+        </ControlButton>
+        {isHost && peers.length > 0 && (
+          <ControlButton
+            active
+            disabled={peers.every((p) => p.media && !p.media.audio)}
+            onClick={() => engine.mutePeers()}
+            label={t("muteAll")}
+            testId="mute-all"
+          >
+            <MicOff />
+          </ControlButton>
+        )}
         {canShare && (
           <ControlButton
             active={!media.screen}
@@ -253,6 +349,139 @@ export function CallRoom({
         />
       )}
     </div>
+  );
+}
+
+function HeaderButton({
+  active,
+  onClick,
+  testId,
+  children,
+}: {
+  active: boolean;
+  onClick: () => void;
+  testId: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      aria-expanded={active}
+      data-testid={testId}
+      className={cn(
+        "flex items-center gap-2 rounded-md px-3 py-1.5 text-sm hover:bg-sidebar-muted focus-visible:outline-2 focus-visible:outline-sidebar-active",
+        active && "bg-sidebar-muted text-white",
+      )}
+    >
+      {children}
+    </button>
+  );
+}
+
+/** People or chat: a column beside the video on wide screens, the whole screen on phones. */
+function SidePanel({
+  title,
+  onClose,
+  testId,
+  children,
+}: {
+  title: string;
+  onClose: () => void;
+  testId: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <aside
+      className="fixed inset-0 z-10 flex flex-col bg-sidebar p-3 md:static md:inset-auto md:z-auto md:w-72 md:shrink-0 md:rounded-lg md:bg-sidebar-muted"
+      aria-label={title}
+      data-testid={testId}
+    >
+      <div className="mb-2 flex items-center justify-between md:hidden">
+        <h2 className="text-sm font-semibold text-white">{title}</h2>
+        <button
+          type="button"
+          onClick={onClose}
+          aria-label={title}
+          className="grid size-8 place-items-center rounded-md hover:bg-sidebar-muted"
+        >
+          <X className="size-4" />
+        </button>
+      </div>
+      <div className="flex min-h-0 flex-1 flex-col overflow-y-auto">{children}</div>
+    </aside>
+  );
+}
+
+function ChatPanel({ engine }: { engine: CallEngine }) {
+  const t = useTranslations("video.room");
+  const format = useFormatter();
+  const [draft, setDraft] = useState("");
+  const listRef = useRef<HTMLDivElement>(null);
+  const count = engine.chat.length;
+
+  useEffect(() => {
+    listRef.current?.scrollTo({ top: listRef.current.scrollHeight });
+  }, [count]);
+
+  const submit = (e: React.FormEvent) => {
+    e.preventDefault();
+    engine.sendChat(draft);
+    setDraft("");
+  };
+
+  return (
+    <>
+      <div ref={listRef} className="min-h-0 flex-1 space-y-2 overflow-y-auto pr-1 text-sm">
+        {count === 0 && <p className="py-6 text-center text-xs opacity-70">{t("chatEmpty")}</p>}
+        {engine.chat.map((m) => (
+          <div
+            key={m.id}
+            data-testid="chat-message"
+            className={cn(
+              "max-w-[90%] rounded-lg px-2.5 py-1.5",
+              m.from === null ? "ml-auto bg-sidebar-active/30 text-white" : "bg-sidebar/60",
+            )}
+          >
+            <p className="flex items-baseline justify-between gap-2 text-xs opacity-70">
+              <span className="truncate">{m.name}</span>
+              <time dateTime={m.at.toISOString()}>
+                {format.dateTime(m.at, { timeStyle: "short" })}
+              </time>
+            </p>
+            <p className="break-words whitespace-pre-wrap">{m.text}</p>
+          </div>
+        ))}
+      </div>
+      <form onSubmit={submit} className="mt-2 flex items-end gap-1.5">
+        <textarea
+          value={draft}
+          onChange={(e) => setDraft(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === "Enter" && !e.shiftKey) {
+              e.preventDefault();
+              engine.sendChat(draft);
+              setDraft("");
+            }
+          }}
+          rows={1}
+          maxLength={CHAT_MAX_LENGTH}
+          placeholder={t("chatPlaceholder")}
+          aria-label={t("chat")}
+          data-testid="chat-input"
+          className="min-h-9 flex-1 resize-none rounded-md border border-sidebar-muted bg-sidebar px-2.5 py-1.5 text-sm text-white placeholder:text-sidebar-foreground/60 focus-visible:outline-2 focus-visible:outline-sidebar-active"
+        />
+        <button
+          type="submit"
+          disabled={!draft.trim()}
+          aria-label={t("send")}
+          data-testid="chat-send"
+          className="grid size-9 shrink-0 place-items-center rounded-md bg-sidebar-active text-white hover:bg-sidebar-active/80 disabled:opacity-40"
+        >
+          <SendHorizontal className="size-4" />
+        </button>
+      </form>
+    </>
   );
 }
 
