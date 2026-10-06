@@ -178,7 +178,8 @@
     "videoDisabled": "Video lessons are switched off in Settings → Integrations.",
     "videoFull": "The lesson is full. Ask the centre to raise the limit in Settings → Integrations.",
     "videoEnded": "This video lesson has already ended.",
-    "videoNotStarted": "The teacher has not started the lesson yet."
+    "videoNotStarted": "The teacher has not started the lesson yet.",
+    "homeworkAccepted": "This answer was already accepted."
   },
   "validation": {
     "phone": "Enter a number like +998 90 123 45 67.",
@@ -253,7 +254,11 @@
     "importTooLarge": "Too many rows (max {max})",
     "iceUrl": "Enter addresses starting with stun:, turn: or turns:, separated by commas.",
     "linkPlaceholder": "The text must contain '{link}'.",
-    "lessonUnknown": "This lesson does not belong to the group."
+    "lessonUnknown": "This lesson does not belong to the group.",
+    "url": "Enter a valid link.",
+    "attachmentType": "This file type is not accepted.",
+    "attachmentSize": "The file must be 20 MB or smaller.",
+    "homeworkEmpty": "Write an answer or attach a file."
   },
   "roles": {
     "CEO": "CEO",
@@ -803,7 +808,8 @@
         "exams": "Exams",
         "discounts": "Discounts",
         "coins": "Coins",
-        "comments": "Comments"
+        "comments": "Comments",
+        "homework": "Homework"
       },
       "changeTeacherHint": "The new teacher's share counts from today."
     },
@@ -896,6 +902,46 @@
         "supportTeachers": "Support teachers changed",
         "dayOff": "Day off given",
         "note": "Note added"
+      }
+    },
+    "homework": {
+      "intro": "One homework per lesson. Students answer from their personal link; accept or return each answer here.",
+      "add": "Set homework",
+      "addTitle": "Set homework",
+      "editTitle": "Edit homework",
+      "empty": "No homework yet.",
+      "emptyHint": "Set the first one with the button above.",
+      "lesson": "Lesson",
+      "pickLesson": "Choose a lesson",
+      "hasHomework": "has homework",
+      "text": "Task",
+      "linkUrl": "Link (optional)",
+      "attachment": "File (optional)",
+      "dueDate": "Due by (optional)",
+      "chooseFile": "Choose file",
+      "replaceFile": "Replace file",
+      "uploading": "Uploading…",
+      "openFile": "Open",
+      "removeFile": "Remove file",
+      "lessonOf": "Lesson of {date}",
+      "due": "Due {date}",
+      "progress": "{answered} of {total} answered, {accepted} accepted",
+      "link": "Link",
+      "file": "File",
+      "edit": "Edit",
+      "delete": "Delete",
+      "deleteTitle": "Delete homework?",
+      "deleteText": "The task and every answer to it are removed. Coins given for it are taken back.",
+      "accept": "Accept",
+      "return": "Return",
+      "acceptTitle": "Accept the answer",
+      "returnTitle": "Return the answer",
+      "teacherComment": "Comment for the student (optional)",
+      "status": {
+        "NONE": "No answer",
+        "SUBMITTED": "Answered",
+        "ACCEPTED": "Accepted",
+        "RETURNED": "Returned"
       }
     }
   },
@@ -2403,7 +2449,9 @@
         "StaffAttendance": "Staff attendance",
         "Test": "Test",
         "User": "Staff",
-        "VideoRoom": "Video lesson"
+        "VideoRoom": "Video lesson",
+        "Homework": "Homework",
+        "HomeworkSubmission": "Homework answer"
       },
       "names": {
         "attendance": {
@@ -2650,6 +2698,12 @@
           "end": "Video lesson ended",
           "resetLink": "Student's video link replaced",
           "smsLinks": "Video links sent by SMS"
+        },
+        "homework": {
+          "create": "Homework set",
+          "update": "Homework changed",
+          "delete": "Homework deleted",
+          "review": "Homework answer reviewed"
         }
       }
     }
@@ -2962,7 +3016,8 @@
       "lessons": "Lessons",
       "money": "Payments",
       "results": "Results",
-      "schedule": "Schedule"
+      "schedule": "Schedule",
+      "homework": "Homework"
     },
     "lessons": {
       "empty": "No lessons yet.",
@@ -2999,6 +3054,28 @@
     "schedule": {
       "empty": "The group has no fixed lesson times.",
       "until": "The group runs until {date}."
+    },
+    "homework": {
+      "empty": "No homework yet.",
+      "lessonOf": "Lesson of {date}",
+      "due": "Due {date}",
+      "link": "Link",
+      "file": "File",
+      "yourAnswer": "Your answer, {date}",
+      "yourFile": "Your file",
+      "teacherSaid": "Teacher",
+      "answer": "Answer",
+      "answerAgain": "Answer again",
+      "note": "Your answer",
+      "fileOptional": "File (optional)",
+      "send": "Send",
+      "sending": "Sending…",
+      "status": {
+        "NONE": "To do",
+        "SUBMITTED": "Sent",
+        "ACCEPTED": "Accepted",
+        "RETURNED": "Returned"
+      }
     }
   },
   "video": {

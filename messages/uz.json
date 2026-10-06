@@ -178,7 +178,8 @@
     "videoDisabled": "Video darslar Sozlamalar → Integratsiyalarda o‘chirilgan.",
     "videoFull": "Dars to‘lgan. Markazdan Sozlamalar → Integratsiyalarda chegarani oshirishni so‘rang.",
     "videoEnded": "Bu video dars allaqachon yakunlangan.",
-    "videoNotStarted": "O‘qituvchi hali darsni boshlamadi."
+    "videoNotStarted": "O‘qituvchi hali darsni boshlamadi.",
+    "homeworkAccepted": "Bu javob allaqachon qabul qilingan."
   },
   "validation": {
     "phone": "+998 90 123 45 67 ko‘rinishida raqam kiriting.",
@@ -253,7 +254,11 @@
     "importTooLarge": "Qatorlar juda ko'p (maks. {max})",
     "iceUrl": "stun:, turn: yoki turns: bilan boshlanadigan manzillarni vergul bilan kiriting.",
     "linkPlaceholder": "Matnda '{link}' bo‘lishi kerak.",
-    "lessonUnknown": "Bu dars guruhga tegishli emas."
+    "lessonUnknown": "Bu dars guruhga tegishli emas.",
+    "url": "To‘g‘ri havola kiriting.",
+    "attachmentType": "Bunday turdagi fayl qabul qilinmaydi.",
+    "attachmentSize": "Fayl hajmi 20 MB dan oshmasligi kerak.",
+    "homeworkEmpty": "Javob yozing yoki fayl biriktiring."
   },
   "roles": {
     "CEO": "CEO",
@@ -803,7 +808,8 @@
         "exams": "Imtihonlar",
         "discounts": "Chegirmalar",
         "coins": "Coinlar",
-        "comments": "Izohlar"
+        "comments": "Izohlar",
+        "homework": "Uy vazifasi"
       },
       "changeTeacherHint": "Yangi o'qituvchining ulushi bugundan hisoblanadi."
     },
@@ -896,6 +902,46 @@
         "supportTeachers": "Support o'qituvchilar o'zgartirildi",
         "dayOff": "Dam berildi",
         "note": "Eslatma qo'shildi"
+      }
+    },
+    "homework": {
+      "intro": "Har darsga bitta vazifa. O‘quvchilar shaxsiy havolasidan javob beradi; javobni shu yerda qabul qilasiz yoki qaytarasiz.",
+      "add": "Vazifa berish",
+      "addTitle": "Uy vazifasi berish",
+      "editTitle": "Vazifani tahrirlash",
+      "empty": "Hali vazifalar yo‘q.",
+      "emptyHint": "Birinchisini yuqoridagi tugma bilan bering.",
+      "lesson": "Dars",
+      "pickLesson": "Darsni tanlang",
+      "hasHomework": "vazifasi bor",
+      "text": "Vazifa",
+      "linkUrl": "Havola (ixtiyoriy)",
+      "attachment": "Fayl (ixtiyoriy)",
+      "dueDate": "Muddat (ixtiyoriy)",
+      "chooseFile": "Fayl tanlash",
+      "replaceFile": "Faylni almashtirish",
+      "uploading": "Yuklanmoqda…",
+      "openFile": "Ochish",
+      "removeFile": "Faylni olib tashlash",
+      "lessonOf": "{date} darsi",
+      "due": "Muddat: {date}",
+      "progress": "{total} tadan {answered} tasi javob berdi, {accepted} tasi qabul qilindi",
+      "link": "Havola",
+      "file": "Fayl",
+      "edit": "Tahrirlash",
+      "delete": "O‘chirish",
+      "deleteTitle": "Vazifa o‘chirilsinmi?",
+      "deleteText": "Vazifa va unga berilgan barcha javoblar o‘chiriladi. U uchun berilgan coinlar qaytarib olinadi.",
+      "accept": "Qabul qilish",
+      "return": "Qaytarish",
+      "acceptTitle": "Javobni qabul qilish",
+      "returnTitle": "Javobni qaytarish",
+      "teacherComment": "O‘quvchiga izoh (ixtiyoriy)",
+      "status": {
+        "NONE": "Javob yo‘q",
+        "SUBMITTED": "Javob berildi",
+        "ACCEPTED": "Qabul qilindi",
+        "RETURNED": "Qaytarildi"
       }
     }
   },
@@ -2403,7 +2449,9 @@
         "StaffAttendance": "Xodimlar davomati",
         "Test": "Test",
         "User": "Xodim",
-        "VideoRoom": "Video dars"
+        "VideoRoom": "Video dars",
+        "Homework": "Uy vazifasi",
+        "HomeworkSubmission": "Uy vazifasi javobi"
       },
       "names": {
         "attendance": {
@@ -2650,6 +2698,12 @@
           "end": "Video dars yakunlandi",
           "resetLink": "O‘quvchining video havolasi almashtirildi",
           "smsLinks": "Video havolalar SMS orqali yuborildi"
+        },
+        "homework": {
+          "create": "Uy vazifasi berildi",
+          "update": "Uy vazifasi o‘zgartirildi",
+          "delete": "Uy vazifasi o‘chirildi",
+          "review": "Uy vazifasi javobi tekshirildi"
         }
       }
     }
@@ -2962,7 +3016,8 @@
       "lessons": "Darslar",
       "money": "To‘lovlar",
       "results": "Natijalar",
-      "schedule": "Jadval"
+      "schedule": "Jadval",
+      "homework": "Uy vazifasi"
     },
     "lessons": {
       "empty": "Hali darslar yo‘q.",
@@ -2999,6 +3054,28 @@
     "schedule": {
       "empty": "Guruhning doimiy dars vaqti yo‘q.",
       "until": "Guruh {date} gacha o‘qiydi."
+    },
+    "homework": {
+      "empty": "Hali vazifalar yo‘q.",
+      "lessonOf": "{date} darsi",
+      "due": "Muddat: {date}",
+      "link": "Havola",
+      "file": "Fayl",
+      "yourAnswer": "Javobingiz, {date}",
+      "yourFile": "Faylingiz",
+      "teacherSaid": "O‘qituvchi",
+      "answer": "Javob berish",
+      "answerAgain": "Qayta javob berish",
+      "note": "Javobingiz",
+      "fileOptional": "Fayl (ixtiyoriy)",
+      "send": "Yuborish",
+      "sending": "Yuborilmoqda…",
+      "status": {
+        "NONE": "Bajarish kerak",
+        "SUBMITTED": "Yuborildi",
+        "ACCEPTED": "Qabul qilindi",
+        "RETURNED": "Qaytarildi"
+      }
     }
   },
   "video": {

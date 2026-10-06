@@ -4,16 +4,41 @@ import path from "node:path";
 
 import { STORAGE_KEY_PATTERN, type Storage, type StoredFile } from "./storage";
 
-const EXTENSION_BY_TYPE: Record<string, string> = {
+const IMAGE_EXTENSION_BY_TYPE: Record<string, string> = {
   "image/jpeg": "jpg",
   "image/png": "png",
   "image/webp": "webp",
+};
+/** Documents, audio and short video that homework and lesson materials may carry. */
+const DOCUMENT_EXTENSION_BY_TYPE: Record<string, string> = {
+  "application/pdf": "pdf",
+  "application/msword": "doc",
+  "application/vnd.openxmlformats-officedocument.wordprocessingml.document": "docx",
+  "application/vnd.ms-excel": "xls",
+  "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": "xlsx",
+  "application/vnd.ms-powerpoint": "ppt",
+  "application/vnd.openxmlformats-officedocument.presentationml.presentation": "pptx",
+  "text/plain": "txt",
+  "application/zip": "zip",
+  "audio/mpeg": "mp3",
+  "audio/mp4": "m4a",
+  "audio/ogg": "ogg",
+  "audio/webm": "weba",
+  "audio/wav": "wav",
+  "video/mp4": "mp4",
+  "video/webm": "webm",
+};
+const EXTENSION_BY_TYPE: Record<string, string> = {
+  ...IMAGE_EXTENSION_BY_TYPE,
+  ...DOCUMENT_EXTENSION_BY_TYPE,
 };
 const TYPE_BY_EXTENSION = Object.fromEntries(
   Object.entries(EXTENSION_BY_TYPE).map(([type, ext]) => [ext, type]),
 );
 
-export const IMAGE_TYPES = Object.keys(EXTENSION_BY_TYPE);
+export const IMAGE_TYPES = Object.keys(IMAGE_EXTENSION_BY_TYPE);
+/** Everything an attachment may be: images plus the document types above. */
+export const ATTACHMENT_TYPES = Object.keys(EXTENSION_BY_TYPE);
 
 /** Builds a key for a new upload; the extension follows the content type. */
 export function newStorageKey(folder: string, contentType: string): string {

@@ -71,14 +71,20 @@ export async function api<T>(
   return (await response.json()) as T;
 }
 
-/** Multipart upload to `/api/v1/uploads`; returns the URL to store on the record. */
-export async function uploadFile(file: File): Promise<{ key: string; url: string; size: number }> {
+/**
+ * Multipart upload; returns the URL to store on the record. `/uploads` takes
+ * photos, `/uploads/documents` the wider set homework and materials allow.
+ */
+export async function uploadFile(
+  file: File,
+  endpoint: "/uploads" | "/uploads/documents" = "/uploads",
+): Promise<{ key: string; url: string; size: number }> {
   const headers: Record<string, string> = { Accept: "application/json" };
   const csrf = readCookie(CSRF_COOKIE);
   if (csrf) headers[CSRF_HEADER] = csrf;
   const body = new FormData();
   body.append("file", file);
-  const response = await fetch("/api/v1/uploads", {
+  const response = await fetch(`/api/v1${endpoint}`, {
     method: "POST",
     headers,
     credentials: "same-origin",
