@@ -577,7 +577,7 @@ model Lesson {
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
 
-  group       Group        @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  group       Group            @relation(fields: [groupId], references: [id], onDelete: Cascade)
   attendances Attendance[]
   grades      Grade[]
   videoRooms  VideoRoom[]
@@ -619,6 +619,7 @@ model Student {
   customFields   StudentCustomField[]
   comments       StudentComment[]
   payments       Payment[]
+  onlinePayments OnlinePayment[]
   leads          Lead[]
   examResults    ExamResult[]
   financeEntries FinanceEntry[]
@@ -677,14 +678,15 @@ model GroupMembership {
   createdAt   DateTime         @default(now())
   updatedAt   DateTime         @updatedAt
 
-  group       Group                @relation(fields: [groupId], references: [id], onDelete: Cascade)
-  student     Student              @relation(fields: [studentId], references: [id])
-  attendances Attendance[]
-  grades      Grade[]
-  discounts   Discount[]
-  charges     Charge[]
-  payments    Payment[]
-  homework    HomeworkSubmission[]
+  group          Group                @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  student        Student              @relation(fields: [studentId], references: [id])
+  attendances    Attendance[]
+  grades         Grade[]
+  discounts      Discount[]
+  charges        Charge[]
+  payments       Payment[]
+  onlinePayments OnlinePayment[]
+  homework       HomeworkSubmission[]
 
   @@unique([groupId, studentId])
   @@index([studentId])
@@ -938,11 +940,56 @@ model Payment {
   paymentMethod PaymentMethod?  @relation(fields: [paymentMethodId], references: [id], onDelete: SetNull)
   receivedBy    User?           @relation(fields: [receivedById], references: [id], onDelete: SetNull)
   refunds       Refund[]
+  onlinePayment OnlinePayment?
 
   @@index([studentId, paidAt])
   @@index([membershipId])
   @@index([branchId, paidAt])
   @@index([effectiveMonth])
+}
+
+enum OnlinePaymentProvider {
+  PAYME
+  CLICK
+}
+
+enum OnlinePaymentStatus {
+  PENDING
+  PAID
+  CANCELLED
+}
+
+/// A student's own payment through Payme or Click from their personal link
+/// (A-106). The row's id is the order id the provider carries; when the
+/// provider confirms, a regular Payment is written and linked here.
+model OnlinePayment {
+  id             String                @id @default(cuid())
+  provider       OnlinePaymentProvider
+  studentId      String
+  membershipId   String
+  branchId       String
+  amount         Decimal               @db.Decimal(15, 2)
+  effectiveMonth DateTime              @db.Date
+  status         OnlinePaymentStatus   @default(PENDING)
+  /// The provider's transaction id (Payme `id`, Click `click_trans_id`).
+  externalId     String?
+  /// Payme: 1 created, 2 performed, -1/-2 cancelled; Click: 0 prepared, 1 completed.
+  externalState  Int?
+  /// Payme's create_time (ms since epoch), echoed back in CheckTransaction.
+  externalTime   BigInt?
+  performedAt    DateTime?
+  cancelledAt    DateTime?
+  cancelReason   Int?
+  paymentId      String?               @unique
+  createdAt      DateTime              @default(now())
+  updatedAt      DateTime              @updatedAt
+
+  student    Student         @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  membership GroupMembership @relation(fields: [membershipId], references: [id], onDelete: Cascade)
+  payment    Payment?        @relation(fields: [paymentId], references: [id], onDelete: SetNull)
+
+  @@unique([provider, externalId])
+  @@index([membershipId, status])
 }
 
 /// "Pul qaytarish": part or all of one payment given back.
@@ -1717,6 +1764,8 @@ enum IntegrationProvider {
   TELEPHONY
   FACE_ID
   VIDEO
+  PAYME
+  CLICK
 }
 
 /// One row per provider: enabled flag plus its settings (A-83). Secrets are masked in the API.

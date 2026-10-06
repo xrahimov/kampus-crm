@@ -36,6 +36,8 @@ const SECRET_FIELDS: Record<IntegrationProvider, readonly string[]> = {
   TELEPHONY: ["webhookSecret"],
   FACE_ID: ["webhookSecret"],
   VIDEO: ["turnCredential", "turnSecret"],
+  PAYME: ["key"],
+  CLICK: ["secretKey"],
 };
 
 /** Providers that work without any setup and are therefore on until switched off. */

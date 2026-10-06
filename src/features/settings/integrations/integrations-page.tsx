@@ -75,6 +75,35 @@ export function IntegrationsPage({ integrations }: { integrations: IntegrationDt
         extra={<p className="text-xs text-muted-foreground">{t("VIDEO.hint")}</p>}
         testId="integration-video"
       />
+      <IntegrationForm
+        provider="PAYME"
+        dto={by("PAYME")}
+        fields={[{ key: "merchantId" }, { key: "key", secret: true }, { key: "checkoutUrl" }]}
+        extra={
+          <>
+            <WebhookHint path="payme" />
+            <p className="text-xs text-muted-foreground">{t("PAYME.hint")}</p>
+          </>
+        }
+        testId="integration-payme"
+      />
+      <IntegrationForm
+        provider="CLICK"
+        dto={by("CLICK")}
+        fields={[
+          { key: "serviceId" },
+          { key: "merchantId" },
+          { key: "merchantUserId" },
+          { key: "secretKey", secret: true },
+        ]}
+        extra={
+          <>
+            <WebhookHint path="click" />
+            <p className="text-xs text-muted-foreground">{t("CLICK.hint")}</p>
+          </>
+        }
+        testId="integration-click"
+      />
       <Card>
         <CardHeader>
           <CardTitle>{t("queue.title")}</CardTitle>

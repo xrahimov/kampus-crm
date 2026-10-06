@@ -179,7 +179,8 @@
     "videoFull": "Урок заполнен. Попросите центр увеличить лимит в Настройки → Интеграции.",
     "videoEnded": "Этот видеоурок уже завершён.",
     "videoNotStarted": "Преподаватель ещё не начал урок.",
-    "homeworkAccepted": "Этот ответ уже принят."
+    "homeworkAccepted": "Этот ответ уже принят.",
+    "onlinePaymentsOff": "Онлайн-оплата в вашем учебном центре не включена."
   },
   "validation": {
     "phone": "Введите номер в формате +998 90 123 45 67.",
@@ -2830,6 +2831,27 @@
         "maxParticipants": "Максимум участников в звонке"
       },
       "hint": "Работает без настройки через бесплатные публичные STUN-серверы. Некоторые мобильные и офисные сети блокируют прямые звонки; для них добавьте TURN relay (например Cloudflare Calls TURN, Metered или свой coturn)."
+    },
+    "PAYME": {
+      "title": "Payme",
+      "description": "Ученики оплачивают курс по своей личной ссылке; Payme подтверждает оплату через вебхук, и платёж появляется в Kampus сам.",
+      "fields": {
+        "merchantId": "ID мерчанта (кассы)",
+        "key": "Ключ мерчанта",
+        "checkoutUrl": "URL оплаты (пусто = боевой)"
+      },
+      "hint": "В Payme Business создайте кассу с полем счёта «order_id», укажите этот вебхук как endpoint и скопируйте ключ сюда. Для проверки используйте https://checkout.test.paycom.uz и тестовый ключ."
+    },
+    "CLICK": {
+      "title": "Click",
+      "description": "Ученики оплачивают курс по своей личной ссылке; Click подтверждает оплату вызовами prepare и complete на вебхук.",
+      "fields": {
+        "serviceId": "Service ID",
+        "merchantId": "Merchant ID",
+        "merchantUserId": "Merchant user ID",
+        "secretKey": "Секретный ключ"
+      },
+      "hint": "В кабинете мерчанта Click укажите этот вебхук и как prepare URL, и как complete URL."
     }
   },
   "staffAttendance": {
@@ -3132,6 +3154,19 @@
       "download": "Скачать",
       "recording": "Запись урока",
       "duration": "{minutes} мин"
+    },
+    "pay": {
+      "title": "Оплатить онлайн",
+      "intro": "Оплатите курс картой; платёж появится здесь, как только провайдер его подтвердит.",
+      "amount": "Сумма",
+      "month": "За месяц",
+      "payWith": "Оплатить через {provider}",
+      "redirecting": "Открываем {provider}…",
+      "checking": "Проверяем оплату…",
+      "paid": "Ваш платёж на {amount} получен. Спасибо!",
+      "cancelled": "Оплата не завершена. Можно попробовать ещё раз.",
+      "pending": "Платёж ещё подтверждается. Страница обновится сама.",
+      "failed": "Не удалось начать оплату. Попробуйте чуть позже."
     }
   },
   "telegramBot": {
@@ -3145,7 +3180,8 @@
     "homeworkAccepted": "{group}: домашнее задание к уроку {date} принято.{comment}",
     "homeworkReturned": "{group}: домашнее задание к уроку {date} возвращено, посмотрите ещё раз.{comment}",
     "debtor": "{group}: на балансе не хватает {debt}. Пожалуйста, оплатите в учебном центре.",
-    "materialAdded": "{group}: {kind, select, RECORDING {новая запись урока} LINK {новая ссылка} other {новый файл}}: {title}. Открыть страницу: {link}"
+    "materialAdded": "{group}: {kind, select, RECORDING {новая запись урока} LINK {новая ссылка} other {новый файл}}: {title}. Открыть страницу: {link}",
+    "paymentReceived": "{group}: ваш платёж на {amount} сум получен. Спасибо!"
   },
   "video": {
     "title": "Видеоурок",

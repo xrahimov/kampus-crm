@@ -179,7 +179,8 @@
     "videoFull": "Dars to‘lgan. Markazdan Sozlamalar → Integratsiyalarda chegarani oshirishni so‘rang.",
     "videoEnded": "Bu video dars allaqachon yakunlangan.",
     "videoNotStarted": "O‘qituvchi hali darsni boshlamadi.",
-    "homeworkAccepted": "Bu javob allaqachon qabul qilingan."
+    "homeworkAccepted": "Bu javob allaqachon qabul qilingan.",
+    "onlinePaymentsOff": "O‘quv markazingizda onlayn to‘lov yoqilmagan."
   },
   "validation": {
     "phone": "+998 90 123 45 67 ko‘rinishida raqam kiriting.",
@@ -2830,6 +2831,27 @@
         "maxParticipants": "Bir qo‘ng‘iroqdagi eng ko‘p odam"
       },
       "hint": "Bepul ommaviy STUN serverlar bilan sozlamasiz ishlaydi. Ba’zi mobil va ofis tarmoqlari to‘g‘ridan-to‘g‘ri qo‘ng‘iroqlarni to‘sadi; ular uchun TURN relay qo‘shing (masalan Cloudflare Calls TURN, Metered yoki o‘z coturn serveringiz)."
+    },
+    "PAYME": {
+      "title": "Payme",
+      "description": "O‘quvchilar kurs to‘lovini shaxsiy havolasi orqali to‘laydi; Payme webhook orqali tasdiqlaydi va to‘lov Kampusda o‘zi paydo bo‘ladi.",
+      "fields": {
+        "merchantId": "Merchant ID (kassa)",
+        "key": "Merchant kaliti",
+        "checkoutUrl": "To‘lov sahifasi URL (bo‘sh = asosiy)"
+      },
+      "hint": "Payme Business’da «order_id» hisob maydoni bilan kassa yarating, shu webhookni endpoint sifatida ko‘rsating va kalitni bu yerga nusxalang. Sinab ko‘rish uchun https://checkout.test.paycom.uz va test kalitidan foydalaning."
+    },
+    "CLICK": {
+      "title": "Click",
+      "description": "O‘quvchilar kurs to‘lovini shaxsiy havolasi orqali to‘laydi; Click webhookga prepare va complete so‘rovlari bilan tasdiqlaydi.",
+      "fields": {
+        "serviceId": "Service ID",
+        "merchantId": "Merchant ID",
+        "merchantUserId": "Merchant user ID",
+        "secretKey": "Maxfiy kalit"
+      },
+      "hint": "Click merchant kabinetida shu webhookni prepare URL va complete URL sifatida ko‘rsating."
     }
   },
   "staffAttendance": {
@@ -3132,6 +3154,19 @@
       "download": "Yuklab olish",
       "recording": "Dars yozuvi",
       "duration": "{minutes} daqiqa"
+    },
+    "pay": {
+      "title": "Onlayn to‘lash",
+      "intro": "Kurs to‘lovini karta bilan to‘lang; provayder tasdiqlashi bilan to‘lov shu yerda ko‘rinadi.",
+      "amount": "Summa",
+      "month": "Qaysi oy uchun",
+      "payWith": "{provider} orqali to‘lash",
+      "redirecting": "{provider} ochilmoqda…",
+      "checking": "To‘lov tekshirilmoqda…",
+      "paid": "{amount} to‘lovingiz qabul qilindi. Rahmat!",
+      "cancelled": "To‘lov yakunlanmadi. Qayta urinib ko‘rishingiz mumkin.",
+      "pending": "To‘lov hali tasdiqlanmoqda. Sahifa o‘zi yangilanadi.",
+      "failed": "To‘lovni boshlab bo‘lmadi. Birozdan keyin qayta urinib ko‘ring."
     }
   },
   "telegramBot": {
@@ -3145,7 +3180,8 @@
     "homeworkAccepted": "{group}: {date} darsi uchun uy vazifangiz qabul qilindi.{comment}",
     "homeworkReturned": "{group}: {date} darsi uchun uy vazifangiz qaytarildi, qayta ko‘rib chiqing.{comment}",
     "debtor": "{group}: balansingizda {debt} yetishmayapti. Iltimos, o‘quv markazida to‘lang.",
-    "materialAdded": "{group}: {kind, select, RECORDING {yangi dars yozuvi} LINK {yangi havola} other {yangi fayl}}: {title}. Sahifangizni oching: {link}"
+    "materialAdded": "{group}: {kind, select, RECORDING {yangi dars yozuvi} LINK {yangi havola} other {yangi fayl}}: {title}. Sahifangizni oching: {link}",
+    "paymentReceived": "{group}: {amount} so‘m to‘lovingiz qabul qilindi. Rahmat!"
   },
   "video": {
     "title": "Video dars",

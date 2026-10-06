@@ -135,6 +135,15 @@ export const paymentSchema = z.object({
 });
 export type PaymentInput = z.infer<typeof paymentSchema>;
 
+/** A student paying from their personal link (A-106). */
+export const ONLINE_PAYMENT_PROVIDERS = ["PAYME", "CLICK"] as const;
+export const onlinePaymentSchema = z.object({
+  provider: z.enum(ONLINE_PAYMENT_PROVIDERS),
+  amount: z.coerce.number().min(1000, "validation.min").max(99_999_999, "validation.max"),
+  effectiveMonth: monthSchema,
+});
+export type OnlinePaymentInput = z.infer<typeof onlinePaymentSchema>;
+
 export const refundSchema = z.object({
   amount: positiveMoney,
   reason: text(500).nullable().optional(),

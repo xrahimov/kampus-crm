@@ -48,6 +48,7 @@ export type BotMessageKind =
   | "homeworkAccepted"
   | "homeworkReturned"
   | "materialAdded"
+  | "paymentReceived"
   | "debtor";
 
 /** Narrows Telegram's language_code to a language the bot speaks. */
