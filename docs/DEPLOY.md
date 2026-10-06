@@ -87,15 +87,15 @@ payment methods, staff and the integrations.
 
 What runs:
 
-| Service   | Role                                                                                         |
-| --------- | -------------------------------------------------------------------------------------------- |
-| `caddy`   | Ports 80/443, HTTPS certificate from Let's Encrypt, proxies to the app                       |
-| `app`     | Next.js server                                                                               |
-| `worker`  | Job queue: SMS sending, AmoCRM pushes, the daily scan for auto-SMS, birthdays and debtors    |
-| `turn`    | coturn relay for video lessons on 3478 and UDP 49160–49200 (`TURN_PUBLIC_IP`, `TURN_SECRET`) |
-| `migrate` | Runs once per start: `prisma migrate deploy`, then the first-start bootstrap                 |
-| `db`      | PostgreSQL 16, data in the `db-data` volume                                                  |
-| `backup`  | Nightly `pg_dump` into `./backups`, kept for `BACKUP_KEEP_DAYS` days (default 14)            |
+| Service   | Role                                                                                                                               |
+| --------- | ---------------------------------------------------------------------------------------------------------------------------------- |
+| `caddy`   | Ports 80/443, HTTPS certificate from Let's Encrypt, proxies to the app                                                             |
+| `app`     | Next.js server                                                                                                                     |
+| `worker`  | Job queue: SMS sending, AmoCRM pushes, the daily scan for auto-SMS, birthdays and debtors                                          |
+| `turn`    | coturn relay for video lessons on 3478 and UDP 49160–49200 (`TURN_PUBLIC_IP`, `TURN_SECRET`)                                       |
+| `migrate` | Runs once per start: `prisma migrate deploy`, then the first-start bootstrap                                                       |
+| `db`      | PostgreSQL 16, data in the `db-data` volume                                                                                        |
+| `backup`  | Nightly `pg_dump` into `./backups` kept `BACKUP_KEEP_DAYS` days (default 14), plus a copy of uploaded files in `./backups/uploads` |
 
 Uploaded photos live in the `uploads` volume.
 
@@ -123,14 +123,35 @@ docker image prune -f
 
 ## 8. Backups and restore
 
-Dumps are written to `/opt/kampus/backups/kampus-<date>.sql.gz` every 24 hours.
-Copy them off the server now and then (`scp root@<ip>:/opt/kampus/backups/*.gz .`)
-or enable Hetzner's server backups. To restore a dump into a fresh database:
+Every 24 hours the `backup` service:
+
+- writes a database dump to `/opt/kampus/backups/kampus-<date>.sql.gz`, keeping the
+  last `BACKUP_KEEP_DAYS` days (default 14);
+- copies new uploaded files and lesson recordings to `/opt/kampus/backups/uploads`.
+  A file deleted in Kampus moves to `/opt/kampus/backups/uploads-deleted` and is
+  dropped after `BACKUP_KEEP_DAYS` days. The copy pauses while less than 2 GB of
+  disk would be left (`BACKUP_MIN_FREE_KB`) and says so in `docker compose logs backup`.
+
+These copies live on the same disk as the app, so they protect against mistakes,
+not against losing the server. For that, enable Hetzner's server backups or copy
+the folder off now and then (`scp -r root@<ip>:/opt/kampus/backups .`).
+
+Lesson recordings are deleted automatically after the number of days set in
+Settings → Integrations → Video lessons (default 90; 0 keeps them forever).
+
+To restore a dump into a fresh database:
 
 ```bash
 docker compose -f docker-compose.prod.yml stop app worker
 gunzip -c backups/kampus-<date>.sql.gz | docker compose -f docker-compose.prod.yml exec -T db psql -U kampus -d kampus
 docker compose -f docker-compose.prod.yml start app worker
+```
+
+To put uploaded files back (all of them, or one folder such as `recordings`):
+
+```bash
+docker compose -f docker-compose.prod.yml cp backups/uploads/. app:/data/uploads/
+docker compose -f docker-compose.prod.yml exec -u root app chown -R nextjs:nodejs /data/uploads
 ```
 
 ## Troubleshooting

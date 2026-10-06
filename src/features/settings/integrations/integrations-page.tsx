@@ -71,8 +71,14 @@ export function IntegrationsPage({ integrations }: { integrations: IntegrationDt
           { key: "turnCredential", secret: true },
           { key: "turnSecret", secret: true },
           { key: "maxParticipants", type: "number" },
+          { key: "recordingKeepDays", type: "number" },
         ]}
-        extra={<p className="text-xs text-muted-foreground">{t("VIDEO.hint")}</p>}
+        extra={
+          <>
+            <p className="text-xs text-muted-foreground">{t("VIDEO.hint")}</p>
+            <p className="text-xs text-muted-foreground">{t("VIDEO.retentionHint")}</p>
+          </>
+        }
         testId="integration-video"
       />
       <IntegrationForm

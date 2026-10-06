@@ -7,7 +7,7 @@ import { authorize, canAccessAllBranches, type Actor } from "@/server/rbac/autho
 import { findGroupInScope, ownGroupsOnly, today } from "@/server/services/groups/shared";
 import { dateToIso, isoToDate, mustFind } from "@/server/services/settings/shared";
 import { notifyMaterial } from "@/server/services/telegram/student-telegram.service";
-import { membershipByToken } from "@/server/services/video/video.service";
+import { loadVideoConfig, membershipByToken } from "@/server/services/video/video.service";
 import { getStorage, newStorageKey } from "@/server/storage/local";
 
 /*
@@ -177,6 +177,47 @@ export async function deleteMaterial(
       .delete(row.url.slice("/api/v1/files/".length))
       .catch(() => undefined);
   }
+}
+
+const DAY_MS = 24 * 60 * 60 * 1000;
+
+/**
+ * Nightly clean-up: recordings older than Settings → Integrations → Video
+ * lessons → "Keep lesson recordings for" are deleted with their file, so the
+ * server's disk does not fill up. 0 days keeps them forever. Returns how many
+ * were removed.
+ */
+export async function purgeOldRecordings(
+  db: DbClient = prisma,
+  now: Date = new Date(),
+): Promise<number> {
+  const { recordingKeepDays } = await loadVideoConfig(db);
+  if (recordingKeepDays <= 0) return 0;
+  const rows = await db.lessonMaterial.findMany({
+    where: {
+      kind: "RECORDING",
+      createdAt: { lt: new Date(now.getTime() - recordingKeepDays * DAY_MS) },
+    },
+    include: { group: { select: { branchId: true } } },
+  });
+  for (const row of rows) {
+    await db.$transaction(async (tx) => {
+      await tx.lessonMaterial.delete({ where: { id: row.id } });
+      await recordAudit(tx, null, {
+        action: "material.delete",
+        entity: "LessonMaterial",
+        entityId: row.id,
+        before: { kind: row.kind, title: row.title, keepDays: recordingKeepDays },
+        branchId: row.group.branchId,
+      });
+    });
+    if (row.url.startsWith("/api/v1/files/")) {
+      await getStorage()
+        .delete(row.url.slice("/api/v1/files/".length))
+        .catch(() => undefined);
+    }
+  }
+  return rows.length;
 }
 
 /**

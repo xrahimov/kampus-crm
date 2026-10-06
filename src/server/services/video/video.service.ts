@@ -130,6 +130,7 @@ interface VideoConfig {
   turnCredential: string;
   turnSecret: string;
   maxParticipants: number;
+  recordingKeepDays: number;
 }
 
 export async function loadVideoConfig(
@@ -149,6 +150,7 @@ export async function loadVideoConfig(
     turnCredential: envRelay ? "" : (c?.turnCredential ?? ""),
     turnSecret: envRelay ? env.TURN_SECRET! : (c?.turnSecret ?? ""),
     maxParticipants: c?.maxParticipants ?? 12,
+    recordingKeepDays: c?.recordingKeepDays ?? 90,
   };
 }
 

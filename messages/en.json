@@ -2828,9 +2828,11 @@
         "turnUsername": "TURN username",
         "turnCredential": "TURN password",
         "turnSecret": "TURN shared secret (instead of username and password)",
-        "maxParticipants": "Most people in one call"
+        "maxParticipants": "Most people in one call",
+        "recordingKeepDays": "Keep lesson recordings for (days)"
       },
-      "hint": "Works without setup using free public STUN servers. Some mobile and office networks block direct calls; for those, add a TURN relay (for example Cloudflare Calls TURN, Metered or your own coturn)."
+      "hint": "Works without setup using free public STUN servers. Some mobile and office networks block direct calls; for those, add a TURN relay (for example Cloudflare Calls TURN, Metered or your own coturn).",
+      "retentionHint": "Recordings older than this are deleted every night, together with their video file, to keep the server's disk from filling up. 0 keeps them forever."
     },
     "PAYME": {
       "title": "Payme",
