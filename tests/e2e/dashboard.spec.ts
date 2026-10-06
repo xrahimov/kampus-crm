@@ -30,6 +30,15 @@ test.describe("dashboard, search and notifications", () => {
     // The schedule: weekday tabs, time step and a block for the seeded morning group.
     const schedule = page.getByTestId("schedule");
     await expect(schedule).toBeVisible();
+    // Today's tab is already selected and clicking it changes nothing, so on
+    // Tuesdays go through another day first (Monday, or Wednesday on Mondays).
+    const today = new Date().toLocaleDateString("en-US", {
+      weekday: "short",
+      timeZone: "Asia/Tashkent",
+    });
+    const detour = today === "Mon" ? 3 : 1;
+    await page.getByTestId(`schedule-day-${detour}`).click();
+    await expect(page).toHaveURL(new RegExp(`weekday=${detour}`));
     await page.getByTestId("schedule-day-2").click();
     await expect(page).toHaveURL(/weekday=2/);
     await expect(schedule.getByTestId("schedule-room").first()).toBeVisible();
