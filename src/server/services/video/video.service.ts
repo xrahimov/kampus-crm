@@ -1,6 +1,6 @@
 import { createHmac } from "node:crypto";
 
-import type { Prisma, VideoPeerRole } from "@/generated/prisma/client";
+import type { Prisma, VideoPeerRole, VideoRoomStatus } from "@/generated/prisma/client";
 import { DEFAULT_STUN_URLS } from "@/lib/validation/integrations";
 import type { StartVideoInput, VideoLinksSmsInput, VideoSyncInput } from "@/lib/validation/video";
 import { recordAudit } from "@/server/audit/audit";
@@ -30,6 +30,8 @@ import { dateToIso, getOrganizationId, isoToDate } from "@/server/services/setti
 export const PEER_TIMEOUT_MS = 20_000;
 /** A LIVE room nobody has been in for this long is closed on the next look. */
 export const ROOM_IDLE_MS = 15 * 60_000;
+/** A call ends by itself this long after it was started. */
+export const ROOM_MAX_MS = 150 * 60_000;
 /** Memberships whose students may join the group's calls. */
 const JOINABLE = ["NEW", "TRIAL", "ACTIVE"] as const;
 
@@ -220,7 +222,22 @@ async function closeRoom(db: DbClient, roomId: string, at = new Date()): Promise
   await db.videoSignal.deleteMany({ where: { roomId } });
 }
 
-/** The group's LIVE room; one left empty for ROOM_IDLE_MS is closed instead. */
+/** Closes a LIVE room that has run for ROOM_MAX_MS; true when it is (now) over. */
+async function closeIfOverTime(
+  db: DbClient,
+  room: { id: string; status: VideoRoomStatus; startedAt: Date },
+  now = new Date(),
+): Promise<boolean> {
+  if (room.status !== "LIVE") return true;
+  if (now.getTime() - room.startedAt.getTime() < ROOM_MAX_MS) return false;
+  await closeRoom(db, room.id, new Date(room.startedAt.getTime() + ROOM_MAX_MS));
+  return true;
+}
+
+/**
+ * The group's LIVE room; one left empty for ROOM_IDLE_MS, or running for
+ * ROOM_MAX_MS, is closed instead.
+ */
 async function findLiveRoom(db: DbClient, groupId: string, now = new Date()) {
   const room = await db.videoRoom.findFirst({
     where: { groupId, status: "LIVE" },
@@ -228,6 +245,7 @@ async function findLiveRoom(db: DbClient, groupId: string, now = new Date()) {
     orderBy: { startedAt: "desc" },
   });
   if (!room) return null;
+  if (await closeIfOverTime(db, room, now)) return null;
   const idleSince = new Date(now.getTime() - ROOM_IDLE_MS);
   if (room.startedAt < idleSince) {
     const recent = await db.videoParticipant.count({
@@ -369,6 +387,9 @@ export async function getVideoRoom(
 ): Promise<VideoRoomDto> {
   authorize(actor, "groups.view");
   const { room } = await findRoomInScope(db, actor, roomId);
+  if (room.status === "LIVE" && (await closeIfOverTime(db, room))) {
+    return toRoomDto(db, (await findRoomInScope(db, actor, roomId)).room);
+  }
   return toRoomDto(db, room);
 }
 
@@ -450,7 +471,7 @@ export async function joinVideoRoomAsStaff(
 ): Promise<JoinDto> {
   authorize(actor, "groups.view");
   const { room } = await findRoomInScope(db, actor, roomId);
-  if (room.status !== "LIVE") throw AppError.conflict("errors.videoEnded");
+  if (await closeIfOverTime(db, room)) throw AppError.conflict("errors.videoEnded");
   const config = await loadVideoConfig(db);
   if (!config.enabled) throw AppError.conflict("errors.videoDisabled");
   const teaches = await db.group.count({
@@ -561,10 +582,10 @@ export async function syncVideoPeer(
 ): Promise<SyncDto> {
   const me = await db.videoParticipant.findUnique({
     where: { id: participantId },
-    include: { room: { select: { id: true, status: true } } },
+    include: { room: { select: { id: true, status: true, startedAt: true } } },
   });
   if (!me || !safeEqual(sha256(input.secret), me.secretHash)) throw AppError.forbidden();
-  if (me.room.status !== "LIVE") return { status: "ENDED", peers: [], signals: [] };
+  if (await closeIfOverTime(db, me.room)) return { status: "ENDED", peers: [], signals: [] };
   // Left already, or replaced by the same person's newer tab.
   if (me.leftAt) return { status: "GONE", peers: [], signals: [] };
   const now = new Date();
