@@ -9,10 +9,33 @@ export interface StoredFile {
   size: number;
 }
 
+export interface StoredRange {
+  /** Bytes [start, end] of the file, inclusive. */
+  stream: ReadableStream<Uint8Array>;
+  start: number;
+  end: number;
+  size: number;
+  contentType: string;
+}
+
 export interface Storage {
   put(key: string, data: Uint8Array, contentType: string): Promise<StoredFile>;
+  /**
+   * Writes a large upload (a lesson recording) as it arrives, giving up past
+   * `maxBytes` with a `TOO_LARGE` error and nothing kept.
+   */
+  putStream(
+    key: string,
+    data: ReadableStream<Uint8Array>,
+    contentType: string,
+    maxBytes: number,
+  ): Promise<StoredFile>;
   /** Returns null when the key does not exist. */
   get(key: string): Promise<{ data: Uint8Array; contentType: string } | null>;
+  /** Removes a file; a missing key is not an error. */
+  delete(key: string): Promise<void>;
+  /** A byte range of the file for streaming playback; null when the key does not exist. */
+  getRange(key: string, start?: number, end?: number): Promise<StoredRange | null>;
 }
 
 /** Only keys we generate: `<folder>/<hex>.<ext>`, no dots or slashes beyond that. */

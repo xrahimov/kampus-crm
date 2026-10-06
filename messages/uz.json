@@ -259,7 +259,8 @@
     "attachmentType": "Bunday turdagi fayl qabul qilinmaydi.",
     "attachmentSize": "Fayl hajmi 20 MB dan oshmasligi kerak.",
     "homeworkEmpty": "Javob yozing yoki fayl biriktiring.",
-    "botUsername": "Faqat harflar, raqamlar va pastki chiziq."
+    "botUsername": "Faqat harflar, raqamlar va pastki chiziq.",
+    "recordingSize": "Yozuv hajmi 400 MB dan oshmasligi kerak."
   },
   "roles": {
     "CEO": "CEO",
@@ -810,7 +811,8 @@
         "discounts": "Chegirmalar",
         "coins": "Coinlar",
         "comments": "Izohlar",
-        "homework": "Uy vazifasi"
+        "homework": "Uy vazifasi",
+        "materials": "Materiallar"
       },
       "changeTeacherHint": "Yangi o'qituvchining ulushi bugundan hisoblanadi."
     },
@@ -944,6 +946,34 @@
         "ACCEPTED": "Qabul qilindi",
         "RETURNED": "Qaytarildi"
       }
+    },
+    "materials": {
+      "intro": "Fayllar, havolalar va dars yozuvlari. O‘quvchilar ularni shaxsiy havolasi orqali ochadi.",
+      "add": "Material qo‘shish",
+      "addTitle": "Material qo‘shish",
+      "empty": "Hali material yo‘q.",
+      "emptyHint": "Yuqoridagi tugma bilan fayl yoki havola qo‘shing, yoki video darsni qo‘ng‘iroqdan yozib oling.",
+      "lesson": "Dars (ixtiyoriy)",
+      "noLesson": "Darsga bog‘lanmagan",
+      "general": "Butun guruh",
+      "lessonOf": "{date} darsi",
+      "kind": "Turi",
+      "kinds": {
+        "FILE": "Fayl",
+        "LINK": "Havola",
+        "RECORDING": "Yozuv"
+      },
+      "title": "Nomi",
+      "url": "Havola",
+      "file": "Fayl",
+      "open": "Ochish",
+      "download": "Yuklab olish",
+      "delete": "O‘chirish",
+      "deleteTitle": "Material o‘chirilsinmi?",
+      "deleteText": "O‘quvchilar uni boshqa ko‘rmaydi. Yozuv fayli ham birga o‘chiriladi.",
+      "addedBy": "{name} qo‘shdi",
+      "duration": "{minutes} daqiqa",
+      "size": "{mb} MB"
     }
   },
   "students": {
@@ -2452,7 +2482,8 @@
         "User": "Xodim",
         "VideoRoom": "Video dars",
         "Homework": "Uy vazifasi",
-        "HomeworkSubmission": "Uy vazifasi javobi"
+        "HomeworkSubmission": "Uy vazifasi javobi",
+        "LessonMaterial": "Dars materiali"
       },
       "names": {
         "attendance": {
@@ -2705,6 +2736,10 @@
           "update": "Uy vazifasi o‘zgartirildi",
           "delete": "Uy vazifasi o‘chirildi",
           "review": "Uy vazifasi javobi tekshirildi"
+        },
+        "material": {
+          "add": "Material qo‘shildi",
+          "delete": "Material o‘chirildi"
         }
       }
     }
@@ -3019,7 +3054,8 @@
       "money": "To‘lovlar",
       "results": "Natijalar",
       "schedule": "Jadval",
-      "homework": "Uy vazifasi"
+      "homework": "Uy vazifasi",
+      "materials": "Materiallar"
     },
     "lessons": {
       "empty": "Hali darslar yo‘q.",
@@ -3087,6 +3123,15 @@
       "connected": "Ulangan: {name}",
       "disconnect": "Uzish",
       "notReady": "O‘quv markazingiz hali Telegram botini sozlamagan."
+    },
+    "materials": {
+      "empty": "Hali material yo‘q.",
+      "lessonOf": "{date} darsi",
+      "general": "Butun guruh uchun",
+      "open": "Ochish",
+      "download": "Yuklab olish",
+      "recording": "Dars yozuvi",
+      "duration": "{minutes} daqiqa"
     }
   },
   "telegramBot": {
@@ -3099,7 +3144,8 @@
     "homeworkChanged": "{group}: {date} darsi uchun uy vazifasi o‘zgartirildi.\n{text}",
     "homeworkAccepted": "{group}: {date} darsi uchun uy vazifangiz qabul qilindi.{comment}",
     "homeworkReturned": "{group}: {date} darsi uchun uy vazifangiz qaytarildi, qayta ko‘rib chiqing.{comment}",
-    "debtor": "{group}: balansingizda {debt} yetishmayapti. Iltimos, o‘quv markazida to‘lang."
+    "debtor": "{group}: balansingizda {debt} yetishmayapti. Iltimos, o‘quv markazida to‘lang.",
+    "materialAdded": "{group}: {kind, select, RECORDING {yangi dars yozuvi} LINK {yangi havola} other {yangi fayl}}: {title}. Sahifangizni oching: {link}"
   },
   "video": {
     "title": "Video dars",
@@ -3153,7 +3199,15 @@
       "send": "Yuborish",
       "muteAll": "Hammaning mikrofonini o‘chirish",
       "mutePerson": "{name} mikrofonini o‘chirish",
-      "mutedBy": "{name} mikrofoningizni o‘chirdi. Uni qayta yoqishingiz mumkin."
+      "mutedBy": "{name} mikrofoningizni o‘chirdi. Uni qayta yoqishingiz mumkin.",
+      "record": "Darsni yozib olish",
+      "stopRecording": "Yozishni to‘xtatish",
+      "recording": "Yozilmoqda",
+      "savingRecording": "Yozuv saqlanmoqda…",
+      "recordingSaved": "Yozuv guruh materiallarida saqlandi.",
+      "recordingFailed": "Yozuvni saqlab bo‘lmadi.",
+      "recordingUnsupported": "Bu brauzer yozib ololmaydi.",
+      "leaveWhileRecording": "Yozuv hali saqlanmoqda."
     },
     "done": {
       "left": "Siz darsdan chiqdingiz.",

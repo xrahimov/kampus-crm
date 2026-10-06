@@ -47,6 +47,7 @@ export type BotMessageKind =
   | "homeworkChanged"
   | "homeworkAccepted"
   | "homeworkReturned"
+  | "materialAdded"
   | "debtor";
 
 /** Narrows Telegram's language_code to a language the bot speaks. */
@@ -233,6 +234,33 @@ export async function notifyLessonStarted(
       kind: "lessonStarted",
       refKey: `lesson-started:${input.roomId}`,
       values: { group: input.groupName, link: classLink(appOrigin(), m.videoToken) },
+    });
+  }
+  return queued;
+}
+
+/** A new file, link or recording for the group (A-105), with each student's own page link. */
+export async function notifyMaterial(
+  tx: DbClient,
+  input: { materialId: string; groupId: string; groupName: string; kind: string; title: string },
+): Promise<number> {
+  const memberships = await tx.groupMembership.findMany({
+    where: { groupId: input.groupId, status: { in: ["NEW", "TRIAL", "ACTIVE"] } },
+    select: { studentId: true, videoToken: true },
+  });
+  let queued = 0;
+  for (const m of memberships) {
+    if (!m.videoToken) continue;
+    queued += await notifyStudents(tx, {
+      studentIds: [m.studentId],
+      kind: "materialAdded",
+      refKey: `material:${input.materialId}`,
+      values: {
+        group: input.groupName,
+        kind: input.kind,
+        title: input.title,
+        link: classLink(appOrigin(), m.videoToken),
+      },
     });
   }
   return queued;

@@ -18,6 +18,7 @@ import {
 } from "@/server/services/groups/groups.service";
 import { getMonthGrid } from "@/server/services/groups/lessons.service";
 import { listGroupHomework } from "@/server/services/homework/homework.service";
+import { listGroupMaterials } from "@/server/services/materials/materials.service";
 import { listMembers } from "@/server/services/groups/memberships.service";
 import { getGroupFormOptions } from "@/server/services/groups/options.service";
 import { listGroupDiscounts } from "@/server/services/students/discounts.service";
@@ -94,6 +95,7 @@ export default async function Page({ params, searchParams }: Props) {
     coinReasons,
     video,
     homework,
+    materials,
   ] = await Promise.all([
     getMonthGrid(current.actor, id, month),
     listMembers(current.actor, id, { archived: str(sp.archived) === "1" }),
@@ -126,6 +128,7 @@ export default async function Page({ params, searchParams }: Props) {
       : Promise.resolve([]),
     getGroupVideo(current.actor, id),
     listGroupHomework(current.actor, id),
+    listGroupMaterials(current.actor, id),
   ]);
 
   return (
@@ -147,6 +150,7 @@ export default async function Page({ params, searchParams }: Props) {
       coinReasons={coinReasons}
       video={video}
       homework={homework}
+      materials={materials}
       paymentOptions={paymentOptions}
       options={options}
       branches={current.branches}

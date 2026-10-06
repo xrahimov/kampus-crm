@@ -197,3 +197,28 @@ export const homeworkSubmissionSchema = z.object({
   attachmentUrl: z.string().max(500).nullable().optional(),
 });
 export type HomeworkSubmissionInput = z.output<typeof homeworkSubmissionSchema>;
+
+/* ----- lesson materials (A-105) ------------------------------------------------------------ */
+
+export const MATERIAL_INPUT_KINDS = ["FILE", "LINK"] as const;
+export const materialSchema = z
+  .object({
+    lessonId: z
+      .union([z.literal(""), idSchema])
+      .nullable()
+      .optional()
+      .transform((v) => v || null),
+    kind: z.enum(MATERIAL_INPUT_KINDS),
+    title: z.string().trim().min(1, "validation.required").max(200, "validation.tooLong"),
+    /** A stored file URL for FILE, any https link for LINK. */
+    url: z.string().trim().min(1, "validation.required").max(500, "validation.tooLong"),
+  })
+  .superRefine((v, ctx) => {
+    if (v.kind === "LINK" && !/^https?:\/\//i.test(v.url)) {
+      ctx.addIssue({ code: "custom", path: ["url"], message: "validation.url" });
+    }
+    if (v.kind === "FILE" && !v.url.startsWith("/api/v1/files/")) {
+      ctx.addIssue({ code: "custom", path: ["url"], message: "validation.fileRequired" });
+    }
+  });
+export type MaterialInput = z.output<typeof materialSchema>;

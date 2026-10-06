@@ -4,6 +4,7 @@ import { setRequestLocale } from "next-intl/server";
 
 import { PortalPage } from "@/features/portal/portal-page";
 import { listPortalHomework } from "@/server/services/homework/homework.service";
+import { listPortalMaterials } from "@/server/services/materials/materials.service";
 import { getPortal } from "@/server/services/portal/portal.service";
 import { getPortalTelegram } from "@/server/services/telegram/student-telegram.service";
 import { getClassPage } from "@/server/services/video/video.service";
@@ -23,13 +24,14 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 export default async function Page({ params }: Props) {
   const { locale, token } = await params;
   setRequestLocale(locale);
-  const [page, portal, homework, telegram] = await Promise.all([
+  const [page, portal, homework, telegram, materials] = await Promise.all([
     getClassPage(token),
     getPortal(token),
     listPortalHomework(token),
     getPortalTelegram(token),
+    listPortalMaterials(token),
   ]);
-  if (!page || !portal || !homework || !telegram) notFound();
+  if (!page || !portal || !homework || !telegram || !materials) notFound();
   return (
     <div className="mx-auto w-full max-w-2xl">
       <PortalPage
@@ -38,6 +40,7 @@ export default async function Page({ params }: Props) {
         portal={portal}
         homework={homework}
         telegram={telegram}
+        materials={materials}
       />
     </div>
   );

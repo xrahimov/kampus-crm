@@ -1,6 +1,7 @@
 "use client";
 
 import {
+  Circle,
   Hand,
   MessageSquare,
   Mic,
@@ -22,6 +23,7 @@ import { ConfirmDialog } from "@/components/data/confirm-dialog";
 import { cn } from "@/lib/utils";
 
 import { CHAT_MAX_LENGTH, type CallEngine, type RemotePeer } from "./call-engine";
+import { CallRecorder, recordingMimeType, uploadRecording } from "./recorder";
 import { VideoTile } from "./video-tile";
 
 const SELF = "self";
@@ -50,6 +52,54 @@ export function CallRoom({
   const [noticeShownFor, setNoticeShownFor] = useState<number | null>(null);
   const canShare =
     typeof navigator !== "undefined" && Boolean(navigator.mediaDevices?.getDisplayMedia);
+  const [recorder, setRecorder] = useState<CallRecorder | null>(null);
+  const [saving, setSaving] = useState(false);
+  const [recordNotice, setRecordNotice] = useState<"saved" | "failed" | null>(null);
+  const canRecord = engine.self.role === "HOST" && recordingMimeType() !== null;
+
+  // Leaving the page while recording would lose it.
+  useEffect(() => {
+    if (!recorder && !saving) return;
+    const warn = (e: BeforeUnloadEvent) => e.preventDefault();
+    window.addEventListener("beforeunload", warn);
+    return () => window.removeEventListener("beforeunload", warn);
+  }, [recorder, saving]);
+
+  useEffect(() => {
+    if (!recordNotice) return;
+    const timer = setTimeout(() => setRecordNotice(null), 8000);
+    return () => clearTimeout(timer);
+  }, [recordNotice]);
+
+  /** Stops the recording, if one runs, and files it under the lesson before anything else. */
+  const finishRecording = async (): Promise<void> => {
+    if (!recorder) return;
+    setRecorder(null);
+    setSaving(true);
+    try {
+      const result = await recorder.stop();
+      await uploadRecording(engine.self.roomId, result);
+      setRecordNotice("saved");
+    } catch {
+      setRecordNotice("failed");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const toggleRecording = () => {
+    if (recorder) {
+      void finishRecording();
+      return;
+    }
+    try {
+      const next = new CallRecorder(engine);
+      next.start();
+      setRecorder(next);
+    } catch {
+      setRecordNotice("failed");
+    }
+  };
 
   useEffect(() => {
     const leave = () => engine.leave();
@@ -189,6 +239,26 @@ export function CallRoom({
         </div>
       </header>
 
+      {(recorder || saving || recordNotice) && (
+        <p
+          className="mx-4 mb-2 flex items-center justify-center gap-2 rounded-md bg-sidebar-muted px-3 py-2 text-center text-sm text-white"
+          role="status"
+          data-testid="recording-notice"
+        >
+          {recorder ? (
+            <>
+              <Circle className="size-3 animate-pulse fill-red-500 text-red-500" aria-hidden />
+              {t("recording")}
+            </>
+          ) : saving ? (
+            t("savingRecording")
+          ) : recordNotice === "saved" ? (
+            t("recordingSaved")
+          ) : (
+            t("recordingFailed")
+          )}
+        </p>
+      )}
       {mutedNotice && (
         <p
           className="mx-4 mb-2 rounded-md bg-sidebar-muted px-3 py-2 text-center text-sm text-white"
@@ -308,6 +378,18 @@ export function CallRoom({
             <MicOff />
           </ControlButton>
         )}
+        {canRecord && (
+          <ControlButton
+            active={!recorder}
+            disabled={saving}
+            onClick={toggleRecording}
+            label={recorder ? t("stopRecording") : t("record")}
+            testId="toggle-record"
+            className={cn(recorder && "!bg-red-600 !text-white hover:!bg-red-500")}
+          >
+            {recorder ? <Square /> : <Circle />}
+          </ControlButton>
+        )}
         {canShare && (
           <ControlButton
             active={!media.screen}
@@ -320,7 +402,8 @@ export function CallRoom({
         )}
         <button
           type="button"
-          onClick={onLeave}
+          onClick={() => void finishRecording().then(onLeave)}
+          disabled={saving}
           data-testid="leave-call"
           className="inline-flex h-11 items-center gap-2 rounded-full bg-destructive px-5 text-sm font-medium text-destructive-foreground hover:bg-destructive/90 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sidebar-active [&_svg]:size-4"
         >
@@ -345,7 +428,10 @@ export function CallRoom({
           title={t("endTitle")}
           description={t("endText")}
           confirmLabel={t("endForAll")}
-          onConfirm={onEndForAll}
+          onConfirm={async () => {
+            await finishRecording();
+            await onEndForAll();
+          }}
         />
       )}
     </div>

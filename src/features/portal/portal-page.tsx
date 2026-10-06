@@ -23,9 +23,11 @@ import { useDateFormat } from "@/lib/use-date-format";
 import { useMoneyFormat } from "@/lib/use-money-format";
 
 import { PortalHomeworkTab } from "./homework-tab";
+import { PortalMaterialsTab } from "./materials-tab";
 import { TelegramCard } from "./telegram-card";
 import type { Weekday } from "@/lib/validation/groups";
 import type { PortalHomeworkDto } from "@/server/services/homework/homework.service";
+import type { MaterialDto } from "@/server/services/materials/materials.service";
 import type { PortalDto } from "@/server/services/portal/portal.service";
 import type { PortalTelegramDto } from "@/server/services/telegram/student-telegram.service";
 import type { ClassPageDto, JoinDto } from "@/server/services/video/video.service";
@@ -58,12 +60,14 @@ export function PortalPage({
   portal,
   homework,
   telegram,
+  materials,
 }: {
   token: string;
   initial: ClassPageDto;
   portal: PortalDto;
   homework: PortalHomeworkDto[];
   telegram: PortalTelegramDto;
+  materials: MaterialDto[];
 }) {
   const t = useTranslations("portal");
   const tc = useTranslations("video.class");
@@ -157,6 +161,9 @@ export function PortalPage({
                   </span>
                 )}
               </TabsTrigger>
+              <TabsTrigger value="materials" data-testid="portal-tab-materials">
+                {t("tabs.materials")}
+              </TabsTrigger>
               {showMoney && <TabsTrigger value="money">{t("tabs.money")}</TabsTrigger>}
               <TabsTrigger value="results">{t("tabs.results")}</TabsTrigger>
               <TabsTrigger value="schedule">{t("tabs.schedule")}</TabsTrigger>
@@ -205,6 +212,10 @@ export function PortalPage({
 
             <TabsContent value="homework">
               <PortalHomeworkTab token={token} initial={homework} />
+            </TabsContent>
+
+            <TabsContent value="materials">
+              <PortalMaterialsTab items={materials} />
             </TabsContent>
 
             {showMoney && (
