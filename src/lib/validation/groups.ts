@@ -167,3 +167,33 @@ export const membershipUpdateSchema = z.object({
   note: z.string().trim().max(500, "validation.tooLong").nullable().optional(),
 });
 export type MembershipUpdateInput = z.infer<typeof membershipUpdateSchema>;
+
+/** Homework for one lesson (A-102). */
+export const homeworkSchema = z.object({
+  text: z.string().trim().min(1, "validation.required").max(4000, "validation.tooLong"),
+  linkUrl: z
+    .union([z.literal(""), z.string().trim().url("validation.url").max(500)])
+    .nullable()
+    .optional()
+    .transform((v) => (v ? v : null)),
+  attachmentUrl: z.string().max(500).nullable().optional(),
+  dueDate: z
+    .union([z.literal(""), z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "validation.date")])
+    .nullable()
+    .optional()
+    .transform((v) => (v ? v : null)),
+});
+export type HomeworkInput = z.output<typeof homeworkSchema>;
+
+export const HOMEWORK_REVIEW_STATUSES = ["ACCEPTED", "RETURNED"] as const;
+export const homeworkReviewSchema = z.object({
+  status: z.enum(HOMEWORK_REVIEW_STATUSES),
+  teacherComment: z.string().trim().max(1000, "validation.tooLong").nullable().optional(),
+});
+export type HomeworkReviewInput = z.output<typeof homeworkReviewSchema>;
+
+export const homeworkSubmissionSchema = z.object({
+  note: z.string().trim().max(4000, "validation.tooLong").nullable().optional(),
+  attachmentUrl: z.string().max(500).nullable().optional(),
+});
+export type HomeworkSubmissionInput = z.output<typeof homeworkSubmissionSchema>;

@@ -143,16 +143,18 @@ model User {
   purchasesDecided PurchaseRequest[]  @relation("purchaseDecider")
   questionsWritten QuestionBankItem[] @relation("questionAuthor")
 
-  smsSent           SmsMessage[]       @relation("smsSender")
-  calls             CallLog[]          @relation("callStaff")
+  smsSent           SmsMessage[]         @relation("smsSender")
+  calls             CallLog[]            @relation("callStaff")
   botRecipient      BotRecipient?
   staffCheckIns     StaffAttendance[]
   workSchedules     WorkSchedule[]
-  membershipsClosed GroupMembership[]  @relation("membershipsClosed")
-  testsWritten      Test[]             @relation("testAuthor")
-  attemptsEntered   TestAttempt[]      @relation("attemptEnteredBy")
-  videoRoomsStarted VideoRoom[]        @relation("videoRoomStarter")
+  membershipsClosed GroupMembership[]    @relation("membershipsClosed")
+  testsWritten      Test[]               @relation("testAuthor")
+  attemptsEntered   TestAttempt[]        @relation("attemptEnteredBy")
+  videoRoomsStarted VideoRoom[]          @relation("videoRoomStarter")
   videoPeers        VideoParticipant[]
+  homeworkSet       Homework[]           @relation("homeworkAuthor")
+  homeworkChecked   HomeworkSubmission[] @relation("homeworkChecker")
 }
 
 /// A role is a named bundle of permission codes. System roles are seeded and
@@ -499,6 +501,7 @@ model Group {
   tests           TestGroup[]
   testAttempts    TestAttempt[]
   videoRooms      VideoRoom[]
+  homework        Homework[]
 
   @@index([branchId, status])
   @@index([courseId])
@@ -576,6 +579,7 @@ model Lesson {
   attendances Attendance[]
   grades      Grade[]
   videoRooms  VideoRoom[]
+  homework    Homework?
 
   @@unique([groupId, date, startTime])
   @@index([groupId, date])
@@ -650,13 +654,14 @@ model GroupMembership {
   createdAt   DateTime         @default(now())
   updatedAt   DateTime         @updatedAt
 
-  group       Group        @relation(fields: [groupId], references: [id], onDelete: Cascade)
-  student     Student      @relation(fields: [studentId], references: [id])
+  group       Group                @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  student     Student              @relation(fields: [studentId], references: [id])
   attendances Attendance[]
   grades      Grade[]
   discounts   Discount[]
   charges     Charge[]
   payments    Payment[]
+  homework    HomeworkSubmission[]
 
   @@unique([groupId, studentId])
   @@index([studentId])
@@ -688,6 +693,54 @@ model Grade {
   membership GroupMembership @relation(fields: [membershipId], references: [id], onDelete: Cascade)
 
   @@id([lessonId, membershipId])
+}
+
+/// Homework for one lesson (added 2026-10-06, A-102). The student answers
+/// through their personal link; the teacher accepts or returns the answer.
+model Homework {
+  id            String    @id @default(cuid())
+  lessonId      String    @unique
+  groupId       String
+  text          String
+  linkUrl       String?
+  attachmentUrl String?
+  dueDate       DateTime? @db.Date
+  createdById   String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  lesson      Lesson               @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+  group       Group                @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  createdBy   User?                @relation("homeworkAuthor", fields: [createdById], references: [id], onDelete: SetNull)
+  submissions HomeworkSubmission[]
+
+  @@index([groupId])
+}
+
+enum HomeworkStatus {
+  SUBMITTED
+  ACCEPTED
+  RETURNED
+}
+
+model HomeworkSubmission {
+  id             String         @id @default(cuid())
+  homeworkId     String
+  membershipId   String
+  status         HomeworkStatus @default(SUBMITTED)
+  note           String?
+  attachmentUrl  String?
+  submittedAt    DateTime       @default(now())
+  checkedById    String?
+  checkedAt      DateTime?
+  teacherComment String?
+
+  homework   Homework        @relation(fields: [homeworkId], references: [id], onDelete: Cascade)
+  membership GroupMembership @relation(fields: [membershipId], references: [id], onDelete: Cascade)
+  checkedBy  User?           @relation("homeworkChecker", fields: [checkedById], references: [id], onDelete: SetNull)
+
+  @@unique([homeworkId, membershipId])
+  @@index([membershipId])
 }
 
 model GroupNote {

@@ -21,7 +21,10 @@ import { ApiError, type ApiErrorBody } from "@/lib/api-client";
 import { parseDateOnly } from "@/lib/dates";
 import { useDateFormat } from "@/lib/use-date-format";
 import { useMoneyFormat } from "@/lib/use-money-format";
+
+import { PortalHomeworkTab } from "./homework-tab";
 import type { Weekday } from "@/lib/validation/groups";
+import type { PortalHomeworkDto } from "@/server/services/homework/homework.service";
 import type { PortalDto } from "@/server/services/portal/portal.service";
 import type { ClassPageDto, JoinDto } from "@/server/services/video/video.service";
 
@@ -51,10 +54,12 @@ export function PortalPage({
   token,
   initial,
   portal,
+  homework,
 }: {
   token: string;
   initial: ClassPageDto;
   portal: PortalDto;
+  homework: PortalHomeworkDto[];
 }) {
   const t = useTranslations("portal");
   const tc = useTranslations("video.class");
@@ -80,6 +85,9 @@ export function PortalPage({
     const d = parseDateOnly(iso);
     return `${fmt(d, { weekday: "short" })}, ${fmt(d, { day: "numeric", month: "short" })}`;
   };
+  const openHomework = homework.filter(
+    (h) => !h.submission || h.submission.status === "RETURNED",
+  ).length;
   const showMoney =
     portal.money.monthlyPrice > 0 || portal.money.balance !== 0 || portal.money.payments.length > 0;
 
@@ -135,6 +143,14 @@ export function PortalPage({
           <Tabs defaultValue="lessons">
             <TabsList className="w-full justify-start overflow-x-auto">
               <TabsTrigger value="lessons">{t("tabs.lessons")}</TabsTrigger>
+              <TabsTrigger value="homework" data-testid="portal-tab-homework">
+                {t("tabs.homework")}
+                {openHomework > 0 && (
+                  <span className="rounded-full bg-primary px-1.5 text-[10px] text-primary-foreground">
+                    {openHomework}
+                  </span>
+                )}
+              </TabsTrigger>
               {showMoney && <TabsTrigger value="money">{t("tabs.money")}</TabsTrigger>}
               <TabsTrigger value="results">{t("tabs.results")}</TabsTrigger>
               <TabsTrigger value="schedule">{t("tabs.schedule")}</TabsTrigger>
@@ -179,6 +195,10 @@ export function PortalPage({
                   </TableBody>
                 </Table>
               )}
+            </TabsContent>
+
+            <TabsContent value="homework">
+              <PortalHomeworkTab token={token} initial={homework} />
             </TabsContent>
 
             {showMoney && (
