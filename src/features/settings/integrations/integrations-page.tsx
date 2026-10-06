@@ -48,6 +48,7 @@ export function IntegrationsPage({ integrations }: { integrations: IntegrationDt
         dto={by("TELEGRAM")}
         fields={[
           { key: "botToken", secret: true },
+          { key: "botUsername" },
           { key: "webhookSecret", secret: true },
         ]}
         extra={<WebhookHint path="telegram?secret=…" />}

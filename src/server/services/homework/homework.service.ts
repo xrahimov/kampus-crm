@@ -11,6 +11,7 @@ import { authorize, canAccessAllBranches, type Actor } from "@/server/rbac/autho
 import { awardAutoCoins } from "@/server/services/coins/coins.service";
 import { findGroupInScope, ownGroupsOnly, today } from "@/server/services/groups/shared";
 import { dateToIso, isoToDate, mustFind } from "@/server/services/settings/shared";
+import { notifyHomework } from "@/server/services/telegram/student-telegram.service";
 import { membershipByToken } from "@/server/services/video/video.service";
 import { STORAGE_KEY_PATTERN } from "@/server/storage/storage";
 
@@ -83,6 +84,7 @@ export interface PortalHomeworkDto {
 
 const include = {
   lesson: { select: { date: true, topic: true } },
+  group: { select: { name: true } },
   createdBy: { select: { fullName: true } },
   submissions: { include: { checkedBy: { select: { fullName: true } } } },
 } satisfies Prisma.HomeworkInclude;
@@ -214,6 +216,18 @@ export async function setHomework(
       after: { lessonDate: dateToIso(lesson.date), text: saved.text, dueDate: saved.dueDate },
       branchId: lesson.group.branchId,
     });
+    // Students on Telegram hear about a new task, and about a changed text (A-103).
+    if (!before || before.text !== saved.text) {
+      await notifyHomework(tx, {
+        kind: before ? "homeworkChanged" : "homeworkSet",
+        homeworkId: saved.id,
+        groupId: lesson.groupId,
+        groupName: lesson.group.name,
+        lessonDate: dateToIso(lesson.date),
+        text: saved.text,
+        stamp: saved.updatedAt.toISOString(),
+      });
+    }
     return saved;
   });
   const members = await db.groupMembership.findMany({
@@ -296,6 +310,17 @@ export async function reviewSubmission(
       refKey: `homework:${homeworkId}:${membershipId}`,
       revoke: input.status !== "ACCEPTED",
     });
+    if (!before || before.status !== input.status) {
+      await notifyHomework(tx, {
+        kind: input.status === "ACCEPTED" ? "homeworkAccepted" : "homeworkReturned",
+        homeworkId,
+        studentId: membership.studentId,
+        groupName: row.group.name,
+        lessonDate: dateToIso(row.lesson.date),
+        comment: input.teacherComment ?? null,
+        stamp: new Date().toISOString(),
+      });
+    }
     await recordAudit(tx, actor, {
       action: "homework.review",
       entity: "HomeworkSubmission",

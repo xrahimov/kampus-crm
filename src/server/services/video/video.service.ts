@@ -11,6 +11,7 @@ import { authorize, can, type Actor } from "@/server/rbac/authorize";
 import { findGroupInScope, today } from "@/server/services/groups/shared";
 import { loadIntegrationConfig } from "@/server/services/integrations/integrations.service";
 import { deliverMessage } from "@/server/services/sms/sms.service";
+import { notifyLessonStarted } from "@/server/services/telegram/student-telegram.service";
 import { dateToIso, getOrganizationId, isoToDate } from "@/server/services/settings/shared";
 
 /*
@@ -368,6 +369,8 @@ export async function startVideoRoom(
       after: { groupId, lessonId },
       branchId: group.branchId,
     });
+    // Students on Telegram get the join link the moment the call opens (A-103).
+    await notifyLessonStarted(tx, { groupId, groupName: group.name, roomId: created.id });
     return created;
   });
   return toRoomDto(db, row);

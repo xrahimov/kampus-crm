@@ -597,6 +597,8 @@ model Student {
   photoUrl      String?
   /// Student app login (A-06): stored as observed, no app or portal in v1.
   passwordHash  String?
+  /// One-time-use-many code behind the portal's "connect Telegram" link (A-103).
+  telegramCode  String?   @unique
   /// "Manba": a lead source; the catalogue gets its own pages with leads (Phase 7).
   sourceId      String?
   schoolId      String?
@@ -606,9 +608,9 @@ model Student {
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
 
-  branch         Branch               @relation(fields: [branchId], references: [id])
-  school         School?              @relation(fields: [schoolId], references: [id], onDelete: SetNull)
-  source         LeadSource?          @relation(fields: [sourceId], references: [id], onDelete: SetNull)
+  branch         Branch                @relation(fields: [branchId], references: [id])
+  school         School?               @relation(fields: [schoolId], references: [id], onDelete: SetNull)
+  source         LeadSource?           @relation(fields: [sourceId], references: [id], onDelete: SetNull)
   memberships    GroupMembership[]
   parents        Parent[]
   customFields   StudentCustomField[]
@@ -623,11 +625,29 @@ model Student {
   smsMessages    SmsMessage[]
   callLogs       CallLog[]
   videoPeers     VideoParticipant[]
+  telegramChats  StudentTelegramChat[]
 
   @@index([branchId, isArchived])
   @@index([phone])
   @@index([schoolId])
   @@index([sourceId])
+}
+
+/// A Telegram chat (the student's own, or a parent's) that hears about the
+/// student's lessons, homework and payments (A-103). Linked from the portal.
+model StudentTelegramChat {
+  id        String   @id @default(cuid())
+  studentId String
+  chatId    String   @unique
+  /// Telegram first name, so the portal can say whose phone is connected.
+  name      String?
+  /// Telegram language_code narrowed to uz / ru / en; messages go out in it.
+  locale    String   @default("uz")
+  linkedAt  DateTime @default(now())
+
+  student Student @relation(fields: [studentId], references: [id], onDelete: Cascade)
+
+  @@index([studentId])
 }
 
 model GroupMembership {
