@@ -30,6 +30,7 @@ import {
   joinVideoRoomAsStudent,
   listStudentLinks,
   resetStudentLink,
+  ROOM_MAX_MS,
   smsStudentLinks,
   startVideoRoom,
   syncVideoPeer,
@@ -350,6 +351,25 @@ describe("video lessons", () => {
     expect((await getClassPage(tokenOne))?.roomId).toBeNull();
     await expect(joinVideoRoomAsStudent(tokenOne)).rejects.toMatchObject({ code: "CONFLICT" });
     await expect(joinVideoRoomAsStaff(teacher, roomId)).rejects.toMatchObject({ code: "CONFLICT" });
+  });
+
+  it("closes a call 150 minutes after it started, even with people in it", async () => {
+    const room = await startVideoRoom(teacher, groupA, {});
+    const joined = await joinVideoRoomAsStudent(tokenOne);
+    const startedAt = new Date(Date.now() - ROOM_MAX_MS - 60_000);
+    await prisma.videoRoom.update({ where: { id: room.id }, data: { startedAt } });
+    const sync = await syncVideoPeer(
+      joined.participantId,
+      videoSyncSchema.parse({ secret: joined.secret }),
+    );
+    expect(sync.status).toBe("ENDED");
+    const row = await prisma.videoRoom.findUniqueOrThrow({ where: { id: room.id } });
+    expect(row.status).toBe("ENDED");
+    expect(row.endedAt?.getTime()).toBe(startedAt.getTime() + ROOM_MAX_MS);
+    expect((await getGroupVideo(teacher, groupA)).room).toBeNull();
+    await expect(joinVideoRoomAsStaff(teacher, room.id)).rejects.toMatchObject({
+      code: "CONFLICT",
+    });
   });
 
   it("refuses new calls while switched off", async () => {

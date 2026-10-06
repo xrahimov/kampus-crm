@@ -30,6 +30,8 @@ import { dateToIso, getOrganizationId, isoToDate } from "@/server/services/setti
 export const PEER_TIMEOUT_MS = 20_000;
 /** A LIVE room nobody has been in for this long is closed on the next look. */
 export const ROOM_IDLE_MS = 15 * 60_000;
+/** A call is closed for everyone this long after it started. */
+export const ROOM_MAX_MS = 150 * 60_000;
 /** Memberships whose students may join the group's calls. */
 const JOINABLE = ["NEW", "TRIAL", "ACTIVE"] as const;
 
@@ -220,7 +222,16 @@ async function closeRoom(db: DbClient, roomId: string, at = new Date()): Promise
   await db.videoSignal.deleteMany({ where: { roomId } });
 }
 
-/** The group's LIVE room; one left empty for ROOM_IDLE_MS is closed instead. */
+/** When a room started at `startedAt` hits ROOM_MAX_MS, or null while it may still run. */
+function roomCapReached(startedAt: Date, now = new Date()): Date | null {
+  const cap = new Date(startedAt.getTime() + ROOM_MAX_MS);
+  return cap <= now ? cap : null;
+}
+
+/**
+ * The group's LIVE room; one past ROOM_MAX_MS, or left empty for ROOM_IDLE_MS,
+ * is closed instead.
+ */
 async function findLiveRoom(db: DbClient, groupId: string, now = new Date()) {
   const room = await db.videoRoom.findFirst({
     where: { groupId, status: "LIVE" },
@@ -228,6 +239,11 @@ async function findLiveRoom(db: DbClient, groupId: string, now = new Date()) {
     orderBy: { startedAt: "desc" },
   });
   if (!room) return null;
+  const cap = roomCapReached(room.startedAt, now);
+  if (cap) {
+    await closeRoom(db, room.id, cap);
+    return null;
+  }
   const idleSince = new Date(now.getTime() - ROOM_IDLE_MS);
   if (room.startedAt < idleSince) {
     const recent = await db.videoParticipant.count({
@@ -451,6 +467,11 @@ export async function joinVideoRoomAsStaff(
   authorize(actor, "groups.view");
   const { room } = await findRoomInScope(db, actor, roomId);
   if (room.status !== "LIVE") throw AppError.conflict("errors.videoEnded");
+  const cap = roomCapReached(room.startedAt);
+  if (cap) {
+    await closeRoom(db, room.id, cap);
+    throw AppError.conflict("errors.videoEnded");
+  }
   const config = await loadVideoConfig(db);
   if (!config.enabled) throw AppError.conflict("errors.videoDisabled");
   const teaches = await db.group.count({
@@ -561,10 +582,15 @@ export async function syncVideoPeer(
 ): Promise<SyncDto> {
   const me = await db.videoParticipant.findUnique({
     where: { id: participantId },
-    include: { room: { select: { id: true, status: true } } },
+    include: { room: { select: { id: true, status: true, startedAt: true } } },
   });
   if (!me || !safeEqual(sha256(input.secret), me.secretHash)) throw AppError.forbidden();
   if (me.room.status !== "LIVE") return { status: "ENDED", peers: [], signals: [] };
+  const cap = roomCapReached(me.room.startedAt);
+  if (cap) {
+    await closeRoom(db, me.roomId, cap);
+    return { status: "ENDED", peers: [], signals: [] };
+  }
   // Left already, or replaced by the same person's newer tab.
   if (me.leftAt) return { status: "GONE", peers: [], signals: [] };
   const now = new Date();
