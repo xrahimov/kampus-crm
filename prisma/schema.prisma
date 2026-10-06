@@ -155,6 +155,7 @@ model User {
   videoPeers        VideoParticipant[]
   homeworkSet       Homework[]           @relation("homeworkAuthor")
   homeworkChecked   HomeworkSubmission[] @relation("homeworkChecker")
+  materialsAdded    LessonMaterial[]     @relation("materialAuthor")
 }
 
 /// A role is a named bundle of permission codes. System roles are seeded and
@@ -502,6 +503,7 @@ model Group {
   testAttempts    TestAttempt[]
   videoRooms      VideoRoom[]
   homework        Homework[]
+  materials       LessonMaterial[]
 
   @@index([branchId, status])
   @@index([courseId])
@@ -580,6 +582,7 @@ model Lesson {
   grades      Grade[]
   videoRooms  VideoRoom[]
   homework    Homework?
+  materials   LessonMaterial[]
 
   @@unique([groupId, date, startTime])
   @@index([groupId, date])
@@ -713,6 +716,37 @@ model Grade {
   membership GroupMembership @relation(fields: [membershipId], references: [id], onDelete: Cascade)
 
   @@id([lessonId, membershipId])
+}
+
+/// What kind of thing a lesson material is (A-105).
+enum MaterialKind {
+  FILE
+  LINK
+  RECORDING
+}
+
+/// A file, link or call recording students may open from their personal link
+/// (added 2026-10-06, A-105). Tied to a lesson when one fits, else to the group.
+model LessonMaterial {
+  id          String       @id @default(cuid())
+  groupId     String
+  lessonId    String?
+  kind        MaterialKind
+  title       String
+  /// `/api/v1/files/<key>` for uploads and recordings, any https URL for links.
+  url         String
+  size        Int?
+  /// Recordings: length in seconds, as the browser measured it.
+  durationSec Int?
+  createdById String?
+  createdAt   DateTime     @default(now())
+
+  group     Group   @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  lesson    Lesson? @relation(fields: [lessonId], references: [id], onDelete: SetNull)
+  createdBy User?   @relation("materialAuthor", fields: [createdById], references: [id], onDelete: SetNull)
+
+  @@index([groupId, createdAt])
+  @@index([lessonId])
 }
 
 /// Homework for one lesson (added 2026-10-06, A-102). The student answers

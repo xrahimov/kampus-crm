@@ -1,8 +1,12 @@
 import { randomBytes } from "node:crypto";
-import { mkdir, readFile, writeFile } from "node:fs/promises";
+import { createReadStream, createWriteStream } from "node:fs";
+import { mkdir, readFile, rm, stat, writeFile } from "node:fs/promises";
 import path from "node:path";
+import { Readable, Transform } from "node:stream";
+import { pipeline } from "node:stream/promises";
+import type { ReadableStream as NodeReadableStream } from "node:stream/web";
 
-import { STORAGE_KEY_PATTERN, type Storage, type StoredFile } from "./storage";
+import { STORAGE_KEY_PATTERN, type Storage, type StoredFile, type StoredRange } from "./storage";
 
 const IMAGE_EXTENSION_BY_TYPE: Record<string, string> = {
   "image/jpeg": "jpg",
@@ -60,6 +64,68 @@ export class LocalStorage implements Storage {
     await mkdir(path.dirname(file), { recursive: true });
     await writeFile(file, data);
     return { key, contentType, size: data.byteLength };
+  }
+
+  async putStream(
+    key: string,
+    data: ReadableStream<Uint8Array>,
+    contentType: string,
+    maxBytes: number,
+  ): Promise<StoredFile> {
+    const file = this.resolve(key);
+    await mkdir(path.dirname(file), { recursive: true });
+    let size = 0;
+    const limit = new Transform({
+      transform(chunk: Buffer, _encoding, callback) {
+        size += chunk.byteLength;
+        if (size > maxBytes) callback(new Error("TOO_LARGE"));
+        else callback(null, chunk);
+      },
+    });
+    try {
+      await pipeline(
+        Readable.fromWeb(data as NodeReadableStream<Uint8Array>),
+        limit,
+        createWriteStream(file),
+      );
+    } catch (error) {
+      await rm(file, { force: true });
+      throw error;
+    }
+    return { key, contentType, size };
+  }
+
+  async delete(key: string): Promise<void> {
+    if (!STORAGE_KEY_PATTERN.test(key)) return;
+    await rm(this.resolve(key), { force: true });
+  }
+
+  async getRange(key: string, start = 0, end?: number): Promise<StoredRange | null> {
+    if (!STORAGE_KEY_PATTERN.test(key)) return null;
+    const file = this.resolve(key);
+    let size: number;
+    try {
+      size = (await stat(file)).size;
+    } catch (error) {
+      if ((error as NodeJS.ErrnoException).code === "ENOENT") return null;
+      throw error;
+    }
+    const last = Math.min(end ?? size - 1, size - 1);
+    const ext = key.slice(key.lastIndexOf(".") + 1);
+    const contentType = TYPE_BY_EXTENSION[ext] ?? "application/octet-stream";
+    if (size === 0 || start > last) {
+      return {
+        stream: new ReadableStream({ start: (c) => c.close() }),
+        start,
+        end: last,
+        size,
+        contentType,
+      };
+    }
+    const stream = Readable.toWeb(
+      createReadStream(file, { start, end: last }),
+    ) as ReadableStream<Uint8Array>;
+    return { stream, start, end: last, size, contentType };
   }
 
   async get(key: string) {

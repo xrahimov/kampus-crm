@@ -421,7 +421,7 @@ export async function submitHomework(
 
 /**
  * Whether a student's link may open a stored file: the file must belong to a
- * homework of their group, their own answer, or a lesson of their group.
+ * homework of their group, their own answer, a lesson or a material of their group.
  */
 export async function portalFileAllowed(
   token: string,
@@ -432,10 +432,11 @@ export async function portalFileAllowed(
   const membership = await membershipByToken(db, token);
   if (!membership) return false;
   const url = `/api/v1/files/${key}`;
-  const [homework, own, lesson] = await Promise.all([
+  const [homework, own, lesson, material] = await Promise.all([
     db.homework.count({ where: { groupId: membership.groupId, attachmentUrl: url } }),
     db.homeworkSubmission.count({ where: { membershipId: membership.id, attachmentUrl: url } }),
     db.lesson.count({ where: { groupId: membership.groupId, attachmentUrl: url } }),
+    db.lessonMaterial.count({ where: { groupId: membership.groupId, url } }),
   ]);
-  return homework + own + lesson > 0;
+  return homework + own + lesson + material > 0;
 }

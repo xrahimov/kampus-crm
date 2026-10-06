@@ -259,7 +259,8 @@
     "attachmentType": "This file type is not accepted.",
     "attachmentSize": "The file must be 20 MB or smaller.",
     "homeworkEmpty": "Write an answer or attach a file.",
-    "botUsername": "Letters, digits and underscores only."
+    "botUsername": "Letters, digits and underscores only.",
+    "recordingSize": "The recording must be 400 MB or smaller."
   },
   "roles": {
     "CEO": "CEO",
@@ -810,7 +811,8 @@
         "discounts": "Discounts",
         "coins": "Coins",
         "comments": "Comments",
-        "homework": "Homework"
+        "homework": "Homework",
+        "materials": "Materials"
       },
       "changeTeacherHint": "The new teacher's share counts from today."
     },
@@ -944,6 +946,34 @@
         "ACCEPTED": "Accepted",
         "RETURNED": "Returned"
       }
+    },
+    "materials": {
+      "intro": "Files, links and lesson recordings. Students open them from their personal link.",
+      "add": "Add material",
+      "addTitle": "Add material",
+      "empty": "No materials yet.",
+      "emptyHint": "Add a file or a link with the button above, or record a video lesson from the call.",
+      "lesson": "Lesson (optional)",
+      "noLesson": "Not tied to a lesson",
+      "general": "Whole group",
+      "lessonOf": "Lesson of {date}",
+      "kind": "Type",
+      "kinds": {
+        "FILE": "File",
+        "LINK": "Link",
+        "RECORDING": "Recording"
+      },
+      "title": "Title",
+      "url": "Link",
+      "file": "File",
+      "open": "Open",
+      "download": "Download",
+      "delete": "Delete",
+      "deleteTitle": "Delete this material?",
+      "deleteText": "Students will no longer see it. A recording file is removed with it.",
+      "addedBy": "Added by {name}",
+      "duration": "{minutes} min",
+      "size": "{mb} MB"
     }
   },
   "students": {
@@ -2452,7 +2482,8 @@
         "User": "Staff",
         "VideoRoom": "Video lesson",
         "Homework": "Homework",
-        "HomeworkSubmission": "Homework answer"
+        "HomeworkSubmission": "Homework answer",
+        "LessonMaterial": "Lesson material"
       },
       "names": {
         "attendance": {
@@ -2705,6 +2736,10 @@
           "update": "Homework changed",
           "delete": "Homework deleted",
           "review": "Homework answer reviewed"
+        },
+        "material": {
+          "add": "Material added",
+          "delete": "Material deleted"
         }
       }
     }
@@ -3019,7 +3054,8 @@
       "money": "Payments",
       "results": "Results",
       "schedule": "Schedule",
-      "homework": "Homework"
+      "homework": "Homework",
+      "materials": "Materials"
     },
     "lessons": {
       "empty": "No lessons yet.",
@@ -3087,6 +3123,15 @@
       "connected": "Connected: {name}",
       "disconnect": "Disconnect",
       "notReady": "Your learning centre has not set up its Telegram bot yet."
+    },
+    "materials": {
+      "empty": "No materials yet.",
+      "lessonOf": "Lesson of {date}",
+      "general": "For the whole group",
+      "open": "Open",
+      "download": "Download",
+      "recording": "Lesson recording",
+      "duration": "{minutes} min"
     }
   },
   "telegramBot": {
@@ -3099,7 +3144,8 @@
     "homeworkChanged": "{group}: the homework for the lesson of {date} was changed.\n{text}",
     "homeworkAccepted": "{group}: your homework for the lesson of {date} was accepted.{comment}",
     "homeworkReturned": "{group}: your homework for the lesson of {date} was returned, please look at it again.{comment}",
-    "debtor": "{group}: your balance is {debt} short. Please pay at the learning centre."
+    "debtor": "{group}: your balance is {debt} short. Please pay at the learning centre.",
+    "materialAdded": "{group}: new {kind, select, RECORDING {lesson recording} LINK {link} other {file}}: {title}. Open your page: {link}"
   },
   "video": {
     "title": "Video lesson",
@@ -3153,7 +3199,15 @@
       "send": "Send",
       "muteAll": "Turn everyone's microphone off",
       "mutePerson": "Turn {name}'s microphone off",
-      "mutedBy": "{name} turned your microphone off. You can turn it back on."
+      "mutedBy": "{name} turned your microphone off. You can turn it back on.",
+      "record": "Record the lesson",
+      "stopRecording": "Stop recording",
+      "recording": "Recording",
+      "savingRecording": "Saving the recording…",
+      "recordingSaved": "The recording is saved under the group's materials.",
+      "recordingFailed": "The recording could not be saved.",
+      "recordingUnsupported": "This browser cannot record.",
+      "leaveWhileRecording": "The recording is still being saved."
     },
     "done": {
       "left": "You left the lesson.",

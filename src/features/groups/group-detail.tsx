@@ -42,6 +42,7 @@ import type {
 } from "@/server/services/groups/groups.service";
 import type { MonthGridDto } from "@/server/services/groups/lessons.service";
 import type { GroupHomeworkDto } from "@/server/services/homework/homework.service";
+import type { GroupMaterialsDto } from "@/server/services/materials/materials.service";
 import type { MembershipDto } from "@/server/services/groups/memberships.service";
 import type { GroupFormOptions } from "@/server/services/groups/options.service";
 import type { PaymentOptionsDto } from "@/server/services/students/payments.service";
@@ -57,6 +58,7 @@ import { ChangeTeacherDialog, DayOffDialog, SupportTeachersDialog } from "./grou
 import { GroupCoinsTab } from "@/features/coins/group-coins-tab";
 import { GroupExamsTab } from "@/features/exams/group-exams-tab";
 import { GroupHomeworkTab } from "@/features/homework/group-homework-tab";
+import { GroupMaterialsTab } from "@/features/materials/group-materials-tab";
 import { GroupKnowledgeTab } from "@/features/tests/group-knowledge-tab";
 import { GroupTestsTab } from "@/features/tests/group-tests-tab";
 import { GroupVideoCard } from "@/features/video/group-video-card";
@@ -79,6 +81,7 @@ const TABS = [
   "attendance",
   "grades",
   "homework",
+  "materials",
   "tests",
   "knowledge",
   "notes",
@@ -108,6 +111,7 @@ export function GroupDetail({
   coinReasons,
   video,
   homework,
+  materials,
   paymentOptions,
   options,
   branches,
@@ -134,6 +138,7 @@ export function GroupDetail({
   coinReasons: CoinReasonDto[];
   video: GroupVideoDto;
   homework: GroupHomeworkDto;
+  materials: GroupMaterialsDto;
   paymentOptions: PaymentOptionsDto;
   options: GroupFormOptions;
   branches: BranchOption[];
@@ -418,6 +423,13 @@ export function GroupDetail({
               </TabsContent>
               <TabsContent value="homework" className="pt-4">
                 <GroupHomeworkTab data={homework} canSet={can.mark && !archived} />
+              </TabsContent>
+              <TabsContent value="materials" className="pt-4">
+                <GroupMaterialsTab
+                  groupId={group.id}
+                  data={materials}
+                  canSet={can.mark && !archived}
+                />
               </TabsContent>
               <TabsContent value="notes" className="pt-4">
                 <NotesTab groupId={group.id} notes={notes} canEdit={can.update} />
