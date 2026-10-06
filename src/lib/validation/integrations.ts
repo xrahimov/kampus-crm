@@ -210,6 +210,13 @@ export const telegramIntegrationSchema = z.object({
   isEnabled: z.boolean(),
   botToken: secret,
   webhookSecret: secret,
+  /** Without the @, e.g. "kampus_bot"; students open t.me/<username>?start=<code>. */
+  botUsername: z
+    .string()
+    .trim()
+    .regex(/^@?[A-Za-z0-9_]{0,64}$/, "validation.botUsername")
+    .transform((v) => v.replace(/^@/, ""))
+    .default(""),
 });
 /** The four fields of the reference's AmoCRM page (EXP §8). */
 export const amoCrmIntegrationSchema = z.object({

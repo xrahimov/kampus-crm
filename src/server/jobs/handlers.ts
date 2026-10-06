@@ -6,6 +6,10 @@ import {
 } from "@/server/services/integrations/integrations.service";
 import { runDailyNotifications } from "@/server/services/dashboard/notifications.service";
 import { runDailyAutoSms } from "@/server/services/sms/auto-sms.service";
+import {
+  reminderSlotKey,
+  runLessonReminders,
+} from "@/server/services/telegram/student-telegram.service";
 import { deliverMessage } from "@/server/services/sms/sms.service";
 import { dateToIso } from "@/server/services/settings/shared";
 
@@ -17,6 +21,7 @@ export const JOB_TYPES = [
   "sms.send",
   "telegram.send",
   "auto-sms.daily",
+  "telegram.reminders",
   "amocrm.pushLead",
 ] as const;
 
@@ -45,6 +50,10 @@ export function registerJobHandlers(): void {
     await runDailyNotifications(db, date ?? new Date().toISOString().slice(0, 10));
   });
 
+  registerJobHandler("telegram.reminders", async (_payload, db) => {
+    await runLessonReminders(db);
+  });
+
   registerJobHandler("amocrm.pushLead", async (payload, db) => {
     const lead = payloadOf<{ name: string; phone: string | null; source: string | null }>(payload);
     const client = await getAmoCrmClient(db);
@@ -63,4 +72,6 @@ export async function ensureDailyJob(
     payload: { date: todayIso },
     uniqueKey: `daily:${todayIso}`,
   });
+  // Lesson reminders for students on Telegram: one scan per five-minute slot (A-103).
+  await enqueue(db, { type: "telegram.reminders", payload: {}, uniqueKey: reminderSlotKey() });
 }

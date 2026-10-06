@@ -258,7 +258,8 @@
     "url": "Enter a valid link.",
     "attachmentType": "This file type is not accepted.",
     "attachmentSize": "The file must be 20 MB or smaller.",
-    "homeworkEmpty": "Write an answer or attach a file."
+    "homeworkEmpty": "Write an answer or attach a file.",
+    "botUsername": "Letters, digits and underscores only."
   },
   "roles": {
     "CEO": "CEO",
@@ -2744,10 +2745,11 @@
     },
     "TELEGRAM": {
       "title": "Telegram bot",
-      "description": "The support bot that notifies staff listed under Bot notifications.",
+      "description": "The support bot that notifies staff listed under Bot notifications. With a username set, students connect to it from their personal page for lesson reminders, homework and payment notices.",
       "fields": {
         "botToken": "Bot token",
-        "webhookSecret": "Webhook secret"
+        "webhookSecret": "Webhook secret",
+        "botUsername": "Bot username (without @)"
       }
     },
     "TELEPHONY": {
@@ -3076,7 +3078,28 @@
         "ACCEPTED": "Accepted",
         "RETURNED": "Returned"
       }
+    },
+    "telegram": {
+      "title": "Telegram",
+      "intro": "Get lesson reminders, homework and payment notices in Telegram. Parents can connect too.",
+      "connect": "Connect Telegram",
+      "connectMore": "Connect another phone",
+      "connected": "Connected: {name}",
+      "disconnect": "Disconnect",
+      "notReady": "Your learning centre has not set up its Telegram bot yet."
     }
+  },
+  "telegramBot": {
+    "linked": "Connected. This chat now gets {student}'s lesson reminders, homework and payment notices from Kampus. Send /stop to disconnect.",
+    "unlinked": "Disconnected. You will not get messages from Kampus any more.",
+    "unknownCode": "This link is not valid any more. Open your Kampus page and tap “Connect Telegram” again.",
+    "lessonSoon": "{group}: lesson at {start}–{end}, in about 30 minutes.{link, select, none {} other { Join: {link}}}",
+    "lessonStarted": "{group}: the teacher has started the lesson. Join: {link}",
+    "homeworkSet": "{group}: new homework for the lesson of {date}.\n{text}",
+    "homeworkChanged": "{group}: the homework for the lesson of {date} was changed.\n{text}",
+    "homeworkAccepted": "{group}: your homework for the lesson of {date} was accepted.{comment}",
+    "homeworkReturned": "{group}: your homework for the lesson of {date} was returned, please look at it again.{comment}",
+    "debtor": "{group}: your balance is {debt} short. Please pay at the learning centre."
   },
   "video": {
     "title": "Video lesson",

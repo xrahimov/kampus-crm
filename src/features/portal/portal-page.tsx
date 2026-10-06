@@ -23,9 +23,11 @@ import { useDateFormat } from "@/lib/use-date-format";
 import { useMoneyFormat } from "@/lib/use-money-format";
 
 import { PortalHomeworkTab } from "./homework-tab";
+import { TelegramCard } from "./telegram-card";
 import type { Weekday } from "@/lib/validation/groups";
 import type { PortalHomeworkDto } from "@/server/services/homework/homework.service";
 import type { PortalDto } from "@/server/services/portal/portal.service";
+import type { PortalTelegramDto } from "@/server/services/telegram/student-telegram.service";
 import type { ClassPageDto, JoinDto } from "@/server/services/video/video.service";
 
 const POLL_MS = 5000;
@@ -55,11 +57,13 @@ export function PortalPage({
   initial,
   portal,
   homework,
+  telegram,
 }: {
   token: string;
   initial: ClassPageDto;
   portal: PortalDto;
   homework: PortalHomeworkDto[];
+  telegram: PortalTelegramDto;
 }) {
   const t = useTranslations("portal");
   const tc = useTranslations("video.class");
@@ -137,6 +141,8 @@ export function PortalPage({
         <Stat label={t("stats.lessons")} value={String(portal.stats.lessonsHeld)} />
         <Stat label={t("stats.coins")} value={String(portal.student.coins)} />
       </div>
+
+      <TelegramCard token={token} initial={telegram} />
 
       <Card>
         <CardContent className="pt-6">

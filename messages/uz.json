@@ -258,7 +258,8 @@
     "url": "To‘g‘ri havola kiriting.",
     "attachmentType": "Bunday turdagi fayl qabul qilinmaydi.",
     "attachmentSize": "Fayl hajmi 20 MB dan oshmasligi kerak.",
-    "homeworkEmpty": "Javob yozing yoki fayl biriktiring."
+    "homeworkEmpty": "Javob yozing yoki fayl biriktiring.",
+    "botUsername": "Faqat harflar, raqamlar va pastki chiziq."
   },
   "roles": {
     "CEO": "CEO",
@@ -2744,10 +2745,11 @@
     },
     "TELEGRAM": {
       "title": "Telegram bot",
-      "description": "«Bot xabarnoma» ro'yxatidagi xodimlarga xabar beradigan support bot.",
+      "description": "Bot xabarnoma ro‘yxatidagi xodimlarni xabardor qiluvchi bot. Nomi ko‘rsatilsa, o‘quvchilar uni shaxsiy sahifasidan ulaydi: dars eslatmalari, uy vazifalari, to‘lov xabarlari.",
       "fields": {
         "botToken": "Bot tokeni",
-        "webhookSecret": "Webhook maxfiy kaliti"
+        "webhookSecret": "Webhook maxfiy kaliti",
+        "botUsername": "Bot nomi (@ belgisisiz)"
       }
     },
     "TELEPHONY": {
@@ -3076,7 +3078,28 @@
         "ACCEPTED": "Qabul qilindi",
         "RETURNED": "Qaytarildi"
       }
+    },
+    "telegram": {
+      "title": "Telegram",
+      "intro": "Dars eslatmalari, uy vazifalari va to‘lov xabarlarini Telegramda oling. Ota-onalar ham ulanishi mumkin.",
+      "connect": "Telegramni ulash",
+      "connectMore": "Yana bir telefon ulash",
+      "connected": "Ulangan: {name}",
+      "disconnect": "Uzish",
+      "notReady": "O‘quv markazingiz hali Telegram botini sozlamagan."
     }
+  },
+  "telegramBot": {
+    "linked": "Ulandi. Endi bu chatga {student} uchun dars eslatmalari, uy vazifalari va to‘lov xabarlari keladi. Uzish uchun /stop yuboring.",
+    "unlinked": "Uzildi. Endi Kampus’dan xabarlar kelmaydi.",
+    "unknownCode": "Bu havola endi amal qilmaydi. Kampus sahifangizni ochib, “Telegramni ulash” tugmasini qayta bosing.",
+    "lessonSoon": "{group}: dars {start}–{end}, taxminan 30 daqiqadan keyin.{link, select, none {} other { Kirish: {link}}}",
+    "lessonStarted": "{group}: o‘qituvchi darsni boshladi. Kirish: {link}",
+    "homeworkSet": "{group}: {date} darsi uchun yangi uy vazifasi.\n{text}",
+    "homeworkChanged": "{group}: {date} darsi uchun uy vazifasi o‘zgartirildi.\n{text}",
+    "homeworkAccepted": "{group}: {date} darsi uchun uy vazifangiz qabul qilindi.{comment}",
+    "homeworkReturned": "{group}: {date} darsi uchun uy vazifangiz qaytarildi, qayta ko‘rib chiqing.{comment}",
+    "debtor": "{group}: balansingizda {debt} yetishmayapti. Iltimos, o‘quv markazida to‘lang."
   },
   "video": {
     "title": "Video dars",

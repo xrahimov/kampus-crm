@@ -145,11 +145,12 @@ afterAll(async () => {
       data: { autoCoins: previousAutoCoins },
     });
   }
-  await prisma.group.deleteMany({ where: { id: groupId } });
+  // Guarded: a setup that failed early must not turn these into table-wide deletes.
+  if (groupId) await prisma.group.deleteMany({ where: { id: groupId } });
   await prisma.student.deleteMany({ where: { fullName: { startsWith: TAG } } });
   await prisma.course.deleteMany({ where: { name: { startsWith: TAG } } });
   await prisma.user.deleteMany({ where: { fullName: { startsWith: TAG } } });
-  await prisma.branch.deleteMany({ where: { id: branchId } });
+  if (branchId) await prisma.branch.deleteMany({ where: { id: branchId } });
 });
 
 describe("homework", () => {
