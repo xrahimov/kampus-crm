@@ -25,6 +25,7 @@ import {
   endVideoRoom,
   getClassPage,
   getGroupVideo,
+  getVideoRoom,
   iceServersFor,
   joinVideoRoomAsStaff,
   joinVideoRoomAsStudent,
@@ -350,6 +351,31 @@ describe("video lessons", () => {
     expect((await getClassPage(tokenOne))?.roomId).toBeNull();
     await expect(joinVideoRoomAsStudent(tokenOne)).rejects.toMatchObject({ code: "CONFLICT" });
     await expect(joinVideoRoomAsStaff(teacher, roomId)).rejects.toMatchObject({ code: "CONFLICT" });
+  });
+
+  it("ends a call by itself 150 minutes after it started", async () => {
+    const room = await startVideoRoom(teacher, groupA, {});
+    const host = await joinVideoRoomAsStaff(teacher, room.id);
+    expect((await sync(host.participantId, host.secret)).status).toBe("LIVE");
+    const startedAt = new Date(Date.now() - 151 * 60_000);
+    await prisma.videoRoom.update({ where: { id: room.id }, data: { startedAt } });
+
+    // The host is still connected, but the time is up.
+    expect((await sync(host.participantId, host.secret)).status).toBe("ENDED");
+    const ended = await prisma.videoRoom.findUniqueOrThrow({ where: { id: room.id } });
+    expect(ended.status).toBe("ENDED");
+    expect(ended.endedAt?.getTime()).toBe(startedAt.getTime() + 150 * 60_000);
+    expect((await getGroupVideo(teacher, groupA)).room).toBeNull();
+    await expect(joinVideoRoomAsStaff(teacher, room.id)).rejects.toMatchObject({
+      code: "CONFLICT",
+    });
+
+    // A call that is over time is closed by the next look too, not only by a sync.
+    const next = await startVideoRoom(teacher, groupA, {});
+    expect(next.id).not.toBe(room.id);
+    await prisma.videoRoom.update({ where: { id: next.id }, data: { startedAt } });
+    expect((await getVideoRoom(teacher, next.id)).status).toBe("ENDED");
+    expect((await startVideoRoom(teacher, groupA, {})).id).not.toBe(next.id);
   });
 
   it("refuses new calls while switched off", async () => {
