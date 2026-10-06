@@ -27,6 +27,7 @@ RUN npx prisma generate && npm run build
 FROM deps AS migrator
 COPY src ./src
 COPY scripts ./scripts
+COPY messages ./messages
 COPY tsconfig.json ./
 RUN npx prisma generate
 CMD ["npx", "prisma", "migrate", "deploy"]
@@ -36,6 +37,8 @@ FROM deps AS worker
 ENV NODE_ENV=production
 COPY src ./src
 COPY scripts ./scripts
+# Services import the translation files directly (Telegram texts for students).
+COPY messages ./messages
 COPY tsconfig.json ./
 RUN npx prisma generate
 CMD ["npx", "tsx", "scripts/worker.ts"]
