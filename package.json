@@ -19,7 +19,8 @@
     "db:seed": "tsx prisma/seed.ts",
     "db:bootstrap": "tsx scripts/bootstrap.ts",
     "db:reset": "prisma migrate reset --force",
-    "worker": "tsx scripts/worker.ts"
+    "worker": "tsx scripts/worker.ts",
+    "help:screenshots": "tsx scripts/help-screenshots.ts"
   },
   "dependencies": {
     "@fontsource-variable/onest": "^5.3.1",

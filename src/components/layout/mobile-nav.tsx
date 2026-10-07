@@ -8,6 +8,7 @@ import { KampusWordmark } from "@/components/brand/logo";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 
+import { HelpLink } from "./help-link";
 import { MainNav } from "./main-nav";
 
 /** Below the lg breakpoint the sidebar folds into a left drawer behind this button. */
@@ -31,6 +32,7 @@ export function MobileNav({ permissions, appName }: { permissions: string[]; app
           <KampusWordmark name={appName} />
         </div>
         <MainNav permissions={permissions} onNavigate={() => setOpen(false)} />
+        <HelpLink onNavigate={() => setOpen(false)} />
       </DialogContent>
     </Dialog>
   );
