@@ -10,7 +10,7 @@ import { presentedSecret } from "../_secret";
 export const POST = route<typeof telephonyWebhookSchema._output>(
   { auth: false, body: telephonyWebhookSchema, skipCsrf: true },
   async ({ request, body }) => {
-    await assertWebhookSecret(prisma, "TELEPHONY", presentedSecret(request));
-    return json(await recordWebhookCall(prisma, body), { status: 201 });
+    const organizationId = await assertWebhookSecret(prisma, "TELEPHONY", presentedSecret(request));
+    return json(await recordWebhookCall(prisma, organizationId, body), { status: 201 });
   },
 );

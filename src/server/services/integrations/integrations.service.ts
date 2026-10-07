@@ -24,7 +24,6 @@ import {
   type TelephonyProvider,
 } from "@/server/integrations/telephony/provider";
 import { authorize, type Actor } from "@/server/rbac/authorize";
-import { getDefaultOrganizationId } from "@/server/services/settings/shared";
 
 /* Settings → Integrations (EXP §8 AmoCRM, FaceID; A-83 for the rest). */
 
@@ -86,20 +85,16 @@ async function loadRow<P extends IntegrationProvider>(
 }
 
 /**
- * The raw configuration for the adapters; never returned to clients. Without an
- * `organizationId` the deployment's first centre is used: the webhooks and jobs
- * still address that one until they route by centre (A-108).
+ * The raw configuration for the adapters of one centre; never returned to
+ * clients. Every caller names the centre: a signed-in actor's, a student link's
+ * (through its branch) or the one a webhook's credentials matched (A-108).
  */
 export async function loadIntegrationConfig<P extends IntegrationProvider>(
   db: DbClient,
   provider: P,
-  organizationId?: string,
+  organizationId: string,
 ): Promise<(Config<P> & { isEnabled: boolean }) | null> {
-  const { row, isEnabled, config } = await loadRow(
-    db,
-    organizationId ?? (await getDefaultOrganizationId(db)),
-    provider,
-  );
+  const { row, isEnabled, config } = await loadRow(db, organizationId, provider);
   if (!row && !ON_BY_DEFAULT.includes(provider)) return null;
   return { ...config, isEnabled } as Config<P> & { isEnabled: boolean };
 }
@@ -193,20 +188,23 @@ export async function updateIntegration<P extends IntegrationProvider>(
 
 /* ----- adapters ---------------------------------------------------------------------------- */
 
-export async function getSmsProvider(db: DbClient = prisma): Promise<SmsProvider> {
-  return createSmsProvider(await loadIntegrationConfig(db, "SMS"));
+export async function getSmsProvider(db: DbClient, organizationId: string): Promise<SmsProvider> {
+  return createSmsProvider(await loadIntegrationConfig(db, "SMS", organizationId));
 }
 
-export async function getTelegramNotifier(db: DbClient = prisma): Promise<TelegramNotifier> {
-  return createTelegramNotifier(await loadIntegrationConfig(db, "TELEGRAM"));
+export async function getTelegramNotifier(
+  db: DbClient,
+  organizationId: string,
+): Promise<TelegramNotifier> {
+  return createTelegramNotifier(await loadIntegrationConfig(db, "TELEGRAM", organizationId));
 }
 
 export function getTelephonyProvider(): TelephonyProvider {
   return createTelephonyProvider();
 }
 
-export async function getAmoCrmClient(db: DbClient = prisma): Promise<AmoCrmClient> {
-  const config = await loadIntegrationConfig(db, "AMOCRM");
+export async function getAmoCrmClient(db: DbClient, organizationId: string): Promise<AmoCrmClient> {
+  const config = await loadIntegrationConfig(db, "AMOCRM", organizationId);
   const redirectUri = `${process.env.APP_URL ?? "http://localhost:3000"}/api/v1/webhooks/amocrm`;
   return createAmoCrmClient(
     config
@@ -217,8 +215,11 @@ export async function getAmoCrmClient(db: DbClient = prisma): Promise<AmoCrmClie
 }
 
 /** Persists rotated AmoCRM tokens after a call. */
-export async function saveAmoCrmTokens(db: DbClient, tokens: AmoCrmTokens | null): Promise<void> {
-  const organizationId = await getDefaultOrganizationId(db);
+export async function saveAmoCrmTokens(
+  db: DbClient,
+  organizationId: string,
+  tokens: AmoCrmTokens | null,
+): Promise<void> {
   const row = await db.integrationSetting.findUnique({
     where: { organizationId_provider: { organizationId, provider: "AMOCRM" } },
   });
@@ -236,24 +237,48 @@ export async function testAmoCrm(
   db: DbClient = prisma,
 ): Promise<{ ok: boolean; account?: string; error?: string; adapter: string }> {
   authorize(actor, "settings.integrations");
-  const client = await getAmoCrmClient(db);
+  const client = await getAmoCrmClient(db, actor.organizationId);
   const result = await client.testConnection();
-  if (client.tokens()) await saveAmoCrmTokens(db, client.tokens());
+  if (client.tokens()) await saveAmoCrmTokens(db, actor.organizationId, client.tokens());
   return { ...result, adapter: client.name };
 }
 
 /**
- * Webhooks carry the shared secret in `x-kampus-secret` (or `?secret=`). A provider
- * that is disabled or has no secret accepts nothing.
+ * Webhooks carry the shared secret in `x-kampus-secret` (or `?secret=`). The
+ * secret also says which centre the call is for: every centre sets its own in
+ * Settings → Integrations, and the one whose enabled secret matches is the
+ * caller's (A-108). A provider that is disabled or has no secret accepts nothing.
+ * Resolves to the organisation id.
  */
 export async function assertWebhookSecret(
   db: DbClient,
   provider: "TELEGRAM" | "TELEPHONY" | "FACE_ID",
   presented: string | null,
-): Promise<void> {
-  const config = await loadIntegrationConfig(db, provider);
-  const expected = (config as { webhookSecret?: string } | null)?.webhookSecret ?? "";
-  if (!config?.isEnabled || !expected || !presented || presented !== expected) {
-    throw AppError.forbidden("errors.webhookRejected");
+): Promise<string> {
+  const organizationId = presented
+    ? await findOrganizationByConfig(db, provider, (c) => c.webhookSecret === presented)
+    : null;
+  if (!organizationId) throw AppError.forbidden("errors.webhookRejected");
+  return organizationId;
+}
+
+/**
+ * The centre whose enabled configuration of `provider` satisfies `match`: how
+ * a webhook with no session finds its tenant by the credential it presents.
+ */
+export async function findOrganizationByConfig(
+  db: DbClient,
+  provider: IntegrationProvider,
+  match: (config: Record<string, unknown>) => boolean,
+): Promise<string | null> {
+  const rows = await db.integrationSetting.findMany({
+    where: { provider, isEnabled: true },
+    orderBy: { updatedAt: "asc" },
+    select: { organizationId: true, config: true },
+  });
+  for (const row of rows) {
+    const config = (row.config ?? {}) as Record<string, unknown>;
+    if (match(config)) return row.organizationId;
   }
+  return null;
 }

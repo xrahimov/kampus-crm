@@ -461,14 +461,15 @@ describe("integration settings", () => {
       });
       expect(saved.config.webhookSecret).toBe("••••••••");
       await updateIntegration(ceo, "TELEPHONY", { isEnabled: true, webhookSecret: "••••••••" });
-      const raw = await loadIntegrationConfig(prisma, "TELEPHONY");
+      const raw = await loadIntegrationConfig(prisma, "TELEPHONY", DEMO_ORG_ID);
       expect(raw?.webhookSecret).toBe(`${TAG}-secret`);
       await expect(assertWebhookSecret(prisma, "TELEPHONY", "wrong")).rejects.toMatchObject({
         code: "FORBIDDEN",
       });
-      await expect(
-        assertWebhookSecret(prisma, "TELEPHONY", `${TAG}-secret`),
-      ).resolves.toBeUndefined();
+      // The secret names the centre it belongs to (A-108).
+      await expect(assertWebhookSecret(prisma, "TELEPHONY", `${TAG}-secret`)).resolves.toBe(
+        DEMO_ORG_ID,
+      );
       await updateIntegration(ceo, "TELEPHONY", { isEnabled: false, webhookSecret: "••••••••" });
       await expect(assertWebhookSecret(prisma, "TELEPHONY", `${TAG}-secret`)).rejects.toMatchObject(
         { code: "FORBIDDEN" },
@@ -489,7 +490,7 @@ describe("integration settings", () => {
 
 describe("calls", () => {
   it("records a webhook call linked to the student, lists and filters it", async () => {
-    const dto = await recordWebhookCall(prisma, {
+    const dto = await recordWebhookCall(prisma, DEMO_ORG_ID, {
       externalId: `${TAG}-call-1`,
       direction: "INBOUND",
       status: "MISSED",
@@ -501,7 +502,7 @@ describe("calls", () => {
     expect(dto.studentId).toBe(studentOne);
     expect(dto.staffName).toBe(`${TAG} Cashier`);
     // Same external id again updates instead of duplicating.
-    await recordWebhookCall(prisma, {
+    await recordWebhookCall(prisma, DEMO_ORG_ID, {
       externalId: `${TAG}-call-1`,
       direction: "INBOUND",
       status: "ANSWERED",
@@ -569,7 +570,7 @@ describe("staff attendance", () => {
     });
     // 09:20 local (UTC+5) on the Monday → 04:20Z
     expect(
-      await recordFaceIdCheck(prisma, {
+      await recordFaceIdCheck(prisma, DEMO_ORG_ID, {
         deviceId: "t1",
         phone: phone(3),
         at: "2026-09-07T04:20:00.000Z",
@@ -577,7 +578,7 @@ describe("staff attendance", () => {
       }),
     ).toEqual({ matched: true });
     expect(
-      await recordFaceIdCheck(prisma, {
+      await recordFaceIdCheck(prisma, DEMO_ORG_ID, {
         deviceId: "t1",
         phone: phone(3),
         at: "2026-09-07T12:30:00.000Z",
@@ -585,7 +586,7 @@ describe("staff attendance", () => {
       }),
     ).toEqual({ matched: true });
     expect(
-      await recordFaceIdCheck(prisma, {
+      await recordFaceIdCheck(prisma, DEMO_ORG_ID, {
         deviceId: "t1",
         phone: phone(98),
         at: "2026-09-07T04:20:00.000Z",

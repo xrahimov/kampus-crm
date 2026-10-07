@@ -229,7 +229,7 @@ export async function resolveRecipients(
 export async function deliverMessage(db: DbClient, messageId: string): Promise<SmsStatus> {
   const message = await db.smsMessage.findUnique({ where: { id: messageId } });
   if (!message || message.status === "SENT") return message?.status ?? "FAILED";
-  const provider = await getSmsProvider(db);
+  const provider = await getSmsProvider(db, message.organizationId);
   try {
     const { providerId } = await provider.send({ phone: message.phone, text: message.text });
     await db.smsMessage.update({
@@ -292,7 +292,7 @@ export async function sendSms(
     if ((await deliverMessage(db, id)) === "SENT") sent += 1;
     else failed += 1;
   }
-  const provider = await getSmsProvider(db);
+  const provider = await getSmsProvider(db, actor.organizationId);
   return { total: ids.length, sent, failed, skipped, adapter: provider.name };
 }
 

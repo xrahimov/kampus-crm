@@ -215,7 +215,7 @@ export async function importProviderTemplates(
   authorize(actor, "settings.catalog");
   const organizationId = actor.organizationId;
   await checkCategory(db, organizationId, categoryId);
-  const provider = await getSmsProvider(db);
+  const provider = await getSmsProvider(db, organizationId);
   let remote: Array<{ id: string; text: string }>;
   try {
     remote = await provider.listTemplates();

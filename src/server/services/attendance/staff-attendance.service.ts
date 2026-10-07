@@ -193,7 +193,7 @@ export async function getStaffAttendanceReport(
   if (branchId && !actor.branchIds.includes(branchId)) {
     throw AppError.forbidden("errors.branchForbidden");
   }
-  const faceId = await loadIntegrationConfig(db, "FACE_ID");
+  const faceId = await loadIntegrationConfig(db, "FACE_ID", actor.organizationId);
   const lateAfter = Number((faceId as { lateAfterMinutes?: number } | null)?.lateAfterMinutes ?? 0);
 
   const staff = await loadStaff(db, actor, branchId);
@@ -426,10 +426,11 @@ export async function setManualCheck(
 /** `/webhooks/face-id`: the terminal reports who passed and when. */
 export async function recordFaceIdCheck(
   db: DbClient,
+  organizationId: string,
   input: FaceIdWebhookInput,
 ): Promise<{ matched: boolean }> {
   const user = await db.user.findFirst({
-    where: { phone: input.phone, isArchived: false },
+    where: { phone: input.phone, isArchived: false, organizationId },
     include: { branches: true },
   });
   const branchId = user?.branches[0]?.branchId;

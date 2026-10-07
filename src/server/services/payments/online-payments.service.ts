@@ -7,7 +7,10 @@ import { prisma, type DbClient } from "@/server/db/prisma";
 import { AppError } from "@/server/errors/app-error";
 import { notifyUsers } from "@/server/services/dashboard/notifications.service";
 import { notifyStaff } from "@/server/services/integrations/bot-recipients.service";
-import { loadIntegrationConfig } from "@/server/services/integrations/integrations.service";
+import {
+  findOrganizationByConfig,
+  loadIntegrationConfig,
+} from "@/server/services/integrations/integrations.service";
 import {
   dateToIso,
   decimalToNumber,
@@ -54,14 +57,47 @@ type ClickConfig = {
   secretKey: string;
 };
 
-async function paymeConfig(db: DbClient): Promise<PaymeConfig | null> {
-  const c = (await loadIntegrationConfig(db, "PAYME")) as PaymeConfig | null;
+async function paymeConfig(db: DbClient, organizationId: string): Promise<PaymeConfig | null> {
+  const c = (await loadIntegrationConfig(db, "PAYME", organizationId)) as PaymeConfig | null;
   return c?.isEnabled && c.merchantId && c.key ? c : null;
 }
 
-async function clickConfig(db: DbClient): Promise<ClickConfig | null> {
-  const c = (await loadIntegrationConfig(db, "CLICK")) as ClickConfig | null;
+async function clickConfig(db: DbClient, organizationId: string): Promise<ClickConfig | null> {
+  const c = (await loadIntegrationConfig(db, "CLICK", organizationId)) as ClickConfig | null;
   return c?.isEnabled && c.serviceId && c.merchantId && c.secretKey ? c : null;
+}
+
+/**
+ * A provider's call carries no session, so its merchant credentials say which
+ * centre it is for (A-108): Payme by the key behind `Paycom:<key>`, Click by the
+ * service id. Returns the centre and its configuration, or null.
+ */
+async function paymeConfigByKey(
+  db: DbClient,
+  key: string,
+): Promise<{ organizationId: string; config: PaymeConfig } | null> {
+  if (!key) return null;
+  const organizationId = await findOrganizationByConfig(
+    db,
+    "PAYME",
+    (c) => Boolean(c.merchantId) && c.key === key,
+  );
+  const config = organizationId ? await paymeConfig(db, organizationId) : null;
+  return organizationId && config ? { organizationId, config } : null;
+}
+
+async function clickConfigByServiceId(
+  db: DbClient,
+  serviceId: string,
+): Promise<{ organizationId: string; config: ClickConfig } | null> {
+  if (!serviceId) return null;
+  const organizationId = await findOrganizationByConfig(
+    db,
+    "CLICK",
+    (c) => Boolean(c.merchantId) && Boolean(c.secretKey) && c.serviceId === serviceId,
+  );
+  const config = organizationId ? await clickConfig(db, organizationId) : null;
+  return organizationId && config ? { organizationId, config } : null;
 }
 
 function courseMonths(start: Date, end: Date): string[] {
@@ -83,9 +119,10 @@ export async function getPortalPayOptions(
 ): Promise<PortalPayOptionsDto | null> {
   const membership = await membershipByToken(db, token);
   if (!membership) return null;
+  const organizationId = await organizationOfBranch(db, membership.group.branchId);
   const [payme, click, balance, group] = await Promise.all([
-    paymeConfig(db),
-    clickConfig(db),
+    paymeConfig(db, organizationId),
+    clickConfig(db, organizationId),
     membershipBalances(db, [membership.id]).then((m) => m.get(membership.id)),
     db.group.findUniqueOrThrow({
       where: { id: membership.groupId },
@@ -145,7 +182,11 @@ export async function createOnlinePayment(
 ): Promise<{ id: string; url: string }> {
   const membership = await membershipByToken(db, token);
   if (!membership) throw AppError.notFound();
-  const config = input.provider === "PAYME" ? await paymeConfig(db) : await clickConfig(db);
+  const organizationId = await organizationOfBranch(db, membership.group.branchId);
+  const config =
+    input.provider === "PAYME"
+      ? await paymeConfig(db, organizationId)
+      : await clickConfig(db, organizationId);
   if (!config) throw AppError.conflict("errors.onlinePaymentsOff");
   const group = await db.group.findUniqueOrThrow({
     where: { id: membership.groupId },
@@ -313,11 +354,13 @@ export async function handlePayme(
   body: unknown,
 ): Promise<Record<string, unknown>> {
   const request = (body ?? {}) as PaymeRequest;
-  const config = await paymeConfig(db);
   const presented = authorization?.startsWith("Basic ")
     ? Buffer.from(authorization.slice(6), "base64").toString("utf8")
     : "";
-  if (!config || presented !== `Paycom:${config.key}`) {
+  const matched = presented.startsWith("Paycom:")
+    ? await paymeConfigByKey(db, presented.slice("Paycom:".length))
+    : null;
+  if (!matched) {
     return paymeError(
       request.id,
       PAYME_ERRORS.auth,
@@ -328,18 +371,20 @@ export async function handlePayme(
   const account = (params.account ?? {}) as { order_id?: string };
   const now = Date.now();
 
+  // Only this centre's orders: the key that authenticated the call names it.
+  const own = {
+    provider: "PAYME" as const,
+    student: { branch: { organizationId: matched.organizationId } },
+  };
   const findOrder = async () => {
     const id = typeof account.order_id === "string" ? account.order_id : "";
-    const order = id ? await db.onlinePayment.findUnique({ where: { id } }) : null;
-    return order && order.provider === "PAYME" ? order : null;
+    return id ? db.onlinePayment.findFirst({ where: { id, ...own } }) : null;
   };
   const checkAmount = (order: { amount: Prisma.Decimal }) =>
     Math.round(decimalToNumber(order.amount) * 100) === Number(params.amount);
   const findTransaction = async () =>
     typeof params.id === "string"
-      ? db.onlinePayment.findUnique({
-          where: { provider_externalId: { provider: "PAYME", externalId: params.id } },
-        })
+      ? db.onlinePayment.findFirst({ where: { externalId: params.id, ...own } })
       : null;
   const transactionDto = (t: {
     id: string;
@@ -521,19 +566,24 @@ export async function handleClick(
     error_note: note,
     ...extra,
   });
-  const config = await clickConfig(db);
-  if (!config || fields.service_id !== config.serviceId) {
-    return reply(CLICK_ERRORS.sign, "SIGN CHECK FAILED!");
-  }
+  const matched = await clickConfigByServiceId(db, fields.service_id ?? "");
+  if (!matched) return reply(CLICK_ERRORS.sign, "SIGN CHECK FAILED!");
+  const { config } = matched;
   const action = fields.action;
   if (action !== "0" && action !== "1") return reply(CLICK_ERRORS.action, "Action not found");
   if (clickSignature(config.secretKey, fields, action === "1") !== fields.sign_string) {
     return reply(CLICK_ERRORS.sign, "SIGN CHECK FAILED!");
   }
   const order = fields.merchant_trans_id
-    ? await db.onlinePayment.findUnique({ where: { id: fields.merchant_trans_id } })
+    ? await db.onlinePayment.findFirst({
+        where: {
+          id: fields.merchant_trans_id,
+          provider: "CLICK",
+          student: { branch: { organizationId: matched.organizationId } },
+        },
+      })
     : null;
-  if (!order || order.provider !== "CLICK") return reply(CLICK_ERRORS.order, "User does not exist");
+  if (!order) return reply(CLICK_ERRORS.order, "User does not exist");
   if (order.status === "PAID") {
     return reply(CLICK_ERRORS.alreadyPaid, "Already paid", {
       merchant_prepare_id: order.id,
