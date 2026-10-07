@@ -109,7 +109,10 @@ export async function getCenterStatistics(
   const fromDate = isoToDate(from);
   const toDate = isoToDate(to);
   const [settings, rooms, daysOff] = await Promise.all([
-    db.orgSettings.findFirst({ select: { workStart: true, workEnd: true } }),
+    db.orgSettings.findFirst({
+      where: { organizationId: actor.organizationId },
+      select: { workStart: true, workEnd: true },
+    }),
     db.room.findMany({
       where: branchIn(scope),
       select: {

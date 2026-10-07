@@ -141,7 +141,10 @@ const OPEN_MEMBER: Prisma.GroupMembershipWhereInput = {
 async function examScope(actor: Actor, db: DbClient): Promise<Prisma.ExamWhereInput> {
   const where: Prisma.ExamWhereInput = { ...branchScope(actor) };
   if (ownGroupsOnly(actor)) {
-    const settings = await db.orgSettings.findFirst({ select: { teachersSeeExamSchedule: true } });
+    const settings = await db.orgSettings.findFirst({
+      where: { organizationId: actor.organizationId },
+      select: { teachersSeeExamSchedule: true },
+    });
     if (!settings?.teachersSeeExamSchedule) throw AppError.forbidden("errors.examsHidden");
     const mine: Prisma.GroupWhereInput = {
       OR: [
@@ -261,7 +264,11 @@ export async function getExamOptions(actor: Actor, db: DbClient = prisma): Promi
       select: { id: true, name: true, branchId: true },
       orderBy: { name: "asc" },
     }),
-    db.gradingSystem.findMany({ select: { id: true, name: true }, orderBy: { name: "asc" } }),
+    db.gradingSystem.findMany({
+      where: { organizationId: actor.organizationId },
+      select: { id: true, name: true },
+      orderBy: { name: "asc" },
+    }),
     db.user.findMany({
       where: {
         isArchived: false,

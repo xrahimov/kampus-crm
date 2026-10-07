@@ -48,7 +48,10 @@ export async function getDashboardSchedule(
   const weekday = filters.weekday ?? weekdayToday();
   const step = filters.step;
   const [settings, rooms, slots] = await Promise.all([
-    db.orgSettings.findFirst({ select: { workStart: true, workEnd: true } }),
+    db.orgSettings.findFirst({
+      where: { organizationId: actor.organizationId },
+      select: { workStart: true, workEnd: true },
+    }),
     db.room.findMany({
       where,
       select: { id: true, name: true, capacity: true },

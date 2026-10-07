@@ -350,7 +350,10 @@ export async function refundPayment(
   db: DbClient = prisma,
 ): Promise<PaymentDto> {
   authorize(actor, "payments.refund");
-  const settings = await db.orgSettings.findFirst({ select: { refundsEnabled: true } });
+  const settings = await db.orgSettings.findFirst({
+    where: { organizationId: actor.organizationId },
+    select: { refundsEnabled: true },
+  });
   if (!settings?.refundsEnabled) throw AppError.conflict("errors.refundsDisabled");
   const payment = await getPayment(actor, paymentId, db);
   const left = payment.amount - payment.refunded;

@@ -8,10 +8,18 @@ import { cn } from "@/lib/utils";
 
 import { SETTINGS_NAV } from "./settings-nav";
 
-export function SettingsSidebar({ permissions }: { permissions: string[] }) {
+export function SettingsSidebar({
+  permissions,
+  siteOwner = false,
+}: {
+  permissions: string[];
+  siteOwner?: boolean;
+}) {
   const t = useTranslations("settings.nav");
   const pathname = usePathname();
-  const items = SETTINGS_NAV.filter((item) => hasPermission(permissions, item.permission));
+  const items = SETTINGS_NAV.filter(
+    (item) => hasPermission(permissions, item.permission) && (!item.siteOwner || siteOwner),
+  );
 
   return (
     <nav aria-label={t("label")} className="lg:w-56 lg:shrink-0">

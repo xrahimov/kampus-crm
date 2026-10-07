@@ -17,7 +17,7 @@ import { mustFind, rethrowAsAppError } from "../settings/shared";
 
 /** The roles an actor may see or hand out: the system ones plus their centre's own. */
 export function roleOrganizationFilter(actor: Actor): Prisma.RoleWhereInput {
-  return { OR: [{ organizationId: null }, { organizationId: actor.organizationId }] };
+  return { OR: [{ isSystem: true }, { organizationId: actor.organizationId }] };
 }
 
 export interface RoleDto {

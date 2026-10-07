@@ -286,6 +286,7 @@
       "label": "Settings sections",
       "phase": "Phase {phase}",
       "general": "General settings",
+      "organizations": "Organisations",
       "courses": "Courses",
       "rooms": "Rooms",
       "daysOff": "Days off",
@@ -494,6 +495,26 @@
       "hint": "Click a row to copy its link.",
       "deleteTitle": "Delete form?",
       "deleteText": "“{name}” will stop accepting leads; received leads stay."
+    },
+    "organizations": {
+      "title": "Organisations",
+      "description": "The learning centres this server hosts. Each has its own CEO, branches, staff, students and settings; nothing is shared between them.",
+      "add": "New organisation",
+      "addDescription": "Creates the centre with its branches and its first CEO account. Pass the phone and password on to the CEO; they change the password after signing in.",
+      "create": "Create organisation",
+      "edit": "Rename organisation",
+      "name": "Name",
+      "branches": "Branches",
+      "branchesPlaceholder": "Main branch\nSecond branch",
+      "branchesHint": "One branch per line. The CEO is attached to all of them.",
+      "ceo": "CEO",
+      "ceoFullName": "CEO full name",
+      "ceoPhone": "CEO phone (login)",
+      "ceoPassword": "First password",
+      "ceoPasswordHint": "At least 8 characters. Tell it to the CEO in person; it is never shown again.",
+      "staffCount": "Staff",
+      "studentsCount": "Students",
+      "yours": "yours"
     }
   },
   "teachers": {
@@ -2741,6 +2762,10 @@
         "material": {
           "add": "Material added",
           "delete": "Material deleted"
+        },
+        "organization": {
+          "create": "Organisation created",
+          "update": "Organisation renamed"
         }
       }
     }

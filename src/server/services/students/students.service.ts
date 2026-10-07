@@ -563,7 +563,10 @@ async function studentData(input: StudentUpdateInput) {
 /** Teachers may create students only when the org switch allows it (EXP §8, A-61). */
 async function authorizeCreate(actor: Actor, db: DbClient) {
   if (ownGroupsOnly(actor)) {
-    const settings = await db.orgSettings.findFirst({ select: { teacherCanAddStudents: true } });
+    const settings = await db.orgSettings.findFirst({
+      where: { organizationId: actor.organizationId },
+      select: { teacherCanAddStudents: true },
+    });
     if (!settings?.teacherCanAddStudents) throw AppError.forbidden();
     return;
   }

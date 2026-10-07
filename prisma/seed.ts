@@ -1296,9 +1296,16 @@ async function main() {
     };
     const user = await prisma.user.upsert({
       where: { phone: demo.phone },
-      update: { ...profile, passwordHash, isArchived: false, organizationId: org.id },
+      update: {
+        ...profile,
+        passwordHash,
+        isArchived: false,
+        organizationId: org.id,
+        isSiteOwner: demo.roles.includes("CEO"),
+      },
       create: {
         organizationId: org.id,
+        isSiteOwner: demo.roles.includes("CEO"),
         phone: demo.phone,
         ...profile,
         passwordHash,

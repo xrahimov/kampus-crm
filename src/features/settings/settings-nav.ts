@@ -8,11 +8,19 @@ export interface SettingsNavItem {
   key: string;
   href: string;
   permission: Permission;
+  /** Shown to the site owner only, whatever their roles (A-108). */
+  siteOwner?: boolean;
   phase?: number;
 }
 
 export const SETTINGS_NAV: SettingsNavItem[] = [
   { key: "general", href: "/settings/general", permission: "settings.org" },
+  {
+    key: "organizations",
+    href: "/settings/organizations",
+    permission: "settings.org",
+    siteOwner: true,
+  },
   { key: "courses", href: "/settings/courses", permission: "settings.catalog" },
   { key: "rooms", href: "/settings/rooms", permission: "settings.catalog" },
   { key: "daysOff", href: "/settings/days-off", permission: "settings.catalog" },

@@ -142,6 +142,7 @@ async function computeLines(
 ): Promise<Array<Omit<PayrollLineDto, "id" | "status" | "approvedByName" | "approvedAt">>> {
   const scope = branchScope(actor);
   const settings = await db.orgSettings.findFirst({
+    where: { organizationId: actor.organizationId },
     select: { payOnlyAttendedLessons: true, payTeacherOnGroupDayOff: true },
   });
   const users = await db.user.findMany({

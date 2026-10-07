@@ -286,6 +286,7 @@
       "label": "Sozlamalar bo‘limlari",
       "phase": "{phase}-bosqich",
       "general": "Umumiy sozlamalar",
+      "organizations": "Tashkilotlar",
       "courses": "Kurslar",
       "rooms": "Xonalar",
       "daysOff": "Dam olish kunlari",
@@ -494,6 +495,26 @@
       "hint": "Havolani nusxalash uchun qatorni bosing.",
       "deleteTitle": "Forma o‘chirilsinmi?",
       "deleteText": "“{name}” lid qabul qilishni to‘xtatadi; tushgan lidlar qoladi."
+    },
+    "organizations": {
+      "title": "Tashkilotlar",
+      "description": "Ushbu serverdagi o‘quv markazlari. Har birining o‘z rahbari, filiallari, xodimlari, o‘quvchilari va sozlamalari bor; ular bir-birini ko‘rmaydi.",
+      "add": "Yangi tashkilot",
+      "addDescription": "Markaz, uning filiallari va birinchi rahbar (CEO) hisobi yaratiladi. Telefon va parolni rahbarga ayting; u tizimga kirgach parolni o‘zgartiradi.",
+      "create": "Tashkilot yaratish",
+      "edit": "Tashkilot nomini o‘zgartirish",
+      "name": "Nomi",
+      "branches": "Filiallar",
+      "branchesPlaceholder": "Asosiy filial\nIkkinchi filial",
+      "branchesHint": "Har bir filial alohida qatorda. Rahbar barcha filiallarga biriktiriladi.",
+      "ceo": "Rahbar",
+      "ceoFullName": "Rahbarning F.I.Sh.",
+      "ceoPhone": "Rahbar telefoni (login)",
+      "ceoPassword": "Birinchi parol",
+      "ceoPasswordHint": "Kamida 8 ta belgi. Rahbarga shaxsan ayting; u boshqa ko‘rsatilmaydi.",
+      "staffCount": "Xodimlar",
+      "studentsCount": "O‘quvchilar",
+      "yours": "sizniki"
     }
   },
   "teachers": {
@@ -2741,6 +2762,10 @@
         "material": {
           "add": "Material qo‘shildi",
           "delete": "Material o‘chirildi"
+        },
+        "organization": {
+          "create": "Tashkilot yaratildi",
+          "update": "Tashkilot nomi o‘zgartirildi"
         }
       }
     }

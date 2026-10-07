@@ -85,6 +85,12 @@ The first build takes a few minutes. Then open `https://<DOMAIN>/`, sign in with
 the CEO phone and password, and continue in **Settings**: courses, rooms,
 payment methods, staff and the integrations.
 
+The first CEO is the **site owner**. One server can host several learning
+centres (A-108): the site owner opens **Settings → Organisations** and creates a
+centre with its branches and its own CEO (name, phone, first password). That CEO
+signs in on the same address and sees only their centre; the site owner never
+sees inside it. Each centre sets up its own courses, staff and integrations.
+
 What runs:
 
 | Service   | Role                                                                                                                               |
