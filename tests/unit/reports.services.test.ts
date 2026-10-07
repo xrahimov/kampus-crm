@@ -161,7 +161,7 @@ beforeAll(async () => {
   sourceId = (
     await prisma.leadSource.create({
       data: {
-        organizationId: (await prisma.organization.findFirstOrThrow()).id,
+        organizationId: DEMO_ORG_ID,
         name: `${TAG} Source`,
       },
     })

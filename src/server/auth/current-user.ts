@@ -79,6 +79,7 @@ export async function resolveCurrentUser(
       permissions,
       branchIds: actorBranchIds,
       activeBranchId: activeBranch?.id ?? null,
+      isSiteOwner: user.isSiteOwner,
       ip: ip ?? null,
     },
   };

@@ -16,6 +16,8 @@ export interface Actor {
    */
   branchIds: string[];
   activeBranchId: string | null;
+  /** Runs the server: may create and rename organisations (A-108). Not a role permission. */
+  isSiteOwner?: boolean;
   ip?: string | null;
 }
 
@@ -27,6 +29,11 @@ export function authorize(actor: Actor, permission: Permission): void {
   if (!can(actor, permission)) {
     throw AppError.forbidden();
   }
+}
+
+/** Throws unless the actor is the site owner; roles cannot grant this. */
+export function authorizeSiteOwner(actor: Actor): void {
+  if (actor.isSiteOwner !== true) throw AppError.forbidden();
 }
 
 /** Throws unless the actor holds at least one of the permissions. */

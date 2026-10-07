@@ -209,7 +209,10 @@ export async function markAttendance(
 ): Promise<void> {
   authorize(actor, "groups.attendance.mark");
   const lesson = await findLessonInScope(db, actor, lessonId);
-  const settings = await db.orgSettings.findFirst({ select: { attendanceOnlyDuringLesson: true } });
+  const settings = await db.orgSettings.findFirst({
+    where: { organizationId: actor.organizationId },
+    select: { attendanceOnlyDuringLesson: true },
+  });
   if (settings?.attendanceOnlyDuringLesson && dateToIso(lesson.date) !== today()) {
     throw AppError.forbidden("errors.attendanceOutsideLesson");
   }

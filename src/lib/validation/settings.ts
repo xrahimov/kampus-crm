@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-import { idSchema } from "./common";
+import { idSchema, passwordSchema, phoneSchema } from "./common";
 
 /* Shared by the API routes (server) and the forms (client). Messages are i18n keys. */
 
@@ -77,6 +77,21 @@ export const branchSchema = z.object({
 });
 export type BranchInput = z.infer<typeof branchSchema>;
 export const branchUpdateSchema = branchSchema.partial();
+
+// --- Organisations (site owner only, A-108) -----------------------------------
+
+export const organizationCreateSchema = z.object({
+  name,
+  /** The centre's branches, at least one; the CEO is attached to all of them. */
+  branches: z.array(name).min(1, "validation.required").max(20, "validation.tooLong"),
+  ceoFullName: name,
+  ceoPhone: phoneSchema,
+  /** A first password the site owner passes on; the CEO changes it after signing in. */
+  ceoPassword: passwordSchema,
+});
+export type OrganizationCreateInput = z.infer<typeof organizationCreateSchema>;
+export const organizationUpdateSchema = z.object({ name });
+export type OrganizationUpdateInput = z.infer<typeof organizationUpdateSchema>;
 
 // --- Payment methods ----------------------------------------------------------
 

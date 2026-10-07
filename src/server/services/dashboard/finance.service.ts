@@ -38,7 +38,11 @@ export async function getDashboardFinanceOptions(
       select: { id: true, name: true },
       orderBy: { sortOrder: "asc" },
     }),
-    db.payment.findFirst({ orderBy: { paidAt: "asc" }, select: { paidAt: true } }),
+    db.payment.findFirst({
+      where: { branch: { organizationId: actor.organizationId } },
+      orderBy: { paidAt: "asc" },
+      select: { paidAt: true },
+    }),
   ]);
   const now = new Date().getUTCFullYear();
   const start = first ? first.paidAt.getUTCFullYear() : now;

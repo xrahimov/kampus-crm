@@ -114,6 +114,8 @@ model User {
   perLessonFee   Decimal?      @db.Decimal(15, 2) // PER_LESSON: UZS per lesson
   perStudentFee  Decimal?      @db.Decimal(15, 2) // PER_STUDENT: UZS per active student
   isArchived     Boolean       @default(false)
+  /// The person who runs the server: may create organisations for other centres (A-108).
+  isSiteOwner    Boolean       @default(false)
   createdAt      DateTime      @default(now())
   updatedAt      DateTime      @updatedAt
 
