@@ -1,5 +1,6 @@
 "use client";
 
+import { CircleHelp } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useEffect, useState } from "react";
 
@@ -16,6 +17,7 @@ import {
 } from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { weekdayLabel } from "@/features/groups/weekday";
+import { Link } from "@/i18n/navigation";
 import { CallFlow } from "@/features/video/call-flow";
 import { ApiError, type ApiErrorBody } from "@/lib/api-client";
 import { parseDateOnly } from "@/lib/dates";
@@ -77,6 +79,7 @@ export function PortalPage({
 }) {
   const t = useTranslations("portal");
   const tc = useTranslations("video.class");
+  const th = useTranslations("help");
   const fmt = useDateFormat();
   const money = useMoneyFormat();
   const [page, setPage] = useState(initial);
@@ -378,6 +381,16 @@ export function PortalPage({
           </Tabs>
         </CardContent>
       </Card>
+
+      <p className="text-center text-sm">
+        <Link
+          href={`/class/${token}/help`}
+          className="inline-flex items-center gap-1.5 text-muted-foreground hover:text-foreground"
+          data-testid="portal-help"
+        >
+          <CircleHelp className="size-4" aria-hidden /> {th("portalLink")}
+        </Link>
+      </p>
     </div>
   );
 }

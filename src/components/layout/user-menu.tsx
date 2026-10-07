@@ -1,6 +1,6 @@
 "use client";
 
-import { Bell, LogOut, Receipt, UserRound } from "lucide-react";
+import { Bell, CircleHelp, LogOut, Receipt, UserRound } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useTransition } from "react";
 
@@ -73,6 +73,12 @@ export function UserMenu({
             </Link>
           </DropdownMenuItem>
         )}
+        <DropdownMenuItem asChild>
+          <Link href="/help" data-testid="menu-help">
+            <CircleHelp />
+            {t("help.nav")}
+          </Link>
+        </DropdownMenuItem>
         <DropdownMenuSeparator />
         <DropdownMenuItem onSelect={signOut} disabled={isPending} data-testid="sign-out">
           <LogOut />

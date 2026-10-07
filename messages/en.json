@@ -3318,5 +3318,24 @@
       "sendSms": "Send SMS",
       "smsResult": "Sent {sent}, failed {failed}, skipped {skipped} without a phone number."
     }
+  },
+  "help": {
+    "title": "Help and manuals",
+    "intro": "How to do things in Kampus, step by step, for every role.",
+    "searchPlaceholder": "What do you want to do? For example: refund, day off, homework",
+    "noResults": "Nothing found for “{query}”. Try another word.",
+    "results": "{count, plural, one {# section} other {# sections}} found",
+    "whoAreYou": "Who are you?",
+    "everyone": "All articles",
+    "sectionCount": "{count, plural, one {# section} other {# sections}}",
+    "allManuals": "All manuals",
+    "writtenFor": "Written for: {roles}",
+    "openPage": "Open the page",
+    "onThisPage": "On this page",
+    "neighbours": "Other articles",
+    "previous": "Previous",
+    "next": "Next",
+    "nav": "Help",
+    "portalLink": "How to use this page"
   }
 }

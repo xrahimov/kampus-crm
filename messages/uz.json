@@ -3318,5 +3318,24 @@
       "sendSms": "SMS yuborish",
       "smsResult": "Yuborildi {sent}, xato {failed}, raqamsiz o‘tkazib yuborildi {skipped}."
     }
+  },
+  "help": {
+    "title": "Yordam va qo‘llanmalar",
+    "intro": "Kampus’da ishlarni qanday bajarish: har bir rol uchun, qadam-baqadam.",
+    "searchPlaceholder": "Nima qilmoqchisiz? Masalan: qaytarish, dam olish kuni, uy vazifasi",
+    "noResults": "“{query}” bo‘yicha hech narsa topilmadi. Boshqa so‘z bilan urinib ko‘ring.",
+    "results": "{count} ta bo‘lim topildi",
+    "whoAreYou": "Siz kimsiz?",
+    "everyone": "Barcha maqolalar",
+    "sectionCount": "{count} ta bo‘lim",
+    "allManuals": "Barcha qo‘llanmalar",
+    "writtenFor": "Kimlar uchun: {roles}",
+    "openPage": "Sahifani ochish",
+    "onThisPage": "Bu sahifada",
+    "neighbours": "Boshqa maqolalar",
+    "previous": "Oldingi",
+    "next": "Keyingi",
+    "nav": "Yordam",
+    "portalLink": "Bu sahifadan qanday foydalanish"
   }
 }

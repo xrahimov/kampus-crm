@@ -35,6 +35,7 @@ GitHub Actions
 | Settings           | General switches, payment methods, courses, rooms, days off, schools, grading systems, receipt layout, SMS templates and auto-SMS, logs                                |
 | Integrations       | Eskiz SMS, Telegram bot notifications, AmoCRM lead push, telephony webhook with click-to-call, FaceID webhook with staff attendance                                    |
 | Header             | Global search over students, leads and groups; payment button; notifications bell and page; branch and language switch                                                 |
+| Help               | In-app manuals in uz / ru / en for every role (CEO, branch manager, admin, cashier, teacher, student) with screenshots and a search that leads to the section          |
 
 ## Quick start (local)
 
@@ -80,20 +81,21 @@ app and its tests run without any external account. Webhooks: `POST /api/v1/webh
 
 ## Scripts
 
-| Script                 | What it does                                   |
-| ---------------------- | ---------------------------------------------- |
-| `npm run dev`          | Dev server                                     |
-| `npm run build`        | Production build (standalone output)           |
-| `npm run lint`         | ESLint                                         |
-| `npm run format:check` | Prettier check (`npm run format` to fix)       |
-| `npm run typecheck`    | `tsc --noEmit`                                 |
-| `npm test`             | Vitest unit + DB integration tests             |
-| `npm run test:e2e`     | Playwright end-to-end tests (needs a database) |
-| `npm run db:migrate`   | Create/apply a migration in development        |
-| `npm run db:deploy`    | Apply committed migrations                     |
-| `npm run db:seed`      | Load fake demo data                            |
-| `npm run db:bootstrap` | First-start setup from `BOOTSTRAP_*` variables |
-| `npm run worker`       | Background job worker                          |
+| Script                     | What it does                                                                        |
+| -------------------------- | ----------------------------------------------------------------------------------- |
+| `npm run dev`              | Dev server                                                                          |
+| `npm run build`            | Production build (standalone output)                                                |
+| `npm run lint`             | ESLint                                                                              |
+| `npm run format:check`     | Prettier check (`npm run format` to fix)                                            |
+| `npm run typecheck`        | `tsc --noEmit`                                                                      |
+| `npm test`                 | Vitest unit + DB integration tests                                                  |
+| `npm run test:e2e`         | Playwright end-to-end tests (needs a database)                                      |
+| `npm run db:migrate`       | Create/apply a migration in development                                             |
+| `npm run db:deploy`        | Apply committed migrations                                                          |
+| `npm run db:seed`          | Load fake demo data                                                                 |
+| `npm run db:bootstrap`     | First-start setup from `BOOTSTRAP_*` variables                                      |
+| `npm run worker`           | Background job worker                                                               |
+| `npm run help:screenshots` | Re-takes the manual's screenshots from a seeded local run (`public/help/<locale>/`) |
 
 ## Testing and CI
 

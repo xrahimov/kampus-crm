@@ -9,6 +9,7 @@ import { unreadCount } from "@/server/services/dashboard/notifications.service";
 
 import { BranchSelector } from "./branch-selector";
 import { GlobalSearch } from "./global-search";
+import { HelpLink } from "./help-link";
 import { NotificationBell } from "./notification-bell";
 import { PayButton } from "@/features/payments/pay-button";
 
@@ -57,6 +58,7 @@ export async function AppShell({
           </Link>
         </div>
         <MainNav permissions={permissions} />
+        <HelpLink />
       </aside>
 
       <div className="flex min-h-screen min-w-0 flex-col">
