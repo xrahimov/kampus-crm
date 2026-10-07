@@ -8,10 +8,6 @@ import { HelpArticle } from "@/features/help/help-article";
 
 type Props = { params: Promise<{ locale: string; slug: string }> };
 
-export function generateStaticParams() {
-  return HELP_ARTICLES.map((a) => ({ slug: a.slug }));
-}
-
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { locale, slug } = await params;
   const spec = HELP_ARTICLE_BY_SLUG.get(slug);

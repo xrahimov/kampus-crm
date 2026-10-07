@@ -33,6 +33,16 @@ export function tokenize(query: string): string[] {
   );
 }
 
+/** True when a word of `text` starts with `token`, so "kun" finds "kunlari" but "dam" does not find "yordam". */
+function hasWord(text: string, token: string): boolean {
+  let at = text.indexOf(token);
+  while (at >= 0) {
+    if (at === 0 || !/[\p{L}\p{N}]/u.test(text[at - 1]!)) return true;
+    at = text.indexOf(token, at + 1);
+  }
+  return false;
+}
+
 function blockText(block: HelpBlock): string {
   if (typeof block === "string") return block;
   if ("steps" in block) return block.steps.join(" ");
@@ -41,7 +51,9 @@ function blockText(block: HelpBlock): string {
 
 function sentenceAround(text: string, token: string): string {
   const plain = text.replace(/\*\*/g, "");
-  const at = normalize(plain).indexOf(token);
+  const norm = normalize(plain);
+  let at = norm.indexOf(token);
+  while (at > 0 && /[\p{L}\p{N}]/u.test(norm[at - 1]!)) at = norm.indexOf(token, at + 1);
   if (at < 0) return plain.slice(0, 160);
   const start = Math.max(plain.lastIndexOf(". ", at) + 1, 0);
   const end = plain.indexOf(". ", at);
@@ -49,8 +61,8 @@ function sentenceAround(text: string, token: string): string {
 }
 
 /**
- * Full-text search over the manual in one language. Every token must occur
- * somewhere in the article (title, summary or section); sections that carry
+ * Full-text search over the manual in one language. Every token must start a
+ * word somewhere in the article (title, summary or section); sections that carry
  * the tokens themselves rank first, and title matches count more than body
  * matches. Pure, so it runs the same on the server and in the browser.
  */
@@ -74,15 +86,15 @@ export function searchHelp(
       return { id: s.id, title: text.title, body, norm: normalize(`${text.title} ${body}`) };
     });
     const everywhere = `${articleText} ${sections.map((s) => s.norm).join(" ")}`;
-    if (!tokens.every((t) => everywhere.includes(t))) continue;
+    if (!tokens.every((t) => hasWord(everywhere, t))) continue;
 
     for (const section of sections) {
       let score = 0;
       let first: string | null = null;
       for (const token of tokens) {
-        if (normalize(section.title).includes(token)) score += 4;
-        if (articleTitle.includes(token)) score += 2;
-        if (section.norm.includes(token)) {
+        if (hasWord(normalize(section.title), token)) score += 4;
+        if (hasWord(articleTitle, token)) score += 2;
+        if (hasWord(section.norm, token)) {
           score += 1;
           first ??= token;
         }

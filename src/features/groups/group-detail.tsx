@@ -374,7 +374,7 @@ export function GroupDetail({
             canSms={can.sms}
           />
 
-          <Card>
+          <Card data-testid="members-card">
             <CardContent className="pt-6">
               <MembersPanel
                 groupId={group.id}

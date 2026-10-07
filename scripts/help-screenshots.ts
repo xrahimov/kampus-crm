@@ -82,8 +82,21 @@ async function shotElement(el: Locator, locale: string, name: string) {
   await el.screenshot({ path: out(locale, name), type: "jpeg", quality: QUALITY });
 }
 
+/** Scrolls so that `el` sits just under the sticky header, for shots of a tab further down a page. */
+async function scrollTo(el: Locator) {
+  await el.waitFor({ state: "visible" });
+  await el.evaluate((node) => {
+    node.scrollIntoView({ block: "start" });
+    window.scrollBy(0, -72);
+  });
+  await el.page().waitForTimeout(250);
+}
+
 async function signIn(page: Page, locale: string, phone: string) {
   await page.goto(`${BASE}/${locale}/login`);
+  // The dev server hydrates a freshly compiled page a moment after it loads.
+  await page.waitForLoadState("networkidle").catch(() => undefined);
+  await page.waitForTimeout(500);
   await page.getByLabel(LABELS.phone![locale]!).fill(phone);
   await page.getByLabel(LABELS.password![locale]!).fill(PASSWORD);
   await page.getByRole("button", { name: LABELS.signIn![locale]!, exact: true }).click();
@@ -228,8 +241,7 @@ const CEO_SHOTS: Shot[] = [
     take: async ({ page, locale, teacherGroupId }) => {
       await go(page, locale, `/groups/${teacherGroupId}`);
       await page.getByTestId("member-row").first().waitFor();
-      await page.getByTestId("member-row").first().scrollIntoViewIfNeeded();
-      await shotPage(page, locale, "group-members");
+      await shotElement(page.getByTestId("members-card"), locale, "group-members");
     },
   },
   {
@@ -347,7 +359,7 @@ const CEO_SHOTS: Shot[] = [
   {
     name: "finance-category",
     take: async ({ page, locale }) => {
-      const id = await firstId(page, "/finance/categories?type=EXPENSE");
+      const id = await firstId(page, `/finance/categories?year=${new Date().getFullYear()}`);
       if (!id) throw new Error("no finance category in the seed");
       await go(page, locale, `/finance/costs/${id}`);
       await shotPage(page, locale, "finance-category");
@@ -477,8 +489,7 @@ const TEACHER_SHOTS: Shot[] = [
     name: "homework",
     take: async ({ page, locale, teacherGroupId }) => {
       await go(page, locale, `/groups/${teacherGroupId}?tab=homework`);
-      await page.getByTestId("tab-homework").waitFor();
-      await page.getByTestId("tab-homework").scrollIntoViewIfNeeded();
+      await scrollTo(page.getByTestId("tab-homework"));
       await shotPage(page, locale, "homework");
     },
   },
@@ -486,7 +497,7 @@ const TEACHER_SHOTS: Shot[] = [
     name: "materials",
     take: async ({ page, locale, teacherGroupId }) => {
       await go(page, locale, `/groups/${teacherGroupId}?tab=materials`);
-      await page.getByTestId("tab-materials").scrollIntoViewIfNeeded();
+      await scrollTo(page.getByTestId("tab-materials"));
       await shotPage(page, locale, "materials");
     },
   },
@@ -536,7 +547,7 @@ const STUDENT_SHOTS: Shot[] = [
     take: async ({ page, locale, studentToken }) => {
       await go(page, locale, `/class/${studentToken}`);
       await page.getByTestId("portal-tab-homework").click();
-      await page.getByTestId("portal-tab-homework").scrollIntoViewIfNeeded();
+      await scrollTo(page.getByTestId("portal-tab-homework"));
       await shotPage(page, locale, "portal-homework");
     },
   },
@@ -545,7 +556,7 @@ const STUDENT_SHOTS: Shot[] = [
     take: async ({ page, locale, studentToken }) => {
       await go(page, locale, `/class/${studentToken}?paid=1`);
       await page.getByTestId("class-title").waitFor();
-      await page.getByTestId("portal-stats").scrollIntoViewIfNeeded();
+      await scrollTo(page.getByTestId("portal-tab-homework"));
       await shotPage(page, locale, "portal-money");
     },
   },
@@ -568,7 +579,19 @@ async function newPage(browser: Browser): Promise<[BrowserContext, Page]> {
     viewport: { width: 1280, height: 800 },
     deviceScaleFactor: 1,
   });
-  return [context, await context.newPage()];
+  // The development build's status badge has no place in a manual.
+  await context.addInitScript(() => {
+    document.addEventListener("DOMContentLoaded", () => {
+      const style = document.createElement("style");
+      style.textContent = "nextjs-portal { display: none !important; }";
+      document.head.append(style);
+    });
+  });
+  const page = await context.newPage();
+  // A page compiles on first visit in development, which can take a while.
+  page.setDefaultTimeout(90_000);
+  page.setDefaultNavigationTimeout(90_000);
+  return [context, page];
 }
 
 async function main() {

@@ -689,7 +689,7 @@ export const en: HelpContent = {
         roles: {
           title: "Roles and permissions",
           body: [
-            "Settings → Roles shows each role as a column of permissions: viewing, creating, editing and deleting in every module, marking attendance, taking payments, giving refunds and discounts, approving payroll, sending SMS, editing settings and reading logs. The built-in roles are CEO, admin, branch manager, cashier, teacher, support teacher, marketer and watcher.",
+            "Settings → Roles lists the roles with how many permissions each has; open a role to see and tick its permissions: viewing, creating, editing and deleting in every module, marking attendance, taking payments, giving refunds and discounts, approving payroll, sending SMS, editing settings and reading logs. The built-in roles are CEO, admin, branch manager, cashier, teacher, support teacher, marketer and watcher.",
             "Press **New role** to create a role of your own, for example a receptionist who may only add leads and take payments, and tick its permissions. You can only grant permissions you hold yourself. The CEO's role cannot be reduced.",
           ],
         },
