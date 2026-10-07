@@ -363,7 +363,8 @@ export async function listSmsLog(
     db.smsMessage.findMany({
       where,
       include,
-      orderBy: { createdAt: query.sort.direction },
+      // Rows of one batch share a timestamp; the id keeps their order stable.
+      orderBy: [{ createdAt: query.sort.direction }, { id: query.sort.direction }],
       skip: query.skip,
       take: query.take,
     }),
