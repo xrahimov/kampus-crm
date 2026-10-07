@@ -124,7 +124,10 @@ export async function notifyStaff(
     if (r.branchIds.length > 0 && (!input.branchId || !r.branchIds.includes(input.branchId))) {
       continue;
     }
-    await enqueue(tx, { type: "telegram.send", payload: { chatId: r.chatId, text: input.text } });
+    await enqueue(tx, {
+      type: "telegram.send",
+      payload: { organizationId: input.organizationId, chatId: r.chatId, text: input.text },
+    });
     queued += 1;
   }
   return queued;

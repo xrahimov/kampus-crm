@@ -39,9 +39,15 @@ export function registerJobHandlers(): void {
     if (status === "FAILED") throw new Error(`sms ${messageId} failed`);
   });
 
+  // Each centre has its own bot (A-108): the payload names whose it is.
   registerJobHandler("telegram.send", async (payload, db) => {
-    const { chatId, text } = payloadOf<{ chatId: string; text: string }>(payload);
-    const notifier = await getTelegramNotifier(db);
+    const { organizationId, chatId, text } = payloadOf<{
+      organizationId?: string;
+      chatId: string;
+      text: string;
+    }>(payload);
+    if (!organizationId) throw new Error("telegram.send without organizationId");
+    const notifier = await getTelegramNotifier(db, organizationId);
     await notifier.sendMessage(chatId, text);
   });
 
@@ -59,10 +65,16 @@ export function registerJobHandlers(): void {
   });
 
   registerJobHandler("amocrm.pushLead", async (payload, db) => {
-    const lead = payloadOf<{ name: string; phone: string | null; source: string | null }>(payload);
-    const client = await getAmoCrmClient(db);
+    const { organizationId, ...lead } = payloadOf<{
+      organizationId?: string;
+      name: string;
+      phone: string | null;
+      source: string | null;
+    }>(payload);
+    if (!organizationId) throw new Error("amocrm.pushLead without organizationId");
+    const client = await getAmoCrmClient(db, organizationId);
     await client.pushLead(lead);
-    if (client.tokens()) await saveAmoCrmTokens(db, client.tokens());
+    if (client.tokens()) await saveAmoCrmTokens(db, organizationId, client.tokens());
   });
 }
 

@@ -335,11 +335,12 @@ export async function createLead(
         excludeUserId: actor.userId || null,
       });
       // AmoCRM sync (A-20): a job per new lead when the integration is switched on.
-      const amo = await loadIntegrationConfig(tx, "AMOCRM");
+      const amo = await loadIntegrationConfig(tx, "AMOCRM", actor.organizationId);
       if (amo?.isEnabled) {
         await enqueue(tx, {
           type: "amocrm.pushLead",
           payload: {
+            organizationId: actor.organizationId,
             name: dto.fullName,
             phone: dto.phones[0] ?? null,
             source: dto.sourceName ?? null,

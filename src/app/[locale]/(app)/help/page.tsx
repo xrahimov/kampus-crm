@@ -20,6 +20,7 @@ export default async function Page({ params }: { params: Promise<{ locale: strin
     <HelpHome
       content={content}
       defaultAudience={audienceForRoles(current.roles.map((r) => r.code))}
+      siteOwner={current.actor.isSiteOwner === true}
     />
   );
 }

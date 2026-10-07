@@ -10,7 +10,7 @@ import { prisma, type DbClient } from "@/server/db/prisma";
 import { AppError } from "@/server/errors/app-error";
 import { enqueue } from "@/server/jobs/queue";
 import { loadIntegrationConfig } from "@/server/services/integrations/integrations.service";
-import { isoToDate } from "@/server/services/settings/shared";
+import { isoToDate, organizationOfBranch } from "@/server/services/settings/shared";
 import { classLink, membershipByToken } from "@/server/services/video/video.service";
 
 /*
@@ -78,8 +78,8 @@ export function botDate(locale: BotLocale, iso: string): string {
   }).format(date);
 }
 
-async function botUsername(db: DbClient): Promise<string | null> {
-  const config = (await loadIntegrationConfig(db, "TELEGRAM")) as {
+async function botUsername(db: DbClient, organizationId: string): Promise<string | null> {
+  const config = (await loadIntegrationConfig(db, "TELEGRAM", organizationId)) as {
     isEnabled: boolean;
     botUsername?: string;
   } | null;
@@ -95,7 +95,8 @@ export async function getPortalTelegram(
 ): Promise<PortalTelegramDto | null> {
   const membership = await membershipByToken(db, token);
   if (!membership) return null;
-  const username = await botUsername(db);
+  // The centre's own bot (A-108), found through the group's branch.
+  const username = await botUsername(db, await organizationOfBranch(db, membership.group.branchId));
   let student = await db.student.findUniqueOrThrow({
     where: { id: membership.studentId },
     select: { telegramCode: true, telegramChats: { orderBy: { linkedAt: "asc" } } },
@@ -137,9 +138,12 @@ export async function unlinkPortalChat(
  * Handles one Telegram update for a student or parent: `/start <code>` links
  * the chat, `/stop` unlinks it. Returns the reply to send, or null when the
  * update is none of the bot's business (the staff `/id` path handles the rest).
+ * `organizationId` is the centre whose bot received the update (A-108): only
+ * its students can be linked through it.
  */
 export async function handleStudentCommand(
   db: DbClient,
+  organizationId: string,
   message: {
     chatId: string;
     text: string;
@@ -150,8 +154,8 @@ export async function handleStudentCommand(
   const locale = botLocale(message.languageCode);
   const start = message.text.match(/^\/start\s+([A-Za-z0-9_-]{8,64})\s*$/);
   if (start) {
-    const student = await db.student.findUnique({
-      where: { telegramCode: start[1]! },
+    const student = await db.student.findFirst({
+      where: { telegramCode: start[1]!, branch: { organizationId } },
       select: { id: true, fullName: true, isArchived: true },
     });
     if (!student || student.isArchived) return botText(locale, "unknownCode");
@@ -168,7 +172,9 @@ export async function handleStudentCommand(
     return botText(locale, "linked", { student: student.fullName });
   }
   if (/^\/stop\b/.test(message.text)) {
-    const gone = await db.studentTelegramChat.deleteMany({ where: { chatId: message.chatId } });
+    const gone = await db.studentTelegramChat.deleteMany({
+      where: { chatId: message.chatId, student: { branch: { organizationId } } },
+    });
     return gone.count > 0 ? botText(locale, "unlinked") : null;
   }
   return null;
@@ -178,8 +184,9 @@ export async function handleStudentCommand(
 
 /**
  * Queues one message to every chat linked to the given students, in each
- * chat's language. `refKey` makes a notification idempotent per chat.
- * Call it inside the transaction of the event it reports.
+ * chat's language, through the bot of the student's own centre (A-108).
+ * `refKey` makes a notification idempotent per chat. Call it inside the
+ * transaction of the event it reports.
  */
 export async function notifyStudents(
   tx: DbClient,
@@ -194,6 +201,7 @@ export async function notifyStudents(
   if (input.studentIds.length === 0) return 0;
   const chats = await tx.studentTelegramChat.findMany({
     where: { studentId: { in: input.studentIds }, student: { isArchived: false } },
+    include: { student: { select: { branch: { select: { organizationId: true } } } } },
   });
   let queued = 0;
   for (const chat of chats) {
@@ -201,7 +209,11 @@ export async function notifyStudents(
     const values = typeof input.values === "function" ? input.values(locale) : input.values;
     const id = await enqueue(tx, {
       type: "telegram.send",
-      payload: { chatId: chat.chatId, text: botText(locale, input.kind, values) },
+      payload: {
+        organizationId: chat.student.branch.organizationId,
+        chatId: chat.chatId,
+        text: botText(locale, input.kind, values),
+      },
       uniqueKey: `tg:${input.refKey}:${chat.chatId}`,
     });
     if (id) queued += 1;

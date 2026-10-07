@@ -12,7 +12,7 @@ import { findGroupInScope, today } from "@/server/services/groups/shared";
 import { loadIntegrationConfig } from "@/server/services/integrations/integrations.service";
 import { deliverMessage } from "@/server/services/sms/sms.service";
 import { notifyLessonStarted } from "@/server/services/telegram/student-telegram.service";
-import { dateToIso, isoToDate } from "@/server/services/settings/shared";
+import { dateToIso, isoToDate, organizationOfBranch } from "@/server/services/settings/shared";
 
 /*
  * Video lessons. Browsers talk to each other directly over WebRTC (a full mesh:
@@ -134,10 +134,11 @@ interface VideoConfig {
 }
 
 export async function loadVideoConfig(
-  db: DbClient = prisma,
+  db: DbClient,
+  organizationId: string,
   env: Record<string, string | undefined> = process.env,
 ): Promise<VideoConfig> {
-  const c = await loadIntegrationConfig(db, "VIDEO");
+  const c = await loadIntegrationConfig(db, "VIDEO", organizationId);
   const turnUrls = splitUrls(c?.turnUrls);
   // No relay in Settings: fall back to the one the deployment ships (docker-compose
   // `turn` service with TURN_URLS and TURN_SECRET), so a fresh server relays at once.
@@ -312,7 +313,7 @@ export async function getGroupVideo(
   authorize(actor, "groups.view");
   await findGroupInScope(db, actor, groupId, {});
   const [config, live, lesson, lastRoom] = await Promise.all([
-    loadVideoConfig(db),
+    loadVideoConfig(db, actor.organizationId),
     findLiveRoom(db, groupId),
     db.lesson.findFirst({
       where: { groupId, date: isoToDate(today()) },
@@ -345,7 +346,7 @@ export async function startVideoRoom(
   authorize(actor, "groups.attendance.mark");
   const group = await findGroupInScope(db, actor, groupId, {});
   if (group.status === "ARCHIVED") throw AppError.conflict("errors.groupArchived");
-  const config = await loadVideoConfig(db);
+  const config = await loadVideoConfig(db, actor.organizationId);
   if (!config.enabled) throw AppError.conflict("errors.videoDisabled");
 
   let lessonId = input.lessonId ?? null;
@@ -484,7 +485,7 @@ export async function joinVideoRoomAsStaff(
   authorize(actor, "groups.view");
   const { room } = await findRoomInScope(db, actor, roomId);
   if (await closeIfOverTime(db, room)) throw AppError.conflict("errors.videoEnded");
-  const config = await loadVideoConfig(db);
+  const config = await loadVideoConfig(db, actor.organizationId);
   if (!config.enabled) throw AppError.conflict("errors.videoDisabled");
   const teaches = await db.group.count({
     where: {
@@ -541,16 +542,16 @@ export async function getClassPage(
 ): Promise<ClassPageDto | null> {
   const membership = await membershipByToken(db, token);
   if (!membership) return null;
-  const [config, live, branch] = await Promise.all([
-    loadVideoConfig(db),
+  const branch = await db.branch.findUniqueOrThrow({
+    where: { id: membership.group.branchId },
+    select: { organizationId: true, organization: { select: { name: true } } },
+  });
+  const [config, live] = await Promise.all([
+    loadVideoConfig(db, branch.organizationId),
     findLiveRoom(db, membership.groupId),
-    db.branch.findUnique({
-      where: { id: membership.group.branchId },
-      select: { organization: { select: { name: true } } },
-    }),
   ]);
   return {
-    organizationName: branch?.organization.name ?? "",
+    organizationName: branch.organization.name,
     groupName: membership.group.name,
     studentName: membership.student.fullName,
     enabled: config.enabled,
@@ -568,7 +569,10 @@ export async function joinVideoRoomAsStudent(
 ): Promise<JoinDto> {
   const membership = await membershipByToken(db, token);
   if (!membership) throw AppError.notFound();
-  const config = await loadVideoConfig(db);
+  const config = await loadVideoConfig(
+    db,
+    await organizationOfBranch(db, membership.group.branchId),
+  );
   if (!config.enabled) throw AppError.conflict("errors.videoDisabled");
   const live = await findLiveRoom(db, membership.groupId);
   if (!live) throw AppError.conflict("errors.videoNotStarted");

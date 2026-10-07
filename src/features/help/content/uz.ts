@@ -816,6 +816,42 @@ export const uz: HelpContent = {
         },
       },
     },
+    organizations: {
+      title: "Bu serverdagi tashkilotlar",
+      summary:
+        "Faqat server egasi uchun: bitta Kampusda har biri o‘z rahbari bilan bir nechta o‘quv markazini yuritish.",
+      sections: {
+        what: {
+          title: "Tashkilot nima",
+          body: [
+            "Bitta Kampus serveri bir nechta o‘quv markazini yurita oladi. Har biri o‘z filiallari, xodimlari, o‘quvchilari, kurslari, sozlamalari, rollari va integratsiyalariga ega tashkilot; bir markazdagi hech kim boshqasining hech narsasini ko‘rmaydi. Serverning birinchi rahbari (CEO) uning **egasi**: Sozlamalar → Tashkilotlar bo‘limini faqat shu hisob ko‘radi. Server egasi bo‘lish boshqa hech narsa qo‘shmaydi; o‘z markazi ichida u oddiy CEO.",
+          ],
+        },
+        create: {
+          title: "Markaz yaratish",
+          body: [
+            {
+              steps: [
+                "Sozlamalar → Tashkilotlar ni oching va **Tashkilot qo‘shish** ni bosing.",
+                "Markaz nomini va filiallarini, har birini alohida qatorda, kiriting.",
+                "Rahbarning to‘liq ismi, telefon raqami va birinchi parolini kiriting. Bu telefon raqamida serverda hali hisob bo‘lmasligi kerak.",
+                "**Yaratish** ni bosing va yangi rahbarga telefon raqami va parolini og‘zaki ayting; u birinchi kirishdan keyin parolni o‘zgartirishi kerak.",
+              ],
+            },
+            "Yangi markaz filiallari, bitta naqd to‘lov usuli va standart rollar bilan boshlanadi. Qolgan hamma narsani (kurslar, xonalar, xodimlar, o‘quvchilar) uning rahbari ichkaridan, har qanday markaz kabi qo‘shadi; uni «Ishni boshlash» maqolasiga yo‘naltiring.",
+          ],
+        },
+        afterwards: {
+          title: "Keyin",
+          body: [
+            "Ro‘yxatda har bir markazning filiallari, rahbari, xodimlar va o‘quvchilar soni ko‘rinadi; qator menyusi markaz nomini o‘zgartiradi. Har bir markaz bitta manzildan kiradi va o‘z integratsiyalarini o‘zi sozlaydi: o‘z Telegram boti, SMS hisobi, Payme yoki Click merchanti va webhook maxfiy kalitlari, chunki umumiy webhook manzillari markazlarni ular ko‘rsatgan maxfiy kalit yoki merchant ma’lumotlari orqali ajratadi.",
+            {
+              note: "Markazni o‘chirib bo‘lmaydi; u Kampusdan foydalanishni to‘xtatsa, xodimlari va o‘quvchilarini ichkaridan arxivlang.",
+            },
+          ],
+        },
+      },
+    },
     studentPortal: {
       title: "Shaxsiy sahifangiz",
       summary:

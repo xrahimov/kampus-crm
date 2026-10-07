@@ -11,7 +11,7 @@ import { prisma, type DbClient } from "@/server/db/prisma";
 import type { ParsedList } from "@/server/http/list-query";
 import { authorize, branchScope, type Actor } from "@/server/rbac/authorize";
 import { getTelephonyProvider } from "@/server/services/integrations/integrations.service";
-import { getDefaultOrganizationId, isoToDate, mustFind } from "@/server/services/settings/shared";
+import { isoToDate, mustFind } from "@/server/services/settings/shared";
 import { studentScope } from "@/server/services/students/students.service";
 
 /* "Qo'ng'iroqlar" (EXP §8 Calls) and the student's CALLS tab. A-86. */
@@ -171,18 +171,18 @@ export async function startCall(
 /** `/webhooks/telephony`: upsert by the provider's call id; links the number to a student or staff. */
 export async function recordWebhookCall(
   db: DbClient,
+  organizationId: string,
   input: TelephonyWebhookInput,
 ): Promise<CallDto> {
-  // One telephony webhook per deployment so far; routing by centre comes with A-108's follow-up.
-  const organizationId = await getDefaultOrganizationId(db);
+  // The webhook secret named the centre (A-108); only its people are matched.
   const customerPhone = input.direction === "INBOUND" ? input.from : input.to;
   const staffPhone = input.direction === "INBOUND" ? input.to : input.from;
   const [student, staff] = await Promise.all([
     db.student.findFirst({
-      where: { phone: customerPhone, isArchived: false },
+      where: { phone: customerPhone, isArchived: false, branch: { organizationId } },
       select: { id: true, branchId: true },
     }),
-    db.user.findFirst({ where: { phone: staffPhone }, select: { id: true } }),
+    db.user.findFirst({ where: { phone: staffPhone, organizationId }, select: { id: true } }),
   ]);
   const data = {
     organizationId,

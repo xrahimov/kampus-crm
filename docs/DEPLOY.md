@@ -117,6 +117,10 @@ Then in the browser: sign in, create a course, a room, a group and a student,
 take a test payment, print its receipt, and open Settings → Logs → Actions.
 Webhook URLs for the integrations are `https://<DOMAIN>/api/v1/webhooks/telegram`,
 `/telephony` and `/face-id`; the public lead form is `https://<DOMAIN>/forms/<name>`.
+The URLs are the same for every organisation on the server: the secret a webhook
+presents (or, for Payme and Click, the merchant key and service id) says which
+centre it is for, so each centre sets its own bot, secrets and merchant
+credentials in its own Settings → Integrations.
 
 ## 7. Update to a new version
 

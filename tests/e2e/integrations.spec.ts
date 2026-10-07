@@ -75,13 +75,16 @@ test.describe("integrations", () => {
     await page.keyboard.press("Escape");
 
     // The log shows the rows as sent by the CEO; the student's SMS tab shows theirs.
+    // Demo Student One's number ends in 0000, which the fake gateway rejects, so
+    // the batch holds both a Sent and a Failed row; look for the Sent one.
     await page.goto("/en/settings/logs/sms");
-    const logRow = page
-      .getByTestId("sms-log-row")
-      .filter({ hasText: `E2E bulk ${STAMP}` })
-      .first();
+    const batchRows = page.getByTestId("sms-log-row").filter({ hasText: `E2E bulk ${STAMP}` });
+    const logRow = batchRows.filter({ hasText: "Sent" }).first();
+    await expect(logRow).toBeVisible();
     await expect(logRow).toContainText("Demo CEO");
-    await expect(logRow).toContainText("Sent");
+    await expect(batchRows.filter({ hasText: "Failed" }).first()).toContainText(
+      "fake: unreachable number",
+    );
     await page.goto("/en/students?groupStatus=ACTIVE");
     await page
       .getByTestId("student-row")

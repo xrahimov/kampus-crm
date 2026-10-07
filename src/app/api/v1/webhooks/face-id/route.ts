@@ -10,7 +10,7 @@ import { presentedSecret } from "../_secret";
 export const POST = route<typeof faceIdWebhookSchema._output>(
   { auth: false, body: faceIdWebhookSchema, skipCsrf: true },
   async ({ request, body }) => {
-    await assertWebhookSecret(prisma, "FACE_ID", presentedSecret(request));
-    return json(await recordFaceIdCheck(prisma, body), { status: 201 });
+    const organizationId = await assertWebhookSecret(prisma, "FACE_ID", presentedSecret(request));
+    return json(await recordFaceIdCheck(prisma, organizationId, body), { status: 201 });
   },
 );

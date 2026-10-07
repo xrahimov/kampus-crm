@@ -219,16 +219,20 @@ describe("Telegram for students", () => {
     expect((await getPortalTelegram(tokenOne))!.link).toBe(state.link);
 
     expect(
-      await handleStudentCommand(prisma, {
+      await handleStudentCommand(prisma, DEMO_ORG_ID, {
         chatId: CHAT,
         text: "/start nope-nope-nope",
         languageCode: "en",
       }),
     ).toBe(botText("en", "unknownCode"));
-    expect(await handleStudentCommand(prisma, { chatId: CHAT, text: "/id" })).toBeNull();
-    expect(await handleStudentCommand(prisma, { chatId: CHAT, text: "/start" })).toBeNull();
+    expect(
+      await handleStudentCommand(prisma, DEMO_ORG_ID, { chatId: CHAT, text: "/id" }),
+    ).toBeNull();
+    expect(
+      await handleStudentCommand(prisma, DEMO_ORG_ID, { chatId: CHAT, text: "/start" }),
+    ).toBeNull();
 
-    const reply = await handleStudentCommand(prisma, {
+    const reply = await handleStudentCommand(prisma, DEMO_ORG_ID, {
       chatId: CHAT,
       text: `/start ${code}`,
       firstName: "Dovud",
@@ -236,7 +240,7 @@ describe("Telegram for students", () => {
     });
     expect(reply).toBe(botText("ru", "linked", { student: `${TAG} Student One` }));
     // A parent links the same student from another phone.
-    await handleStudentCommand(prisma, {
+    await handleStudentCommand(prisma, DEMO_ORG_ID, {
       chatId: PARENT_CHAT,
       text: `/start ${code}`,
       firstName: "Ota",
@@ -333,9 +337,15 @@ describe("Telegram for students", () => {
     await unlinkPortalChat(tokenOne, PARENT_CHAT);
     expect((await getPortalTelegram(tokenOne))!.chats.map((c) => c.chatId)).toEqual([CHAT]);
     expect(
-      await handleStudentCommand(prisma, { chatId: CHAT, text: "/stop", languageCode: "ru" }),
+      await handleStudentCommand(prisma, DEMO_ORG_ID, {
+        chatId: CHAT,
+        text: "/stop",
+        languageCode: "ru",
+      }),
     ).toBe(botText("ru", "unlinked"));
-    expect(await handleStudentCommand(prisma, { chatId: CHAT, text: "/stop" })).toBeNull();
+    expect(
+      await handleStudentCommand(prisma, DEMO_ORG_ID, { chatId: CHAT, text: "/stop" }),
+    ).toBeNull();
     expect((await getPortalTelegram(tokenOne))!.chats).toEqual([]);
     expect(await prisma.studentTelegramChat.count({ where: { studentId: studentOne } })).toBe(0);
   });

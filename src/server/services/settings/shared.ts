@@ -14,20 +14,6 @@ export async function organizationOfBranch(db: DbClient, branchId: string): Prom
   return branch.organizationId;
 }
 
-/**
- * The first organisation of the deployment. Only for code paths that have
- * neither an actor nor a branch to go by; never call it with an actor at hand,
- * since a signed-in user's centre is `actor.organizationId`.
- */
-export async function getDefaultOrganizationId(db: DbClient): Promise<string> {
-  const org = await db.organization.findFirst({
-    select: { id: true },
-    orderBy: { createdAt: "asc" },
-  });
-  if (!org) throw new AppError("INTERNAL", "errors.internal");
-  return org.id;
-}
-
 export async function mustFind<T>(
   promise: Promise<T | null>,
   message = "errors.notFound",

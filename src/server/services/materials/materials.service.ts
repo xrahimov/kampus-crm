@@ -191,12 +191,26 @@ export async function purgeOldRecordings(
   db: DbClient = prisma,
   now: Date = new Date(),
 ): Promise<number> {
-  const { recordingKeepDays } = await loadVideoConfig(db);
+  let purged = 0;
+  // Each centre keeps its own retention (A-108).
+  for (const org of await db.organization.findMany({ select: { id: true } })) {
+    purged += await purgeOrganizationRecordings(db, org.id, now);
+  }
+  return purged;
+}
+
+async function purgeOrganizationRecordings(
+  db: DbClient,
+  organizationId: string,
+  now: Date,
+): Promise<number> {
+  const { recordingKeepDays } = await loadVideoConfig(db, organizationId);
   if (recordingKeepDays <= 0) return 0;
   const rows = await db.lessonMaterial.findMany({
     where: {
       kind: "RECORDING",
       createdAt: { lt: new Date(now.getTime() - recordingKeepDays * DAY_MS) },
+      group: { branch: { organizationId } },
     },
     include: { group: { select: { branchId: true } } },
   });

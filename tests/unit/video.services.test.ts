@@ -209,19 +209,22 @@ describe("pure helpers", () => {
       TURN_URLS: "turn:1.2.3.4:3478?transport=udp, turn:1.2.3.4:3478?transport=tcp",
       TURN_SECRET: "env-secret",
     };
-    const fromEnv = await loadVideoConfig(prisma, env);
+    const fromEnv = await loadVideoConfig(prisma, DEMO_ORG_ID, env);
     expect(fromEnv.turnUrls).toEqual([
       "turn:1.2.3.4:3478?transport=udp",
       "turn:1.2.3.4:3478?transport=tcp",
     ]);
     expect(fromEnv.turnSecret).toBe("env-secret");
-    expect(await loadVideoConfig(prisma, {})).toMatchObject({ turnUrls: [], turnSecret: "" });
+    expect(await loadVideoConfig(prisma, DEMO_ORG_ID, {})).toMatchObject({
+      turnUrls: [],
+      turnSecret: "",
+    });
     await updateIntegration(
       ceo,
       "VIDEO",
       videoIntegrationSchema.parse({ isEnabled: true, turnUrls: "turn:own:3478", turnSecret: "s" }),
     );
-    const fromSettings = await loadVideoConfig(prisma, env);
+    const fromSettings = await loadVideoConfig(prisma, DEMO_ORG_ID, env);
     expect(fromSettings).toMatchObject({ turnUrls: ["turn:own:3478"], turnSecret: "s" });
     await prisma.integrationSetting.deleteMany({ where: { provider: "VIDEO" } });
   });

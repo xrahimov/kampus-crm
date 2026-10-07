@@ -6,6 +6,10 @@ import { afterAll, beforeAll, describe, expect, it } from "vitest";
 
 import { prisma } from "@/server/db/prisma";
 import type { Actor } from "@/server/rbac/authorize";
+import {
+  assertWebhookSecret,
+  updateIntegration,
+} from "@/server/services/integrations/integrations.service";
 import { listRoles } from "@/server/services/staff/roles.service";
 import { listStaff } from "@/server/services/staff/staff.service";
 import { listBranches } from "@/server/services/settings/branches.service";
@@ -17,6 +21,7 @@ import {
 import { listPaymentMethods } from "@/server/services/settings/payment-methods.service";
 import { login } from "@/server/services/auth.service";
 import { resolveCurrentUser } from "@/server/auth/current-user";
+import { handleStudentCommand } from "@/server/services/telegram/student-telegram.service";
 
 import { DEMO_ORG_ID, demoBranchIds } from "./support/tenant";
 
@@ -126,6 +131,37 @@ describe("organisations (site owner)", () => {
     expect(roles.every((r) => r.isSystem)).toBe(true);
     // The site owner is not a member of the new centre and cannot see its data from theirs.
     expect((await listBranches(owner)).some((b) => b.id === org.branches[0]!.id)).toBe(false);
+  });
+
+  it("routes a webhook to the centre whose secret it presents", async () => {
+    const issued = await login({ phone: phone(2), password: PASSWORD }, { ip: "10.0.0.90" });
+    const ceo = (await resolveCurrentUser(issued.token))!.actor;
+    await updateIntegration(ceo, "TELEGRAM", {
+      isEnabled: true,
+      botToken: `${TAG}-token`,
+      webhookSecret: `${TAG}-hook`,
+      botUsername: `${TAG}_bot`,
+    });
+    expect(await assertWebhookSecret(prisma, "TELEGRAM", `${TAG}-hook`)).toBe(createdOrgId);
+    await expect(assertWebhookSecret(prisma, "TELEGRAM", `${TAG}-other`)).rejects.toMatchObject({
+      code: "FORBIDDEN",
+    });
+    // A student of another centre cannot link through this centre's bot.
+    const demoStudent = await prisma.student.findFirst({
+      where: { branch: { organizationId: DEMO_ORG_ID }, isArchived: false },
+      select: { id: true },
+    });
+    const code = `${TAG}codecodecode`;
+    await prisma.student.update({ where: { id: demoStudent!.id }, data: { telegramCode: code } });
+    expect(
+      await handleStudentCommand(prisma, createdOrgId, {
+        chatId: `${RUN}01`,
+        text: `/start ${code}`,
+        languageCode: "en",
+      }),
+    ).not.toMatch(/linked/i);
+    expect(await prisma.studentTelegramChat.count({ where: { chatId: `${RUN}01` } })).toBe(0);
+    await prisma.student.update({ where: { id: demoStudent!.id }, data: { telegramCode: null } });
   });
 
   it("rejects a CEO phone that already has an account anywhere on the server", async () => {

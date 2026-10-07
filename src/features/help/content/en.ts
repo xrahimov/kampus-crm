@@ -812,6 +812,42 @@ export const en: HelpContent = {
         },
       },
     },
+    organizations: {
+      title: "Organisations on this server",
+      summary:
+        "For the server's owner only: hosting several learning centres, each with its own CEO, on one Kampus.",
+      sections: {
+        what: {
+          title: "What an organisation is",
+          body: [
+            "One Kampus server can host several learning centres. Each is an organisation with its own branches, staff, students, courses, settings, roles and integrations; nobody in one centre can see anything of another. The first CEO of the server is its **site owner**: the only account that sees Settings → Organisations. Being the site owner adds nothing else; inside their own centre they are an ordinary CEO.",
+          ],
+        },
+        create: {
+          title: "Creating a centre",
+          body: [
+            {
+              steps: [
+                "Open Settings → Organisations and press **Add organisation**.",
+                "Enter the centre's name and its branches, one per line.",
+                "Enter the CEO's full name, phone number and a first password. The phone number must not already have an account on this server.",
+                "Press **Create** and tell the new CEO their phone number and password in person; they should change the password after the first sign-in.",
+              ],
+            },
+            "The new centre starts with its branches, one cash payment method and the standard roles. Everything else (courses, rooms, staff, students) its CEO adds from inside, the same way as any centre; the article “Getting started” is the place to send them.",
+          ],
+        },
+        afterwards: {
+          title: "Afterwards",
+          body: [
+            "The list shows each centre's branches, CEO, staff and student counts; the row menu renames a centre. Every centre signs in on the same address and sets up its own integrations: its own Telegram bot, SMS account, Payme or Click merchant and webhook secrets, since the shared webhook addresses tell centres apart by the secret or merchant credentials they present.",
+            {
+              note: "Nothing deletes a centre; archive its staff and students from inside if it stops using Kampus.",
+            },
+          ],
+        },
+      },
+    },
     studentPortal: {
       title: "Your personal page",
       summary:
