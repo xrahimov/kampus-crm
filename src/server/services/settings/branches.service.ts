@@ -3,7 +3,7 @@ import { recordAudit } from "@/server/audit/audit";
 import { prisma, type DbClient } from "@/server/db/prisma";
 import { authorize, authorizeAny, type Actor } from "@/server/rbac/authorize";
 
-import { getOrganizationId, mustFind } from "./shared";
+import { mustFind } from "./shared";
 
 export interface BranchDto {
   id: string;
@@ -16,7 +16,7 @@ const select = { id: true, name: true, isActive: true } as const;
 /** Every settings user needs the branch list (course and room forms pick one). */
 export async function listBranches(actor: Actor, db: DbClient = prisma): Promise<BranchDto[]> {
   authorizeAny(actor, ["settings.org", "settings.catalog"]);
-  const organizationId = await getOrganizationId(db);
+  const organizationId = actor.organizationId;
   return db.branch.findMany({ where: { organizationId }, orderBy: { name: "asc" }, select });
 }
 
@@ -26,7 +26,7 @@ export async function createBranch(
   db: DbClient = prisma,
 ): Promise<BranchDto> {
   authorize(actor, "settings.org");
-  const organizationId = await getOrganizationId(db);
+  const organizationId = actor.organizationId;
   return db.$transaction(async (tx) => {
     const branch = await tx.branch.create({ data: { organizationId, ...input }, select });
     await recordAudit(tx, actor, {

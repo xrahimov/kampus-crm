@@ -50,7 +50,7 @@ export default async function Page({
   });
   const [page, org] = await Promise.all([
     listStudents(current.actor, query, parsed.success ? parsed.data : {}),
-    getOrganizationBranding(prisma),
+    getOrganizationBranding(prisma, current.actor.organizationId),
   ]);
   const qrs = await Promise.all(page.items.map((s) => qrSvg(`kampus:student:${s.id}`)));
 

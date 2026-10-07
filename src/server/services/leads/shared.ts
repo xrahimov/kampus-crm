@@ -1,7 +1,7 @@
 import type { Prisma } from "@/generated/prisma/client";
 import type { DbClient } from "@/server/db/prisma";
 import { AppError } from "@/server/errors/app-error";
-import { branchScope, canAccessAllBranches, type Actor } from "@/server/rbac/authorize";
+import { branchScope, type Actor } from "@/server/rbac/authorize";
 import { mustFind } from "@/server/services/settings/shared";
 
 /** Names used when a branch has no board yet (A-67); the UI lets staff rename them. */
@@ -9,15 +9,15 @@ export const DEFAULT_BOARD_NAME = "Website";
 export const DEFAULT_COLUMN_NAME = "NEW LEADS";
 
 export function leadScope(actor: Actor): Prisma.LeadWhereInput {
-  return { ...(branchScope(actor) ?? {}) };
+  return { ...branchScope(actor) };
 }
 
 export function boardScope(actor: Actor): Prisma.LeadBoardWhereInput {
-  return { ...(branchScope(actor) ?? {}) };
+  return { ...branchScope(actor) };
 }
 
 export function assertBranch(actor: Actor, branchId: string): void {
-  if (!canAccessAllBranches(actor) && !actor.branchIds.includes(branchId)) {
+  if (!actor.branchIds.includes(branchId)) {
     throw AppError.forbidden("errors.branchForbidden");
   }
 }

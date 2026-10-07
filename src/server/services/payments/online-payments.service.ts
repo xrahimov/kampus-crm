@@ -11,7 +11,7 @@ import { loadIntegrationConfig } from "@/server/services/integrations/integratio
 import {
   dateToIso,
   decimalToNumber,
-  getOrganizationId,
+  organizationOfBranch,
   isoToDate,
 } from "@/server/services/settings/shared";
 import { queueAutoSms } from "@/server/services/sms/auto-sms.service";
@@ -205,7 +205,7 @@ async function settle(tx: DbClient, orderId: string, performedAt: Date): Promise
     },
   });
   if (order.paymentId) return;
-  const organizationId = await getOrganizationId(tx);
+  const organizationId = await organizationOfBranch(tx, order.branchId);
   const name = METHOD_NAME[order.provider];
   const method =
     (await tx.paymentMethod.findUnique({
@@ -262,6 +262,7 @@ async function settle(tx: DbClient, orderId: string, performedAt: Date): Promise
     values: { group: groupName, amount: amount.toLocaleString("ru-RU") },
   });
   await notifyStaff(tx, {
+    organizationId,
     branchId: order.branchId,
     text: `To'lov (${name}): ${order.student.fullName} — ${amount} (${groupName})`,
   });

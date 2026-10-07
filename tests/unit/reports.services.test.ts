@@ -42,6 +42,7 @@ import {
   normalizePhone,
 } from "@/server/services/students/import.service";
 import { createPayment } from "@/server/services/students/payments.service";
+import { DEMO_ORG_ID, demoBranchIds } from "./support/tenant";
 
 const RUN = String(Date.now() % 100_000).padStart(5, "0");
 const TAG = `r${RUN}`;
@@ -52,6 +53,7 @@ const actor = (fullName: string, roles: string[], permissions: string[]): Actor 
   fullName,
   roles,
   permissions,
+  organizationId: DEMO_ORG_ID,
   branchIds: [],
   activeBranchId: null,
 });
@@ -92,7 +94,12 @@ beforeAll(async () => {
     [teacher, 2, "TEACHER"],
   ] as const) {
     const user = await prisma.user.create({
-      data: { phone: phone(n), fullName: `${TAG} ${a.fullName}`, passwordHash: "x" },
+      data: {
+        phone: phone(n),
+        fullName: `${TAG} ${a.fullName}`,
+        passwordHash: "x",
+        organizationId: DEMO_ORG_ID,
+      },
     });
     a.userId = user.id;
     if (code) {
@@ -100,6 +107,7 @@ beforeAll(async () => {
     }
   }
   branchA = (await createBranch(ceo, { name: `${TAG} A`, isActive: true })).id;
+  ceo.branchIds = await demoBranchIds();
   ceo.activeBranchId = branchA;
   await prisma.userBranch.create({ data: { userId: teacher.userId, branchId: branchA } });
   teacher.branchIds = [branchA];

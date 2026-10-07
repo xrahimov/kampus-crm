@@ -14,6 +14,7 @@ import { getPortal } from "@/server/services/portal/portal.service";
 import { createBranch } from "@/server/services/settings/branches.service";
 import { createCourse } from "@/server/services/settings/courses.service";
 import { listStudentLinks } from "@/server/services/video/video.service";
+import { DEMO_ORG_ID, demoBranchIds } from "./support/tenant";
 
 const RUN = String(Date.now() % 100_000).padStart(5, "0");
 const TAG = `p${RUN}`;
@@ -24,6 +25,7 @@ const ceo: Actor = {
   fullName: "CEO",
   roles: ["CEO"],
   permissions: ["*"],
+  organizationId: DEMO_ORG_ID,
   branchIds: [],
   activeBranchId: null,
 };
@@ -32,6 +34,7 @@ const teacher: Actor = {
   fullName: "Teacher",
   roles: ["TEACHER"],
   permissions: [...DEFAULT_ROLE_PERMISSIONS.TEACHER],
+  organizationId: DEMO_ORG_ID,
   branchIds: [],
   activeBranchId: null,
 };
@@ -49,7 +52,12 @@ beforeAll(async () => {
     [teacher, 2, true],
   ] as const) {
     const user = await prisma.user.create({
-      data: { phone: phone(n), fullName: `${TAG} ${a.fullName}`, passwordHash: "x" },
+      data: {
+        phone: phone(n),
+        fullName: `${TAG} ${a.fullName}`,
+        passwordHash: "x",
+        organizationId: DEMO_ORG_ID,
+      },
     });
     a.userId = user.id;
     if (withRole) {
@@ -57,6 +65,7 @@ beforeAll(async () => {
     }
   }
   branchId = (await createBranch(ceo, { name: `${TAG} A`, isActive: true })).id;
+  ceo.branchIds = await demoBranchIds();
   ceo.activeBranchId = branchId;
   await prisma.userBranch.create({ data: { userId: teacher.userId, branchId } });
   teacher.branchIds = [branchId];

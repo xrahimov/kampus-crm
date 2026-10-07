@@ -4,8 +4,6 @@ import { prisma, type DbClient } from "@/server/db/prisma";
 import { authorize, type Actor } from "@/server/rbac/authorize";
 import { DEFAULT_RECEIPT_FIELDS } from "@/server/services/students/payments.service";
 
-import { getOrganizationId } from "./shared";
-
 /* "Chek sozlamalari" (EXP §8): address, phone, visible parts, logo position, footer. */
 
 export interface ReceiptSettingsDto extends ReceiptSettingsInput {
@@ -18,7 +16,7 @@ export async function getReceiptSettings(
   db: DbClient = prisma,
 ): Promise<ReceiptSettingsDto> {
   authorize(actor, "settings.org");
-  const organizationId = await getOrganizationId(db);
+  const organizationId = actor.organizationId;
   const [org, row] = await Promise.all([
     db.organization.findUniqueOrThrow({
       where: { id: organizationId },
@@ -44,7 +42,7 @@ export async function updateReceiptSettings(
   db: DbClient = prisma,
 ): Promise<ReceiptSettingsDto> {
   authorize(actor, "settings.org");
-  const organizationId = await getOrganizationId(db);
+  const organizationId = actor.organizationId;
   const before = await getReceiptSettings(actor, db);
   const data = {
     address: input.address ?? null,

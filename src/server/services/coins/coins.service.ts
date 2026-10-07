@@ -10,16 +10,9 @@ import { COIN_EVENTS } from "@/lib/validation/coins";
 import { recordAudit } from "@/server/audit/audit";
 import { prisma, type DbClient } from "@/server/db/prisma";
 import { AppError } from "@/server/errors/app-error";
-import {
-  authorize,
-  authorizeAny,
-  branchScope,
-  can,
-  canAccessAllBranches,
-  type Actor,
-} from "@/server/rbac/authorize";
+import { authorize, authorizeAny, branchScope, can, type Actor } from "@/server/rbac/authorize";
 import { findGroupInScope, groupScope } from "@/server/services/groups/shared";
-import { getOrganizationId, mustFind, rethrowAsAppError } from "@/server/services/settings/shared";
+import { mustFind, rethrowAsAppError } from "@/server/services/settings/shared";
 import { studentScope } from "@/server/services/students/students.service";
 
 /* Coins (EXP §5 COINLAR, §8 Coin sozlamalari, §10 Coins REYTING). A-78, A-79. */
@@ -119,7 +112,7 @@ export async function getCoinSettings(
   db: DbClient = prisma,
 ): Promise<CoinSettingsDto> {
   authorizeAny(actor, VIEW_PERMISSIONS);
-  const organizationId = await getOrganizationId(db);
+  const organizationId = actor.organizationId;
   await ensureRules(db, organizationId);
   const [settings, rules] = await Promise.all([
     db.orgSettings.upsert({
@@ -145,7 +138,7 @@ export async function updateCoinSettings(
   db: DbClient = prisma,
 ): Promise<CoinSettingsDto> {
   authorize(actor, "settings.org");
-  const organizationId = await getOrganizationId(db);
+  const organizationId = actor.organizationId;
   const before = await getCoinSettings(actor, db);
   await db.$transaction(async (tx) => {
     await tx.orgSettings.update({
@@ -194,7 +187,7 @@ export async function listCoinReasons(
   db: DbClient = prisma,
 ): Promise<CoinReasonDto[]> {
   authorizeAny(actor, VIEW_PERMISSIONS);
-  const organizationId = await getOrganizationId(db);
+  const organizationId = actor.organizationId;
   const rows = await db.coinReason.findMany({
     where: { organizationId, ...(options.activeOnly ? { isActive: true } : {}) },
     include: reasonInclude,
@@ -209,7 +202,7 @@ export async function createCoinReason(
   db: DbClient = prisma,
 ): Promise<CoinReasonDto> {
   authorize(actor, "settings.org");
-  const organizationId = await getOrganizationId(db);
+  const organizationId = actor.organizationId;
   try {
     return await db.$transaction(async (tx) => {
       const row = await tx.coinReason.create({
@@ -236,7 +229,7 @@ export async function updateCoinReason(
   db: DbClient = prisma,
 ): Promise<CoinReasonDto> {
   authorize(actor, "settings.org");
-  const organizationId = await getOrganizationId(db);
+  const organizationId = actor.organizationId;
   const before = await mustFind(
     db.coinReason.findFirst({ where: { id, organizationId } }),
     "errors.coinReasonNotFound",
@@ -268,7 +261,7 @@ export async function deleteCoinReason(
   db: DbClient = prisma,
 ): Promise<void> {
   authorize(actor, "settings.org");
-  const organizationId = await getOrganizationId(db);
+  const organizationId = actor.organizationId;
   const before = await mustFind(
     db.coinReason.findFirst({ where: { id, organizationId }, include: reasonInclude }),
     "errors.coinReasonNotFound",
@@ -303,7 +296,7 @@ export async function giveCoins(
   db: DbClient = prisma,
 ): Promise<CoinTransactionDto> {
   authorize(actor, "coins.give");
-  const organizationId = await getOrganizationId(db);
+  const organizationId = actor.organizationId;
   const reason = await mustFind(
     db.coinReason.findFirst({ where: { id: input.reasonId, organizationId } }),
     "errors.coinReasonNotFound",
@@ -392,7 +385,12 @@ export async function awardAutoCoins(
     await tx.coinTransaction.deleteMany({ where: { refKey: input.refKey, kind: "AUTO" } });
     return;
   }
-  const organizationId = await getOrganizationId(tx);
+  const student = await tx.student.findUnique({
+    where: { id: input.studentId },
+    select: { branch: { select: { organizationId: true } } },
+  });
+  if (!student) return;
+  const organizationId = student.branch.organizationId;
   const settings = await tx.orgSettings.findUnique({
     where: { organizationId },
     select: { autoCoins: true },
@@ -505,15 +503,11 @@ export async function getCoinsReport(
   db: DbClient = prisma,
 ): Promise<CoinsReportDto> {
   authorizeAny(actor, ["reports.view", "coins.manage"]);
-  if (
-    filters.branchId &&
-    !canAccessAllBranches(actor) &&
-    !actor.branchIds.includes(filters.branchId)
-  ) {
+  if (filters.branchId && !actor.branchIds.includes(filters.branchId)) {
     throw AppError.forbidden("errors.branchForbidden");
   }
   const studentWhere: Prisma.StudentWhereInput = {
-    ...(branchScope(actor) ?? {}),
+    ...branchScope(actor),
     ...(filters.branchId ? { branchId: filters.branchId } : {}),
     ...(filters.q
       ? {
@@ -622,9 +616,7 @@ export async function getCoinReportOptions(
   db: DbClient = prisma,
 ): Promise<CoinReportOptions> {
   authorizeAny(actor, ["reports.view", "coins.manage"]);
-  const branchWhere: Prisma.BranchWhereInput = canAccessAllBranches(actor)
-    ? { isActive: true }
-    : { id: { in: actor.branchIds }, isActive: true };
+  const branchWhere: Prisma.BranchWhereInput = { id: { in: actor.branchIds }, isActive: true };
   const [branches, courses, groups] = await Promise.all([
     db.branch.findMany({
       where: branchWhere,
@@ -632,7 +624,7 @@ export async function getCoinReportOptions(
       orderBy: { name: "asc" },
     }),
     db.course.findMany({
-      where: { ...(branchScope(actor) ?? {}), isArchived: false },
+      where: { ...branchScope(actor), isArchived: false },
       select: { id: true, name: true, branchId: true },
       orderBy: { name: "asc" },
     }),

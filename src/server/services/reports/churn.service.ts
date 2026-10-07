@@ -4,7 +4,7 @@ import { recordAudit } from "@/server/audit/audit";
 import { prisma, type DbClient } from "@/server/db/prisma";
 import { AppError } from "@/server/errors/app-error";
 import { authorize, type Actor } from "@/server/rbac/authorize";
-import { getOrganizationId, mustFind, rethrowAsAppError } from "@/server/services/settings/shared";
+import { mustFind, rethrowAsAppError } from "@/server/services/settings/shared";
 
 import {
   branchIn,
@@ -245,7 +245,7 @@ export async function listLeaveReasons(
   db: DbClient = prisma,
 ): Promise<LeaveReasonDto[]> {
   authorize(actor, "groups.view");
-  const organizationId = await getOrganizationId(db);
+  const organizationId = actor.organizationId;
   const rows = await db.leaveReason.findMany({
     where: { organizationId },
     orderBy: [{ kind: "asc" }, { name: "asc" }],
@@ -259,7 +259,7 @@ export async function createLeaveReason(
   db: DbClient = prisma,
 ): Promise<LeaveReasonDto> {
   authorize(actor, "settings.catalog");
-  const organizationId = await getOrganizationId(db);
+  const organizationId = actor.organizationId;
   try {
     return await db.$transaction(async (tx) => {
       const row = await tx.leaveReason.create({ data: { organizationId, ...input } });
@@ -283,7 +283,9 @@ export async function updateLeaveReason(
   db: DbClient = prisma,
 ): Promise<LeaveReasonDto> {
   authorize(actor, "settings.catalog");
-  const before = await mustFind(db.leaveReason.findUnique({ where: { id } }));
+  const before = await mustFind(
+    db.leaveReason.findFirst({ where: { id, organizationId: actor.organizationId } }),
+  );
   try {
     return await db.$transaction(async (tx) => {
       const row = await tx.leaveReason.update({ where: { id }, data: input });
@@ -307,7 +309,9 @@ export async function deleteLeaveReason(
   db: DbClient = prisma,
 ): Promise<void> {
   authorize(actor, "settings.catalog");
-  const before = await mustFind(db.leaveReason.findUnique({ where: { id } }));
+  const before = await mustFind(
+    db.leaveReason.findFirst({ where: { id, organizationId: actor.organizationId } }),
+  );
   await db.$transaction(async (tx) => {
     await tx.leaveReason.delete({ where: { id } });
     await recordAudit(tx, actor, {

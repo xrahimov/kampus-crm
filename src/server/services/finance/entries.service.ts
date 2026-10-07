@@ -9,14 +9,8 @@ import {
 import { recordAudit } from "@/server/audit/audit";
 import { prisma, type DbClient } from "@/server/db/prisma";
 import { AppError } from "@/server/errors/app-error";
-import { authorize, branchScope, canAccessAllBranches, type Actor } from "@/server/rbac/authorize";
-import {
-  dateToIso,
-  decimalToNumber,
-  getOrganizationId,
-  isoToDate,
-  mustFind,
-} from "@/server/services/settings/shared";
+import { authorize, branchScope, type Actor } from "@/server/rbac/authorize";
+import { dateToIso, decimalToNumber, isoToDate, mustFind } from "@/server/services/settings/shared";
 
 import { assertBranch, financeBranch, periodRange } from "./shared";
 
@@ -116,10 +110,12 @@ export async function listEntries(
   return { items: rows.map(toDto), total: sum._sum.amount ? decimalToNumber(sum._sum.amount) : 0 };
 }
 
-async function checkRefs(db: DbClient, input: FinanceEntryInput) {
+async function checkRefs(db: DbClient, actor: Actor, input: FinanceEntryInput) {
   if (input.categoryId) {
     const category = await mustFind(
-      db.financeCategory.findUnique({ where: { id: input.categoryId } }),
+      db.financeCategory.findFirst({
+        where: { id: input.categoryId, organizationId: actor.organizationId },
+      }),
       "errors.categoryNotFound",
     );
     if (category.kind !== input.type) {
@@ -127,11 +123,15 @@ async function checkRefs(db: DbClient, input: FinanceEntryInput) {
     }
   }
   if (input.paymentMethodId) {
-    const n = await db.paymentMethod.count({ where: { id: input.paymentMethodId } });
+    const n = await db.paymentMethod.count({
+      where: { id: input.paymentMethodId, organizationId: actor.organizationId },
+    });
     if (n === 0) throw AppError.validation({ paymentMethodId: ["validation.required"] });
   }
   if (input.staffId) {
-    const n = await db.user.count({ where: { id: input.staffId, isArchived: false } });
+    const n = await db.user.count({
+      where: { id: input.staffId, isArchived: false, organizationId: actor.organizationId },
+    });
     if (n === 0) throw AppError.validation({ staffId: ["validation.staffUnknown"] });
   }
   if (input.studentId) {
@@ -164,7 +164,7 @@ export async function createEntry(
 ): Promise<FinanceEntryDto> {
   authorize(actor, "finance.create");
   assertBranch(actor, input.branchId);
-  await checkRefs(db, input);
+  await checkRefs(db, actor, input);
   return db.$transaction(async (tx) => {
     const row = await tx.financeEntry.create({
       data: entryData(input, actor.userId || null),
@@ -184,7 +184,7 @@ export async function createEntry(
 
 async function findEntry(db: DbClient, actor: Actor, id: string): Promise<Row> {
   const row = await mustFind(
-    db.financeEntry.findFirst({ where: { id, ...(branchScope(actor) ?? {}) }, include }),
+    db.financeEntry.findFirst({ where: { id, ...branchScope(actor) }, include }),
     "errors.entryNotFound",
   );
   return row;
@@ -200,7 +200,7 @@ export async function updateEntry(
   const row = await findEntry(db, actor, id);
   if (input.type !== row.type) throw AppError.validation({ type: ["validation.entryType"] });
   assertBranch(actor, input.branchId);
-  await checkRefs(db, input);
+  await checkRefs(db, actor, input);
   return db.$transaction(async (tx) => {
     const updated = await tx.financeEntry.update({
       where: { id },
@@ -241,13 +241,14 @@ export async function getFinanceOptions(
   db: DbClient = prisma,
 ): Promise<FinanceOptions> {
   authorize(actor, "finance.view");
-  const organizationId = await getOrganizationId(db);
-  const scope = branchScope(actor) ?? {};
+  const organizationId = actor.organizationId;
+  const scope = branchScope(actor);
   const [staff, paymentMethods, categories, branches] = await Promise.all([
     db.user.findMany({
       where: {
         isArchived: false,
-        ...(Object.keys(scope).length ? { branches: { some: scope } } : {}),
+        organizationId: actor.organizationId,
+        branches: { some: scope },
       },
       select: { id: true, fullName: true },
       orderBy: { fullName: "asc" },
@@ -266,7 +267,7 @@ export async function getFinanceOptions(
       where: {
         organizationId,
         isActive: true,
-        ...(canAccessAllBranches(actor) ? {} : { id: { in: actor.branchIds } }),
+        id: { in: actor.branchIds },
       },
       select: { id: true, name: true },
       orderBy: { name: "asc" },
@@ -285,7 +286,7 @@ export async function searchFinanceStudents(
   if (q.trim().length < 2) return [];
   return db.student.findMany({
     where: {
-      ...(branchScope(actor) ?? {}),
+      ...branchScope(actor),
       isArchived: false,
       OR: [{ fullName: { contains: q, mode: "insensitive" } }, { phone: { contains: q } }],
     },

@@ -8,6 +8,7 @@ import { authorize, authorizeBranch, branchScope, can, type Actor } from "@/serv
 const actor = (overrides: Partial<Actor> = {}): Actor => ({
   userId: "u1",
   fullName: "Test",
+  organizationId: "org_test",
   roles: ["ADMIN"],
   permissions: ["groups.view", "groups.create"],
   branchIds: ["b1"],
@@ -50,16 +51,22 @@ describe("authorize", () => {
     expect(can(actor({ permissions: ["*"] }), "finance.payroll.approve")).toBe(true);
   });
 
-  it("branch access is limited to the user's branches unless they manage the org", () => {
+  it("branch access is limited to the branches the login carries, even for the CEO (A-108)", () => {
     expect(() => authorizeBranch(actor(), "b1")).not.toThrow();
     expect(() => authorizeBranch(actor(), "b2")).toThrow(AppError);
-    expect(() => authorizeBranch(actor({ permissions: ["*"] }), "b2")).not.toThrow();
+    // A CEO's list holds every branch of their own centre; another centre's branch is not in it.
+    expect(() => authorizeBranch(actor({ permissions: ["*"] }), "b2")).toThrow(AppError);
+    expect(() =>
+      authorizeBranch(actor({ permissions: ["*"], branchIds: ["b1", "b2"] }), "b2"),
+    ).not.toThrow();
   });
 
-  it("branchScope narrows to the active branch or the allowed set", () => {
+  it("branchScope narrows to the active branch or the allowed set, never wider", () => {
     expect(branchScope(actor({ activeBranchId: "b1" }))).toEqual({ branchId: "b1" });
     expect(branchScope(actor())).toEqual({ branchId: { in: ["b1"] } });
-    expect(branchScope(actor({ permissions: ["*"] }))).toBeUndefined();
+    expect(branchScope(actor({ permissions: ["*"], branchIds: ["b1", "b2"] }))).toEqual({
+      branchId: { in: ["b1", "b2"] },
+    });
     expect(() => branchScope(actor({ activeBranchId: "b2" }))).toThrow(AppError);
   });
 });

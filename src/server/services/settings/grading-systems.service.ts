@@ -3,7 +3,7 @@ import { recordAudit } from "@/server/audit/audit";
 import { prisma, type DbClient } from "@/server/db/prisma";
 import { authorize, authorizeAny, type Actor } from "@/server/rbac/authorize";
 
-import { decimalToNumber, getOrganizationId, mustFind, rethrowAsAppError } from "./shared";
+import { decimalToNumber, mustFind, rethrowAsAppError } from "./shared";
 
 export interface GradingLevelDto {
   id: string;
@@ -50,7 +50,7 @@ export async function listGradingSystems(
   db: DbClient = prisma,
 ): Promise<GradingSystemDto[]> {
   authorizeAny(actor, ["settings.org", "settings.catalog"]);
-  const organizationId = await getOrganizationId(db);
+  const organizationId = actor.organizationId;
   const rows = await db.gradingSystem.findMany({
     where: { organizationId },
     orderBy: { name: "asc" },
@@ -73,7 +73,7 @@ export async function createGradingSystem(
   db: DbClient = prisma,
 ): Promise<GradingSystemDto> {
   authorize(actor, "settings.org");
-  const organizationId = await getOrganizationId(db);
+  const organizationId = actor.organizationId;
   try {
     return await db.$transaction(async (tx) => {
       const row = await tx.gradingSystem.create({
@@ -110,7 +110,14 @@ export async function updateGradingSystem(
   authorize(actor, "settings.org");
   try {
     return await db.$transaction(async (tx) => {
-      const before = toDto(await mustFind(tx.gradingSystem.findUnique({ where: { id }, include })));
+      const before = toDto(
+        await mustFind(
+          tx.gradingSystem.findFirst({
+            where: { id, organizationId: actor.organizationId },
+            include,
+          }),
+        ),
+      );
       await tx.gradingLevel.deleteMany({ where: { gradingSystemId: id } });
       const row = await tx.gradingSystem.update({
         where: { id },
@@ -144,7 +151,14 @@ export async function deleteGradingSystem(
 ): Promise<void> {
   authorize(actor, "settings.org");
   await db.$transaction(async (tx) => {
-    const before = toDto(await mustFind(tx.gradingSystem.findUnique({ where: { id }, include })));
+    const before = toDto(
+      await mustFind(
+        tx.gradingSystem.findFirst({
+          where: { id, organizationId: actor.organizationId },
+          include,
+        }),
+      ),
+    );
     // Courses keep working without a scale (gradingSystemId → null).
     await tx.gradingSystem.delete({ where: { id } });
     await recordAudit(tx, actor, {

@@ -1,6 +1,6 @@
 import type { Prisma } from "@/generated/prisma/client";
 import { AppError } from "@/server/errors/app-error";
-import { branchScope, canAccessAllBranches, type Actor } from "@/server/rbac/authorize";
+import { branchScope, type Actor } from "@/server/rbac/authorize";
 import { isoToDate } from "@/server/services/settings/shared";
 
 /** First and last day of a month (or a whole year) as Dates for @db.Date filters. */
@@ -18,16 +18,16 @@ export function monthIso(year: number, month: number): string {
 /** The branches a finance query may touch: the chosen one (checked) or the actor's scope. */
 export function financeBranch(actor: Actor, branchId?: string): Prisma.FinanceEntryWhereInput {
   if (branchId) {
-    if (!canAccessAllBranches(actor) && !actor.branchIds.includes(branchId)) {
+    if (!actor.branchIds.includes(branchId)) {
       throw AppError.forbidden("errors.branchForbidden");
     }
     return { branchId };
   }
-  return branchScope(actor) ?? {};
+  return branchScope(actor);
 }
 
 export function assertBranch(actor: Actor, branchId: string): void {
-  if (!canAccessAllBranches(actor) && !actor.branchIds.includes(branchId)) {
+  if (!actor.branchIds.includes(branchId)) {
     throw AppError.forbidden("errors.branchForbidden");
   }
 }

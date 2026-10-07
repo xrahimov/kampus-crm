@@ -8,6 +8,8 @@ export interface AuditEntry {
   before?: unknown;
   after?: unknown;
   branchId?: string | null;
+  /** For entries without an actor (jobs, webhooks): the centre they belong to. */
+  organizationId?: string | null;
 }
 
 type Json = Parameters<DbClient["auditLog"]["create"]>[0]["data"]["before"];
@@ -29,6 +31,7 @@ export async function recordAudit(
 ): Promise<void> {
   await tx.auditLog.create({
     data: {
+      organizationId: entry.organizationId ?? actor?.organizationId ?? null,
       actorId: actor?.userId ?? null,
       branchId: entry.branchId ?? actor?.activeBranchId ?? null,
       action: entry.action,

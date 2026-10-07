@@ -10,7 +10,7 @@ import { prisma, type DbClient } from "@/server/db/prisma";
 import { enqueue } from "@/server/jobs/queue";
 import { authorize, type Actor } from "@/server/rbac/authorize";
 import { awardAutoCoins } from "@/server/services/coins/coins.service";
-import { dateToIso, getOrganizationId, isoToDate } from "@/server/services/settings/shared";
+import { dateToIso, isoToDate } from "@/server/services/settings/shared";
 import { membershipBalances } from "@/server/services/students/balances";
 import { notifyStudents } from "@/server/services/telegram/student-telegram.service";
 
@@ -98,7 +98,7 @@ export async function getAutoSmsSettings(
   db: DbClient = prisma,
 ): Promise<AutoSmsSettingDto[]> {
   authorize(actor, "settings.org");
-  const organizationId = await getOrganizationId(db);
+  const organizationId = actor.organizationId;
   return toDtos(await ensureSettings(db, organizationId));
 }
 
@@ -108,7 +108,7 @@ export async function updateAutoSmsSettings(
   db: DbClient = prisma,
 ): Promise<AutoSmsSettingDto[]> {
   authorize(actor, "settings.org");
-  const organizationId = await getOrganizationId(db);
+  const organizationId = actor.organizationId;
   return db.$transaction(async (tx) => {
     const before = toDtos(await ensureSettings(tx, organizationId));
     for (const s of input.settings) {
@@ -147,21 +147,25 @@ export async function queueAutoSms(
     /** Who the message is about when it goes to the parents too; v1 texts the student (A-88). */
   },
 ): Promise<boolean> {
-  const organizationId = await getOrganizationId(tx);
+  const student = await tx.student.findUnique({
+    where: { id: input.studentId },
+    select: {
+      fullName: true,
+      phone: true,
+      branchId: true,
+      isArchived: true,
+      branch: { select: { organization: { select: { id: true, name: true } } } },
+    },
+  });
+  if (!student || !student.phone || student.isArchived) return false;
+  const org = student.branch.organization;
+  const organizationId = org.id;
   const setting = await tx.autoSmsSetting.findUnique({
     where: { organizationId_event: { organizationId, event: input.event } },
   });
   if (!setting?.isActive) return false;
   const existing = await tx.smsMessage.findUnique({ where: { refKey: input.refKey } });
   if (existing) return false;
-  const [student, org] = await Promise.all([
-    tx.student.findUnique({
-      where: { id: input.studentId },
-      select: { fullName: true, phone: true, branchId: true, isArchived: true },
-    }),
-    tx.organization.findUnique({ where: { id: organizationId }, select: { name: true } }),
-  ]);
-  if (!student || !student.phone || student.isArchived) return false;
   const text = renderTemplate(setting.template, {
     studentName: student.fullName,
     centerName: org?.name ?? "",
@@ -266,21 +270,26 @@ export async function runDailyAutoSms(
   }
 
   // Debtors and payments due soon, from the same balance engine the profile uses (A-59).
-  const organizationId = await getOrganizationId(db);
+  // Each centre has its own switches, so the scan runs once per centre (A-108).
   const switches = await db.autoSmsSetting.findMany({
-    where: { organizationId, event: { in: ["DEBTOR", "PAYMENT_DUE_SOON"] }, isActive: true },
+    where: { event: { in: ["DEBTOR", "PAYMENT_DUE_SOON"] }, isActive: true },
   });
-  if (switches.length > 0) {
+  const organizationIds = Array.from(new Set(switches.map((s) => s.organizationId)));
+  for (const organizationId of organizationIds) {
+    const wantDebtor = switches.some(
+      (s) => s.organizationId === organizationId && s.event === "DEBTOR",
+    );
+    const wantDueSoon = switches.some(
+      (s) => s.organizationId === organizationId && s.event === "PAYMENT_DUE_SOON",
+    );
     const active = await db.groupMembership.findMany({
-      where: { status: "ACTIVE", group: { status: "ACTIVE" } },
+      where: { status: "ACTIVE", group: { status: "ACTIVE", branch: { organizationId } } },
       select: { id: true, studentId: true, group: { select: { name: true } } },
     });
     const balances = await membershipBalances(
       db,
       active.map((m) => m.id),
     );
-    const wantDebtor = switches.some((s) => s.event === "DEBTOR");
-    const wantDueSoon = switches.some((s) => s.event === "PAYMENT_DUE_SOON");
     for (const m of active) {
       const b = balances.get(m.id);
       if (!b) continue;

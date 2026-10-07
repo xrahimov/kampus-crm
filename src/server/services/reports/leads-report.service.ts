@@ -2,7 +2,6 @@ import type { Prisma } from "@/generated/prisma/client";
 import type { LeadsReportFilters } from "@/lib/validation/reports";
 import { prisma, type DbClient } from "@/server/db/prisma";
 import { authorize, type Actor } from "@/server/rbac/authorize";
-import { getOrganizationId } from "@/server/services/settings/shared";
 
 import {
   branchIn,
@@ -117,7 +116,7 @@ export async function getLeadsReport(
         select: { updatedAt: true },
       }),
       db.leadSource.findMany({
-        where: { organizationId: await getOrganizationId(db) },
+        where: { organizationId: actor.organizationId },
         select: { id: true, name: true },
         orderBy: { name: "asc" },
       }),

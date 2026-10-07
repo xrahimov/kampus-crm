@@ -213,6 +213,7 @@ export async function listTeacherOptions(
   authorize(actor, "groups.view");
   const rows = await db.user.findMany({
     where: {
+      organizationId: actor.organizationId,
       isArchived: false,
       branches: { some: { branchId } },
       roles: { some: { role: { code: { in: TEACHER_ROLE_CODES } } } },
@@ -237,9 +238,12 @@ async function checkCourse(db: DbClient, branchId: string, courseId: string) {
   return course;
 }
 
-async function checkGradingSystem(db: DbClient, id: string | null | undefined) {
+async function checkGradingSystem(db: DbClient, actor: Actor, id: string | null | undefined) {
   if (!id) return;
-  await mustFind(db.gradingSystem.findUnique({ where: { id } }), "errors.notFound");
+  await mustFind(
+    db.gradingSystem.findFirst({ where: { id, organizationId: actor.organizationId } }),
+    "errors.notFound",
+  );
 }
 
 function checkSlots(pattern: WeekdayPattern, slots: ScheduleSlotInput[]) {
@@ -257,11 +261,12 @@ async function checkRooms(db: DbClient, branchId: string, slots: ScheduleSlotInp
   if (found !== roomIds.length) throw AppError.validation({ slots: ["validation.roomBranch"] });
 }
 
-async function checkTeachers(db: DbClient, userIds: string[]) {
+async function checkTeachers(db: DbClient, actor: Actor, userIds: string[]) {
   if (userIds.length === 0) return;
   const found = await db.user.count({
     where: {
       id: { in: [...new Set(userIds)] },
+      organizationId: actor.organizationId,
       isArchived: false,
       roles: { some: { role: { code: { in: TEACHER_ROLE_CODES } } } },
     },
@@ -352,10 +357,11 @@ export async function createGroup(
   const course = await checkCourse(db, input.branchId, input.courseId);
   checkSlots(input.weekdayPattern, input.slots);
   await Promise.all([
-    checkGradingSystem(db, input.gradingSystemId),
+    checkGradingSystem(db, actor, input.gradingSystemId),
     checkRooms(db, input.branchId, input.slots),
     checkTeachers(
       db,
+      actor,
       input.teachers.map((t) => t.userId),
     ),
   ]);
@@ -430,11 +436,12 @@ export async function updateGroup(
       roomId: s.roomId,
     }));
   checkSlots(pattern, slots);
-  if ("gradingSystemId" in input) await checkGradingSystem(db, input.gradingSystemId);
+  if ("gradingSystemId" in input) await checkGradingSystem(db, actor, input.gradingSystemId);
   if (input.slots) await checkRooms(db, existing.branchId, input.slots);
   if (input.teachers)
     await checkTeachers(
       db,
+      actor,
       input.teachers.map((t) => t.userId),
     );
   const startDate = input.startDate ?? before.startDate;
@@ -634,7 +641,7 @@ export async function changeGroupTeacher(
   if (new Set(next.map((t) => t.userId)).size !== next.length) {
     throw AppError.validation({ teachers: ["validation.teachersUnique"] });
   }
-  await checkTeachers(db, [to.userId]);
+  await checkTeachers(db, actor, [to.userId]);
   return db.$transaction(async (tx) => {
     await replaceTeachers(
       tx,
@@ -666,7 +673,7 @@ export async function setSupportTeachers(
   const existing = await findGroupInScope(db, actor, id, include);
   const before = toGroupDto(existing);
   const unique = [...new Set(userIds)];
-  await checkTeachers(db, unique);
+  await checkTeachers(db, actor, unique);
   return db.$transaction(async (tx) => {
     await tx.groupSupportTeacher.deleteMany({ where: { groupId: id } });
     if (unique.length) {

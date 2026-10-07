@@ -41,7 +41,7 @@ export async function getFinanceOverview(
   const entryScope = financeBranch(actor, period.branchId);
   const payScope: Prisma.PaymentWhereInput = period.branchId
     ? { branchId: period.branchId }
-    : (branchScope(actor) ?? {});
+    : branchScope(actor);
   const { from, to } = periodRange(period.year, period.month);
   const year = periodRange(period.year);
   const method = period.paymentMethodId ? { paymentMethodId: period.paymentMethodId } : {};
@@ -208,12 +208,12 @@ export async function getFinancePlan(
   authorize(actor, "finance.view");
   const payScope: Prisma.PaymentWhereInput = filters.branchId
     ? { branchId: filters.branchId }
-    : (branchScope(actor) ?? {});
+    : branchScope(actor);
   financeBranch(actor, filters.branchId); // branch access check
   const { from, to } = periodRange(filters.year, filters.month);
   const groupScope: Prisma.GroupWhereInput = filters.branchId
     ? { branchId: filters.branchId }
-    : (branchScope(actor) ?? {});
+    : branchScope(actor);
   const memberships = await db.groupMembership.findMany({
     where: { group: groupScope, status: { in: ["ACTIVE", "FROZEN"] } },
     select: { id: true },

@@ -13,15 +13,9 @@ import { queueAutoSms } from "@/server/services/sms/auto-sms.service";
 import { prisma, type DbClient } from "@/server/db/prisma";
 import { AppError } from "@/server/errors/app-error";
 import type { ParsedList } from "@/server/http/list-query";
-import { authorize, branchScope, canAccessAllBranches, type Actor } from "@/server/rbac/authorize";
+import { authorize, branchScope, type Actor } from "@/server/rbac/authorize";
 import { findGroupInScope } from "@/server/services/groups/shared";
-import {
-  dateToIso,
-  decimalToNumber,
-  getOrganizationId,
-  isoToDate,
-  mustFind,
-} from "@/server/services/settings/shared";
+import { dateToIso, decimalToNumber, isoToDate, mustFind } from "@/server/services/settings/shared";
 
 import { membershipBalances, type MembershipBalance } from "./balances";
 import { studentScope } from "./students.service";
@@ -153,7 +147,7 @@ export async function createPayment(
 ): Promise<PaymentDto> {
   authorize(actor, "payments.create");
   const m = await findMembershipForPayment(db, actor, input.membershipId);
-  const organizationId = await getOrganizationId(db);
+  const organizationId = actor.organizationId;
   const method = await mustFind(
     db.paymentMethod.findFirst({
       where: { id: input.paymentMethodId, organizationId, isActive: true },
@@ -199,6 +193,7 @@ export async function createPayment(
       vars: { groupName: dto.groupName, amount: String(dto.amount), date: dto.paidAt },
     });
     await notifyStaff(tx, {
+      organizationId: actor.organizationId,
       branchId: m.group.branchId,
       text: `To'lov: ${dto.studentName} — ${dto.amount} (${dto.groupName}), ${actor.fullName}`,
     });
@@ -227,7 +222,7 @@ export async function getPayment(
 ): Promise<PaymentDto> {
   authorize(actor, "students.view");
   const row = await mustFind(db.payment.findUnique({ where: { id }, include }));
-  if (!canAccessAllBranches(actor) && !actor.branchIds.includes(row.branchId)) {
+  if (!actor.branchIds.includes(row.branchId)) {
     throw AppError.forbidden("errors.branchForbidden");
   }
   const visible = await db.student.count({ where: { id: row.studentId, ...studentScope(actor) } });
@@ -242,7 +237,7 @@ export async function getReceipt(
   db: DbClient = prisma,
 ): Promise<ReceiptDto> {
   const payment = await getPayment(actor, id, db);
-  const organizationId = await getOrganizationId(db);
+  const organizationId = actor.organizationId;
   const [org, settings, membership] = await Promise.all([
     db.organization.findUniqueOrThrow({
       where: { id: organizationId },
@@ -306,7 +301,7 @@ export async function listPayments(
 ): Promise<Page<PaymentDto> & { totalAmount: number }> {
   authorize(actor, "students.view");
   const where: Prisma.PaymentWhereInput = {
-    ...(branchScope(actor) ?? {}),
+    ...branchScope(actor),
     student: studentScope(actor),
     ...(filters.studentId ? { studentId: filters.studentId } : {}),
     ...(filters.membershipId ? { membershipId: filters.membershipId } : {}),
@@ -393,7 +388,7 @@ export async function getPaymentOptions(
   db: DbClient = prisma,
 ): Promise<PaymentOptionsDto> {
   authorize(actor, "students.view");
-  const organizationId = await getOrganizationId(db);
+  const organizationId = actor.organizationId;
   const [methods, settings] = await Promise.all([
     db.paymentMethod.findMany({
       where: { organizationId, isActive: true },

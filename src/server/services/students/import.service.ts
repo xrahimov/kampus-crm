@@ -3,12 +3,7 @@ import { z } from "zod";
 import { phoneSchema } from "@/lib/validation/common";
 import { prisma, type DbClient } from "@/server/db/prisma";
 import { AppError, isAppError } from "@/server/errors/app-error";
-import {
-  authorize,
-  authorizeBranch,
-  canAccessAllBranches,
-  type Actor,
-} from "@/server/rbac/authorize";
+import { authorize, authorizeBranch, type Actor } from "@/server/rbac/authorize";
 import { addMember } from "@/server/services/groups/memberships.service";
 import { findGroupInScope } from "@/server/services/groups/shared";
 
@@ -199,9 +194,8 @@ export async function importMembers(
       result.skipped.push({ row: line, reason: "fullName: validation.required" });
       continue;
     }
-    const branchWhere = canAccessAllBranches(actor)
-      ? { branchId: group.branchId }
-      : { branchId: { in: actor.branchIds } };
+    // Match inside the group's branch; the actor already passed the branch check for it.
+    const branchWhere = { branchId: group.branchId };
     const existing = await db.student.findFirst({
       where: {
         ...branchWhere,

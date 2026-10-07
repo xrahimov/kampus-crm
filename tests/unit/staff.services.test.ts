@@ -9,6 +9,7 @@ import { verifyPassword } from "@/server/auth/password";
 import { prisma } from "@/server/db/prisma";
 import type { Actor } from "@/server/rbac/authorize";
 import { createBranch } from "@/server/services/settings/branches.service";
+import { DEMO_ORG_ID, demoBranchIds } from "./support/tenant";
 import {
   createRole,
   deleteRole,
@@ -44,6 +45,7 @@ const ceo: Actor = {
   fullName: "CEO",
   roles: ["CEO"],
   permissions: ["*"],
+  organizationId: DEMO_ORG_ID,
   branchIds: [],
   activeBranchId: null,
 };
@@ -53,6 +55,7 @@ const adminA: Actor = {
   fullName: "Admin A",
   roles: ["ADMIN"],
   permissions: [...DEFAULT_ROLE_PERMISSIONS.ADMIN, "settings.roles"],
+  organizationId: DEMO_ORG_ID,
   branchIds: [],
   activeBranchId: null,
 };
@@ -61,6 +64,7 @@ const cashier: Actor = {
   fullName: "Cashier",
   roles: ["CASHIER"],
   permissions: ["payments.create"],
+  organizationId: DEMO_ORG_ID,
   branchIds: [],
   activeBranchId: null,
 };
@@ -82,12 +86,18 @@ beforeAll(async () => {
     [cashier, 3],
   ] as const) {
     const user = await prisma.user.create({
-      data: { phone: phone(n), fullName: `${TAG} ${actor.fullName}`, passwordHash: "x" },
+      data: {
+        phone: phone(n),
+        fullName: `${TAG} ${actor.fullName}`,
+        passwordHash: "x",
+        organizationId: DEMO_ORG_ID,
+      },
     });
     actor.userId = user.id;
   }
   branchA = (await createBranch(ceo, { name: `${TAG} A`, isActive: true })).id;
   branchB = (await createBranch(ceo, { name: `${TAG} B`, isActive: true })).id;
+  ceo.branchIds = await demoBranchIds();
   adminA.branchIds = [branchA];
 });
 

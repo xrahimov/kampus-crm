@@ -5,7 +5,7 @@ import { prisma, type DbClient } from "@/server/db/prisma";
 import type { ParsedList } from "@/server/http/list-query";
 import { authorize, type Actor } from "@/server/rbac/authorize";
 import { TEACHER_ROLE_CODES } from "@/server/services/staff/staff.service";
-import { dateToIso, getOrganizationId } from "@/server/services/settings/shared";
+import { dateToIso } from "@/server/services/settings/shared";
 
 import { branchIn, monthPeriod, num, reportBranch } from "./shared";
 
@@ -140,7 +140,7 @@ export async function getStudentPaymentsOptions(
 ): Promise<StudentPaymentsOptions> {
   authorize(actor, "reports.payments");
   const scope = reportBranch(actor, branchId);
-  const organizationId = await getOrganizationId(db);
+  const organizationId = actor.organizationId;
   const [groups, methods, teachers, courses, staff] = await Promise.all([
     db.group.findMany({
       where: branchIn(scope),
@@ -154,6 +154,7 @@ export async function getStudentPaymentsOptions(
     }),
     db.user.findMany({
       where: {
+        organizationId,
         isArchived: false,
         roles: { some: { role: { code: { in: [...TEACHER_ROLE_CODES] } } } },
       },

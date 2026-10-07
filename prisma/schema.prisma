@@ -23,6 +23,9 @@ model Organization {
   updatedAt DateTime @updatedAt
 
   branches          Branch[]
+  users             User[]
+  roles             Role[]
+  auditLogs         AuditLog[]
   settings          OrgSettings?
   paymentMethods    PaymentMethod[]
   gradingSystems    GradingSystem[]
@@ -95,28 +98,31 @@ enum SalaryMethod {
 }
 
 model User {
-  id            String        @id @default(cuid())
-  fullName      String
-  phone         String        @unique // E.164, e.g. +998901234567
-  passwordHash  String
-  gender        Gender        @default(MALE)
-  birthDate     DateTime?     @db.Date
-  hireDate      DateTime?     @db.Date
-  photoUrl      String?
-  salaryMethod  SalaryMethod?
-  fixedSalary   Decimal?      @db.Decimal(15, 2) // MONTHLY: UZS per month
-  percentShare  Decimal?      @db.Decimal(5, 2) // PERCENT: % of course price
-  perLessonFee  Decimal?      @db.Decimal(15, 2) // PER_LESSON: UZS per lesson
-  perStudentFee Decimal?      @db.Decimal(15, 2) // PER_STUDENT: UZS per active student
-  isArchived    Boolean       @default(false)
-  createdAt     DateTime      @default(now())
-  updatedAt     DateTime      @updatedAt
+  id             String        @id @default(cuid())
+  /// The centre this account belongs to; a login is scoped to it (A-108).
+  organizationId String
+  fullName       String
+  phone          String        @unique // E.164, e.g. +998901234567
+  passwordHash   String
+  gender         Gender        @default(MALE)
+  birthDate      DateTime?     @db.Date
+  hireDate       DateTime?     @db.Date
+  photoUrl       String?
+  salaryMethod   SalaryMethod?
+  fixedSalary    Decimal?      @db.Decimal(15, 2) // MONTHLY: UZS per month
+  percentShare   Decimal?      @db.Decimal(5, 2) // PERCENT: % of course price
+  perLessonFee   Decimal?      @db.Decimal(15, 2) // PER_LESSON: UZS per lesson
+  perStudentFee  Decimal?      @db.Decimal(15, 2) // PER_STUDENT: UZS per active student
+  isArchived     Boolean       @default(false)
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
 
-  roles     UserRole[]
-  branches  UserBranch[]
-  sessions  Session[]
-  loginLogs LoginLog[]
-  auditLogs AuditLog[]
+  organization Organization @relation(fields: [organizationId], references: [id])
+  roles        UserRole[]
+  branches     UserBranch[]
+  sessions     Session[]
+  loginLogs    LoginLog[]
+  auditLogs    AuditLog[]
 
   groupsTaught    GroupTeacher[]
   groupsSupported GroupSupportTeacher[] @relation("supportOf")
@@ -156,21 +162,28 @@ model User {
   homeworkSet       Homework[]           @relation("homeworkAuthor")
   homeworkChecked   HomeworkSubmission[] @relation("homeworkChecker")
   materialsAdded    LessonMaterial[]     @relation("materialAuthor")
+
+  @@index([organizationId])
 }
 
 /// A role is a named bundle of permission codes. System roles are seeded and
 /// cannot be deleted; the CEO can create custom roles (EXP §8 Roles (Beta)).
 model Role {
-  id          String   @id @default(cuid())
-  code        String   @unique // e.g. CEO, ADMIN, TEACHER, or custom:branch-manager
-  name        String
-  isSystem    Boolean  @default(false)
-  isActive    Boolean  @default(true)
-  permissions String[] @default([])
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id             String   @id @default(cuid())
+  /// Null for the system roles every centre shares; custom roles belong to one centre (A-108).
+  organizationId String?
+  code           String   @unique // e.g. CEO, ADMIN, TEACHER, or custom:branch-manager
+  name           String
+  isSystem       Boolean  @default(false)
+  isActive       Boolean  @default(true)
+  permissions    String[] @default([])
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
 
-  users UserRole[]
+  organization Organization? @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  users        UserRole[]
+
+  @@index([organizationId])
 }
 
 model UserRole {
@@ -249,22 +262,26 @@ model LoginLog {
 // ---------------------------------------------------------------------------
 
 model AuditLog {
-  id        String   @id @default(cuid())
-  actorId   String?
-  branchId  String?
-  action    String // e.g. group.update
-  entity    String // e.g. Group
-  entityId  String
-  before    Json?
-  after     Json?
-  ip        String?
-  createdAt DateTime @default(now())
+  id             String   @id @default(cuid())
+  /// The centre the change belongs to, so org-level entries (settings, roles) stay inside it (A-108).
+  organizationId String?
+  actorId        String?
+  branchId       String?
+  action         String // e.g. group.update
+  entity         String // e.g. Group
+  entityId       String
+  before         Json?
+  after          Json?
+  ip             String?
+  createdAt      DateTime @default(now())
 
-  actor  User?   @relation(fields: [actorId], references: [id], onDelete: SetNull)
-  branch Branch? @relation(fields: [branchId], references: [id], onDelete: SetNull)
+  organization Organization? @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  actor        User?         @relation(fields: [actorId], references: [id], onDelete: SetNull)
+  branch       Branch?       @relation(fields: [branchId], references: [id], onDelete: SetNull)
 
   @@index([entity, entityId, createdAt])
   @@index([actorId, createdAt])
+  @@index([organizationId, createdAt])
   @@index([createdAt])
 }
 

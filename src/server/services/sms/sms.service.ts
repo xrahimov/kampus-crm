@@ -15,7 +15,7 @@ import type { ParsedList } from "@/server/http/list-query";
 import { authorize, branchScope, canAccessAllBranches, type Actor } from "@/server/rbac/authorize";
 import { findGroupInScope } from "@/server/services/groups/shared";
 import { getSmsProvider } from "@/server/services/integrations/integrations.service";
-import { getOrganizationId, isoToDate, mustFind } from "@/server/services/settings/shared";
+import { isoToDate, mustFind } from "@/server/services/settings/shared";
 import { listStudents, studentScope } from "@/server/services/students/students.service";
 
 /* Sending SMS (EXP: SMS YUBORISH buttons, column SMS, parents, Xabar +) and the SMS log (§8). A-84. */
@@ -164,6 +164,7 @@ export async function resolveRecipients(
               isArchived: target.archived,
               roles: { some: { role: { code: { in: ["TEACHER", "SUPPORT_TEACHER"] } } } },
             };
+      where.organizationId = actor.organizationId;
       if (!canAccessAllBranches(actor)) {
         where.branches = { some: { branchId: { in: actor.branchIds } } };
       }
@@ -183,7 +184,7 @@ export async function resolveRecipients(
       authorize(actor, "leads.view");
       const column = await mustFind(
         db.leadColumn.findFirst({
-          where: { id: target.columnId, board: branchScope(actor) ?? {} },
+          where: { id: target.columnId, board: branchScope(actor) },
           include: {
             leads: {
               where: { isArchived: false },
@@ -257,7 +258,7 @@ export async function sendSms(
   authorize(actor, "sms.send");
   const { recipients, skipped } = await resolveRecipients(actor, input.target, db);
   if (recipients.length === 0) throw AppError.validation({ target: ["validation.noRecipients"] });
-  const organizationId = await getOrganizationId(db);
+  const organizationId = actor.organizationId;
   const ids = await db.$transaction(async (tx) => {
     const created: string[] = [];
     for (const r of recipients) {

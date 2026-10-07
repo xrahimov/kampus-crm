@@ -74,6 +74,8 @@ All entities come from EXP §13. Fields in each table follow the EXP forms; the 
 ```mermaid
 erDiagram
   Organization ||--o{ Branch : has
+  Organization ||--o{ User : employs
+  Organization ||--o{ Role : "custom roles"
   Organization ||--o{ PaymentMethod : defines
   Organization ||--|| OrgSettings : has
   Branch ||--o{ Room : has

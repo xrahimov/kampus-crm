@@ -28,6 +28,7 @@ import { createCourse } from "@/server/services/settings/courses.service";
 import { createPaymentMethod } from "@/server/services/settings/payment-methods.service";
 import { createRoom } from "@/server/services/settings/rooms.service";
 import { createPayment } from "@/server/services/students/payments.service";
+import { DEMO_ORG_ID, demoBranchIds } from "./support/tenant";
 
 const RUN = String(Date.now() % 100_000).padStart(5, "0");
 const TAG = `d${RUN}`;
@@ -38,6 +39,7 @@ const actor = (fullName: string, roles: string[], permissions: string[]): Actor 
   fullName,
   roles,
   permissions,
+  organizationId: DEMO_ORG_ID,
   branchIds: [],
   activeBranchId: null,
 });
@@ -77,13 +79,19 @@ beforeAll(async () => {
     [outsider, 4, "CASHIER"],
   ] as const) {
     const user = await prisma.user.create({
-      data: { phone: phone(n), fullName: `${TAG} ${a.fullName}`, passwordHash: "x" },
+      data: {
+        phone: phone(n),
+        fullName: `${TAG} ${a.fullName}`,
+        passwordHash: "x",
+        organizationId: DEMO_ORG_ID,
+      },
     });
     a.userId = user.id;
     if (code) await prisma.userRole.create({ data: { userId: user.id, roleId: roleId(code) } });
   }
   branchA = (await createBranch(ceo, { name: `${TAG} A`, isActive: true })).id;
   branchB = (await createBranch(ceo, { name: `${TAG} B`, isActive: true })).id;
+  ceo.branchIds = await demoBranchIds();
   ceo.activeBranchId = branchA;
   await prisma.userBranch.createMany({
     data: [

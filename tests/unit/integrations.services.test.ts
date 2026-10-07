@@ -49,6 +49,7 @@ import { listActionLog, listLoginLogs } from "@/server/services/logs/logs.servic
 import { createBranch } from "@/server/services/settings/branches.service";
 import { createCourse } from "@/server/services/settings/courses.service";
 import { dateToIso } from "@/server/services/settings/shared";
+import { DEMO_ORG_ID, demoBranchIds } from "./support/tenant";
 import {
   getAutoSmsSettings,
   queueAutoSms,
@@ -79,6 +80,7 @@ const actor = (fullName: string, roles: string[], permissions: string[]): Actor 
   fullName,
   roles,
   permissions,
+  organizationId: DEMO_ORG_ID,
   branchIds: [],
   activeBranchId: null,
 });
@@ -112,12 +114,18 @@ beforeAll(async () => {
     [cashier, 3, "CASHIER"],
   ] as const) {
     const user = await prisma.user.create({
-      data: { phone: phone(n), fullName: `${TAG} ${a.fullName}`, passwordHash: "x" },
+      data: {
+        phone: phone(n),
+        fullName: `${TAG} ${a.fullName}`,
+        passwordHash: "x",
+        organizationId: DEMO_ORG_ID,
+      },
     });
     a.userId = user.id;
     if (code) await prisma.userRole.create({ data: { userId: user.id, roleId: roleId(code) } });
   }
   branchA = (await createBranch(ceo, { name: `${TAG} A`, isActive: true })).id;
+  ceo.branchIds = await demoBranchIds();
   ceo.activeBranchId = branchA;
   await prisma.userBranch.createMany({
     data: [teacher, cashier].map((a) => ({ userId: a.userId, branchId: branchA })),
@@ -420,10 +428,10 @@ describe("bot recipients and Telegram", () => {
     const other = await createBranch(ceo, { name: `${TAG} Other`, isActive: true });
     try {
       await prisma.$transaction((tx) =>
-        notifyStaff(tx, { branchId: other.id, text: `${TAG} nope` }),
+        notifyStaff(tx, { organizationId: DEMO_ORG_ID, branchId: other.id, text: `${TAG} nope` }),
       );
       const sent = await prisma.$transaction((tx) =>
-        notifyStaff(tx, { branchId: branchA, text: `${TAG} hello` }),
+        notifyStaff(tx, { organizationId: DEMO_ORG_ID, branchId: branchA, text: `${TAG} hello` }),
       );
       expect(sent).toBeGreaterThanOrEqual(1);
       const before = fakeTelegramOutbox.length;
@@ -530,12 +538,16 @@ describe("logs", () => {
     await prisma.loginLog.createMany({
       data: [
         { userId: teacher.userId, phone: phone(2), success: true },
+        { userId: teacher.userId, phone: phone(2), success: false },
         { phone: phone(99), success: false },
       ],
     });
-    const failed = await listLoginLogs(ceo, { ...list, q: phone(99) }, { success: "false" });
+    const failed = await listLoginLogs(ceo, { ...list, q: phone(2) }, { success: "false" });
     expect(failed.total).toBe(1);
-    expect(failed.items[0]).toMatchObject({ phone: phone(99), success: false, userName: null });
+    expect(failed.items[0]).toMatchObject({ phone: phone(2), success: false });
+    // A failed attempt on a phone no account of this centre owns belongs to nobody here (A-108).
+    const unknown = await listLoginLogs(ceo, { ...list, q: phone(99) }, {});
+    expect(unknown.total).toBe(0);
     const ok = await listLoginLogs(ceo, { ...list, q: `${TAG} Teacher` }, {});
     expect(ok.items[0]).toMatchObject({ userName: `${TAG} Teacher` });
 

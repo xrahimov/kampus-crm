@@ -1,5 +1,5 @@
 import { AppError } from "@/server/errors/app-error";
-import { branchScope, canAccessAllBranches, type Actor } from "@/server/rbac/authorize";
+import { branchScope, type Actor } from "@/server/rbac/authorize";
 import { dateToIso, decimalToNumber, isoToDate } from "@/server/services/settings/shared";
 
 /* Helpers shared by the Hisobotlar pages (EXP §10). */
@@ -37,12 +37,12 @@ export function reportBranch(
   branchId?: string,
 ): { branchId: string } | { branchId: { in: string[] } } | Record<string, never> {
   if (branchId) {
-    if (!canAccessAllBranches(actor) && !actor.branchIds.includes(branchId)) {
+    if (!actor.branchIds.includes(branchId)) {
       throw AppError.forbidden("errors.branchForbidden");
     }
     return { branchId };
   }
-  return branchScope(actor) ?? {};
+  return branchScope(actor);
 }
 
 /** `branchId` of a `reportBranch` result as a relation filter on any model with a `branchId`. */

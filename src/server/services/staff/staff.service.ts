@@ -29,7 +29,7 @@ import {
   mustFind,
   rethrowAsAppError,
 } from "../settings/shared";
-import { assertCanGrantRole } from "./roles.service";
+import { assertCanGrantRole, roleOrganizationFilter } from "./roles.service";
 
 /**
  * Staff (EXP §8 "Xodimlar") and teachers (EXP §4) are the same User rows seen
@@ -108,10 +108,15 @@ function perm(scope: StaffScope, action: "view" | "create" | "update" | "delete"
   return `${scope}.${action}` as Permission;
 }
 
-/** Users the actor may see: at least one branch in common unless they see all branches. */
+/**
+ * Users the actor may see: the centre's accounts, narrowed to a branch in
+ * common unless the actor sees every branch and has none selected (A-108).
+ */
 function userBranchScope(actor: Actor): Prisma.UserWhereInput {
-  const scope = branchScope(actor);
-  return scope ? { branches: { some: scope } } : {};
+  if (canAccessAllBranches(actor) && !actor.activeBranchId) {
+    return { organizationId: actor.organizationId };
+  }
+  return { organizationId: actor.organizationId, branches: { some: branchScope(actor) } };
 }
 
 function scopeRoleFilter(scope: StaffScope, filters: StaffFilters): Prisma.UserWhereInput {
@@ -191,6 +196,7 @@ async function findInScope(
   if (scope === "teachers" && !codes.some((c) => TEACHER_ROLE_CODES.includes(c))) {
     throw AppError.notFound();
   }
+  if (row.organizationId !== actor.organizationId) throw AppError.notFound();
   if (
     !canAccessAllBranches(actor) &&
     !row.branches.some((b) => actor.branchIds.includes(b.branchId))
@@ -215,7 +221,9 @@ async function resolveRoles(db: DbClient, actor: Actor, scope: StaffScope, codes
   if (scope === "teachers" && codes.some((c) => !TEACHER_ROLE_CODES.includes(c))) {
     throw AppError.validation({ roleCodes: ["validation.teacherRole"] });
   }
-  const roles = await db.role.findMany({ where: { code: { in: codes }, isActive: true } });
+  const roles = await db.role.findMany({
+    where: { code: { in: codes }, isActive: true, ...roleOrganizationFilter(actor) },
+  });
   if (roles.length !== new Set(codes).size) {
     throw AppError.validation({ roleCodes: ["validation.roleUnknown"] });
   }
@@ -225,7 +233,9 @@ async function resolveRoles(db: DbClient, actor: Actor, scope: StaffScope, codes
 
 async function resolveBranches(db: DbClient, actor: Actor, branchIds: string[]) {
   for (const id of branchIds) authorizeBranch(actor, id);
-  const found = await db.branch.count({ where: { id: { in: branchIds }, isActive: true } });
+  const found = await db.branch.count({
+    where: { id: { in: branchIds }, isActive: true, organizationId: actor.organizationId },
+  });
   if (found !== new Set(branchIds).size) throw AppError.notFound("errors.branchNotFound");
   return Array.from(new Set(branchIds));
 }
@@ -263,6 +273,7 @@ export async function createStaff(
     return await db.$transaction(async (tx) => {
       const row = await tx.user.create({
         data: {
+          organizationId: actor.organizationId,
           fullName: input.fullName,
           phone: input.phone,
           passwordHash,

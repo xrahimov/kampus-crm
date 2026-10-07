@@ -34,6 +34,7 @@ beforeAll(async () => {
     await prisma.user.deleteMany({ where: { phone } });
     const user = await prisma.user.create({
       data: {
+        organizationId: org.id,
         phone,
         fullName: `User ${phone}`,
         passwordHash,
@@ -124,6 +125,7 @@ describe("setActiveBranch", () => {
   const actor = () => ({
     userId,
     fullName: "x",
+    organizationId: orgId,
     roles: ["TEST_ROLE"],
     permissions: ["groups.view"],
     branchIds: [branchA],
@@ -146,7 +148,7 @@ describe("setActiveBranch", () => {
 
   it("lets an org-wide actor pick any branch or all", async () => {
     const issued = await login({ phone: PHONE, password: PASSWORD }, { ip: "10.0.0.7" });
-    const ceo = { ...actor(), permissions: ["*"] };
+    const ceo = { ...actor(), permissions: ["*"], branchIds: [branchA, branchB] };
     await setActiveBranch(ceo, issued.session.id, branchB);
     await setActiveBranch(ceo, issued.session.id, null);
     const session = await prisma.session.findUnique({ where: { id: issued.session.id } });

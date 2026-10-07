@@ -34,7 +34,7 @@ export async function getDashboardFinanceOptions(
   authorize(actor, "dashboard.finance");
   const [methods, first] = await Promise.all([
     db.paymentMethod.findMany({
-      where: { isActive: true },
+      where: { organizationId: actor.organizationId, isActive: true },
       select: { id: true, name: true },
       orderBy: { sortOrder: "asc" },
     }),

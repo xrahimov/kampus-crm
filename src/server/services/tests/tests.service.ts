@@ -12,13 +12,7 @@ import { AppError } from "@/server/errors/app-error";
 import { authorize, type Actor } from "@/server/rbac/authorize";
 import { awardAutoCoins } from "@/server/services/coins/coins.service";
 import { findGroupInScope, groupScope, ownGroupsOnly } from "@/server/services/groups/shared";
-import {
-  dateToIso,
-  decimalToNumber,
-  getOrganizationId,
-  isoToDate,
-  mustFind,
-} from "@/server/services/settings/shared";
+import { dateToIso, decimalToNumber, isoToDate, mustFind } from "@/server/services/settings/shared";
 import { studentScope } from "@/server/services/students/students.service";
 
 import { optionsOf } from "./questions.service";
@@ -195,7 +189,7 @@ export async function listTests(
   db: DbClient = prisma,
 ): Promise<TestListDto> {
   authorize(actor, "tests.view");
-  const organizationId = await getOrganizationId(db);
+  const organizationId = actor.organizationId;
   const where: Prisma.TestWhereInput = {
     organizationId,
     ...testScope(actor),
@@ -223,7 +217,7 @@ export async function listTests(
 }
 
 async function findTestInScope(db: DbClient, actor: Actor, id: string) {
-  const organizationId = await getOrganizationId(db);
+  const organizationId = actor.organizationId;
   return mustFind(
     db.test.findFirst({
       where: { id, organizationId, ...testScope(actor) },
@@ -291,7 +285,7 @@ export async function getTest(
 
 export async function getTestOptions(actor: Actor, db: DbClient = prisma): Promise<TestOptions> {
   authorize(actor, "tests.view");
-  const organizationId = await getOrganizationId(db);
+  const organizationId = actor.organizationId;
   const [groups, questions] = await Promise.all([
     db.group.findMany({
       where: { ...groupScope(actor), status: { not: "ARCHIVED" } },
@@ -335,7 +329,7 @@ export async function createTest(
   db: DbClient = prisma,
 ): Promise<TestDto> {
   authorize(actor, "tests.create");
-  const organizationId = await getOrganizationId(db);
+  const organizationId = actor.organizationId;
   await checkGroupsAndQuestions(db, actor, organizationId, input);
   const id = await db.$transaction(async (tx) => {
     const row = await tx.test.create({
@@ -376,7 +370,7 @@ export async function updateTest(
   db: DbClient = prisma,
 ): Promise<TestDto> {
   authorize(actor, "tests.update");
-  const organizationId = await getOrganizationId(db);
+  const organizationId = actor.organizationId;
   const before = await findTestInScope(db, actor, id);
   await checkGroupsAndQuestions(db, actor, organizationId, input);
   const hasAttempts = before.attempts.length > 0;

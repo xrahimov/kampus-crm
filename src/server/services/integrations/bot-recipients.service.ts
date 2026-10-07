@@ -4,7 +4,7 @@ import { prisma, type DbClient } from "@/server/db/prisma";
 import { AppError } from "@/server/errors/app-error";
 import { enqueue } from "@/server/jobs/queue";
 import { authorize, type Actor } from "@/server/rbac/authorize";
-import { getOrganizationId, mustFind, rethrowAsAppError } from "@/server/services/settings/shared";
+import { mustFind, rethrowAsAppError } from "@/server/services/settings/shared";
 
 /* Settings → "Bot xabarnoma" (EXP §8): staff who get Telegram notifications. A-85. */
 
@@ -24,7 +24,7 @@ export async function listBotRecipients(
   db: DbClient = prisma,
 ): Promise<BotRecipientDto[]> {
   authorize(actor, "settings.integrations");
-  const organizationId = await getOrganizationId(db);
+  const organizationId = actor.organizationId;
   const [rows, branches] = await Promise.all([
     db.botRecipient.findMany({
       where: { organizationId },
@@ -52,7 +52,7 @@ export async function createBotRecipient(
   db: DbClient = prisma,
 ): Promise<BotRecipientDto> {
   authorize(actor, "settings.integrations");
-  const organizationId = await getOrganizationId(db);
+  const organizationId = actor.organizationId;
   await mustFind(
     db.user.findFirst({ where: { id: input.userId, isArchived: false } }),
     "errors.staffNotFound",
@@ -93,7 +93,9 @@ export async function deleteBotRecipient(
   db: DbClient = prisma,
 ): Promise<void> {
   authorize(actor, "settings.integrations");
-  const row = await mustFind(db.botRecipient.findUnique({ where: { id } }));
+  const row = await mustFind(
+    db.botRecipient.findFirst({ where: { id, organizationId: actor.organizationId } }),
+  );
   await db.$transaction(async (tx) => {
     await tx.botRecipient.delete({ where: { id } });
     await recordAudit(tx, actor, {
@@ -112,10 +114,11 @@ export async function deleteBotRecipient(
  */
 export async function notifyStaff(
   tx: DbClient,
-  input: { branchId: string | null; text: string },
+  input: { organizationId: string; branchId: string | null; text: string },
 ): Promise<number> {
-  const organizationId = await getOrganizationId(tx);
-  const recipients = await tx.botRecipient.findMany({ where: { organizationId } });
+  const recipients = await tx.botRecipient.findMany({
+    where: { organizationId: input.organizationId },
+  });
   let queued = 0;
   for (const r of recipients) {
     if (r.branchIds.length > 0 && (!input.branchId || !r.branchIds.includes(input.branchId))) {

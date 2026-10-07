@@ -48,15 +48,20 @@ export async function resolveCurrentUser(
     .filter((b) => b.isActive)
     .map((b) => ({ id: b.id, name: b.name }));
 
+  // Users who see every branch see every branch of their own centre (A-108):
+  // the selector lists the active ones, the actor may act in all of them.
   const allBranchAccess = permissions.includes("*") || permissions.includes("settings.org");
+  const orgBranches = allBranchAccess
+    ? await prisma.branch.findMany({
+        where: { organizationId: user.organizationId },
+        orderBy: { name: "asc" },
+        select: { id: true, name: true, isActive: true },
+      })
+    : [];
   const visibleBranches = allBranchAccess
-    ? (await prisma.branch.findMany({ where: { isActive: true }, orderBy: { name: "asc" } })).map(
-        (b) => ({
-          id: b.id,
-          name: b.name,
-        }),
-      )
+    ? orgBranches.filter((b) => b.isActive).map((b) => ({ id: b.id, name: b.name }))
     : branches;
+  const actorBranchIds = allBranchAccess ? orgBranches.map((b) => b.id) : branches.map((b) => b.id);
 
   const activeBranch = visibleBranches.find((b) => b.id === session.activeBranchId) ?? null;
 
@@ -69,9 +74,10 @@ export async function resolveCurrentUser(
     actor: {
       userId: user.id,
       fullName: user.fullName,
+      organizationId: user.organizationId,
       roles: roles.map((r) => r.code),
       permissions,
-      branchIds: branches.map((b) => b.id),
+      branchIds: actorBranchIds,
       activeBranchId: activeBranch?.id ?? null,
       ip: ip ?? null,
     },

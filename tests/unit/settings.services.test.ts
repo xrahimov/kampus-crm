@@ -23,6 +23,7 @@ import {
 import { getOrgSettings, updateOrgSettings } from "@/server/services/settings/org-settings.service";
 import { createRoom, deleteRoom } from "@/server/services/settings/rooms.service";
 import { createSchool, listSchools } from "@/server/services/settings/schools.service";
+import { DEMO_ORG_ID, demoBranchIds } from "./support/tenant";
 
 const TAG = `t${Date.now()}`;
 let branchA: string;
@@ -35,12 +36,14 @@ const ceo: Actor = {
   fullName: "CEO",
   roles: ["CEO"],
   permissions: ["*"],
+  organizationId: DEMO_ORG_ID,
   branchIds: [],
   activeBranchId: null,
 };
 const adminA = (): Actor => ({
   userId: adminUserId,
   fullName: "Admin A",
+  organizationId: DEMO_ORG_ID,
   roles: ["ADMIN"],
   permissions: ["settings.catalog"],
   branchIds: [branchA],
@@ -51,6 +54,7 @@ const teacher: Actor = {
   fullName: "Teacher",
   roles: ["TEACHER"],
   permissions: ["groups.view"],
+  organizationId: DEMO_ORG_ID,
   branchIds: [],
   activeBranchId: null,
 };
@@ -60,7 +64,7 @@ async function ensureUser(phone: string, fullName: string): Promise<string> {
   const user = await prisma.user.upsert({
     where: { phone },
     update: {},
-    create: { phone, fullName, passwordHash: "x" },
+    create: { phone, fullName, passwordHash: "x", organizationId: DEMO_ORG_ID },
   });
   return user.id;
 }
@@ -81,6 +85,7 @@ beforeAll(async () => {
   teacher.userId = await ensureUser(PHONES.teacher, "Test Teacher");
   branchA = (await createBranch(ceo, { name: `${TAG} A`, isActive: true })).id;
   branchB = (await createBranch(ceo, { name: `${TAG} B`, isActive: true })).id;
+  ceo.branchIds = await demoBranchIds();
 });
 
 afterAll(async () => {
@@ -200,6 +205,7 @@ describe("courses", () => {
 
   it("rejects a course in a deactivated branch", async () => {
     const dead = await createBranch(ceo, { name: `${TAG} dead`, isActive: false });
+    ceo.branchIds = await demoBranchIds();
     await expect(
       createCourse(ceo, { branchId: dead.id, name: "x", price: 1, durationMonths: 1 }),
     ).rejects.toMatchObject({ code: "NOT_FOUND" });

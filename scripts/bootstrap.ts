@@ -71,6 +71,7 @@ async function main() {
     const ceoRole = await tx.role.findUniqueOrThrow({ where: { code: "CEO" } });
     const user = await tx.user.create({
       data: {
+        organizationId: org.id,
         phone,
         fullName: process.env.BOOTSTRAP_CEO_NAME?.trim() || "CEO",
         passwordHash,

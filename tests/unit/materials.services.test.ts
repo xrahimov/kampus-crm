@@ -30,6 +30,7 @@ import { createCourse } from "@/server/services/settings/courses.service";
 import { listStudentLinks, startVideoRoom } from "@/server/services/video/video.service";
 import { fileResponse } from "@/server/storage/http";
 import { LocalStorage } from "@/server/storage/local";
+import { DEMO_ORG_ID, demoBranchIds } from "./support/tenant";
 
 const RUN = String(Date.now() % 100_000).padStart(5, "0");
 const TAG = `m${RUN}`;
@@ -40,6 +41,7 @@ const actor = (fullName: string, roles: string[], permissions: string[]): Actor 
   fullName,
   roles,
   permissions,
+  organizationId: DEMO_ORG_ID,
   branchIds: [],
   activeBranchId: null,
 });
@@ -77,7 +79,12 @@ beforeAll(async () => {
     [otherTeacher, 3, true],
   ] as const) {
     const user = await prisma.user.create({
-      data: { phone: phone(n), fullName: `${TAG} ${a.fullName}`, passwordHash: "x" },
+      data: {
+        phone: phone(n),
+        fullName: `${TAG} ${a.fullName}`,
+        passwordHash: "x",
+        organizationId: DEMO_ORG_ID,
+      },
     });
     a.userId = user.id;
     if (withRole) {
@@ -85,6 +92,7 @@ beforeAll(async () => {
     }
   }
   branchId = (await createBranch(ceo, { name: `${TAG} A`, isActive: true })).id;
+  ceo.branchIds = await demoBranchIds();
   ceo.activeBranchId = branchId;
   await prisma.userBranch.createMany({
     data: [teacher, otherTeacher].map((a) => ({ userId: a.userId, branchId })),

@@ -3,7 +3,7 @@ import type { MaterialInput } from "@/lib/validation/groups";
 import { recordAudit } from "@/server/audit/audit";
 import { prisma, type DbClient } from "@/server/db/prisma";
 import { AppError } from "@/server/errors/app-error";
-import { authorize, canAccessAllBranches, type Actor } from "@/server/rbac/authorize";
+import { authorize, type Actor } from "@/server/rbac/authorize";
 import { findGroupInScope, ownGroupsOnly, today } from "@/server/services/groups/shared";
 import { dateToIso, isoToDate, mustFind } from "@/server/services/settings/shared";
 import { notifyMaterial } from "@/server/services/telegram/student-telegram.service";
@@ -240,7 +240,7 @@ export async function saveRecording(
       },
     }),
   );
-  if (!canAccessAllBranches(actor) && !actor.branchIds.includes(room.group.branchId)) {
+  if (!actor.branchIds.includes(room.group.branchId)) {
     throw AppError.forbidden("errors.branchForbidden");
   }
   if (ownGroupsOnly(actor)) await findGroupInScope(db, actor, room.groupId, {});

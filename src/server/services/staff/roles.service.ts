@@ -1,5 +1,6 @@
 import { randomBytes } from "node:crypto";
 
+import type { Prisma } from "@/generated/prisma/client";
 import { ALL_PERMISSIONS, PERMISSIONS, type Permission } from "@/lib/rbac/permissions";
 import type { RoleInput, RoleUpdateInput } from "@/lib/validation/staff";
 import { recordAudit } from "@/server/audit/audit";
@@ -9,7 +10,15 @@ import { authorize, authorizeAny, type Actor } from "@/server/rbac/authorize";
 
 import { mustFind, rethrowAsAppError } from "../settings/shared";
 
-/* Roles (EXP §8 "Rollar (Beta)"): system roles come from the seed, custom ones from here. */
+/*
+ * Roles (EXP §8 "Rollar (Beta)"): system roles come from the seed and are shared
+ * by every centre; custom ones belong to the centre that made them (A-108).
+ */
+
+/** The roles an actor may see or hand out: the system ones plus their centre's own. */
+export function roleOrganizationFilter(actor: Actor): Prisma.RoleWhereInput {
+  return { OR: [{ organizationId: null }, { organizationId: actor.organizationId }] };
+}
 
 export interface RoleDto {
   id: string;
@@ -57,7 +66,11 @@ export function assertCanGrantRole(actor: Actor, role: { permissions: string[] }
 /** The staff and teacher forms need the role list, so viewing is wide; editing needs settings.roles. */
 export async function listRoles(actor: Actor, db: DbClient = prisma): Promise<RoleDto[]> {
   authorizeAny(actor, ["settings.roles", "staff.view", "teachers.view"]);
-  const rows = await db.role.findMany({ orderBy: [{ isSystem: "desc" }, { name: "asc" }], select });
+  const rows = await db.role.findMany({
+    where: roleOrganizationFilter(actor),
+    orderBy: [{ isSystem: "desc" }, { name: "asc" }],
+    select,
+  });
   return rows.map(toDto);
 }
 
@@ -95,6 +108,7 @@ export async function createRole(
     return await db.$transaction(async (tx) => {
       const row = await tx.role.create({
         data: {
+          organizationId: actor.organizationId,
           code: codeFor(input.name),
           name: input.name,
           isActive: input.isActive,
@@ -124,7 +138,9 @@ export async function updateRole(
 ): Promise<RoleDto> {
   authorize(actor, "settings.roles");
   return db.$transaction(async (tx) => {
-    const existing = await mustFind(tx.role.findUnique({ where: { id }, select }));
+    const existing = await mustFind(
+      tx.role.findFirst({ where: { id, ...roleOrganizationFilter(actor) }, select }),
+    );
     // The CEO role is the `*` grant; changing it could lock the centre out.
     if (existing.code === "CEO") throw AppError.forbidden("errors.systemRole");
     // Only someone who already holds a role's permissions may reshape it.
@@ -160,7 +176,9 @@ export async function updateRole(
 export async function deleteRole(actor: Actor, id: string, db: DbClient = prisma): Promise<void> {
   authorize(actor, "settings.roles");
   await db.$transaction(async (tx) => {
-    const existing = await mustFind(tx.role.findUnique({ where: { id }, select }));
+    const existing = await mustFind(
+      tx.role.findFirst({ where: { id, ...roleOrganizationFilter(actor) }, select }),
+    );
     if (existing.isSystem) throw AppError.forbidden("errors.systemRole");
     assertCanGrantRole(actor, existing);
     if (existing._count.users > 0) throw AppError.conflict("errors.inUse");

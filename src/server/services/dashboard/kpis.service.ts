@@ -65,6 +65,7 @@ export async function getDashboardKpis(
     }),
     db.user.count({
       where: {
+        organizationId: actor.organizationId,
         isArchived: false,
         roles: { some: { role: { code: { in: [...TEACHER_ROLE_CODES] } } } },
         ...("branchId" in scope
