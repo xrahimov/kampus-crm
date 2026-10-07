@@ -8,6 +8,7 @@ import {
   Funnel,
   GraduationCap,
   House,
+  Building2,
   Landmark,
   Plug,
   Search,
@@ -26,7 +27,12 @@ import { Input } from "@/components/ui/input";
 import { Link } from "@/i18n/navigation";
 import { cn } from "@/lib/utils";
 
-import { HELP_ARTICLES, HELP_AUDIENCES, type HelpArticleId, type HelpAudience } from "./catalog";
+import {
+  HELP_AUDIENCES,
+  readableHelpArticles,
+  type HelpArticleId,
+  type HelpAudience,
+} from "./catalog";
 import type { HelpContent } from "./content";
 import { HelpMarkup } from "./help-markup";
 import { searchHelp } from "./search";
@@ -46,6 +52,7 @@ const ARTICLE_ICON: Record<HelpArticleId, LucideIcon> = {
   staffAndRoles: UserRound,
   settings: Settings2,
   integrations: Plug,
+  organizations: Building2,
   studentPortal: Smartphone,
 };
 
@@ -59,17 +66,21 @@ type Filter = HelpAudience | "ALL";
 export function HelpHome({
   content,
   defaultAudience,
+  siteOwner = false,
 }: {
   content: HelpContent;
   defaultAudience: HelpAudience;
+  /** The site owner also sees the article about Settings → Organisations. */
+  siteOwner?: boolean;
 }) {
   const t = useTranslations("help");
   const [query, setQuery] = useState("");
   const [filter, setFilter] = useState<Filter>(defaultAudience);
-  const hits = useMemo(() => searchHelp(content, query), [content, query]);
+  const readable = useMemo(() => readableHelpArticles(siteOwner), [siteOwner]);
+  const hits = useMemo(() => searchHelp(content, query, readable), [content, query, readable]);
   const searching = query.trim().length >= 2;
 
-  const articles = HELP_ARTICLES.filter(
+  const articles = readable.filter(
     (a) => filter === "ALL" || (a.audiences as readonly HelpAudience[]).includes(filter),
   );
 

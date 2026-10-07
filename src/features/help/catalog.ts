@@ -33,6 +33,7 @@ export const HELP_ARTICLE_IDS = [
   "staffAndRoles",
   "settings",
   "integrations",
+  "organizations",
   "studentPortal",
 ] as const;
 export type HelpArticleId = (typeof HELP_ARTICLE_IDS)[number];
@@ -54,6 +55,8 @@ export interface HelpArticleSpec {
   path: string | null;
   /** Readable without signing in (shown from the student's page). */
   isPublic?: boolean;
+  /** Only the site owner sees the page, so only they see the article (A-108). */
+  siteOwner?: boolean;
   sections: readonly HelpSectionSpec[];
 }
 
@@ -274,6 +277,15 @@ export const HELP_ARTICLES = [
     ],
   },
   {
+    id: "organizations",
+    slug: "organizations",
+    audiences: ["CEO"],
+    permission: "settings.org",
+    path: "/settings/organizations",
+    siteOwner: true,
+    sections: [{ id: "what" }, { id: "create" }, { id: "afterwards" }],
+  },
+  {
     id: "studentPortal",
     slug: "student",
     audiences: ["STUDENT", "TEACHER", "ADMIN"],
@@ -292,6 +304,11 @@ export const HELP_ARTICLES = [
     ],
   },
 ] as const satisfies readonly HelpArticleSpec[];
+
+/** The articles a reader may open: the site owner's one is hidden from everyone else. */
+export function readableHelpArticles(siteOwner: boolean): readonly HelpArticleSpec[] {
+  return HELP_ARTICLES.filter((a) => !(a as HelpArticleSpec).siteOwner || siteOwner);
+}
 
 export const HELP_ARTICLE_BY_SLUG = new Map<string, HelpArticleSpec>(
   HELP_ARTICLES.map((a) => [a.slug, a]),

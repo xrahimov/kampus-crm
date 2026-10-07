@@ -2,9 +2,10 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { setRequestLocale } from "next-intl/server";
 
-import { HELP_ARTICLE_BY_SLUG, HELP_ARTICLES } from "@/features/help/catalog";
+import { HELP_ARTICLE_BY_SLUG, readableHelpArticles } from "@/features/help/catalog";
 import { getHelpContent } from "@/features/help/content";
 import { HelpArticle } from "@/features/help/help-article";
+import { requireCurrentUser } from "@/server/auth/current-user";
 
 type Props = { params: Promise<{ locale: string; slug: string }> };
 
@@ -20,10 +21,13 @@ export default async function Page({ params }: Props) {
   setRequestLocale(locale);
   const spec = HELP_ARTICLE_BY_SLUG.get(slug);
   if (!spec) notFound();
+  const siteOwner = (await requireCurrentUser()).actor.isSiteOwner === true;
+  if (spec.siteOwner && !siteOwner) notFound();
   const content = getHelpContent(locale);
-  const index = HELP_ARTICLES.findIndex((a) => a.id === spec.id);
+  const articles = readableHelpArticles(siteOwner);
+  const index = articles.findIndex((a) => a.id === spec.id);
   const neighbour = (i: number) => {
-    const a = HELP_ARTICLES[i];
+    const a = articles[i];
     return a ? { href: `/help/${a.slug}`, title: content.articles[a.id].title } : undefined;
   };
   return (
