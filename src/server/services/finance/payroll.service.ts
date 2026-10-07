@@ -4,13 +4,7 @@ import { recordAudit } from "@/server/audit/audit";
 import { prisma, type DbClient } from "@/server/db/prisma";
 import { AppError } from "@/server/errors/app-error";
 import { authorize, branchScope, type Actor } from "@/server/rbac/authorize";
-import {
-  dateToIso,
-  decimalToNumber,
-  getOrganizationId,
-  isoToDate,
-  mustFind,
-} from "@/server/services/settings/shared";
+import { dateToIso, decimalToNumber, isoToDate, mustFind } from "@/server/services/settings/shared";
 
 import { periodRange } from "./shared";
 
@@ -146,14 +140,15 @@ async function computeLines(
   monthStart: Date,
   monthEnd: Date,
 ): Promise<Array<Omit<PayrollLineDto, "id" | "status" | "approvedByName" | "approvedAt">>> {
-  const scope = branchScope(actor) ?? {};
+  const scope = branchScope(actor);
   const settings = await db.orgSettings.findFirst({
     select: { payOnlyAttendedLessons: true, payTeacherOnGroupDayOff: true },
   });
   const users = await db.user.findMany({
     where: {
       isArchived: false,
-      ...(Object.keys(scope).length ? { branches: { some: scope } } : {}),
+      organizationId: actor.organizationId,
+      branches: { some: scope },
       OR: [{ salaryMethod: { not: null } }, { groupsTaught: { some: {} } }],
     },
     include: {
@@ -299,7 +294,7 @@ export async function getPayroll(
   db: DbClient = prisma,
 ): Promise<PayrollRunDto> {
   authorize(actor, "finance.view");
-  const organizationId = await getOrganizationId(db);
+  const organizationId = actor.organizationId;
   const { from, to } = monthBounds(month);
   let run = await loadRun(db, organizationId, from);
   if (!run) {
@@ -326,7 +321,7 @@ export async function recalculatePayroll(
   db: DbClient = prisma,
 ): Promise<PayrollRunDto> {
   authorize(actor, "finance.update");
-  const organizationId = await getOrganizationId(db);
+  const organizationId = actor.organizationId;
   const { from, to } = monthBounds(month);
   const run = await loadRun(db, organizationId, from);
   if (!run) return getPayroll(actor, month, db);
@@ -357,7 +352,7 @@ export async function savePayroll(
   db: DbClient = prisma,
 ): Promise<PayrollRunDto> {
   authorize(actor, "finance.update");
-  const organizationId = await getOrganizationId(db);
+  const organizationId = actor.organizationId;
   const { from } = monthBounds(month);
   const run = await mustFind(loadRun(db, organizationId, from), "errors.payrollNotFound");
   await db.$transaction(async (tx) => {
@@ -381,7 +376,7 @@ export async function approvePayrollLine(
   db: DbClient = prisma,
 ): Promise<PayrollRunDto> {
   authorize(actor, "finance.payroll.approve");
-  const organizationId = await getOrganizationId(db);
+  const organizationId = actor.organizationId;
   const { from } = monthBounds(month);
   const run = await mustFind(loadRun(db, organizationId, from), "errors.payrollNotFound");
   const line = run.lines.find((l) => l.id === lineId);
@@ -407,7 +402,7 @@ export async function listPayrollRuns(
   db: DbClient = prisma,
 ): Promise<PayrollSummaryDto[]> {
   authorize(actor, "finance.view");
-  const organizationId = await getOrganizationId(db);
+  const organizationId = actor.organizationId;
   const runs = await db.payrollRun.findMany({
     where: { organizationId },
     include: { lines: { include: lineInclude } },

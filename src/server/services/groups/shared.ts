@@ -1,7 +1,7 @@
 import type { Prisma } from "@/generated/prisma/client";
 import type { DbClient } from "@/server/db/prisma";
 import { AppError } from "@/server/errors/app-error";
-import { branchScope, canAccessAllBranches, type Actor } from "@/server/rbac/authorize";
+import { branchScope, type Actor } from "@/server/rbac/authorize";
 import { dateToIso } from "@/server/services/settings/shared";
 import { TEACHER_ROLE_CODES } from "@/server/services/staff/staff.service";
 
@@ -18,7 +18,7 @@ export function ownGroupsOnly(actor: Actor): boolean {
 
 /** Branch scope plus the "own groups" narrowing, as a Group filter. */
 export function groupScope(actor: Actor): Prisma.GroupWhereInput {
-  const where: Prisma.GroupWhereInput = { ...(branchScope(actor) ?? {}) };
+  const where: Prisma.GroupWhereInput = { ...branchScope(actor) };
   if (ownGroupsOnly(actor)) {
     where.OR = [
       { teachers: { some: { userId: actor.userId } } },
@@ -37,7 +37,7 @@ export async function findGroupInScope<T extends Prisma.GroupInclude>(
 ): Promise<Prisma.GroupGetPayload<{ include: T }>> {
   const row = await db.group.findUnique({ where: { id }, include });
   if (!row) throw AppError.notFound();
-  if (!canAccessAllBranches(actor) && !actor.branchIds.includes(row.branchId)) {
+  if (!actor.branchIds.includes(row.branchId)) {
     throw AppError.forbidden("errors.branchForbidden");
   }
   if (ownGroupsOnly(actor)) {

@@ -12,7 +12,7 @@ import { findGroupInScope, today } from "@/server/services/groups/shared";
 import { loadIntegrationConfig } from "@/server/services/integrations/integrations.service";
 import { deliverMessage } from "@/server/services/sms/sms.service";
 import { notifyLessonStarted } from "@/server/services/telegram/student-telegram.service";
-import { dateToIso, getOrganizationId, isoToDate } from "@/server/services/settings/shared";
+import { dateToIso, isoToDate } from "@/server/services/settings/shared";
 
 /*
  * Video lessons. Browsers talk to each other directly over WebRTC (a full mesh:
@@ -516,6 +516,7 @@ export async function membershipByToken(db: DbClient, token: string) {
         select: {
           id: true,
           name: true,
+          branchId: true,
           status: true,
           slots: { select: { weekday: true, startTime: true, endTime: true } },
         },
@@ -540,13 +541,16 @@ export async function getClassPage(
 ): Promise<ClassPageDto | null> {
   const membership = await membershipByToken(db, token);
   if (!membership) return null;
-  const [config, live, org] = await Promise.all([
+  const [config, live, branch] = await Promise.all([
     loadVideoConfig(db),
     findLiveRoom(db, membership.groupId),
-    db.organization.findFirst({ select: { name: true }, orderBy: { createdAt: "asc" } }),
+    db.branch.findUnique({
+      where: { id: membership.group.branchId },
+      select: { organization: { select: { name: true } } },
+    }),
   ]);
   return {
-    organizationName: org?.name ?? "",
+    organizationName: branch?.organization.name ?? "",
     groupName: membership.group.name,
     studentName: membership.student.fullName,
     enabled: config.enabled,
@@ -739,7 +743,7 @@ export async function smsStudentLinks(
   const members = await ensureTokens(db, groupId);
   const withPhone = members.filter((m) => m.student.phone);
   if (withPhone.length === 0) throw AppError.validation({ text: ["validation.noRecipients"] });
-  const organizationId = await getOrganizationId(db);
+  const organizationId = actor.organizationId;
   const ids = await db.$transaction(async (tx) => {
     const created: string[] = [];
     for (const m of withPhone) {

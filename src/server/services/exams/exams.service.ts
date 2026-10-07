@@ -10,7 +10,7 @@ import { recordAudit } from "@/server/audit/audit";
 import { queueAutoSms } from "@/server/services/sms/auto-sms.service";
 import { prisma, type DbClient } from "@/server/db/prisma";
 import { AppError } from "@/server/errors/app-error";
-import { authorize, branchScope, canAccessAllBranches, type Actor } from "@/server/rbac/authorize";
+import { authorize, branchScope, type Actor } from "@/server/rbac/authorize";
 import { findGroupInScope, ownGroupsOnly } from "@/server/services/groups/shared";
 import {
   dateToIso,
@@ -139,7 +139,7 @@ const OPEN_MEMBER: Prisma.GroupMembershipWhereInput = {
 
 /** Teachers see exams only when the general-settings switch allows it (EXP §8), and only for their groups. */
 async function examScope(actor: Actor, db: DbClient): Promise<Prisma.ExamWhereInput> {
-  const where: Prisma.ExamWhereInput = { ...(branchScope(actor) ?? {}) };
+  const where: Prisma.ExamWhereInput = { ...branchScope(actor) };
   if (ownGroupsOnly(actor)) {
     const settings = await db.orgSettings.findFirst({ select: { teachersSeeExamSchedule: true } });
     if (!settings?.teachersSeeExamSchedule) throw AppError.forbidden("errors.examsHidden");
@@ -221,7 +221,7 @@ async function findExamInScope(db: DbClient, actor: Actor, id: string): Promise<
     db.exam.findFirst({ where: { id, ...scope }, include }),
     "errors.examNotFound",
   );
-  if (!canAccessAllBranches(actor) && !actor.branchIds.includes(row.branchId)) {
+  if (!actor.branchIds.includes(row.branchId)) {
     throw AppError.forbidden("errors.branchForbidden");
   }
   return row;
@@ -236,7 +236,7 @@ export async function getExam(actor: Actor, id: string, db: DbClient = prisma): 
 
 export async function getExamOptions(actor: Actor, db: DbClient = prisma): Promise<ExamOptions> {
   authorize(actor, "exams.view");
-  const scope = branchScope(actor) ?? {};
+  const scope = branchScope(actor);
   const [groups, courses, rooms, gradingSystems, examiners] = await Promise.all([
     db.group.findMany({
       where: { ...scope, status: { not: "ARCHIVED" } },
@@ -266,7 +266,8 @@ export async function getExamOptions(actor: Actor, db: DbClient = prisma): Promi
       where: {
         isArchived: false,
         roles: { some: { role: { code: { in: [...TEACHER_ROLE_CODES] } } } },
-        ...(Object.keys(scope).length ? { branches: { some: scope } } : {}),
+        organizationId: actor.organizationId,
+        branches: { some: scope },
       },
       select: { id: true, fullName: true },
       orderBy: { fullName: "asc" },
@@ -300,7 +301,7 @@ async function resolveInput(db: DbClient, actor: Actor, input: ExamInput) {
     groupId = group.id;
   } else {
     const groups = await db.group.findMany({
-      where: { id: { in: input.groupIds }, ...(branchScope(actor) ?? {}) },
+      where: { id: { in: input.groupIds }, ...branchScope(actor) },
       select: { id: true, branchId: true },
     });
     if (groups.length !== input.groupIds.length) {
@@ -315,12 +316,16 @@ async function resolveInput(db: DbClient, actor: Actor, input: ExamInput) {
     if (room === 0) throw AppError.validation({ roomId: ["validation.roomBranch"] });
   }
   if (input.examinerId) {
-    const user = await db.user.count({ where: { id: input.examinerId, isArchived: false } });
+    const user = await db.user.count({
+      where: { id: input.examinerId, isArchived: false, organizationId: actor.organizationId },
+    });
     if (user === 0) throw AppError.validation({ examinerId: ["validation.teacherUnknown"] });
   }
   if (input.gradingSystemId) {
     await mustFind(
-      db.gradingSystem.findUnique({ where: { id: input.gradingSystemId } }),
+      db.gradingSystem.findFirst({
+        where: { id: input.gradingSystemId, organizationId: actor.organizationId },
+      }),
       "errors.notFound",
     );
   }
@@ -771,7 +776,7 @@ export async function getStudentProgress(
     db.student.findUnique({ where: { id: studentId }, select: { branchId: true } }),
     "errors.studentNotFound",
   );
-  if (!canAccessAllBranches(actor) && !actor.branchIds.includes(student.branchId)) {
+  if (!actor.branchIds.includes(student.branchId)) {
     throw AppError.forbidden("errors.branchForbidden");
   }
   const memberships = await db.groupMembership.findMany({

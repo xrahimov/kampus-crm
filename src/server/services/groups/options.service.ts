@@ -25,7 +25,7 @@ export async function getGroupFormOptions(
   db: DbClient = prisma,
 ): Promise<GroupFormOptions> {
   authorize(actor, "groups.view");
-  const scope = branchScope(actor) ?? {};
+  const scope = branchScope(actor);
   const [courses, rooms, gradingSystems, teachers] = await Promise.all([
     db.course.findMany({
       where: { ...scope, isArchived: false },
@@ -37,12 +37,17 @@ export async function getGroupFormOptions(
       select: { id: true, branchId: true, name: true },
       orderBy: { name: "asc" },
     }),
-    db.gradingSystem.findMany({ select: { id: true, name: true }, orderBy: { name: "asc" } }),
+    db.gradingSystem.findMany({
+      where: { organizationId: actor.organizationId },
+      select: { id: true, name: true },
+      orderBy: { name: "asc" },
+    }),
     db.user.findMany({
       where: {
         isArchived: false,
         roles: { some: { role: { code: { in: TEACHER_ROLE_CODES } } } },
-        ...(Object.keys(scope).length ? { branches: { some: scope } } : {}),
+        organizationId: actor.organizationId,
+        branches: { some: scope },
       },
       select: { id: true, fullName: true, branches: { select: { branchId: true } } },
       orderBy: { fullName: "asc" },

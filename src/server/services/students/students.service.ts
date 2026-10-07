@@ -15,18 +15,11 @@ import { hashPassword } from "@/server/auth/password";
 import { prisma, type DbClient } from "@/server/db/prisma";
 import { AppError } from "@/server/errors/app-error";
 import type { ParsedList } from "@/server/http/list-query";
-import {
-  authorize,
-  authorizeBranch,
-  branchScope,
-  canAccessAllBranches,
-  type Actor,
-} from "@/server/rbac/authorize";
+import { authorize, authorizeBranch, branchScope, type Actor } from "@/server/rbac/authorize";
 import { findGroupInScope, ownGroupsOnly, today } from "@/server/services/groups/shared";
 import {
   dateToIso,
   decimalToNumber,
-  getOrganizationId,
   isoToDate,
   mustFind,
   rethrowAsAppError,
@@ -282,7 +275,7 @@ function auditShape(row: {
 
 /** Branch scope, narrowed to the students of the actor's own groups for teacher-only users (A-52). */
 export function studentScope(actor: Actor): Prisma.StudentWhereInput {
-  const where: Prisma.StudentWhereInput = { ...(branchScope(actor) ?? {}) };
+  const where: Prisma.StudentWhereInput = { ...branchScope(actor) };
   if (ownGroupsOnly(actor)) {
     where.memberships = {
       some: {
@@ -307,7 +300,7 @@ async function findStudentInScope<T extends Prisma.StudentInclude>(
 ): Promise<Prisma.StudentGetPayload<{ include: T }>> {
   const row = await db.student.findUnique({ where: { id }, include });
   if (!row) throw AppError.notFound("errors.studentNotFound");
-  if (!canAccessAllBranches(actor) && !actor.branchIds.includes(row.branchId)) {
+  if (!actor.branchIds.includes(row.branchId)) {
     throw AppError.forbidden("errors.branchForbidden");
   }
   if (ownGroupsOnly(actor)) {
@@ -481,8 +474,8 @@ export async function getStudentOptions(
   db: DbClient = prisma,
 ): Promise<StudentOptions> {
   authorize(actor, "students.view");
-  const organizationId = await getOrganizationId(db);
-  const scope = branchScope(actor) ?? {};
+  const organizationId = actor.organizationId;
+  const scope = branchScope(actor);
   const [schools, sources, courses, groups, teachers, paymentMethods] = await Promise.all([
     db.school.findMany({
       where: { organizationId },
@@ -520,7 +513,8 @@ export async function getStudentOptions(
       where: {
         isArchived: false,
         roles: { some: { role: { code: { in: ["TEACHER", "SUPPORT_TEACHER"] } } } },
-        ...(Object.keys(scope).length ? { branches: { some: scope } } : {}),
+        organizationId: actor.organizationId,
+        branches: { some: scope },
       },
       select: { id: true, fullName: true },
       orderBy: { fullName: "asc" },

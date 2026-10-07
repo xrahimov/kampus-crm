@@ -3,8 +3,6 @@ import { recordAudit } from "@/server/audit/audit";
 import { prisma, type DbClient } from "@/server/db/prisma";
 import { authorize, type Actor } from "@/server/rbac/authorize";
 
-import { getOrganizationId } from "./shared";
-
 export interface OrgSettingsDto extends OrgSettingsInput {
   organizationId: string;
   logoUrl: string | null;
@@ -41,7 +39,7 @@ function toDto(
 /** EXP §8 "Markaz sozlamalari". Visible to anyone who may open settings. */
 export async function getOrgSettings(actor: Actor, db: DbClient = prisma): Promise<OrgSettingsDto> {
   authorize(actor, "settings.org");
-  const organizationId = await getOrganizationId(db);
+  const organizationId = actor.organizationId;
   const org = await db.organization.findUniqueOrThrow({ where: { id: organizationId } });
   const settings = await loadSettings(db, organizationId);
   return toDto(org, settings);
@@ -53,7 +51,7 @@ export async function updateOrgSettings(
   db: DbClient = prisma,
 ): Promise<OrgSettingsDto> {
   authorize(actor, "settings.org");
-  const organizationId = await getOrganizationId(db);
+  const organizationId = actor.organizationId;
   // Pick the columns explicitly so a caller can never write anything else.
   const switches = Object.fromEntries(ORG_SWITCHES.map((k) => [k, input[k]])) as Record<
     (typeof ORG_SWITCHES)[number],

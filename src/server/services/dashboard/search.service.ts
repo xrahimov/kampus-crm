@@ -26,7 +26,7 @@ export async function globalSearch(
   const term = q.trim();
   const empty: SearchResultsDto = { students: [], leads: [], groups: [] };
   if (term.length < 2) return empty;
-  const scope = branchScope(actor) ?? {};
+  const scope = branchScope(actor);
   const digits = term.replace(/\D/g, "");
   const nameOrPhone = (phoneField: "phone") => ({
     OR: [

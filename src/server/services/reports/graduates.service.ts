@@ -3,7 +3,7 @@ import type { GraduateRecordInput, GraduatesFilters } from "@/lib/validation/rep
 import { recordAudit } from "@/server/audit/audit";
 import { prisma, type DbClient } from "@/server/db/prisma";
 import { AppError } from "@/server/errors/app-error";
-import { authorize, canAccessAllBranches, type Actor } from "@/server/rbac/authorize";
+import { authorize, type Actor } from "@/server/rbac/authorize";
 import { mustFind } from "@/server/services/settings/shared";
 
 import {
@@ -205,7 +205,7 @@ export async function setGraduateRecord(
       select: { status: true, group: { select: { branchId: true } } },
     }),
   );
-  if (!canAccessAllBranches(actor) && !actor.branchIds.includes(membership.group.branchId)) {
+  if (!actor.branchIds.includes(membership.group.branchId)) {
     throw AppError.forbidden("errors.branchForbidden");
   }
   if (membership.status !== "GRADUATED") throw AppError.conflict("errors.notGraduated");

@@ -4,7 +4,7 @@ import { prisma, type DbClient } from "@/server/db/prisma";
 import { AppError } from "@/server/errors/app-error";
 import { authorize, type Actor } from "@/server/rbac/authorize";
 import { getSmsProvider } from "@/server/services/integrations/integrations.service";
-import { getOrganizationId, mustFind, rethrowAsAppError } from "@/server/services/settings/shared";
+import { mustFind, rethrowAsAppError } from "@/server/services/settings/shared";
 
 /* Settings → "SMS shablonlari" (EXP §8): categories and templates. A-84. */
 
@@ -28,7 +28,7 @@ export async function listSmsCategories(
   db: DbClient = prisma,
 ): Promise<SmsCategoryDto[]> {
   authorize(actor, "settings.catalog");
-  const organizationId = await getOrganizationId(db);
+  const organizationId = actor.organizationId;
   const rows = await db.smsCategory.findMany({
     where: { organizationId },
     include: { _count: { select: { templates: true } } },
@@ -43,7 +43,7 @@ export async function createSmsCategory(
   db: DbClient = prisma,
 ): Promise<SmsCategoryDto> {
   authorize(actor, "settings.catalog");
-  const organizationId = await getOrganizationId(db);
+  const organizationId = actor.organizationId;
   try {
     return await db.$transaction(async (tx) => {
       const row = await tx.smsCategory.create({ data: { organizationId, name: input.name } });
@@ -68,8 +68,8 @@ export async function deleteSmsCategory(
 ): Promise<void> {
   authorize(actor, "settings.catalog");
   const row = await mustFind(
-    db.smsCategory.findUnique({
-      where: { id },
+    db.smsCategory.findFirst({
+      where: { id, organizationId: actor.organizationId },
       include: { _count: { select: { templates: true } } },
     }),
     "errors.categoryNotFound",
@@ -114,7 +114,7 @@ export async function listSmsTemplates(
   db: DbClient = prisma,
 ): Promise<SmsTemplateDto[]> {
   authorize(actor, "sms.send");
-  const organizationId = await getOrganizationId(db);
+  const organizationId = actor.organizationId;
   const rows = await db.smsTemplate.findMany({
     where: { organizationId, ...(filters.categoryId ? { categoryId: filters.categoryId } : {}) },
     include,
@@ -134,7 +134,7 @@ export async function createSmsTemplate(
   db: DbClient = prisma,
 ): Promise<SmsTemplateDto> {
   authorize(actor, "settings.catalog");
-  const organizationId = await getOrganizationId(db);
+  const organizationId = actor.organizationId;
   await checkCategory(db, organizationId, input.categoryId);
   return db.$transaction(async (tx) => {
     const row = await tx.smsTemplate.create({
@@ -159,8 +159,10 @@ export async function updateSmsTemplate(
   db: DbClient = prisma,
 ): Promise<SmsTemplateDto> {
   authorize(actor, "settings.catalog");
-  const organizationId = await getOrganizationId(db);
-  const before = await mustFind(db.smsTemplate.findUnique({ where: { id }, include }));
+  const organizationId = actor.organizationId;
+  const before = await mustFind(
+    db.smsTemplate.findFirst({ where: { id, organizationId: actor.organizationId }, include }),
+  );
   await checkCategory(db, organizationId, input.categoryId);
   return db.$transaction(async (tx) => {
     const row = await tx.smsTemplate.update({
@@ -186,7 +188,9 @@ export async function deleteSmsTemplate(
   db: DbClient = prisma,
 ): Promise<void> {
   authorize(actor, "settings.catalog");
-  const before = await mustFind(db.smsTemplate.findUnique({ where: { id } }));
+  const before = await mustFind(
+    db.smsTemplate.findFirst({ where: { id, organizationId: actor.organizationId } }),
+  );
   await db.$transaction(async (tx) => {
     await tx.smsTemplate.delete({ where: { id } });
     await recordAudit(tx, actor, {
@@ -209,7 +213,7 @@ export async function importProviderTemplates(
   db: DbClient = prisma,
 ): Promise<{ imported: number; adapter: string }> {
   authorize(actor, "settings.catalog");
-  const organizationId = await getOrganizationId(db);
+  const organizationId = actor.organizationId;
   await checkCategory(db, organizationId, categoryId);
   const provider = await getSmsProvider(db);
   let remote: Array<{ id: string; text: string }>;

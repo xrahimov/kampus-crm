@@ -11,7 +11,7 @@ import { prisma, type DbClient } from "@/server/db/prisma";
 import type { ParsedList } from "@/server/http/list-query";
 import { authorize, branchScope, type Actor } from "@/server/rbac/authorize";
 import { getTelephonyProvider } from "@/server/services/integrations/integrations.service";
-import { getOrganizationId, isoToDate, mustFind } from "@/server/services/settings/shared";
+import { getDefaultOrganizationId, isoToDate, mustFind } from "@/server/services/settings/shared";
 import { studentScope } from "@/server/services/students/students.service";
 
 /* "Qo'ng'iroqlar" (EXP §8 Calls) and the student's CALLS tab. A-86. */
@@ -139,7 +139,7 @@ export async function startCall(
   const staff = await mustFind(db.user.findUnique({ where: { id: actor.userId } }));
   const provider = getTelephonyProvider();
   const { externalId } = await provider.originateCall({ from: staff.phone, to: phone });
-  const organizationId = await getOrganizationId(db);
+  const organizationId = actor.organizationId;
   const row = await db.$transaction(async (tx) => {
     const created = await tx.callLog.create({
       data: {
@@ -173,7 +173,8 @@ export async function recordWebhookCall(
   db: DbClient,
   input: TelephonyWebhookInput,
 ): Promise<CallDto> {
-  const organizationId = await getOrganizationId(db);
+  // One telephony webhook per deployment so far; routing by centre comes with A-108's follow-up.
+  const organizationId = await getDefaultOrganizationId(db);
   const customerPhone = input.direction === "INBOUND" ? input.from : input.to;
   const staffPhone = input.direction === "INBOUND" ? input.to : input.from;
   const [student, staff] = await Promise.all([

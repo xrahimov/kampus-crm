@@ -4,6 +4,7 @@ import type { Page } from "@/lib/validation/common";
 import type { MarkReadInput, NotificationsQuery } from "@/lib/validation/dashboard";
 import { prisma, type DbClient } from "@/server/db/prisma";
 import type { Actor } from "@/server/rbac/authorize";
+import { organizationOfBranch } from "@/server/services/settings/shared";
 import { membershipBalances } from "@/server/services/students/balances";
 
 /* EXP §11 bell: in-app notifications for staff (A-97). */
@@ -47,12 +48,19 @@ export async function notifyUsers(
     params: Record<string, string | number>;
     href?: string | null;
     branchId?: string | null;
+    /** The centre whose staff is told; derived from `branchId` when left out. */
+    organizationId?: string;
     permission: Permission;
     excludeUserId?: string | null;
   },
 ): Promise<number> {
+  const organizationId =
+    input.organizationId ??
+    (input.branchId ? await organizationOfBranch(tx, input.branchId) : null);
+  if (!organizationId) return 0;
   const users = await tx.user.findMany({
     where: {
+      organizationId,
       isArchived: false,
       ...(input.excludeUserId ? { id: { not: input.excludeUserId } } : {}),
     },

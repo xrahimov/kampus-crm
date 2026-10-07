@@ -10,7 +10,7 @@ import { recordAudit } from "@/server/audit/audit";
 import { prisma, type DbClient } from "@/server/db/prisma";
 import { AppError } from "@/server/errors/app-error";
 import { authorize, authorizeAny, type Actor } from "@/server/rbac/authorize";
-import { getOrganizationId, mustFind, rethrowAsAppError } from "@/server/services/settings/shared";
+import { mustFind, rethrowAsAppError } from "@/server/services/settings/shared";
 import { studentScope } from "@/server/services/students/students.service";
 
 import { studentBalance } from "./coins.service";
@@ -56,7 +56,7 @@ export async function listProductCategories(
   db: DbClient = prisma,
 ): Promise<ProductCategoryDto[]> {
   authorizeAny(actor, VIEW);
-  const organizationId = await getOrganizationId(db);
+  const organizationId = actor.organizationId;
   const rows = await db.productCategory.findMany({
     where: { organizationId },
     include: { _count: { select: { products: true } } },
@@ -71,7 +71,7 @@ export async function createProductCategory(
   db: DbClient = prisma,
 ): Promise<ProductCategoryDto> {
   authorize(actor, "coins.manage");
-  const organizationId = await getOrganizationId(db);
+  const organizationId = actor.organizationId;
   try {
     const row = await db.productCategory.create({ data: { organizationId, name: input.name } });
     await recordAudit(db, actor, {
@@ -92,7 +92,7 @@ export async function deleteProductCategory(
   db: DbClient = prisma,
 ): Promise<void> {
   authorize(actor, "coins.manage");
-  const organizationId = await getOrganizationId(db);
+  const organizationId = actor.organizationId;
   const row = await mustFind(
     db.productCategory.findFirst({
       where: { id, organizationId },
@@ -137,7 +137,7 @@ export async function listProducts(
   db: DbClient = prisma,
 ): Promise<ProductDto[]> {
   authorizeAny(actor, VIEW);
-  const organizationId = await getOrganizationId(db);
+  const organizationId = actor.organizationId;
   const rows = await db.product.findMany({
     where: { organizationId, ...(options.activeOnly ? { isActive: true } : {}) },
     include: productInclude,
@@ -161,7 +161,7 @@ export async function createProduct(
   db: DbClient = prisma,
 ): Promise<ProductDto> {
   authorize(actor, "coins.manage");
-  const organizationId = await getOrganizationId(db);
+  const organizationId = actor.organizationId;
   await checkCategory(db, organizationId, input.categoryId);
   return db.$transaction(async (tx) => {
     const row = await tx.product.create({
@@ -185,7 +185,7 @@ export async function updateProduct(
   db: DbClient = prisma,
 ): Promise<ProductDto> {
   authorize(actor, "coins.manage");
-  const organizationId = await getOrganizationId(db);
+  const organizationId = actor.organizationId;
   const before = await mustFind(
     db.product.findFirst({ where: { id, organizationId } }),
     "errors.productNotFound",
@@ -214,7 +214,7 @@ export async function deleteProduct(
   db: DbClient = prisma,
 ): Promise<void> {
   authorize(actor, "coins.manage");
-  const organizationId = await getOrganizationId(db);
+  const organizationId = actor.organizationId;
   const row = await mustFind(
     db.product.findFirst({
       where: { id, organizationId },
@@ -277,7 +277,7 @@ export async function createPurchaseRequest(
   db: DbClient = prisma,
 ): Promise<PurchaseRequestDto> {
   authorize(actor, "coins.manage");
-  const organizationId = await getOrganizationId(db);
+  const organizationId = actor.organizationId;
   const [student, product] = await Promise.all([
     db.student.findFirst({
       where: { id: input.studentId, ...studentScope(actor) },

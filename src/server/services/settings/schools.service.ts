@@ -5,7 +5,7 @@ import { prisma, type DbClient } from "@/server/db/prisma";
 import type { ParsedList } from "@/server/http/list-query";
 import { authorize, type Actor } from "@/server/rbac/authorize";
 
-import { getOrganizationId, mustFind, rethrowAsAppError } from "./shared";
+import { mustFind, rethrowAsAppError } from "./shared";
 
 export interface SchoolDto {
   id: string;
@@ -27,7 +27,7 @@ export async function listSchools(
   db: DbClient = prisma,
 ): Promise<Page<SchoolDto>> {
   authorize(actor, "settings.catalog");
-  const organizationId = await getOrganizationId(db);
+  const organizationId = actor.organizationId;
   const where = {
     organizationId,
     ...(query.q ? { name: { contains: query.q, mode: "insensitive" as const } } : {}),
@@ -51,7 +51,7 @@ export async function createSchool(
   db: DbClient = prisma,
 ): Promise<SchoolDto> {
   authorize(actor, "settings.catalog");
-  const organizationId = await getOrganizationId(db);
+  const organizationId = actor.organizationId;
   try {
     return await db.$transaction(async (tx) => {
       const row = await tx.school.create({ data: { organizationId, ...input }, select });
@@ -78,7 +78,9 @@ export async function updateSchool(
   authorize(actor, "settings.catalog");
   try {
     return await db.$transaction(async (tx) => {
-      const before = await mustFind(tx.school.findUnique({ where: { id }, select }));
+      const before = await mustFind(
+        tx.school.findFirst({ where: { id, organizationId: actor.organizationId }, select }),
+      );
       const after = await tx.school.update({ where: { id }, data: input, select });
       await recordAudit(tx, actor, {
         action: "school.update",
@@ -99,7 +101,9 @@ export async function deleteSchool(actor: Actor, id: string, db: DbClient = pris
   authorize(actor, "settings.catalog");
   try {
     await db.$transaction(async (tx) => {
-      const before = await mustFind(tx.school.findUnique({ where: { id }, select }));
+      const before = await mustFind(
+        tx.school.findFirst({ where: { id, organizationId: actor.organizationId }, select }),
+      );
       await tx.school.delete({ where: { id } });
       await recordAudit(tx, actor, {
         action: "school.delete",

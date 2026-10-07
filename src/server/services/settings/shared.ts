@@ -2,10 +2,24 @@ import type { DbClient } from "@/server/db/prisma";
 import { AppError } from "@/server/errors/app-error";
 
 /**
- * Kampus runs one organisation per deployment (A-37). Everything org-scoped
- * hangs off this row; the seed creates it.
+ * The organisation a branch belongs to, for code paths that have no actor
+ * (webhooks, jobs, the student portal) but do have a branch (A-108).
  */
-export async function getOrganizationId(db: DbClient): Promise<string> {
+export async function organizationOfBranch(db: DbClient, branchId: string): Promise<string> {
+  const branch = await db.branch.findUnique({
+    where: { id: branchId },
+    select: { organizationId: true },
+  });
+  if (!branch) throw AppError.notFound("errors.branchNotFound");
+  return branch.organizationId;
+}
+
+/**
+ * The first organisation of the deployment. Only for code paths that have
+ * neither an actor nor a branch to go by; never call it with an actor at hand,
+ * since a signed-in user's centre is `actor.organizationId`.
+ */
+export async function getDefaultOrganizationId(db: DbClient): Promise<string> {
   const org = await db.organization.findFirst({
     select: { id: true },
     orderBy: { createdAt: "asc" },
@@ -62,10 +76,11 @@ export function isoToDate(value: string): Date {
 /** The organisation's display name and logo, for printed pages anyone signed in may open. */
 export async function getOrganizationBranding(
   db: DbClient,
+  organizationId: string,
 ): Promise<{ name: string; logoUrl: string | null }> {
-  const org = await db.organization.findFirst({
+  const org = await db.organization.findUnique({
+    where: { id: organizationId },
     select: { name: true, logoUrl: true },
-    orderBy: { createdAt: "asc" },
   });
   if (!org) throw new AppError("INTERNAL", "errors.internal");
   return org;

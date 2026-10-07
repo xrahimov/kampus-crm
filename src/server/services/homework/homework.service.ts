@@ -7,7 +7,7 @@ import type {
 import { recordAudit } from "@/server/audit/audit";
 import { prisma, type DbClient } from "@/server/db/prisma";
 import { AppError } from "@/server/errors/app-error";
-import { authorize, canAccessAllBranches, type Actor } from "@/server/rbac/authorize";
+import { authorize, type Actor } from "@/server/rbac/authorize";
 import { awardAutoCoins } from "@/server/services/coins/coins.service";
 import { findGroupInScope, ownGroupsOnly, today } from "@/server/services/groups/shared";
 import { dateToIso, isoToDate, mustFind } from "@/server/services/settings/shared";
@@ -132,7 +132,7 @@ async function findLessonInScope(db: DbClient, actor: Actor, lessonId: string) {
       include: { group: { select: { id: true, branchId: true, name: true, status: true } } },
     }),
   );
-  if (!canAccessAllBranches(actor) && !actor.branchIds.includes(lesson.group.branchId)) {
+  if (!actor.branchIds.includes(lesson.group.branchId)) {
     throw AppError.forbidden("errors.branchForbidden");
   }
   if (ownGroupsOnly(actor)) await findGroupInScope(db, actor, lesson.groupId, {});

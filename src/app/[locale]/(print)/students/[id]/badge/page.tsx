@@ -36,7 +36,7 @@ export default async function Page({ params }: Props) {
     throw error;
   }
   const [org, qr] = await Promise.all([
-    getOrganizationBranding(prisma),
+    getOrganizationBranding(prisma, current.actor.organizationId),
     qrSvg(`kampus:student:${id}`),
   ]);
 

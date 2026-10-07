@@ -2,12 +2,7 @@ import type { LeadSourceInput, SourceStatsFilters } from "@/lib/validation/leads
 import { recordAudit } from "@/server/audit/audit";
 import { prisma, type DbClient } from "@/server/db/prisma";
 import { authorize, branchScope, type Actor } from "@/server/rbac/authorize";
-import {
-  getOrganizationId,
-  isoToDate,
-  mustFind,
-  rethrowAsAppError,
-} from "@/server/services/settings/shared";
+import { isoToDate, mustFind, rethrowAsAppError } from "@/server/services/settings/shared";
 
 /* "Manbalar" (EXP §3): the source catalogue and the per-source lead counts. */
 
@@ -27,8 +22,8 @@ export async function listSources(
   db: DbClient = prisma,
 ): Promise<LeadSourceDto[]> {
   authorize(actor, "leads.view");
-  const organizationId = await getOrganizationId(db);
-  const scope = branchScope(actor) ?? {};
+  const organizationId = actor.organizationId;
+  const scope = branchScope(actor);
   const createdAt =
     filters.from || filters.to
       ? {
@@ -76,7 +71,7 @@ export async function createSource(
   db: DbClient = prisma,
 ): Promise<LeadSourceDto> {
   authorize(actor, "leads.update");
-  const organizationId = await getOrganizationId(db);
+  const organizationId = actor.organizationId;
   try {
     return await db.$transaction(async (tx) => {
       const row = await tx.leadSource.create({ data: { organizationId, ...input }, select });
@@ -103,7 +98,9 @@ export async function updateSource(
   authorize(actor, "leads.update");
   try {
     return await db.$transaction(async (tx) => {
-      const before = await mustFind(tx.leadSource.findUnique({ where: { id }, select }));
+      const before = await mustFind(
+        tx.leadSource.findFirst({ where: { id, organizationId: actor.organizationId }, select }),
+      );
       const after = await tx.leadSource.update({ where: { id }, data: input, select });
       await recordAudit(tx, actor, {
         action: "leadSource.update",
@@ -125,7 +122,9 @@ export async function deleteSource(actor: Actor, id: string, db: DbClient = pris
   authorize(actor, "leads.delete");
   try {
     await db.$transaction(async (tx) => {
-      const before = await mustFind(tx.leadSource.findUnique({ where: { id }, select }));
+      const before = await mustFind(
+        tx.leadSource.findFirst({ where: { id, organizationId: actor.organizationId }, select }),
+      );
       await tx.leadSource.delete({ where: { id } });
       await recordAudit(tx, actor, {
         action: "leadSource.delete",

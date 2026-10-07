@@ -3,7 +3,7 @@ import { recordAudit } from "@/server/audit/audit";
 import { prisma, type DbClient } from "@/server/db/prisma";
 import { authorize, type Actor } from "@/server/rbac/authorize";
 
-import { getOrganizationId, mustFind, rethrowAsAppError } from "./shared";
+import { mustFind, rethrowAsAppError } from "./shared";
 
 export interface PaymentMethodDto {
   id: string;
@@ -19,7 +19,7 @@ export async function listPaymentMethods(
   db: DbClient = prisma,
 ): Promise<PaymentMethodDto[]> {
   authorize(actor, "settings.org");
-  const organizationId = await getOrganizationId(db);
+  const organizationId = actor.organizationId;
   return db.paymentMethod.findMany({
     where: { organizationId },
     orderBy: [{ sortOrder: "asc" }, { name: "asc" }],
@@ -33,7 +33,7 @@ export async function createPaymentMethod(
   db: DbClient = prisma,
 ): Promise<PaymentMethodDto> {
   authorize(actor, "settings.org");
-  const organizationId = await getOrganizationId(db);
+  const organizationId = actor.organizationId;
   try {
     return await db.$transaction(async (tx) => {
       const method = await tx.paymentMethod.create({ data: { organizationId, ...input }, select });
@@ -60,7 +60,9 @@ export async function updatePaymentMethod(
   authorize(actor, "settings.org");
   try {
     return await db.$transaction(async (tx) => {
-      const before = await mustFind(tx.paymentMethod.findUnique({ where: { id }, select }));
+      const before = await mustFind(
+        tx.paymentMethod.findFirst({ where: { id, organizationId: actor.organizationId }, select }),
+      );
       const after = await tx.paymentMethod.update({ where: { id }, data: input, select });
       await recordAudit(tx, actor, {
         action: "paymentMethod.update",
@@ -85,7 +87,9 @@ export async function deletePaymentMethod(
   authorize(actor, "settings.org");
   try {
     await db.$transaction(async (tx) => {
-      const before = await mustFind(tx.paymentMethod.findUnique({ where: { id }, select }));
+      const before = await mustFind(
+        tx.paymentMethod.findFirst({ where: { id, organizationId: actor.organizationId }, select }),
+      );
       await tx.paymentMethod.delete({ where: { id } });
       await recordAudit(tx, actor, {
         action: "paymentMethod.delete",

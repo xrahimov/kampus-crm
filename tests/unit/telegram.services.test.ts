@@ -16,6 +16,7 @@ import { reviewSubmission, setHomework } from "@/server/services/homework/homewo
 import { updateIntegration } from "@/server/services/integrations/integrations.service";
 import { createBranch } from "@/server/services/settings/branches.service";
 import { createCourse } from "@/server/services/settings/courses.service";
+import { DEMO_ORG_ID, demoBranchIds } from "./support/tenant";
 import {
   botDate,
   botLocale,
@@ -44,6 +45,7 @@ const actor = (fullName: string, roles: string[], permissions: string[]): Actor 
   fullName,
   roles,
   permissions,
+  organizationId: DEMO_ORG_ID,
   branchIds: [],
   activeBranchId: null,
 });
@@ -83,7 +85,12 @@ beforeAll(async () => {
     [teacher, 2, true],
   ] as const) {
     const user = await prisma.user.create({
-      data: { phone: phone(n), fullName: `${TAG} ${a.fullName}`, passwordHash: "x" },
+      data: {
+        phone: phone(n),
+        fullName: `${TAG} ${a.fullName}`,
+        passwordHash: "x",
+        organizationId: DEMO_ORG_ID,
+      },
     });
     a.userId = user.id;
     if (withRole) {
@@ -97,6 +104,7 @@ beforeAll(async () => {
     botUsername: "kampus_test_bot",
   });
   branchId = (await createBranch(ceo, { name: `${TAG} A`, isActive: true })).id;
+  ceo.branchIds = await demoBranchIds();
   ceo.activeBranchId = branchId;
   await prisma.userBranch.create({ data: { userId: teacher.userId, branchId } });
   teacher.branchIds = [branchId];

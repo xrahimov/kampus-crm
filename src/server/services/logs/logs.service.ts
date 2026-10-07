@@ -49,7 +49,8 @@ export async function listLoginLogs(
   db: DbClient = prisma,
 ): Promise<Page<LoginLogRowDto>> {
   authorize(actor, "logs.view");
-  const where: Prisma.LoginLogWhereInput = {};
+  // Only this centre's accounts; attempts on phones nobody here owns stay out (A-108).
+  const where: Prisma.LoginLogWhereInput = { user: { organizationId: actor.organizationId } };
   if (filters.success) where.success = filters.success === "true";
   const range = dateRange(filters.from, filters.to);
   if (range) where.createdAt = range;
@@ -91,9 +92,9 @@ export async function listActionLog(
   db: DbClient = prisma,
 ): Promise<Page<ActionLogRowDto>> {
   authorize(actor, "logs.view");
-  const where: Prisma.AuditLogWhereInput = {};
+  const where: Prisma.AuditLogWhereInput = { organizationId: actor.organizationId };
   const scope = branchScope(actor);
-  if (scope) where.OR = [{ branchId: scope.branchId }, { branchId: null }];
+  where.OR = [{ branchId: scope.branchId }, { branchId: null }];
   if (filters.entity) where.entity = filters.entity;
   if (filters.actorId) where.actorId = filters.actorId;
   const range = dateRange(filters.from, filters.to);
@@ -195,7 +196,10 @@ export async function listActionLogActors(
   db: DbClient = prisma,
 ): Promise<Array<{ id: string; fullName: string }>> {
   authorize(actor, "logs.view");
-  const rows = await db.auditLog.groupBy({ by: ["actorId"], where: { actorId: { not: null } } });
+  const rows = await db.auditLog.groupBy({
+    by: ["actorId"],
+    where: { actorId: { not: null }, organizationId: actor.organizationId },
+  });
   const ids = rows.map((r) => r.actorId).filter((x): x is string => Boolean(x));
   const users = await db.user.findMany({
     where: { id: { in: ids } },

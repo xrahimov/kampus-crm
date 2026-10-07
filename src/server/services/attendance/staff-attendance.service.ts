@@ -111,6 +111,7 @@ async function loadStaff(db: DbClient, actor: Actor, branchId: string | null): P
   else if (!canAccessAllBranches(actor)) {
     where.branches = { some: { branchId: { in: actor.branchIds } } };
   }
+  where.organizationId = actor.organizationId;
   const users = await db.user.findMany({
     where,
     select: {
@@ -189,7 +190,7 @@ export async function getStaffAttendanceReport(
         ? todayIso
         : monthStart;
   const branchId = filters.branchId ?? null;
-  if (branchId && !canAccessAllBranches(actor) && !actor.branchIds.includes(branchId)) {
+  if (branchId && !actor.branchIds.includes(branchId)) {
     throw AppError.forbidden("errors.branchForbidden");
   }
   const faceId = await loadIntegrationConfig(db, "FACE_ID");
@@ -352,7 +353,9 @@ export async function setWorkSchedule(
 ): Promise<void> {
   authorize(actor, "staff.update");
   await mustFind(
-    db.user.findFirst({ where: { id: input.userId, isArchived: false } }),
+    db.user.findFirst({
+      where: { id: input.userId, isArchived: false, organizationId: actor.organizationId },
+    }),
     "errors.staffNotFound",
   );
   await db.$transaction(async (tx) => {
@@ -387,7 +390,7 @@ export async function setManualCheck(
   authorize(actor, "staff.update");
   const user = await mustFind(
     db.user.findFirst({
-      where: { id: input.userId, isArchived: false },
+      where: { id: input.userId, isArchived: false, organizationId: actor.organizationId },
       include: { branches: true },
     }),
     "errors.staffNotFound",

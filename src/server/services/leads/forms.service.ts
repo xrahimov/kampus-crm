@@ -4,7 +4,7 @@ import { prisma, type DbClient } from "@/server/db/prisma";
 import { AppError } from "@/server/errors/app-error";
 import { notifyUsers } from "@/server/services/dashboard/notifications.service";
 import { authorize, type Actor } from "@/server/rbac/authorize";
-import { getOrganizationId, mustFind, rethrowAsAppError } from "@/server/services/settings/shared";
+import { mustFind, rethrowAsAppError } from "@/server/services/settings/shared";
 
 import { findColumnInScope } from "./shared";
 
@@ -74,7 +74,7 @@ function toDto(row: Row): LeadFormDto {
 
 export async function listForms(actor: Actor, db: DbClient = prisma): Promise<LeadFormDto[]> {
   authorize(actor, "settings.catalog");
-  const organizationId = await getOrganizationId(db);
+  const organizationId = actor.organizationId;
   const rows = await db.leadForm.findMany({
     where: { organizationId },
     include,
@@ -89,7 +89,7 @@ export async function createForm(
   db: DbClient = prisma,
 ): Promise<LeadFormDto> {
   authorize(actor, "settings.catalog");
-  const organizationId = await getOrganizationId(db);
+  const organizationId = actor.organizationId;
   const column = await findColumnInScope(db, actor, input.columnId);
   try {
     return await db.$transaction(async (tx) => {
@@ -127,7 +127,9 @@ export async function updateForm(
   db: DbClient = prisma,
 ): Promise<LeadFormDto> {
   authorize(actor, "settings.catalog");
-  const existing = await mustFind(db.leadForm.findUnique({ where: { id }, include }));
+  const existing = await mustFind(
+    db.leadForm.findFirst({ where: { id, organizationId: actor.organizationId }, include }),
+  );
   if (input.columnId && input.columnId !== existing.columnId) {
     await findColumnInScope(db, actor, input.columnId);
   }
@@ -164,7 +166,9 @@ export async function updateForm(
 /** Leads that came through the form keep their rows (the link is cleared). */
 export async function deleteForm(actor: Actor, id: string, db: DbClient = prisma): Promise<void> {
   authorize(actor, "settings.catalog");
-  const existing = await mustFind(db.leadForm.findUnique({ where: { id }, include }));
+  const existing = await mustFind(
+    db.leadForm.findFirst({ where: { id, organizationId: actor.organizationId }, include }),
+  );
   await db.$transaction(async (tx) => {
     await tx.leadForm.delete({ where: { id } });
     await recordAudit(tx, actor, {

@@ -20,7 +20,6 @@ import { authorize, branchScope, type Actor } from "@/server/rbac/authorize";
 import { findGroupInScope, today } from "@/server/services/groups/shared";
 import {
   dateToIso,
-  getOrganizationId,
   isoToDate,
   mustFind,
   rethrowAsAppError,
@@ -187,14 +186,15 @@ export async function getBoardView(
 
 export async function getLeadOptions(actor: Actor, db: DbClient = prisma): Promise<LeadOptions> {
   authorize(actor, "leads.view");
-  const organizationId = await getOrganizationId(db);
-  const scope = branchScope(actor) ?? {};
+  const organizationId = actor.organizationId;
+  const scope = branchScope(actor);
   const [teachers, sources, slots, leadTimes, groups, boards] = await Promise.all([
     db.user.findMany({
       where: {
         isArchived: false,
         roles: { some: { role: { code: { in: [...TEACHER_ROLE_CODES] } } } },
-        ...(Object.keys(scope).length ? { branches: { some: scope } } : {}),
+        organizationId: actor.organizationId,
+        branches: { some: scope },
       },
       select: { id: true, fullName: true },
       orderBy: { fullName: "asc" },

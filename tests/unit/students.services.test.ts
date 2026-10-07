@@ -24,6 +24,7 @@ import {
   updateReceiptSettings,
 } from "@/server/services/settings/receipt-settings.service";
 import { membershipBalances } from "@/server/services/students/balances";
+import { DEMO_ORG_ID, demoBranchIds } from "./support/tenant";
 import {
   deleteDiscount,
   giveDiscount,
@@ -63,6 +64,7 @@ const actor = (fullName: string, roles: string[], permissions: string[]): Actor 
   fullName,
   roles,
   permissions,
+  organizationId: DEMO_ORG_ID,
   branchIds: [],
   activeBranchId: null,
 });
@@ -99,7 +101,12 @@ beforeAll(async () => {
     [cashier, 4],
   ] as const) {
     const user = await prisma.user.create({
-      data: { phone: phone(n), fullName: `${TAG} ${a.fullName}`, passwordHash: "x" },
+      data: {
+        phone: phone(n),
+        fullName: `${TAG} ${a.fullName}`,
+        passwordHash: "x",
+        organizationId: DEMO_ORG_ID,
+      },
     });
     a.userId = user.id;
   }
@@ -107,6 +114,7 @@ beforeAll(async () => {
     data: [teacher, outsider].map((t) => ({ userId: t.userId, roleId: teacherRole.id })),
   });
   branchA = (await createBranch(ceo, { name: `${TAG} A`, isActive: true })).id;
+  ceo.branchIds = await demoBranchIds();
   // Lists by the CEO are scoped to this run's branch so seed data stays out of the way.
   ceo.activeBranchId = branchA;
   await prisma.userBranch.createMany({

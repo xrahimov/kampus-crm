@@ -6,7 +6,7 @@ import { prisma, type DbClient } from "@/server/db/prisma";
 import { AppError } from "@/server/errors/app-error";
 import type { ParsedList } from "@/server/http/list-query";
 import { authorize, type Actor } from "@/server/rbac/authorize";
-import { getOrganizationId, mustFind } from "@/server/services/settings/shared";
+import { mustFind } from "@/server/services/settings/shared";
 
 /* Question bank (EXP §8 Test sozlamalari → Savollar banki). A-81. */
 
@@ -56,7 +56,7 @@ export async function listQuestions(
   db: DbClient = prisma,
 ): Promise<Page<QuestionDto>> {
   authorize(actor, "tests.view");
-  const organizationId = await getOrganizationId(db);
+  const organizationId = actor.organizationId;
   const where: Prisma.QuestionBankItemWhereInput = {
     organizationId,
     ...(filters.subject ? { subject: filters.subject } : {}),
@@ -89,7 +89,7 @@ export async function getQuestionBankOptions(
   db: DbClient = prisma,
 ): Promise<QuestionBankOptions> {
   authorize(actor, "tests.view");
-  const organizationId = await getOrganizationId(db);
+  const organizationId = actor.organizationId;
   const rows = await db.questionBankItem.groupBy({
     by: ["subject", "topic"],
     where: { organizationId },
@@ -107,7 +107,7 @@ export async function createQuestion(
   db: DbClient = prisma,
 ): Promise<QuestionDto> {
   authorize(actor, "tests.create");
-  const organizationId = await getOrganizationId(db);
+  const organizationId = actor.organizationId;
   return db.$transaction(async (tx) => {
     const row = await tx.questionBankItem.create({
       data: { organizationId, ...input, createdById: actor.userId },
@@ -130,7 +130,7 @@ export async function updateQuestion(
   db: DbClient = prisma,
 ): Promise<QuestionDto> {
   authorize(actor, "tests.update");
-  const organizationId = await getOrganizationId(db);
+  const organizationId = actor.organizationId;
   const before = await mustFind(
     db.questionBankItem.findFirst({ where: { id, organizationId }, include }),
     "errors.questionNotFound",
@@ -154,7 +154,7 @@ export async function deleteQuestion(
   db: DbClient = prisma,
 ): Promise<void> {
   authorize(actor, "tests.delete");
-  const organizationId = await getOrganizationId(db);
+  const organizationId = actor.organizationId;
   const before = await mustFind(
     db.questionBankItem.findFirst({ where: { id, organizationId }, include }),
     "errors.questionNotFound",

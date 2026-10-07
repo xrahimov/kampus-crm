@@ -5,7 +5,7 @@ import { awardAutoCoins } from "@/server/services/coins/coins.service";
 import { queueAutoSms } from "@/server/services/sms/auto-sms.service";
 import { prisma, type DbClient } from "@/server/db/prisma";
 import { AppError } from "@/server/errors/app-error";
-import { authorize, canAccessAllBranches, type Actor } from "@/server/rbac/authorize";
+import { authorize, type Actor } from "@/server/rbac/authorize";
 import {
   dateToIso,
   decimalToNumber,
@@ -121,7 +121,7 @@ async function findLessonInScope(db: DbClient, actor: Actor, lessonId: string): 
       include: { group: { select: { branchId: true, name: true } } },
     }),
   );
-  if (!canAccessAllBranches(actor) && !actor.branchIds.includes(lesson.group.branchId)) {
+  if (!actor.branchIds.includes(lesson.group.branchId)) {
     throw AppError.forbidden("errors.branchForbidden");
   }
   if (ownGroupsOnly(actor)) await findGroupInScope(db, actor, lesson.groupId, {});

@@ -24,7 +24,7 @@ import {
   type TelephonyProvider,
 } from "@/server/integrations/telephony/provider";
 import { authorize, type Actor } from "@/server/rbac/authorize";
-import { getOrganizationId } from "@/server/services/settings/shared";
+import { getDefaultOrganizationId } from "@/server/services/settings/shared";
 
 /* Settings → Integrations (EXP §8 AmoCRM, FaceID; A-83 for the rest). */
 
@@ -69,8 +69,11 @@ function defaults<P extends IntegrationProvider>(provider: P): IntegrationInput<
   }) as IntegrationInput<P>;
 }
 
-async function loadRow<P extends IntegrationProvider>(db: DbClient, provider: P) {
-  const organizationId = await getOrganizationId(db);
+async function loadRow<P extends IntegrationProvider>(
+  db: DbClient,
+  organizationId: string,
+  provider: P,
+) {
   const row = await db.integrationSetting.findUnique({
     where: { organizationId_provider: { organizationId, provider } },
   });
@@ -82,12 +85,21 @@ async function loadRow<P extends IntegrationProvider>(db: DbClient, provider: P)
   return { organizationId, row, isEnabled, config };
 }
 
-/** The raw configuration for the adapters; never returned to clients. */
+/**
+ * The raw configuration for the adapters; never returned to clients. Without an
+ * `organizationId` the deployment's first centre is used: the webhooks and jobs
+ * still address that one until they route by centre (A-108).
+ */
 export async function loadIntegrationConfig<P extends IntegrationProvider>(
   db: DbClient,
   provider: P,
+  organizationId?: string,
 ): Promise<(Config<P> & { isEnabled: boolean }) | null> {
-  const { row, isEnabled, config } = await loadRow(db, provider);
+  const { row, isEnabled, config } = await loadRow(
+    db,
+    organizationId ?? (await getDefaultOrganizationId(db)),
+    provider,
+  );
   if (!row && !ON_BY_DEFAULT.includes(provider)) return null;
   return { ...config, isEnabled } as Config<P> & { isEnabled: boolean };
 }
@@ -122,7 +134,7 @@ export async function getIntegration<P extends IntegrationProvider>(
   db: DbClient = prisma,
 ): Promise<IntegrationDto<P>> {
   authorize(actor, "settings.integrations");
-  const { row, isEnabled, config } = await loadRow(db, provider);
+  const { row, isEnabled, config } = await loadRow(db, actor.organizationId, provider);
   return toDto(provider, isEnabled, config, row?.updatedAt ?? null);
 }
 
@@ -141,7 +153,7 @@ export async function updateIntegration<P extends IntegrationProvider>(
   db: DbClient = prisma,
 ): Promise<IntegrationDto<P>> {
   authorize(actor, "settings.integrations");
-  const { organizationId, config: previous } = await loadRow(db, provider);
+  const { organizationId, config: previous } = await loadRow(db, actor.organizationId, provider);
   const { isEnabled, ...rest } = input as Record<string, unknown> & { isEnabled: boolean };
   const next: Record<string, unknown> = { ...previous };
   for (const [key, value] of Object.entries(rest)) {
@@ -206,7 +218,7 @@ export async function getAmoCrmClient(db: DbClient = prisma): Promise<AmoCrmClie
 
 /** Persists rotated AmoCRM tokens after a call. */
 export async function saveAmoCrmTokens(db: DbClient, tokens: AmoCrmTokens | null): Promise<void> {
-  const organizationId = await getOrganizationId(db);
+  const organizationId = await getDefaultOrganizationId(db);
   const row = await db.integrationSetting.findUnique({
     where: { organizationId_provider: { organizationId, provider: "AMOCRM" } },
   });

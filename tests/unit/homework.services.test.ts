@@ -23,8 +23,8 @@ import {
 } from "@/server/services/homework/homework.service";
 import { createBranch } from "@/server/services/settings/branches.service";
 import { createCourse } from "@/server/services/settings/courses.service";
-import { getOrganizationId } from "@/server/services/settings/shared";
 import { listStudentLinks } from "@/server/services/video/video.service";
+import { DEMO_ORG_ID, demoBranchIds } from "./support/tenant";
 
 const RUN = String(Date.now() % 100_000).padStart(5, "0");
 const TAG = `h${RUN}`;
@@ -35,6 +35,7 @@ const actor = (fullName: string, roles: string[], permissions: string[]): Actor 
   fullName,
   roles,
   permissions,
+  organizationId: DEMO_ORG_ID,
   branchIds: [],
   activeBranchId: null,
 });
@@ -53,7 +54,7 @@ let previousAutoCoins: boolean | null = null;
 let organizationId: string;
 
 beforeAll(async () => {
-  organizationId = await getOrganizationId(prisma);
+  organizationId = DEMO_ORG_ID;
   const settings = await prisma.orgSettings.findUnique({ where: { organizationId } });
   previousAutoCoins = settings?.autoCoins ?? null;
   await prisma.orgSettings.update({ where: { organizationId }, data: { autoCoins: true } });
@@ -70,7 +71,12 @@ beforeAll(async () => {
     [otherTeacher, 3, true],
   ] as const) {
     const user = await prisma.user.create({
-      data: { phone: phone(n), fullName: `${TAG} ${a.fullName}`, passwordHash: "x" },
+      data: {
+        phone: phone(n),
+        fullName: `${TAG} ${a.fullName}`,
+        passwordHash: "x",
+        organizationId: DEMO_ORG_ID,
+      },
     });
     a.userId = user.id;
     if (withRole) {
@@ -78,6 +84,7 @@ beforeAll(async () => {
     }
   }
   branchId = (await createBranch(ceo, { name: `${TAG} A`, isActive: true })).id;
+  ceo.branchIds = await demoBranchIds();
   ceo.activeBranchId = branchId;
   await prisma.userBranch.createMany({
     data: [teacher, otherTeacher].map((a) => ({ userId: a.userId, branchId })),

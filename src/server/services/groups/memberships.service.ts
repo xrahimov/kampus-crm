@@ -9,7 +9,7 @@ import { recordAudit } from "@/server/audit/audit";
 import { queueAutoSms } from "@/server/services/sms/auto-sms.service";
 import { prisma, type DbClient } from "@/server/db/prisma";
 import { AppError } from "@/server/errors/app-error";
-import { authorize, branchScope, canAccessAllBranches, type Actor } from "@/server/rbac/authorize";
+import { authorize, branchScope, type Actor } from "@/server/rbac/authorize";
 import {
   dateToIso,
   decimalToNumber,
@@ -134,7 +134,7 @@ export async function searchStudents(
   if (q.trim().length < 2) return [];
   return db.student.findMany({
     where: {
-      ...(branchScope(actor) ?? {}),
+      ...branchScope(actor),
       isArchived: false,
       OR: [{ fullName: { contains: q, mode: "insensitive" } }, { phone: { contains: q } }],
     },
@@ -161,7 +161,7 @@ export async function addMember(
       db.student.findUnique({ where: { id: studentId } }),
       "errors.studentNotFound",
     );
-    if (!canAccessAllBranches(actor) && !actor.branchIds.includes(student.branchId)) {
+    if (!actor.branchIds.includes(student.branchId)) {
       throw AppError.forbidden("errors.branchForbidden");
     }
     if (student.isBlacklisted) throw AppError.conflict("errors.studentBlacklisted");
@@ -334,7 +334,7 @@ export async function activateStudents(
     where: {
       studentId: { in: studentIds },
       status: { in: ["NEW", "TRIAL"] },
-      group: { ...(branchScope(actor) ?? {}), status: { not: "ARCHIVED" } },
+      group: { ...branchScope(actor), status: { not: "ARCHIVED" } },
     },
     include: { ...include, group: { select: { branchId: true } } },
   });

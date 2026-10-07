@@ -4,12 +4,7 @@ import { recordAudit } from "@/server/audit/audit";
 import { prisma, type DbClient } from "@/server/db/prisma";
 import { AppError } from "@/server/errors/app-error";
 import { authorize, type Actor } from "@/server/rbac/authorize";
-import {
-  decimalToNumber,
-  getOrganizationId,
-  mustFind,
-  rethrowAsAppError,
-} from "@/server/services/settings/shared";
+import { decimalToNumber, mustFind, rethrowAsAppError } from "@/server/services/settings/shared";
 
 import { financeBranch, periodRange } from "./shared";
 
@@ -30,7 +25,7 @@ export async function listCategories(
   db: DbClient = prisma,
 ): Promise<FinanceCategoryDto[]> {
   authorize(actor, "finance.view");
-  const organizationId = await getOrganizationId(db);
+  const organizationId = actor.organizationId;
   const { from, to } = periodRange(period.year, period.month);
   const [rows, sums] = await Promise.all([
     db.financeCategory.findMany({
@@ -65,7 +60,7 @@ export async function getCategory(
 ): Promise<{ id: string; kind: FinanceKind; name: string }> {
   authorize(actor, "finance.view");
   const row = await mustFind(
-    db.financeCategory.findUnique({ where: { id } }),
+    db.financeCategory.findFirst({ where: { id, organizationId: actor.organizationId } }),
     "errors.categoryNotFound",
   );
   return { id: row.id, kind: row.kind, name: row.name };
@@ -77,7 +72,7 @@ export async function createCategory(
   db: DbClient = prisma,
 ): Promise<{ id: string; kind: FinanceKind; name: string }> {
   authorize(actor, "finance.create");
-  const organizationId = await getOrganizationId(db);
+  const organizationId = actor.organizationId;
   try {
     return await db.$transaction(async (tx) => {
       const last = await tx.financeCategory.aggregate({
@@ -113,7 +108,7 @@ export async function updateCategory(
 ): Promise<{ id: string; kind: FinanceKind; name: string }> {
   authorize(actor, "finance.update");
   const row = await mustFind(
-    db.financeCategory.findUnique({ where: { id } }),
+    db.financeCategory.findFirst({ where: { id, organizationId: actor.organizationId } }),
     "errors.categoryNotFound",
   );
   try {
@@ -144,7 +139,7 @@ export async function deleteCategory(
 ): Promise<void> {
   authorize(actor, "finance.delete");
   const row = await mustFind(
-    db.financeCategory.findUnique({ where: { id } }),
+    db.financeCategory.findFirst({ where: { id, organizationId: actor.organizationId } }),
     "errors.categoryNotFound",
   );
   const used = await db.financeEntry.count({ where: { categoryId: id } });
