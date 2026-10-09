@@ -289,7 +289,9 @@
     },
     "lesson": {
       "extra": "Extra lesson",
-      "noRoom": "No room"
+      "noRoom": "No room",
+      "suggested": "Next in the syllabus: {title}",
+      "useTopic": "Use it"
     },
     "attendance": {
       "summary": "{marked} of {total} marked · {present} present",
@@ -538,7 +540,8 @@
     "signInCodeNeedsTelegram": "Link the Telegram chat first (Settings → Bot notifications).",
     "currentSession": "This is the device you are using; use Sign out instead.",
     "ownerUnknown": "This person cannot own leads in the branch.",
-    "trialOtherBranch": "The group is in another branch than the lead."
+    "trialOtherBranch": "The group is in another branch than the lead.",
+    "courseTopic": "This topic is not in the group's course"
   },
   "roles": {
     "CEO": "CEO",
@@ -721,7 +724,12 @@
       "noGradingSystem": "Not set",
       "color": "Colour",
       "archiveTitle": "Archive course?",
-      "archiveText": "“{name}” will be hidden from new groups. Existing groups keep it."
+      "archiveText": "“{name}” will be hidden from new groups. Existing groups keep it.",
+      "syllabus": "Syllabus",
+      "syllabusTitle": "Syllabus: {name}",
+      "syllabusHint": "One topic per line, in teaching order. Each lesson takes the next uncovered topic when attendance is marked.",
+      "syllabusTopics": "Topics",
+      "syllabusCount": "{count, plural, =0 {No topics} one {# topic} other {# topics}}"
     },
     "rooms": {
       "title": "Rooms",
@@ -1247,7 +1255,8 @@
         "coins": "Coins",
         "comments": "Comments",
         "homework": "Homework",
-        "materials": "Materials"
+        "materials": "Materials",
+        "syllabus": "Syllabus"
       },
       "changeTeacherHint": "The new teacher's share counts from today.",
       "notify": "Tell the students and parents (Telegram and SMS)",
@@ -1276,7 +1285,9 @@
       "moved": "{date}: moved to {newDate}, {start}–{end} — {reason}",
       "holiday": "{date}: branch holiday — {reason}",
       "undo": "Undo",
-      "movedFrom": "Moved from {date}"
+      "movedFrom": "Moved from {date}",
+      "syllabusTopic": "Syllabus topic",
+      "noSyllabusTopic": "— none —"
     },
     "grades": {
       "system": "Grading",
@@ -1426,6 +1437,17 @@
       "addedBy": "Added by {name}",
       "duration": "{minutes} min",
       "size": "{mb} MB"
+    },
+    "syllabus": {
+      "progress": "{done} of {total} topics covered",
+      "next": "Next topic",
+      "empty": "The course has no syllabus yet. Add topics under Settings → Courses → Syllabus.",
+      "coveredOn": "Covered on {date}",
+      "status": {
+        "done": "Covered",
+        "next": "Next",
+        "planned": "Planned"
+      }
     }
   },
   "timetable": {
@@ -3615,7 +3637,8 @@
         },
         "course": {
           "create": "Course created",
-          "update": "Course updated"
+          "update": "Course updated",
+          "syllabus": "Course syllabus changed"
         },
         "dayOff": {
           "create": "Day off added",
@@ -4312,7 +4335,8 @@
       "date": "Date",
       "topic": "Topic",
       "attendance": "Attendance",
-      "grade": "Grade"
+      "grade": "Grade",
+      "nextTopic": "Next topic: {title}"
     },
     "money": {
       "balance": "Balance",

@@ -3,6 +3,7 @@ import { prisma, type DbClient } from "@/server/db/prisma";
 import { levelName } from "@/server/services/exams/exams.service";
 import { today } from "@/server/services/groups/shared";
 import { dateToIso, decimalToNumber, isoToDate } from "@/server/services/settings/shared";
+import { nextTopicForGroup } from "@/server/services/settings/syllabus.service";
 import { membershipBalances } from "@/server/services/students/balances";
 import { membershipByToken } from "@/server/services/video/video.service";
 
@@ -89,6 +90,7 @@ export async function getPortal(token: string, db: DbClient = prisma): Promise<P
         where: { id: membership.groupId },
         select: {
           endDate: true,
+          courseId: true,
           course: { select: { name: true } },
           teachers: { select: { user: { select: { fullName: true } } } },
         },
@@ -97,12 +99,28 @@ export async function getPortal(token: string, db: DbClient = prisma): Promise<P
         where: { groupId: membership.groupId, date: { lte: isoToDate(todayIso) } },
         orderBy: [{ date: "desc" }, { startTime: "desc" }],
         take: LESSON_LIMIT,
-        select: { id: true, date: true, startTime: true, endTime: true, topic: true },
+        select: {
+          id: true,
+          date: true,
+          startTime: true,
+          endTime: true,
+          topic: true,
+          courseTopicId: true,
+          courseTopic: { select: { title: true } },
+        },
       }),
       db.lesson.findFirst({
         where: { groupId: membership.groupId, date: { gte: isoToDate(todayIso) } },
         orderBy: [{ date: "asc" }, { startTime: "asc" }],
-        select: { id: true, date: true, startTime: true, endTime: true, topic: true },
+        select: {
+          id: true,
+          date: true,
+          startTime: true,
+          endTime: true,
+          topic: true,
+          courseTopicId: true,
+          courseTopic: { select: { title: true } },
+        },
       }),
       db.attendance.findMany({
         where: { membershipId: membership.id },
@@ -162,6 +180,11 @@ export async function getPortal(token: string, db: DbClient = prisma): Promise<P
     ]);
 
   const attendanceByLesson = new Map(attendance.map((a) => [a.lessonId, a.status]));
+  const upcomingTopic =
+    nextLesson && !nextLesson.topic && !nextLesson.courseTopicId
+      ? ((await nextTopicForGroup(db, { id: membership.groupId, courseId: group.courseId }))
+          ?.title ?? null)
+      : null;
   const gradeByLesson = new Map(grades.map((g) => [g.lessonId, g]));
   const lessonDtos: PortalLessonDto[] = lessons.map((l) => {
     const grade = gradeByLesson.get(l.id);
@@ -170,7 +193,7 @@ export async function getPortal(token: string, db: DbClient = prisma): Promise<P
       date: dateToIso(l.date),
       startTime: l.startTime,
       endTime: l.endTime,
-      topic: l.topic,
+      topic: l.topic ?? l.courseTopic?.title ?? null,
       attendance: attendanceByLesson.get(l.id) ?? null,
       grade: grade ? decimalToNumber(grade.score) : null,
       gradeComment: grade?.comment ?? null,
@@ -220,7 +243,8 @@ export async function getPortal(token: string, db: DbClient = prisma): Promise<P
           date: dateToIso(nextLesson.date),
           startTime: nextLesson.startTime,
           endTime: nextLesson.endTime,
-          topic: nextLesson.topic,
+          // A lesson not yet given shows the group's next syllabus topic (A-137).
+          topic: nextLesson.topic ?? nextLesson.courseTopic?.title ?? upcomingTopic,
         }
       : null,
     lessons: lessonDtos,

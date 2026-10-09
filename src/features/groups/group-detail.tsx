@@ -40,6 +40,7 @@ import type {
   GroupHistoryDto,
   GroupNoteDto,
 } from "@/server/services/groups/groups.service";
+import type { GroupSyllabusDto } from "@/server/services/settings/syllabus.service";
 import type { MonthGridDto } from "@/server/services/groups/lessons.service";
 import type { GroupHomeworkDto } from "@/server/services/homework/homework.service";
 import type { GroupMaterialsDto } from "@/server/services/materials/materials.service";
@@ -75,6 +76,7 @@ import { GroupStatusBadge } from "./groups-page";
 import { MembersPanel } from "./members-panel";
 import { MoveBranchDialog } from "./move-branch-dialog";
 import { HistoryTab, NotesTab } from "./notes-history";
+import { SyllabusTab } from "./syllabus-tab";
 import { weekdayLabel } from "./weekday";
 
 const TABS = [
@@ -82,6 +84,7 @@ const TABS = [
   "grades",
   "homework",
   "materials",
+  "syllabus",
   "tests",
   "knowledge",
   "notes",
@@ -99,6 +102,7 @@ export function GroupDetail({
   members,
   daysOff,
   notes,
+  syllabus,
   history,
   discounts,
   comments,
@@ -125,6 +129,7 @@ export function GroupDetail({
   members: MembershipDto[];
   daysOff: GroupDayOffDto[];
   notes: GroupNoteDto[];
+  syllabus: GroupSyllabusDto;
   history: Page<GroupHistoryDto>;
   discounts: DiscountDto[];
   comments: StudentCommentDto[];
@@ -422,6 +427,7 @@ export function GroupDetail({
                   grid={grid}
                   canMark={can.mark && !archived}
                   canEdit={editable}
+                  topics={syllabus.topics}
                 />
               </TabsContent>
               <TabsContent value="grades" className="pt-4">
@@ -442,6 +448,9 @@ export function GroupDetail({
                   data={materials}
                   canSet={can.mark && !archived}
                 />
+              </TabsContent>
+              <TabsContent value="syllabus" className="pt-4">
+                <SyllabusTab data={syllabus} />
               </TabsContent>
               <TabsContent value="notes" className="pt-4">
                 <NotesTab groupId={group.id} notes={notes} canEdit={can.update} />

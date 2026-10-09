@@ -273,3 +273,16 @@ export const alertRecipientSchema = z.object({
     .refine((v) => v === "" || /^-?\d{4,20}$/.test(v), "validation.chatId"),
 });
 export type AlertRecipientInput = z.infer<typeof alertRecipientSchema>;
+
+/** A course's syllabus (A-137): topics in teaching order; an existing title keeps its row and its lessons. */
+export const courseSyllabusSchema = z.object({
+  topics: z
+    .array(
+      z.object({
+        title: z.string().trim().min(1, "validation.required").max(200, "validation.tooLong"),
+        note: z.string().trim().max(500, "validation.tooLong").nullable().optional(),
+      }),
+    )
+    .max(300, "validation.max"),
+});
+export type CourseSyllabusInput = z.infer<typeof courseSyllabusSchema>;

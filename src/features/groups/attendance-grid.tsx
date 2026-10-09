@@ -17,6 +17,7 @@ import { cn } from "@/lib/utils";
 import type { AttendanceStatus } from "@/lib/validation/groups";
 import { useDateFormat } from "@/lib/use-date-format";
 import type { MonthGridDto } from "@/server/services/groups/lessons.service";
+import type { CourseTopicDto } from "@/server/services/settings/syllabus.service";
 
 import { ExcelLink } from "@/features/shared/excel-link";
 
@@ -43,12 +44,15 @@ export function AttendanceGrid({
   grid,
   canMark,
   canEdit,
+  topics = [],
 }: {
   groupId: string;
   months: string[];
   grid: MonthGridDto;
   canMark: boolean;
   canEdit: boolean;
+  /** The course syllabus (A-137), offered in the lesson topic dialog. */
+  topics?: CourseTopicDto[];
 }) {
   const t = useTranslations();
   const fmt = useDateFormat();
@@ -187,7 +191,7 @@ export function AttendanceGrid({
                         l.movedFrom
                           ? t("groups.attendance.movedFrom", { date: day(l.movedFrom) })
                           : null,
-                        l.topic ?? t("groups.attendance.setTopic"),
+                        l.topic ?? l.courseTopicTitle ?? t("groups.attendance.setTopic"),
                       ]
                         .filter(Boolean)
                         .join(" · ")}
@@ -215,9 +219,9 @@ export function AttendanceGrid({
                   <th
                     key={l.id}
                     className="max-w-24 truncate px-1 py-1 font-normal"
-                    title={l.topic ?? ""}
+                    title={l.topic ?? l.courseTopicTitle ?? ""}
                   >
-                    {l.topic ?? "—"}
+                    {l.topic ?? l.courseTopicTitle ?? "—"}
                   </th>
                 ))}
               </tr>
@@ -273,6 +277,7 @@ export function AttendanceGrid({
       />
       <TopicDialog
         lesson={topicLesson}
+        topics={topics}
         onOpenChange={(open) => !open && setTopicLesson(null)}
         onSaved={refresh}
       />
@@ -352,10 +357,12 @@ function ExtraLessonDialog({
 
 function TopicDialog({
   lesson,
+  topics,
   onOpenChange,
   onSaved,
 }: {
   lesson: MonthGridDto["lessons"][number] | null;
+  topics: CourseTopicDto[];
   onOpenChange: (open: boolean) => void;
   onSaved: () => void;
 }) {
@@ -374,6 +381,9 @@ function TopicDialog({
         method: "PATCH",
         body: {
           topic: String(data.get("topic") ?? "").trim() || null,
+          ...(topics.length > 0
+            ? { courseTopicId: String(data.get("courseTopicId") ?? "") || null }
+            : {}),
           attachmentUrl: String(data.get("attachmentUrl") ?? "").trim() || null,
         },
       });
@@ -397,6 +407,26 @@ function TopicDialog({
       error={error}
       testId="topic-dialog"
     >
+      {topics.length > 0 && (
+        <div className="space-y-2">
+          <Label htmlFor="course-topic">{t("syllabusTopic")}</Label>
+          <select
+            id="course-topic"
+            name="courseTopicId"
+            defaultValue={lesson?.courseTopicId ?? ""}
+            key={`s-${lesson?.id}`}
+            className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-xs"
+            data-testid="course-topic-select"
+          >
+            <option value="">{t("noSyllabusTopic")}</option>
+            {topics.map((topic) => (
+              <option key={topic.id} value={topic.id}>
+                {topic.sortOrder}. {topic.title}
+              </option>
+            ))}
+          </select>
+        </div>
+      )}
       <div className="space-y-2">
         <Label htmlFor="topic">{t("topic")}</Label>
         <Input id="topic" name="topic" defaultValue={lesson?.topic ?? ""} key={lesson?.id} />

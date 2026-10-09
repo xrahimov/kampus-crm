@@ -201,6 +201,11 @@ export function PortalPage({
             </TabsList>
 
             <TabsContent value="lessons">
+              {portal.nextLesson?.topic && (
+                <p className="mb-3 text-sm" data-testid="portal-next-topic">
+                  {t("lessons.nextTopic", { title: portal.nextLesson.topic })}
+                </p>
+              )}
               {portal.lessons.length === 0 ? (
                 <p className="text-sm text-muted-foreground">{t("lessons.empty")}</p>
               ) : (

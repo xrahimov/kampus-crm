@@ -475,9 +475,27 @@ model Course {
   branch        Branch         @relation(fields: [branchId], references: [id])
   gradingSystem GradingSystem? @relation(fields: [gradingSystemId], references: [id], onDelete: SetNull)
   groups        Group[]
+  topics        CourseTopic[]
 
   @@index([branchId, isArchived])
   @@index([gradingSystemId])
+}
+
+/// Round 2 B9 (A-137): the course's syllabus, one row per topic in teaching order.
+/// A group's lessons take the next uncovered topic when attendance is first marked.
+model CourseTopic {
+  id        String   @id @default(cuid())
+  courseId  String
+  sortOrder Int
+  title     String
+  note      String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  course  Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  lessons Lesson[]
+
+  @@index([courseId, sortOrder])
 }
 
 /// "Xonalar": per branch, with a seat capacity.
@@ -687,12 +705,15 @@ model Lesson {
   startTime     String
   endTime       String
   topic         String?
+  /// The syllabus topic this lesson covers (A-137); `topic` stays for a free-text one.
+  courseTopicId String?
   attachmentUrl String?
   isExtra       Boolean  @default(false)
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
 
   group       Group            @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  courseTopic CourseTopic?     @relation(fields: [courseTopicId], references: [id], onDelete: SetNull)
   attendances Attendance[]
   grades      Grade[]
   videoRooms  VideoRoom[]
@@ -703,6 +724,7 @@ model Lesson {
   movedFrom   GroupDayOff?
 
   @@unique([groupId, date, startTime])
+  @@index([courseTopicId])
   @@index([groupId, date])
 }
 
