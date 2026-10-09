@@ -11,6 +11,7 @@ import type {
   StudentUpdateInput,
 } from "@/lib/validation/students";
 import { recordAudit } from "@/server/audit/audit";
+import { applyFamilyDiscount } from "@/server/services/students/families.service";
 import {
   assertReferrer,
   creditReferral,
@@ -58,6 +59,9 @@ export interface StudentGroupDto {
   nextPaymentDate: string | null;
   monthlyPrice: number;
   discount: MembershipBalance["discount"];
+  /** Unpaid parts of a split fee not due yet (A-123). */
+  deferred: number;
+  instalments: MembershipBalance["instalments"];
   gradeAverage: number | null;
 }
 
@@ -215,6 +219,8 @@ function toGroupDto(
     nextPaymentDate: balance?.nextPaymentDate ?? null,
     monthlyPrice: balance?.monthlyPrice ?? 0,
     discount: balance?.discount ?? null,
+    deferred: balance?.deferred ?? 0,
+    instalments: balance?.instalments ?? [],
     gradeAverage: average(m.grades),
   };
 }
@@ -659,6 +665,8 @@ export async function createStudent(
       }
       // Brought by a friend and already in a group: the friend is credited now (A-120).
       await creditReferral(tx, row.id, actor);
+      // A sibling's new group gets the family discount (A-123).
+      await applyFamilyDiscount(tx, row.id);
       return row.id;
     });
     return loadDetail(db, id);

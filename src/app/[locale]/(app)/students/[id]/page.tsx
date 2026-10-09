@@ -11,6 +11,7 @@ import { qrSvg } from "@/server/qr/qr";
 import { can } from "@/server/rbac/authorize";
 import { getStudentProgress } from "@/server/services/exams/exams.service";
 import { listStudentAdjustments } from "@/server/services/students/adjustments.service";
+import { getStudentFamily } from "@/server/services/students/families.service";
 import { getPaymentOptions, listPayments } from "@/server/services/students/payments.service";
 import {
   getStudent,
@@ -73,6 +74,7 @@ export default async function Page({ params, searchParams }: Props) {
     sms,
     calls,
     adjustments,
+    family,
   ] = await Promise.all([
     listStudentComments(current.actor, id),
     listStudentHistory(current.actor, id, list),
@@ -89,6 +91,7 @@ export default async function Page({ params, searchParams }: Props) {
     listStudentSms(current.actor, id),
     listStudentCalls(current.actor, id),
     listStudentAdjustments(current.actor, id),
+    getStudentFamily(current.actor, id),
   ]);
 
   return (
@@ -107,6 +110,7 @@ export default async function Page({ params, searchParams }: Props) {
       options={options}
       paymentOptions={paymentOptions}
       branches={current.branches}
+      family={family}
       can={{
         update: can(current.actor, "students.update"),
         delete: can(current.actor, "students.delete"),
@@ -116,6 +120,7 @@ export default async function Page({ params, searchParams }: Props) {
         groups: can(current.actor, "groups.update"),
         leads: can(current.actor, "leads.create"),
         sms: can(current.actor, "sms.send"),
+        discounts: can(current.actor, "discounts.give"),
       }}
     />
   );

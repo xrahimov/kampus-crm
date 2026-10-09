@@ -51,6 +51,7 @@ export type BotMessageKind =
   | "materialAdded"
   | "paymentReceived"
   | "debtor"
+  | "instalment"
   | "lessonCancelled"
   | "lessonMoved"
   | "lessonRestored"

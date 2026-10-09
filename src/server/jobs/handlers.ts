@@ -12,6 +12,7 @@ import { runDailyNotifications } from "@/server/services/dashboard/notifications
 import { runDailyDebtCollection } from "@/server/services/debts/debts.service";
 import { purgeOldRecordings } from "@/server/services/materials/materials.service";
 import { runDailyAutoSms } from "@/server/services/sms/auto-sms.service";
+import { runInstalmentReminders } from "@/server/services/students/instalments.service";
 import {
   reminderSlotKey,
   runLessonReminders,
@@ -69,6 +70,7 @@ export function registerJobHandlers(): void {
     await runDailyNotifications(db, day);
     // Debt collection (A-112): reconcile the cases, then Telegram → SMS → manager task.
     await runDailyDebtCollection(db, day);
+    await runInstalmentReminders(db, day);
     // Old lesson recordings go once a day too (Settings → Integrations → Video lessons).
     const purged = await purgeOldRecordings(db);
     if (purged > 0) console.log(`[worker] deleted ${purged} old lesson recording(s)`);

@@ -134,3 +134,101 @@ export function firstUnpaidMonth(
   }
   return null;
 }
+
+/* ----- Instalments (A-123) ------------------------------------------------------- */
+
+export interface InstalmentLike {
+  id: string;
+  /** "YYYY-MM-01": the charged month this part belongs to. */
+  month: string;
+  dueDate: string;
+  amount: number;
+}
+
+export interface InstalmentPart extends InstalmentLike {
+  /** What is still unpaid of this part once the credit is applied in order. */
+  remaining: number;
+  paid: boolean;
+}
+
+export interface InstalmentAllocation {
+  /** The parts of every split month, charged or still planned, in month and due-day order. */
+  parts: InstalmentPart[];
+  /** Unpaid money whose day has not come yet: owed, but not a debt today. */
+  deferred: number;
+  /** The day the first unpaid charge or part was due, or null when nothing due is unpaid. */
+  firstUnpaidDate: string | null;
+  /** The day the earliest unpaid part not yet due falls on, or null. */
+  nextDueDate: string | null;
+}
+
+const round2 = (v: number) => Math.round(v * 100) / 100;
+
+/**
+ * Applies the credit to the charges in month order and, inside a month that was
+ * split, to its parts in due-day order. The parts schedule the charge: what they
+ * do not add up to is due with the month, and a part is a debt only once its day
+ * has passed. The parts of a split month that is not charged yet are planned, not
+ * owed: they are listed, with whatever credit is left applied to them in order,
+ * but count towards nothing.
+ */
+export function allocateInstalments(
+  charges: Array<{ month: string; amount: number }>,
+  instalments: InstalmentLike[],
+  credit: number,
+  today: string,
+): InstalmentAllocation {
+  const byMonth = new Map<string, InstalmentLike[]>();
+  for (const part of instalments) {
+    const list = byMonth.get(part.month) ?? [];
+    list.push(part);
+    byMonth.set(part.month, list);
+  }
+  const parts: InstalmentPart[] = [];
+  let deferred = 0;
+  let firstUnpaidDate: string | null = null;
+  let nextDueDate: string | null = null;
+  let running = credit;
+  const unpaidOn = (date: string) => {
+    if (firstUnpaidDate === null || date < firstUnpaidDate) firstUnpaidDate = date;
+  };
+  for (const charge of [...charges].sort((a, b) => a.month.localeCompare(b.month))) {
+    const split = (byMonth.get(charge.month) ?? []).sort(
+      (a, b) => a.dueDate.localeCompare(b.dueDate) || a.id.localeCompare(b.id),
+    );
+    let left = charge.amount;
+    for (const part of split) {
+      const amount = Math.max(0, Math.min(part.amount, left));
+      left -= amount;
+      const covered = Math.max(0, Math.min(amount, running));
+      running -= amount;
+      const remaining = round2(amount - covered);
+      parts.push({ ...part, amount, remaining, paid: remaining <= 0 });
+      if (remaining <= 0) continue;
+      if (part.dueDate > today) {
+        deferred += remaining;
+        if (nextDueDate === null || part.dueDate < nextDueDate) nextDueDate = part.dueDate;
+      } else {
+        unpaidOn(part.dueDate);
+      }
+    }
+    if (left > 0) {
+      const covered = Math.max(0, Math.min(left, running));
+      running -= left;
+      if (round2(left - covered) > 0) unpaidOn(charge.month);
+    }
+  }
+  const charged = new Set(charges.map((c) => c.month));
+  for (const month of [...byMonth.keys()].filter((m) => !charged.has(m)).sort()) {
+    const split = [...byMonth.get(month)!].sort(
+      (a, b) => a.dueDate.localeCompare(b.dueDate) || a.id.localeCompare(b.id),
+    );
+    for (const part of split) {
+      const covered = Math.max(0, Math.min(part.amount, running));
+      running -= part.amount;
+      const remaining = round2(part.amount - covered);
+      parts.push({ ...part, remaining, paid: remaining <= 0 });
+    }
+  }
+  return { parts, deferred: round2(deferred), firstUnpaidDate, nextDueDate };
+}

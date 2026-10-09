@@ -990,6 +990,8 @@ async function seedIntegrations(organizationId: string, branches: Map<string, st
     DAY_BEFORE_FIRST_LESSON:
       "{studentName}, {groupName} guruhidagi birinchi dars ertaga, {date}. {centerName}",
     ADDED_TO_GROUP: "{studentName}, siz {groupName} guruhiga qo'shildingiz. {centerName}",
+    INSTALMENT_DUE:
+      "{studentName}, {groupName} guruhi uchun to'lovning {amount} qismi {date} gacha to'lanishi kerak. {centerName}",
   };
   const activeEvents = new Set(["PAYMENT_MADE", "DEBTOR"]);
   for (const [event, template] of Object.entries(autoDefaults)) {

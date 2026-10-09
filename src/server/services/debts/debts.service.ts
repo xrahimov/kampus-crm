@@ -154,7 +154,8 @@ async function debtTotals(
       since: null,
       groups: [],
     };
-    t.total += b.balance;
+    // A part of a split fee whose day has not come is owed but not yet a debt (A-123).
+    t.total += b.balance + b.deferred;
     t.groups.push({
       membershipId: m.id,
       groupId: m.group.id,

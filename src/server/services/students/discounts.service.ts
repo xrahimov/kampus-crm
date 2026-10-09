@@ -22,6 +22,8 @@ export interface DiscountDto {
   givenAt: string;
   comment: string | null;
   createdByName: string | null;
+  /** Set when the discount is the family's (A-123); it is managed on the student's page. */
+  familyId: string | null;
 }
 
 const include = {
@@ -56,6 +58,7 @@ function toDto(row: Row): DiscountDto {
     givenAt: dateToIso(row.givenAt),
     comment: row.comment,
     createdByName: row.createdBy?.fullName ?? null,
+    familyId: row.familyId,
   };
 }
 

@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import {
   addMonthsIso,
+  allocateInstalments,
   chargeAmount,
   chargeableMonths,
   chargedFrom,
@@ -111,5 +112,86 @@ describe("fee engine (A-10)", () => {
       total: 4,
       counted: 2,
     });
+  });
+});
+
+describe("instalments (A-123)", () => {
+  const charges = [
+    { month: "2026-09-01", amount: 300_000 },
+    { month: "2026-10-01", amount: 300_000 },
+  ];
+  // Out of order on purpose: the engine sorts the parts by their day.
+  const parts = [
+    { id: "b", month: "2026-10-01", dueDate: "2026-10-20", amount: 150_000 },
+    { id: "a", month: "2026-10-01", dueDate: "2026-10-05", amount: 150_000 },
+  ];
+
+  it("pays the parts in due-day order and defers the ones not due yet", () => {
+    const r = allocateInstalments(charges, parts, 450_000, "2026-10-09");
+    expect(r.parts.map((p) => [p.id, p.paid, p.remaining])).toEqual([
+      ["a", true, 0],
+      ["b", false, 150_000],
+    ]);
+    expect(r.deferred).toBe(150_000);
+    expect(r.firstUnpaidDate).toBeNull();
+    expect(r.nextDueDate).toBe("2026-10-20");
+  });
+
+  it("counts a part as due once its day has passed", () => {
+    const r = allocateInstalments(charges, parts, 300_000, "2026-10-09");
+    expect(r.parts.map((p) => p.remaining)).toEqual([150_000, 150_000]);
+    expect(r.deferred).toBe(150_000);
+    expect(r.firstUnpaidDate).toBe("2026-10-05");
+  });
+
+  it("covers a part partly and leaves what the parts do not schedule due with the month", () => {
+    const r = allocateInstalments(
+      [{ month: "2026-10-01", amount: 400_000 }],
+      parts,
+      100_000,
+      "2026-10-01",
+    );
+    expect(r.parts.map((p) => p.remaining)).toEqual([50_000, 150_000]);
+    expect(r.deferred).toBe(200_000);
+    expect(r.firstUnpaidDate).toBe("2026-10-01");
+  });
+
+  it("lists the parts of a month not charged yet as planned, covered by the credit left over", () => {
+    const r = allocateInstalments(
+      [{ month: "2026-10-01", amount: 300_000 }],
+      [
+        { id: "n2", month: "2026-11-01", dueDate: "2026-11-16", amount: 150_000 },
+        { id: "n1", month: "2026-11-01", dueDate: "2026-11-01", amount: 150_000 },
+      ],
+      350_000,
+      "2026-10-09",
+    );
+    expect(r.parts.map((p) => [p.id, p.paid, p.remaining])).toEqual([
+      ["n1", false, 100_000],
+      ["n2", false, 150_000],
+    ]);
+    expect(r.deferred).toBe(0);
+    expect(r.firstUnpaidDate).toBeNull();
+    expect(r.nextDueDate).toBeNull();
+  });
+
+  it("trims parts that add up to more than the charge", () => {
+    const r = allocateInstalments(
+      [{ month: "2026-10-01", amount: 200_000 }],
+      parts,
+      0,
+      "2026-10-30",
+    );
+    expect(r.parts.map((p) => p.amount)).toEqual([150_000, 50_000]);
+    expect(r.deferred).toBe(0);
+    expect(r.firstUnpaidDate).toBe("2026-10-05");
+  });
+
+  it("is the plain engine without parts", () => {
+    const r = allocateInstalments(charges, [], 100_000, "2026-10-09");
+    expect(r.parts).toEqual([]);
+    expect(r.deferred).toBe(0);
+    expect(r.firstUnpaidDate).toBe("2026-09-01");
+    expect(r.nextDueDate).toBeNull();
   });
 });
