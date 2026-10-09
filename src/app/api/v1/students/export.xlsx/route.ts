@@ -28,6 +28,7 @@ export const GET = route({ permission: "students.view" }, async ({ current, requ
     "teacherId",
     "groupStatus",
     "paymentStatus",
+    "ids",
   ]) {
     raw[key] = params.get(key) ?? undefined;
   }

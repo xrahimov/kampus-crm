@@ -115,6 +115,9 @@ export function LeadsBoard({
   const [deletingBoard, setDeletingBoard] = useState(false);
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [addingToGroup, setAddingToGroup] = useState(false);
+  // Bulk actions on the ticked cards (A-132).
+  const [bulkConfirm, setBulkConfirm] = useState<"archive" | "restore" | null>(null);
+  const [bulkSms, setBulkSms] = useState(false);
   const [dragging, setDragging] = useState<string | null>(null);
   const [dropTarget, setDropTarget] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
@@ -151,6 +154,21 @@ export function LeadsBoard({
     setError(null);
     try {
       await api(`/leads/${lead.id}/${lead.isArchived ? "restore" : "archive"}`, { method: "POST" });
+      refresh();
+    } catch (e) {
+      fail(e);
+    }
+  }
+
+  async function bulk(body: { action: "archive" | "restore" | "move"; columnId?: string }) {
+    setError(null);
+    try {
+      const result = await api<{ done: number; skipped: number }>("/leads/bulk", {
+        method: "POST",
+        body: { ...body, leadIds: [...selected] },
+      });
+      setSelected(new Set());
+      setNotice(tl("bulk.done", { done: result.done, skipped: result.skipped }));
       refresh();
     } catch (e) {
       fail(e);
@@ -362,6 +380,62 @@ export function LeadsBoard({
         </p>
       )}
 
+      {board && can.update && selected.size > 0 && (
+        <div
+          className="flex flex-wrap items-center gap-2 rounded-md border bg-muted/40 px-3 py-2 text-sm"
+          data-testid="leads-bulk"
+        >
+          <span className="font-medium" data-testid="leads-bulk-count">
+            {tl("bulk.selected", { count: selected.size })}
+          </span>
+          {!archived && columns.length > 1 && (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" size="sm" data-testid="bulk-move">
+                  {tl("bulk.move")}
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="start">
+                {columns.map((c) => (
+                  <DropdownMenuItem
+                    key={c.id}
+                    onSelect={() => void bulk({ action: "move", columnId: c.id })}
+                  >
+                    {c.name}
+                  </DropdownMenuItem>
+                ))}
+              </DropdownMenuContent>
+            </DropdownMenu>
+          )}
+          {can.sms && !archived && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setBulkSms(true)}
+              data-testid="bulk-sms"
+            >
+              {tl("bulk.sms")}
+            </Button>
+          )}
+          <Button
+            variant={archived ? "outline" : "destructive"}
+            size="sm"
+            onClick={() => setBulkConfirm(archived ? "restore" : "archive")}
+            data-testid="bulk-archive"
+          >
+            {archived ? tl("bulk.restore") : tl("bulk.archive")}
+          </Button>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => setSelected(new Set())}
+            data-testid="bulk-clear"
+          >
+            {tl("bulk.clear")}
+          </Button>
+        </div>
+      )}
+
       {!board ? (
         <Card>
           <EmptyState title={tl("noBoards")} hint={can.update ? tl("noBoardsHint") : undefined} />
@@ -447,7 +521,7 @@ export function LeadsBoard({
                     columns={columns}
                     selected={selected.has(lead.id)}
                     onSelect={
-                      can.groups && !lead.isArchived
+                      can.groups || can.update
                         ? (checked) =>
                             setSelected((s) => {
                               const next = new Set(s);
@@ -646,6 +720,25 @@ export function LeadsBoard({
           }}
         />
       )}
+      <ConfirmDialog
+        open={bulkConfirm !== null}
+        onOpenChange={(open) => !open && setBulkConfirm(null)}
+        title={
+          bulkConfirm === "restore"
+            ? tl("bulk.restoreTitle", { count: selected.size })
+            : tl("bulk.archiveTitle", { count: selected.size })
+        }
+        description={bulkConfirm === "restore" ? tl("bulk.restoreText") : tl("bulk.archiveText")}
+        confirmLabel={bulkConfirm === "restore" ? tl("bulk.restore") : tl("bulk.archive")}
+        onConfirm={() => bulk({ action: bulkConfirm ?? "archive" })}
+      />
+      <SendSmsDialog
+        open={bulkSms}
+        onOpenChange={setBulkSms}
+        target={selected.size > 0 ? { kind: "leads", leadIds: [...selected] } : null}
+        title={tl("bulk.smsTitle", { count: selected.size })}
+        onSent={refresh}
+      />
       <TrialDialog
         lead={trialLead}
         groups={options.groups}

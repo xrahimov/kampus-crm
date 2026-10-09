@@ -102,8 +102,38 @@ export const studentFilterSchema = z.object({
   teacherId: idSchema.optional(),
   groupStatus: z.enum(GROUP_STATUS_FILTERS).optional(),
   paymentStatus: z.enum(PAYMENT_STATUS_FILTERS).optional(),
+  /** Only these students (A-132): the Excel export of a selection; "a,b,c" in a URL. */
+  ids: z
+    .preprocess(
+      (v) => (typeof v === "string" ? v.split(",").filter(Boolean) : v),
+      z.array(idSchema).min(1).max(500),
+    )
+    .optional(),
 });
 export type StudentFilters = z.infer<typeof studentFilterSchema>;
+
+/** Bulk actions on the students list (A-132): the ticked students and what to do with them. */
+const bulkIds = z.array(idSchema).min(1, "validation.required").max(500, "validation.max");
+export const bulkStudentsSchema = z.discriminatedUnion("action", [
+  z.object({ action: z.literal("archive"), studentIds: bulkIds }),
+  z.object({ action: z.literal("restore"), studentIds: bulkIds }),
+  z.object({
+    action: z.literal("addToGroup"),
+    studentIds: bulkIds,
+    groupId: idSchema,
+    joinedAt: dateOnlySchema,
+    status: z.enum(MEMBERSHIP_STATUSES).default("ACTIVE"),
+  }),
+  z.object({
+    action: z.literal("discount"),
+    studentIds: bulkIds,
+    groupId: idSchema,
+    discountedPrice: money,
+    months: z.coerce.number().int().min(1, "validation.min").max(36, "validation.max"),
+    comment: text(500).nullable().optional(),
+  }),
+]);
+export type BulkStudentsInput = z.infer<typeof bulkStudentsSchema>;
 
 export const customFieldSchema = z.object({
   name: z.string().trim().min(1, "validation.required").max(60, "validation.tooLong"),

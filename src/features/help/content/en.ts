@@ -467,6 +467,13 @@ export const en: HelpContent = {
             "The buttons at the top: **Add student**, **Excel** for the list, **Import from Excel**, **Send SMS** to the filtered students and **Badges**, which prints an ID badge with a QR code for each student in the list.",
           ],
         },
+        bulk: {
+          title: "Doing things to many at once",
+          body: [
+            "Every row on the students list has a checkbox, and the header checkbox ticks the whole page. As soon as something is ticked a bar appears with the actions for the selection: **Add to group** (one group, join date and status for all of them), **Give a discount** (a discounted price and months on each one's membership in the chosen group), **Send SMS**, **Excel** with only the ticked students, and **Archive**, or **Restore** in the archive view. Students the action does not apply to, such as those already in the group, are skipped and counted in the result line.",
+            "The leads board works the same way: tick cards, then **Add to group**, **Move to** a column, **Send SMS**, **Archive** or **Restore** from the bar above the board.",
+          ],
+        },
         add: {
           title: "Adding a student",
           body: [

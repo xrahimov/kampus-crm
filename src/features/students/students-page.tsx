@@ -14,6 +14,7 @@ import { Avatar } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -44,6 +45,7 @@ import { parseDateOnly } from "@/lib/dates";
 import { useDateFormat } from "@/lib/use-date-format";
 import { useMoneyFormat } from "@/lib/use-money-format";
 import type { Page } from "@/lib/validation/common";
+import type { BulkResult } from "@/server/services/students/bulk.service";
 import {
   GROUP_STATUS_FILTERS,
   PAYMENT_STATUS_FILTERS,
@@ -59,6 +61,7 @@ import { SendSmsDialog } from "@/features/sms/send-sms-dialog";
 import { ExcelLink } from "@/features/shared/excel-link";
 import { ImportDialog } from "@/features/shared/import-dialog";
 
+import { BulkStudentsDialog, type BulkMode } from "./bulk-dialog";
 import { CommentDialog } from "./comment-dialog";
 import { StudentDialog } from "./student-dialog";
 import { MemberStatusBadge } from "./status-badge";
@@ -106,10 +109,12 @@ export function StudentsPage({
     activate: boolean;
     sms: boolean;
     pay: boolean;
+    discount: boolean;
   };
 }) {
   const t = useTranslations();
   const ts = useTranslations("students");
+  const tb = useTranslations("students.bulk");
   const fmt = useDateFormat();
   const router = useRouter();
   const pathname = usePathname();
@@ -128,6 +133,11 @@ export function StudentsPage({
   const [importingBalances, setImportingBalances] = useState(false);
   const [importingParents, setImportingParents] = useState(false);
   const [notice, setNotice] = useState<string | null>(null);
+  // Bulk actions (A-132): the ticked rows of this page.
+  const [selected, setSelected] = useState<Set<string>>(new Set());
+  const [bulkMode, setBulkMode] = useState<BulkMode | null>(null);
+  const [bulkConfirm, setBulkConfirm] = useState<"archive" | "restore" | null>(null);
+  const [bulkSms, setBulkSms] = useState(false);
   const { options: branchOptions, defaultId } = creatableBranches(
     branches,
     actorBranchIds,
@@ -136,6 +146,27 @@ export function StudentsPage({
   );
   const refresh = () => startTransition(() => router.refresh());
   const archived = filters.archived ?? false;
+  const pageIds = page.items.map((s) => s.id);
+  const picked = pageIds.filter((id) => selected.has(id));
+  const allPicked = pageIds.length > 0 && picked.length === pageIds.length;
+  const canBulk = can.update || can.delete || can.sms || can.discount;
+
+  function toggleAll(checked: boolean) {
+    setSelected((s) => {
+      const next = new Set(s);
+      for (const id of pageIds) {
+        if (checked) next.add(id);
+        else next.delete(id);
+      }
+      return next;
+    });
+  }
+
+  function bulkDone(result: BulkResult) {
+    setSelected(new Set());
+    setNotice(tb("done", { done: result.done, skipped: result.skipped }));
+    refresh();
+  }
 
   function setParam(key: string, value: string | null) {
     const params = new URLSearchParams(searchParams.toString());
@@ -281,6 +312,71 @@ export function StudentsPage({
         </p>
       )}
 
+      {canBulk && picked.length > 0 && (
+        <div
+          className="flex flex-wrap items-center gap-2 rounded-md border bg-muted/40 px-3 py-2 text-sm"
+          data-testid="students-bulk"
+        >
+          <span className="font-medium" data-testid="students-bulk-count">
+            {tb("selected", { count: picked.length })}
+          </span>
+          {can.update && !archived && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setBulkMode("addToGroup")}
+              data-testid="bulk-add-to-group"
+            >
+              {tb("addToGroup")}
+            </Button>
+          )}
+          {can.discount && !archived && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setBulkMode("discount")}
+              data-testid="bulk-discount"
+            >
+              {tb("discount")}
+            </Button>
+          )}
+          {can.sms && !archived && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setBulkSms(true)}
+              data-testid="bulk-sms"
+            >
+              {tb("sms")}
+            </Button>
+          )}
+          <ExcelLink
+            path="/students/export.xlsx"
+            params={{ ids: picked.join(","), archived: archived ? "true" : null }}
+            label={tb("excel")}
+            testId="bulk-excel"
+          />
+          {can.delete && (
+            <Button
+              variant={archived ? "outline" : "destructive"}
+              size="sm"
+              onClick={() => setBulkConfirm(archived ? "restore" : "archive")}
+              data-testid="bulk-archive"
+            >
+              {archived ? tb("restore") : tb("archive")}
+            </Button>
+          )}
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => setSelected(new Set())}
+            data-testid="bulk-clear"
+          >
+            {tb("clear")}
+          </Button>
+        </div>
+      )}
+
       <div className="flex flex-wrap items-end gap-3">
         <div className="min-w-48 space-y-1">
           <Label className="text-xs text-muted-foreground">{t("common.search")}</Label>
@@ -334,6 +430,16 @@ export function StudentsPage({
           <Table>
             <TableHeader>
               <TableRow>
+                {canBulk && (
+                  <TableHead className="w-8">
+                    <Checkbox
+                      checked={allPicked}
+                      onCheckedChange={(c) => toggleAll(c === true)}
+                      aria-label={tb("selectAll")}
+                      data-testid="students-select-all"
+                    />
+                  </TableHead>
+                )}
                 <TableHead className="w-12">{ts("columns.photo")}</TableHead>
                 <TableHead>
                   <SortHeader field="fullName">{ts("columns.fullName")}</SortHeader>
@@ -353,7 +459,27 @@ export function StudentsPage({
             </TableHeader>
             <TableBody>
               {page.items.map((s) => (
-                <TableRow key={s.id} data-testid="student-row">
+                <TableRow
+                  key={s.id}
+                  data-testid="student-row"
+                  data-selected={selected.has(s.id) || undefined}
+                >
+                  {canBulk && (
+                    <TableCell>
+                      <Checkbox
+                        checked={selected.has(s.id)}
+                        onCheckedChange={(c) =>
+                          setSelected((prev) => {
+                            const next = new Set(prev);
+                            if (c === true) next.add(s.id);
+                            else next.delete(s.id);
+                            return next;
+                          })
+                        }
+                        aria-label={tb("select", { name: s.fullName })}
+                      />
+                    </TableCell>
+                  )}
                   <TableCell>
                     <Avatar src={s.photoUrl} name={s.fullName} />
                   </TableCell>
@@ -572,6 +698,38 @@ export function StudentsPage({
           q: searchParams.get("q") ?? undefined,
         }}
         onSent={refresh}
+      />
+      <SendSmsDialog
+        open={bulkSms}
+        onOpenChange={setBulkSms}
+        target={picked.length > 0 ? { kind: "students", studentIds: picked } : null}
+        title={tb("smsTitle", { count: picked.length })}
+        onSent={refresh}
+      />
+      <BulkStudentsDialog
+        mode={bulkMode}
+        studentIds={picked}
+        groups={options.groups}
+        onOpenChange={(open) => !open && setBulkMode(null)}
+        onDone={bulkDone}
+      />
+      <ConfirmDialog
+        open={bulkConfirm !== null}
+        onOpenChange={(open) => !open && setBulkConfirm(null)}
+        title={
+          bulkConfirm === "restore"
+            ? tb("restoreTitle", { count: picked.length })
+            : tb("archiveTitle", { count: picked.length })
+        }
+        description={bulkConfirm === "restore" ? tb("restoreText") : tb("archiveText")}
+        confirmLabel={bulkConfirm === "restore" ? tb("restore") : tb("archive")}
+        onConfirm={async () => {
+          const result = await api<BulkResult>("/students/bulk", {
+            method: "POST",
+            body: { action: bulkConfirm, studentIds: picked },
+          });
+          bulkDone(result);
+        }}
       />
     </div>
   );

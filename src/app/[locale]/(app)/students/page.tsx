@@ -65,6 +65,7 @@ export default async function Page({
         activate: can(current.actor, "groups.update"),
         sms: can(current.actor, "sms.send"),
         pay: can(current.actor, "payments.create"),
+        discount: can(current.actor, "discounts.give"),
       }}
     />
   );

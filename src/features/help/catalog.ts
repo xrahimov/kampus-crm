@@ -166,6 +166,7 @@ export const HELP_ARTICLES = [
     path: "/students",
     sections: [
       { id: "list", screenshot: "students" },
+      { id: "bulk" },
       { id: "add", screenshot: "student-form" },
       { id: "profile", screenshot: "student-profile" },
       { id: "groupsTab" },
