@@ -242,3 +242,10 @@ export const materialSchema = z
     }
   });
 export type MaterialInput = z.output<typeof materialSchema>;
+
+/** Attendance by QR (A-139): the badge's code, and the lesson it is for when scanned from a lesson. */
+export const attendanceScanSchema = z.object({
+  code: z.string().trim().min(1, "validation.required").max(200, "validation.tooLong"),
+  lessonId: idSchema.optional(),
+});
+export type AttendanceScanInput = z.infer<typeof attendanceScanSchema>;
