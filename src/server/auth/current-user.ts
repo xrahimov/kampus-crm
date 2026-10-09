@@ -42,10 +42,13 @@ export async function resolveCurrentUser(
     include: {
       roles: { include: { role: true } },
       branches: { include: { branch: true } },
+      organization: { select: { suspendedAt: true } },
       _count: { select: { groupsTaught: true } },
     },
   });
   if (!user || user.isArchived) return null;
+  // A suspended centre (A-144) signs its people out; the site owner keeps working.
+  if (user.organization.suspendedAt && !user.isSiteOwner) return null;
 
   const roles = user.roles.filter((r) => r.role.isActive).map((r) => r.role);
   const permissions = Array.from(new Set(roles.flatMap((r) => r.permissions)));

@@ -7,6 +7,7 @@ import { prisma, type DbClient } from "@/server/db/prisma";
 import { AppError } from "@/server/errors/app-error";
 import { authorizeSiteOwner, type Actor } from "@/server/rbac/authorize";
 
+import { organizationUsage, type OrganizationUsage } from "./owner-console.service";
 import { mustFind, prismaCode } from "./shared";
 
 /*
@@ -29,12 +30,15 @@ export const SYSTEM_ROLE_NAMES: Record<(typeof SYSTEM_ROLES)[number], string> = 
   OTHER: "Other",
 };
 
-export interface OrganizationDto {
+export interface OrganizationDto extends OrganizationUsage {
   id: string;
   name: string;
   /** The centre's own address, e.g. "kingston.kampus.uz" (A-114); null = the server's domain. */
   domain: string | null;
   createdAt: string;
+  /** Set while the site owner keeps the centre's people out (A-144). */
+  suspendedAt: string | null;
+  suspendedReason: string | null;
   branches: Array<{ id: string; name: string; isActive: boolean }>;
   ceo: { fullName: string; phone: string } | null;
   staffCount: number;
@@ -111,14 +115,18 @@ const include = {
 type Row = Prisma.OrganizationGetPayload<{ include: typeof include }>;
 
 async function toDto(db: DbClient, row: Row): Promise<OrganizationDto> {
-  const studentsCount = await db.student.count({
-    where: { isArchived: false, branch: { organizationId: row.id } },
-  });
+  const [studentsCount, usage] = await Promise.all([
+    db.student.count({ where: { isArchived: false, branch: { organizationId: row.id } } }),
+    organizationUsage(db, row.id),
+  ]);
   return {
+    ...usage,
     id: row.id,
     name: row.name,
     domain: row.domain,
     createdAt: row.createdAt.toISOString(),
+    suspendedAt: row.suspendedAt?.toISOString() ?? null,
+    suspendedReason: row.suspendedReason,
     branches: row.branches,
     ceo: row.users[0] ?? null,
     staffCount: row._count.users,

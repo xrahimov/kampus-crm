@@ -453,6 +453,8 @@
     "importGroupMissing": "No group with this name in this branch",
     "importPaymentExists": "This payment is already in the student's history",
     "soffKindMismatch": "The file is not the export this import expects",
+    "organizationSuspended": "This centre is suspended. Contact the server's owner.",
+    "ownOrganization": "You cannot suspend your own centre.",
     "debtCaseClosed": "This debt is already closed.",
     "scheduleClash": "The room or the teacher is already busy at this time.",
     "familyOther": "This student already belongs to another family.",
@@ -980,7 +982,22 @@
       "ceoPasswordHint": "At least 8 characters. Tell it to the CEO in person; it is never shown again.",
       "staffCount": "Staff",
       "studentsCount": "Students",
-      "yours": "yours"
+      "yours": "yours",
+      "groupsCount": "Groups",
+      "archivedCount": "(+{count} archived)",
+      "storage": "Files",
+      "lastSignIn": "Last sign-in",
+      "never": "never",
+      "integrations": "Integrations",
+      "suspended": "Suspended",
+      "suspend": "Suspend",
+      "resume": "Resume",
+      "suspendTitle": "Suspend this centre?",
+      "suspendText": "Nobody from “{name}” can sign in while it is suspended, and everyone signed in is signed out. Its data stays as it is; Resume lets them back in.",
+      "resumeTitle": "Resume this centre?",
+      "resumeText": "People of “{name}” can sign in again.",
+      "reason": "Reason (shown to you only)",
+      "export": "Export data"
     },
     "system": {
       "title": "Server status",
@@ -4118,7 +4135,10 @@
         },
         "organization": {
           "create": "Organisation created",
-          "update": "Organisation renamed"
+          "update": "Organisation renamed",
+          "suspend": "Centre suspended",
+          "resume": "Centre resumed",
+          "export": "Centre data exported"
         },
         "balance": {
           "adjust": "Balance adjusted",

@@ -343,6 +343,7 @@ export const HELP_ARTICLES = [
       { id: "create" },
       { id: "domain" },
       { id: "status" },
+      { id: "console" },
       { id: "afterwards" },
     ],
   },

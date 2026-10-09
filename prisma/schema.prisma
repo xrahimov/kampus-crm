@@ -16,14 +16,17 @@ datasource db {
 // ---------------------------------------------------------------------------
 
 model Organization {
-  id        String   @id @default(cuid())
-  name      String
-  logoUrl   String?
+  id              String    @id @default(cuid())
+  name            String
+  logoUrl         String?
   /// The centre's own address (A-114), e.g. "kingston.kampus.uz": the login page
   /// carries its name there and student links use it. Null = the server's domain.
-  domain    String?  @unique
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  domain          String?   @unique
+  /// Set by the site owner (A-144): nobody of the centre can sign in while it is set.
+  suspendedAt     DateTime?
+  suspendedReason String?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
 
   branches          Branch[]
   users             User[]

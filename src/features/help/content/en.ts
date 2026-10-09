@@ -1131,6 +1131,12 @@ export const en: HelpContent = {
             },
           ],
         },
+        console: {
+          title: "Usage, suspending and export",
+          body: [
+            "Settings → Organisations shows, per centre, how many staff, students (active and archived) and groups it has, how much space its uploaded files take, when anyone from it last signed in and which integrations are switched on. The row menu has **Export data**: one JSON file with every record of the centre (branches, staff without passwords, courses, groups, students, payments, attendance, grades, leads, finance and more), for the centre's owner to keep or to move elsewhere. **Suspend** closes a centre: nobody from it can sign in, everyone signed in is signed out, and its data stays untouched until **Resume**. You cannot suspend your own centre. Both actions are written to the action log.",
+          ],
+        },
         afterwards: {
           title: "Afterwards",
           body: [
