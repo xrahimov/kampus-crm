@@ -249,6 +249,30 @@
         "telegram": "Connect the bot so students and parents get messages.",
         "onlinePayments": "Enter the Payme or Click merchant details for payment links."
       }
+    },
+    "forecast": {
+      "title": "Revenue forecast",
+      "hint": "{count, plural, one {# active membership} other {# active memberships}}, charged the way the fee engine will charge them, against what is already paid for the month.",
+      "thisMonth": "This month ({month})",
+      "nextMonth": "Next month ({month})",
+      "expected": "Expected",
+      "collected": "Collected",
+      "percent": "{percent}% collected",
+      "prepaid": "Already paid: {amount}",
+      "chart": "Six months",
+      "series": {
+        "expected": "Charged / expected",
+        "collected": "Collected"
+      },
+      "byCourse": "By course",
+      "byBranch": "By branch",
+      "columns": {
+        "course": "Course",
+        "branch": "Branch",
+        "expected": "This month",
+        "collected": "Collected",
+        "next": "Next month"
+      }
     }
   },
   "today": {

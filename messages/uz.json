@@ -249,6 +249,30 @@
         "telegram": "Talaba va ota-onalar xabar olishi uchun botni ulang.",
         "onlinePayments": "To‘lov havolalari uchun Payme yoki Click merchant ma‘lumotlarini kiriting."
       }
+    },
+    "forecast": {
+      "title": "Tushum prognozi",
+      "hint": "{count, plural, one {# faol a‘zolik} other {# faol a‘zolik}}, hisoblash tizimi hisoblaydigan tarzda, oy uchun allaqachon to‘langan summaga qarshi.",
+      "thisMonth": "Shu oy ({month})",
+      "nextMonth": "Keyingi oy ({month})",
+      "expected": "Kutilayotgan",
+      "collected": "Yig‘ildi",
+      "percent": "{percent}% yig‘ildi",
+      "prepaid": "Allaqachon to‘langan: {amount}",
+      "chart": "Olti oy",
+      "series": {
+        "expected": "Hisoblangan / kutilayotgan",
+        "collected": "Yig‘ildi"
+      },
+      "byCourse": "Kurslar bo‘yicha",
+      "byBranch": "Filiallar bo‘yicha",
+      "columns": {
+        "course": "Kurs",
+        "branch": "Filial",
+        "expected": "Shu oy",
+        "collected": "Yig‘ildi",
+        "next": "Keyingi oy"
+      }
     }
   },
   "today": {

@@ -98,6 +98,14 @@ test.describe("dashboard, search and notifications", () => {
     await page.getByRole("option", { name: "60 minutes" }).click();
     await expect(page).toHaveURL(/step=60/);
 
+    // The revenue forecast (A-133): this month against collected, next month, the split by course.
+    const forecast = page.getByTestId("dashboard-forecast");
+    await expect(forecast).toBeVisible();
+    await expect(forecast.getByTestId("forecast-expected")).not.toHaveText("***");
+    await expect(forecast.getByTestId("forecast-percent")).toContainText("% collected");
+    await expect(forecast.getByTestId("forecast-next-month")).toBeVisible();
+    await expect(forecast.getByTestId("forecast-course").first()).toBeVisible();
+
     // The finance section follows the year and month filters.
     const finance = page.getByTestId("dashboard-finance");
     await expect(finance.getByTestId("finance-income")).toBeVisible();
