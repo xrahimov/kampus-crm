@@ -3,6 +3,7 @@
 import { useTranslations } from "next-intl";
 import { useState } from "react";
 
+import { ConfirmDialog } from "@/components/data/confirm-dialog";
 import { EmptyState } from "@/components/data/empty-state";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -58,6 +59,8 @@ export function GraduatesReport({
   const router = useRouter();
   const { params, set } = useReportParams();
   const [editing, setEditing] = useState<GraduateRowDto | null>(null);
+  const [issuing, setIssuing] = useState<GraduateRowDto | null>(null);
+  const [revoking, setRevoking] = useState<GraduateRowDto | null>(null);
   const k = report.kpis;
   const pctOrDash = (v: number | null) => (v === null ? "—" : `${v}%`);
   const kpis = [
@@ -177,17 +180,48 @@ export function GraduatesReport({
                     ) : (
                       <span className="text-muted-foreground">{t("noResult")}</span>
                     )}
+                    {r.certificate && !r.certificate.revokedAt && (
+                      <Link
+                        href={`/certificates/${r.certificate.id}`}
+                        target="_blank"
+                        className="mt-1 inline-block text-xs text-primary hover:underline"
+                        data-testid="certificate-open"
+                      >
+                        {t("certificate.number", { number: r.certificate.number })}
+                      </Link>
+                    )}
                   </TableCell>
                   {canRecord && (
                     <TableCell className="text-right">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => setEditing(r)}
-                        data-testid="record-result"
-                      >
-                        {t("record.button")}
-                      </Button>
+                      <span className="inline-flex flex-wrap justify-end gap-1">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => setEditing(r)}
+                          data-testid="record-result"
+                        >
+                          {t("record.button")}
+                        </Button>
+                        {r.certificate && !r.certificate.revokedAt ? (
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => setRevoking(r)}
+                            data-testid="certificate-revoke"
+                          >
+                            {t("certificate.revoke")}
+                          </Button>
+                        ) : (
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => setIssuing(r)}
+                            data-testid="certificate-issue"
+                          >
+                            {t("certificate.issue")}
+                          </Button>
+                        )}
+                      </span>
                     </TableCell>
                   )}
                 </TableRow>
@@ -207,7 +241,121 @@ export function GraduatesReport({
           }}
         />
       )}
+      {issuing && (
+        <CertificateDialog
+          row={issuing}
+          onOpenChange={(open) => !open && setIssuing(null)}
+          onSaved={() => {
+            setIssuing(null);
+            router.refresh();
+          }}
+        />
+      )}
+      <ConfirmDialog
+        open={!!revoking}
+        onOpenChange={(open) => !open && setRevoking(null)}
+        title={t("certificate.revokeTitle")}
+        description={t("certificate.revokeText", {
+          name: revoking?.fullName ?? "",
+          number: revoking?.certificate?.number ?? "",
+        })}
+        confirmLabel={t("certificate.revoke")}
+        onConfirm={async () => {
+          if (!revoking?.certificate) return;
+          await api(`/certificates/${revoking.certificate.id}/revoke`, { method: "POST" });
+          setRevoking(null);
+          router.refresh();
+        }}
+      />
     </div>
+  );
+}
+
+/** "Issue certificate": the title (the course by default), the level and the date (A-140). */
+function CertificateDialog({
+  row,
+  onOpenChange,
+  onSaved,
+}: {
+  row: GraduateRowDto;
+  onOpenChange: (open: boolean) => void;
+  onSaved: () => void;
+}) {
+  const t = useTranslations("reports.graduates.certificate");
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  async function submit(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    const data = new FormData(event.currentTarget);
+    setBusy(true);
+    setError(null);
+    try {
+      await api(`/memberships/${row.membershipId}/certificate`, {
+        method: "POST",
+        body: {
+          title: data.get("title"),
+          level: data.get("level") || null,
+          issuedAt: data.get("issuedAt") || undefined,
+        },
+      });
+      onSaved();
+    } catch (e) {
+      setError(
+        e instanceof ApiError
+          ? (Object.values(e.fields ?? {})[0]?.[0] ?? e.message)
+          : "errors.internal",
+      );
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return (
+    <FormDialog
+      open
+      onOpenChange={onOpenChange}
+      title={t("title", { name: row.fullName })}
+      description={t("hint")}
+      onSubmit={submit}
+      submitting={busy}
+      error={error}
+      submitLabel={t("issue")}
+      testId="certificate-dialog"
+    >
+      <div className="space-y-2">
+        <Label htmlFor="cert-title">{t("titleField")}</Label>
+        <Input
+          id="cert-title"
+          name="title"
+          required
+          maxLength={120}
+          defaultValue={row.courseName}
+          data-testid="cert-title"
+        />
+      </div>
+      <div className="grid gap-3 sm:grid-cols-2">
+        <div className="space-y-2">
+          <Label htmlFor="cert-level">{t("level")}</Label>
+          <Input
+            id="cert-level"
+            name="level"
+            maxLength={40}
+            defaultValue={row.result?.cefrLevel ?? ""}
+            data-testid="cert-level"
+          />
+        </div>
+        <div className="space-y-2">
+          <Label htmlFor="cert-date">{t("issuedAt")}</Label>
+          <Input
+            id="cert-date"
+            name="issuedAt"
+            type="date"
+            defaultValue={new Date().toISOString().slice(0, 10)}
+          />
+        </div>
+      </div>
+    </FormDialog>
   );
 }
 

@@ -907,7 +907,7 @@ export const uz: HelpContent = {
         students: {
           title: "O‘quvchilar hisobotlari",
           body: [
-            "**Ketgan o‘quvchilar**: ketish darajasi, nechta ketgani, yo‘qotilgan daromad va o‘rtacha o‘qish muddati, ketganlar oy, sabab, kurs, o‘qituvchi va filial bo‘yicha; **Sabablarni sozlash** xodimlar o‘quvchini chiqarishda tanlaydigan ketish sabablari ro‘yxatini tahrirlaydi. **Bitiruvchilar**: kim bitirgani, ular bilan nima bo‘lganini yozish uchun IELTS, CEFR, universitet va ishga joylashish maydonlari bilan. **O‘quvchilar**: markaz bo‘yicha davomat va o‘zlashtirish.",
+            "**Ketgan o‘quvchilar**: ketish darajasi, nechta ketgani, yo‘qotilgan daromad va o‘rtacha o‘qish muddati, ketganlar oy, sabab, kurs, o‘qituvchi va filial bo‘yicha; **Sabablarni sozlash** xodimlar o‘quvchini chiqarishda tanlaydigan ketish sabablari ro‘yxatini tahrirlaydi. **Bitiruvchilar**: kim bitirgani, ular bilan nima bo‘lganini yozish uchun IELTS, CEFR, universitet va ishga joylashish maydonlari bilan. Bitiruvchi qatoridagi **Sertifikat berish** uning sertifikatini yaratadi: markaz logotipi, o‘quvchi ismi, kurs nomi va darajasi va QR kodli raqamlangan blank; **Chop etish** uni PDF qilib saqlaydi yoki chop etadi, kodni skanerlagan yoki havolani ochgan har kim sertifikat haqiqiyligini ko‘radi. **Bekor qilish** uni qaytarib oladi; ochiq sahifa shuni ko‘rsatadi. O‘quvchi havolani Telegramda oladi va o‘z sahifasidagi Natijalar bo‘limida ko‘radi. **O‘quvchilar**: markaz bo‘yicha davomat va o‘zlashtirish.",
           ],
         },
         center: {

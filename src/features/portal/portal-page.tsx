@@ -33,6 +33,7 @@ import { TelegramCard } from "./telegram-card";
 import type { Weekday } from "@/lib/validation/groups";
 import type { PortalAnnouncementDto } from "@/server/services/announcements/announcements.service";
 import type { PortalHomeworkDto } from "@/server/services/homework/homework.service";
+import type { PortalCertificateDto } from "@/server/services/students/certificates.service";
 import type { MaterialDto } from "@/server/services/materials/materials.service";
 import type { PortalPayOptionsDto } from "@/server/services/payments/online-payments.service";
 import type { PortalReferralDto } from "@/server/services/students/referrals.service";
@@ -72,6 +73,7 @@ export function PortalPage({
   pay,
   referral,
   announcements,
+  certificates = [],
   initialTab = "lessons",
 }: {
   token: string;
@@ -83,6 +85,8 @@ export function PortalPage({
   pay: PortalPayOptionsDto;
   referral: PortalReferralDto | null;
   announcements: PortalAnnouncementDto[];
+  /** The student's certificates of graduation (A-140), with their public links. */
+  certificates?: PortalCertificateDto[];
   initialTab?: "lessons" | "money";
 }) {
   const t = useTranslations("portal");
@@ -311,6 +315,43 @@ export function PortalPage({
             )}
 
             <TabsContent value="results" className="space-y-6">
+              {certificates.length > 0 && (
+                <section data-testid="portal-certificates">
+                  <h3 className="mb-2 text-sm font-medium">{t("results.certificates")}</h3>
+                  <ul className="space-y-2">
+                    {certificates.map((c) => (
+                      <li
+                        key={c.id}
+                        className="flex flex-wrap items-center justify-between gap-2 rounded-md border p-3 text-sm"
+                      >
+                        <div>
+                          <p className="font-medium">
+                            {c.title}
+                            {c.level ? ` · ${c.level}` : ""}
+                          </p>
+                          <p className="text-xs text-muted-foreground">
+                            {t("results.certificateMeta", {
+                              number: c.number,
+                              date: fmt(parseDateOnly(c.issuedAt), { dateStyle: "medium" }),
+                            })}
+                          </p>
+                        </div>
+                        <a
+                          href={c.url}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="text-primary hover:underline"
+                        >
+                          {t("results.openCertificate")}
+                        </a>
+                      </li>
+                    ))}
+                  </ul>
+                  <p className="mt-1 text-xs text-muted-foreground">
+                    {t("results.certificateHint")}
+                  </p>
+                </section>
+              )}
               <section>
                 <h3 className="mb-2 text-sm font-medium">{t("results.exams")}</h3>
                 {portal.exams.length === 0 ? (

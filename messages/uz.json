@@ -463,7 +463,9 @@
     "trialConverted": "Lid guruhga qo‘shilgan; sinov darsi yopilgan.",
     "telegramNotConfigured": "Bu markazning Telegram boti sozlanmagan (Sozlamalar → Integratsiyalar → Telegram).",
     "waitlistDuplicate": "Bu telefon bu kursni allaqachon kutmoqda.",
-    "waitlistClosed": "Bu yozuv allaqachon qo‘shilgan."
+    "waitlistClosed": "Bu yozuv allaqachon qo‘shilgan.",
+    "certificateExists": "Bu bitiruvchida sertifikat bor",
+    "certificateRevoked": "Bu sertifikat allaqachon bekor qilingan"
   },
   "validation": {
     "phone": "+998 90 123 45 67 ko‘rinishida raqam kiriting.",
@@ -3344,6 +3346,18 @@
         "university": "Universitetga kirdi",
         "employed": "Ishga joylashdi",
         "note": "Eslatma"
+      },
+      "certificate": {
+        "number": "Sertifikat {number}",
+        "issue": "Sertifikat berish",
+        "revoke": "Bekor qilish",
+        "title": "{name} uchun sertifikat",
+        "hint": "Blankda markaz logotipi, o‘quvchi ismi, shu nom va daraja, kurs sanalari va har kim tekshirishi mumkin bo‘lgan QR kod bo‘ladi.",
+        "titleField": "Nomi",
+        "level": "Daraja",
+        "issuedAt": "Berilgan sana",
+        "revokeTitle": "Sertifikat bekor qilinsinmi?",
+        "revokeText": "{name}ning {number} sertifikati bekor qilingan deb belgilanadi. Ochiq sahifa shuni ko‘rsatadi; chop etilgan blank o‘zgarmaydi."
       }
     },
     "leads": {
@@ -4023,6 +4037,10 @@
           "update": "Kutish ro‘yxati yozuvi o‘zgartirildi",
           "offer": "Kutish ro‘yxatiga joylar taklif qilindi",
           "enrol": "Kutish ro‘yxatidan guruhga qo‘shildi"
+        },
+        "certificate": {
+          "issue": "Sertifikat berildi",
+          "revoke": "Sertifikat bekor qilindi"
         }
       }
     }
@@ -4470,7 +4488,11 @@
       "missed": "Qatnashmadi",
       "pending": "Hali baholanmagan",
       "passed": "O‘tdi",
-      "failed": "O‘tmadi"
+      "failed": "O‘tmadi",
+      "certificates": "Sertifikatlar",
+      "certificateMeta": "№ {number} · {date}",
+      "openCertificate": "Ochish",
+      "certificateHint": "Bu havola orqali har kim sertifikatingizni tekshira oladi. Istagan joyda ulashing."
     },
     "schedule": {
       "empty": "Guruhning doimiy dars vaqti yo‘q.",
@@ -4607,7 +4629,8 @@
     "leadCallsLine": "• {name} — {phone} ({when})",
     "leadCallsMore": "… va yana {count} ta",
     "announcement": "📢 {title}\n\n{body}\n\n— {from}",
-    "waitlistOffer": "{group} guruhi ochilmoqda: {days} {time}, {date} dan. Joyni band qilish uchun markazga qo‘ng‘iroq qiling."
+    "waitlistOffer": "{group} guruhi ochilmoqda: {days} {time}, {date} dan. Joyni band qilish uchun markazga qo‘ng‘iroq qiling.",
+    "certificate": "{org}: “{title}” sertifikatingiz tayyor. Ochish yoki ulashish: {url}"
   },
   "video": {
     "title": "Video dars",
@@ -4767,5 +4790,32 @@
     "signupIntro": "Ismingiz va telefon raqamingizni qoldiring, {organization} sizga qo‘ng‘iroq qiladi.",
     "signupClosed": "Bizga qo‘ng‘iroq qiling yoki yozing, sizni yozib qo‘yamiz.",
     "courseInterest": "Kurs: {name}"
+  },
+  "certificate": {
+    "heading": "Sertifikat",
+    "confirms": "Ushbu sertifikat bilan tasdiqlanadi:",
+    "completed": "quyidagi kursni muvaffaqiyatli tamomladi",
+    "level": "Daraja",
+    "period": "Kurs",
+    "issuedOn": "Berilgan sana",
+    "number": "№",
+    "teacher": "O‘qituvchi",
+    "director": "Direktor",
+    "verify": "Sertifikatni tekshirish uchun kodni skanerlang",
+    "revoked": "Bekor qilingan",
+    "print": "Chop etish",
+    "back": "Bitiruvchilarga qaytish",
+    "check": {
+      "title": "Sertifikatni tekshirish",
+      "valid": "Sertifikat haqiqiy",
+      "revoked": "Bu sertifikat bekor qilingan",
+      "notFound": "Bunday sertifikat yo‘q",
+      "notFoundHint": "Blankdagi havola yoki QR kodni tekshiring. Sertifikatni bergan markaz yordam beradi.",
+      "student": "Kimga berilgan",
+      "course": "Kurs",
+      "level": "Daraja",
+      "issuedOn": "Berilgan sana",
+      "number": "Raqami"
+    }
   }
 }

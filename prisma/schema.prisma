@@ -55,6 +55,7 @@ model Organization {
   cashCloses        CashClose[]
   families          Family[]
   announcements     Announcement[]
+  certificates      Certificate[]
 }
 
 model Branch {
@@ -157,6 +158,7 @@ model User {
 
   paymentsReceived   Payment[]
   refundsMade        Refund[]
+  certificatesIssued Certificate[]
   cashClosesMade     CashClose[]      @relation("cashCloseCashier")
   cashClosesAccepted CashClose[]      @relation("cashCloseAcceptor")
   instalmentsCreated Instalment[]     @relation("instalmentCreator")
@@ -842,6 +844,7 @@ model GroupMembership {
   leftById    String?
   leftBy      User?            @relation("membershipsClosed", fields: [leftById], references: [id])
   graduate    GraduateRecord?
+  certificate Certificate?
   /// Personal link to the group's video lessons (/class/<token>); made on first use.
   videoToken  String?          @unique
   createdAt   DateTime         @default(now())
@@ -2365,6 +2368,32 @@ model GraduateRecord {
   note         String?
   updatedAt    DateTime        @updatedAt
   membership   GroupMembership @relation(fields: [membershipId], references: [id], onDelete: Cascade)
+}
+
+/// Certificates of graduation (round 2 G2, A-140): one per graduated membership, printed
+/// from the graduates report and verifiable by anyone at /cert/<code>.
+model Certificate {
+  id             String    @id @default(cuid())
+  organizationId String
+  membershipId   String    @unique
+  /// Printed number, sequential per organisation and year: "2026-0001".
+  number         String
+  /// Public verification token carried by the QR code and the link.
+  code           String    @unique
+  title          String
+  level          String?
+  issuedAt       DateTime  @db.Date
+  issuedById     String?
+  revokedAt      DateTime?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  organization Organization    @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  membership   GroupMembership @relation(fields: [membershipId], references: [id], onDelete: Cascade)
+  issuedBy     User?           @relation(fields: [issuedById], references: [id], onDelete: SetNull)
+
+  @@unique([organizationId, number])
+  @@index([organizationId, issuedAt])
 }
 
 /// Header bell (EXP §11 "Xabarnomalar", A-97): one row per recipient; the text is
