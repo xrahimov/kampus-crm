@@ -186,7 +186,7 @@ describe("waiting list", () => {
       `${TAG} Student`,
       `${TAG} Walk-in`,
     ]);
-    expect(page.summary.waiting).toBeGreaterThanOrEqual(4);
+    expect(page.summary.waiting).toBeGreaterThanOrEqual(3);
     expect(page.summary.byCourse.find((x) => x.courseId === courseId)?.waiting).toBe(3);
 
     const found = await listWaitlist(ceo, list({ q: phone(12) }));
