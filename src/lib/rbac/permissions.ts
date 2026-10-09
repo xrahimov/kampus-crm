@@ -51,6 +51,9 @@ export const PERMISSIONS = [
 
   "sms.send",
 
+  "announcements.view",
+  "announcements.create",
+
   "finance.view",
   "finance.create",
   "finance.update",
@@ -92,6 +95,7 @@ export const MODULES = [
   "timetable",
   "students",
   "absences",
+  "announcements",
   "debts",
   "cashdesk",
   "exams",
@@ -113,6 +117,8 @@ export const MODULE_VIEW_PERMISSION: Record<ModuleKey, Permission> = {
   students: "students.view",
   // Whoever may edit students follows up the ones who stopped coming (A-125).
   absences: "students.update",
+  // Notices to students and parents (A-129).
+  announcements: "announcements.view",
   // Whoever takes payments collects debts (A-112) and closes their cash day (A-122).
   debts: "payments.create",
   cashdesk: "payments.create",

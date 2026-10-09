@@ -52,7 +52,8 @@
     "exams": "Imtihonlar",
     "settings": "Sozlamalar",
     "finance": "Moliya",
-    "reports": "Hisobotlar"
+    "reports": "Hisobotlar",
+    "announcements": "E‘lonlar"
   },
   "auth": {
     "signIn": "Kirish",
@@ -908,7 +909,8 @@
       "settings": "Sozlamalar",
       "logs": "Jurnallar",
       "coins": "Coinlar",
-      "sms": "SMS"
+      "sms": "SMS",
+      "announcements": "E‘lonlar"
     },
     "names": {
       "dashboard": {
@@ -997,6 +999,10 @@
       },
       "sms": {
         "send": "SMS yuborish"
+      },
+      "announcements": {
+        "view": "E‘lonlarni ko‘rish",
+        "create": "E‘lon joylash va o‘chirish"
       }
     }
   },
@@ -1945,6 +1951,44 @@
     },
     "empty": "Bu yerda darsni qoldirayotganlar yo‘q.",
     "emptyHint": "O‘quvchi ketma-ket darslarni qoldirsa yoki uzoq vaqt «keldi» belgisi bo‘lmasa (qoidalar Sozlamalar → Markaz sozlamalari da) ro‘yxatga tushadi, qaytgach ro‘yxatdan chiqadi."
+  },
+  "announcements": {
+    "title": "E‘lonlar",
+    "description": "Guruhga, filialga yoki butun markazga bir xabar: talabalar sahifasida, Telegramda va xohlasangiz SMS orqali.",
+    "count": "{count, plural, =0 {Hali e‘lon yo‘q} other {# ta e‘lon}}",
+    "new": "Yangi e‘lon",
+    "audience": {
+      "CENTRE": "Butun markaz",
+      "BRANCH": "Filial",
+      "GROUP": "Guruh"
+    },
+    "filters": {
+      "audience": "Kimga",
+      "any": "Hammaga"
+    },
+    "dialog": {
+      "title": "Yangi e‘lon",
+      "recipientsHint": "Tanlangan joyda shaxsiy sahifasi bo‘lgan hamma ko‘radi; ulangan Telegram chatlar darhol oladi.",
+      "audience": "Kimga",
+      "branch": "Filial",
+      "group": "Guruh",
+      "pickGroup": "Guruhni tanlang",
+      "titleField": "Sarlavha",
+      "body": "Matn",
+      "sendSms": "SMS orqali ham yuborish",
+      "sendSmsHint": "Telefon raqami bor talabalar sarlavha va matnni SMS sifatida oladi. Bu SMS balansingizni sarflaydi.",
+      "submit": "Joylash"
+    },
+    "stats": {
+      "reads": "{total} tadan {reads} tasi o‘qidi",
+      "telegram": "Telegramda {count}",
+      "sms": "{count} SMS"
+    },
+    "delete": "O‘chirish",
+    "deleteTitle": "E‘lon o‘chirilsinmi?",
+    "deleteDescription": "U talabalar sahifasidan yo‘qoladi. Yuborilgan xabarlar qoladi.",
+    "empty": "Hali e‘lon yo‘q",
+    "emptyHint": "Bayram, imtihon sanasi yoki narx o‘zgarishini bir marta joylang; u har bir talabaga yetib boradi."
   },
   "discounts": {
     "title": "Chegirmalar",
@@ -3640,6 +3684,10 @@
           "passwordChange": "Parol o‘zgartirildi",
           "signOutAll": "Barcha qurilmalardan chiqildi",
           "signInCode": "Kirish kodi o‘zgartirildi"
+        },
+        "announcement": {
+          "create": "E‘lon joylandi",
+          "delete": "E‘lon o‘chirildi"
         }
       }
     }
@@ -4049,7 +4097,8 @@
       "results": "Natijalar",
       "schedule": "Jadval",
       "homework": "Uy vazifasi",
-      "materials": "Materiallar"
+      "materials": "Materiallar",
+      "announcements": "Yangiliklar"
     },
     "lessons": {
       "empty": "Hali darslar yo‘q.",
@@ -4148,6 +4197,11 @@
       "copyCode": "Kodni nusxalash",
       "copied": "Nusxalandi",
       "joined": "{count, plural, =0 {Hali hech bir do‘stingiz qo‘shilmadi.} one {Siz orqali # do‘stingiz qo‘shildi.} other {Siz orqali # do‘stingiz qo‘shildi.}}"
+    },
+    "announcements": {
+      "empty": "Hali yangilik yo‘q.",
+      "from": "{from}dan",
+      "new": "Yangi"
     }
   },
   "telegramBot": {
@@ -4196,7 +4250,8 @@
     "absenceWeeklyMore": "… va yana {count} o‘quvchi",
     "leadCallsTitle": "📞 {name}, bugungi qo‘ng‘iroqlar: {count} lid, {overdue} tasi kechikkan",
     "leadCallsLine": "• {name} — {phone} ({when})",
-    "leadCallsMore": "… va yana {count} ta"
+    "leadCallsMore": "… va yana {count} ta",
+    "announcement": "📢 {title}\n\n{body}\n\n— {from}"
   },
   "video": {
     "title": "Video dars",

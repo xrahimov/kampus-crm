@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { setRequestLocale } from "next-intl/server";
 
 import { PortalPage } from "@/features/portal/portal-page";
+import { listPortalAnnouncements } from "@/server/services/announcements/announcements.service";
 import { listPortalHomework } from "@/server/services/homework/homework.service";
 import { listPortalMaterials } from "@/server/services/materials/materials.service";
 import { getPortalPayOptions } from "@/server/services/payments/online-payments.service";
@@ -31,16 +32,20 @@ export default async function Page({ params, searchParams }: Props) {
   // Back from Payme or Click: open the money tab, where the outcome is shown.
   const { paid } = await searchParams;
   setRequestLocale(locale);
-  const [page, portal, homework, telegram, materials, pay, referral] = await Promise.all([
-    getClassPage(token),
-    getPortal(token),
-    listPortalHomework(token),
-    getPortalTelegram(token),
-    listPortalMaterials(token),
-    getPortalPayOptions(token),
-    getPortalReferral(token, locale),
-  ]);
-  if (!page || !portal || !homework || !telegram || !materials || !pay) notFound();
+  const [page, portal, homework, telegram, materials, pay, referral, announcements] =
+    await Promise.all([
+      getClassPage(token),
+      getPortal(token),
+      listPortalHomework(token),
+      getPortalTelegram(token),
+      listPortalMaterials(token),
+      getPortalPayOptions(token),
+      getPortalReferral(token, locale),
+      listPortalAnnouncements(token),
+    ]);
+  if (!page || !portal || !homework || !telegram || !materials || !pay || !announcements) {
+    notFound();
+  }
   return (
     <div className="mx-auto w-full max-w-2xl">
       <PortalPage
@@ -52,6 +57,7 @@ export default async function Page({ params, searchParams }: Props) {
         materials={materials}
         pay={pay}
         referral={referral}
+        announcements={announcements}
         initialTab={paid ? "money" : "lessons"}
       />
     </div>

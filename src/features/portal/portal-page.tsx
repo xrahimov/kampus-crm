@@ -24,12 +24,14 @@ import { parseDateOnly } from "@/lib/dates";
 import { useDateFormat } from "@/lib/use-date-format";
 import { useMoneyFormat } from "@/lib/use-money-format";
 
+import { PortalAnnouncementsTab } from "./announcements-tab";
 import { PortalHomeworkTab } from "./homework-tab";
 import { PortalMaterialsTab } from "./materials-tab";
 import { PayCard } from "./pay-card";
 import { ReferralCard } from "./referral-card";
 import { TelegramCard } from "./telegram-card";
 import type { Weekday } from "@/lib/validation/groups";
+import type { PortalAnnouncementDto } from "@/server/services/announcements/announcements.service";
 import type { PortalHomeworkDto } from "@/server/services/homework/homework.service";
 import type { MaterialDto } from "@/server/services/materials/materials.service";
 import type { PortalPayOptionsDto } from "@/server/services/payments/online-payments.service";
@@ -69,6 +71,7 @@ export function PortalPage({
   materials,
   pay,
   referral,
+  announcements,
   initialTab = "lessons",
 }: {
   token: string;
@@ -79,6 +82,7 @@ export function PortalPage({
   materials: MaterialDto[];
   pay: PortalPayOptionsDto;
   referral: PortalReferralDto | null;
+  announcements: PortalAnnouncementDto[];
   initialTab?: "lessons" | "money";
 }) {
   const t = useTranslations("portal");
@@ -109,6 +113,7 @@ export function PortalPage({
   const openHomework = homework.filter(
     (h) => !h.submission || h.submission.status === "RETURNED",
   ).length;
+  const unreadNews = announcements.filter((a) => !a.read).length;
   const canPay = pay.providers.length > 0 && portal.money.monthlyPrice > 0;
   const showMoney =
     canPay ||
@@ -182,6 +187,14 @@ export function PortalPage({
               <TabsTrigger value="materials" data-testid="portal-tab-materials">
                 {t("tabs.materials")}
               </TabsTrigger>
+              <TabsTrigger value="announcements" data-testid="portal-tab-announcements">
+                {t("tabs.announcements")}
+                {unreadNews > 0 && (
+                  <span className="rounded-full bg-primary px-1.5 text-[10px] text-primary-foreground">
+                    {unreadNews}
+                  </span>
+                )}
+              </TabsTrigger>
               {showMoney && <TabsTrigger value="money">{t("tabs.money")}</TabsTrigger>}
               <TabsTrigger value="results">{t("tabs.results")}</TabsTrigger>
               <TabsTrigger value="schedule">{t("tabs.schedule")}</TabsTrigger>
@@ -230,6 +243,10 @@ export function PortalPage({
 
             <TabsContent value="homework">
               <PortalHomeworkTab token={token} initial={homework} />
+            </TabsContent>
+
+            <TabsContent value="announcements">
+              <PortalAnnouncementsTab token={token} items={announcements} />
             </TabsContent>
 
             <TabsContent value="materials">

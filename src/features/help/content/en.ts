@@ -655,6 +655,32 @@ export const en: HelpContent = {
         },
       },
     },
+    announcements: {
+      title: "Announcements",
+      summary: "One notice to a group, a branch or the whole centre, and who has read it.",
+      sections: {
+        post: {
+          title: "Posting a notice",
+          body: [
+            {
+              steps: [
+                "Open **Announcements** in the menu and press **New announcement**.",
+                "Choose whom it is for: one **group**, a whole **branch**, or the **whole centre** (only people who see every branch can post to the centre). Teachers post to the groups they teach.",
+                "Write a title and the text. Tick **Also send by SMS** if the students' phones should get it too; this uses the centre's SMS balance.",
+                "Press **Post**. The notice is on every addressed student's personal page at once, and the Telegram chats linked to those students and their parents receive it.",
+              ],
+            },
+            "A student counts as addressed when they still belong to a group (new, trial, active or frozen). Deleting an announcement removes it from the pages; messages already sent stay sent.",
+          ],
+        },
+        reach: {
+          title: "Who read it",
+          body: [
+            "Each announcement shows how many students it went to, how many opened it on their page, how many Telegram messages were queued and, if asked, how many SMS. Students see the notices under **News** on their page, newest first, with a badge for the ones they have not opened yet; opening the tab marks them read.",
+          ],
+        },
+      },
+    },
     exams: {
       title: "Exams",
       summary: "Group exams and mock exams: scheduling, registrations, scores and results.",
