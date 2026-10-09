@@ -77,6 +77,7 @@ model Branch {
   callLogs       CallLog[]
   staffCheckIns  StaffAttendance[]
   adjustments    BalanceAdjustment[]
+  debtCases      DebtCase[]
 
   @@index([organizationId])
 }
@@ -166,6 +167,7 @@ model User {
   homeworkChecked   HomeworkSubmission[] @relation("homeworkChecker")
   materialsAdded    LessonMaterial[]     @relation("materialAuthor")
   adjustmentsMade   BalanceAdjustment[]  @relation("adjustmentAuthor")
+  debtContacts      DebtContact[]        @relation("debtContactAuthor")
 
   @@index([organizationId])
 }
@@ -319,6 +321,12 @@ model OrgSettings {
   workStart           String @default("08:00") // HH:mm, schedule grid start
   workEnd             String @default("20:00") // HH:mm, schedule grid end
   scheduleStepMinutes Int    @default(30) // 15 or 30
+
+  /// Debt collection cadence (A-112): days after a debt appears until the student is
+  /// reminded on Telegram, then by SMS, then the branch managers get a task. Null = off.
+  debtTelegramDays Int? @default(1)
+  debtSmsDays      Int? @default(3)
+  debtTaskDays     Int? @default(7)
 
   updatedAt DateTime @updatedAt
 
@@ -652,6 +660,7 @@ model Student {
   videoPeers     VideoParticipant[]
   telegramChats  StudentTelegramChat[]
   adjustments    BalanceAdjustment[]
+  debtCases      DebtCase[]
 
   @@index([branchId, isArchived])
   @@index([phone])
@@ -1062,6 +1071,98 @@ model BalanceAdjustment {
   @@index([membershipId])
   @@index([studentId])
   @@index([branchId, date])
+}
+
+// ---------------------------------------------------------------------------
+// Debt collection (A-112): one case per student and branch while the student's
+// memberships there owe money in total. Opened and closed by the balance engine,
+// worked by staff (calls, promises) and by the daily cadence.
+// ---------------------------------------------------------------------------
+
+enum DebtCaseStatus {
+  OPEN
+  /// The student promised to pay by `promisedAt`; reminders pause until then.
+  PROMISED
+  CLOSED
+}
+
+enum DebtCloseReason {
+  PAID
+  PROMISE_KEPT
+  /// The student was archived while still owing.
+  LEFT
+}
+
+enum DebtContactChannel {
+  CALL
+  TELEGRAM
+  SMS
+  VISIT
+  NOTE
+}
+
+enum DebtContactOutcome {
+  NO_ANSWER
+  PROMISED
+  REFUSED
+  WRONG_NUMBER
+  OTHER
+  /// System rows: the promised amount arrived, or the promised day passed with the debt still open.
+  PROMISE_KEPT
+  PROMISE_BROKEN
+}
+
+model DebtCase {
+  id              String              @id @default(cuid())
+  studentId       String
+  branchId        String
+  status          DebtCaseStatus      @default(OPEN)
+  /// First day the student's balance in this branch was short (the first unpaid month).
+  openedAt        DateTime            @db.Date
+  /// Current debt as a positive amount, refreshed whenever balances are read.
+  amount          Decimal             @db.Decimal(15, 2)
+  promisedAt      DateTime?           @db.Date
+  promisedAmount  Decimal?            @db.Decimal(15, 2)
+  /// The debt when the promise was made, to tell a kept promise from a broken one.
+  amountAtPromise Decimal?            @db.Decimal(15, 2)
+  brokenPromises  Int                 @default(0)
+  lastContactAt   DateTime?
+  lastChannel     DebtContactChannel?
+  lastOutcome     DebtContactOutcome?
+  /// Cadence steps already taken for this case.
+  telegramAt      DateTime?
+  smsAt           DateTime?
+  taskAt          DateTime?
+  closedAt        DateTime?
+  closedReason    DebtCloseReason?
+  createdAt       DateTime            @default(now())
+  updatedAt       DateTime            @updatedAt
+
+  student  Student       @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  branch   Branch        @relation(fields: [branchId], references: [id], onDelete: Cascade)
+  contacts DebtContact[]
+
+  @@index([branchId, status, openedAt])
+  @@index([studentId, status])
+}
+
+model DebtContact {
+  id             String              @id @default(cuid())
+  caseId         String
+  channel        DebtContactChannel
+  outcome        DebtContactOutcome?
+  promisedAt     DateTime?           @db.Date
+  promisedAmount Decimal?            @db.Decimal(15, 2)
+  note           String?
+  /// True for rows the cadence or the promise check wrote, false for staff entries.
+  auto           Boolean             @default(false)
+  createdById    String?
+  createdAt      DateTime            @default(now())
+
+  case      DebtCase @relation(fields: [caseId], references: [id], onDelete: Cascade)
+  createdBy User?    @relation("debtContactAuthor", fields: [createdById], references: [id], onDelete: SetNull)
+
+  @@index([caseId, createdAt])
 }
 
 enum ReceiptLogoPosition {
@@ -1939,6 +2040,8 @@ enum NotificationKind {
   LEAD
   DEBTORS
   BIRTHDAY
+  DEBT_TASK
+  DEBT_PROMISE_BROKEN
 }
 
 model Notification {

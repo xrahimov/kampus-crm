@@ -57,7 +57,8 @@ test.describe("dashboard, search and notifications", () => {
 
     // Cards are links to the filtered lists.
     await page.getByTestId("dash-debtors").click();
-    await expect(page).toHaveURL(/\/students\?paymentStatus=DEBTOR/);
+    await expect(page).toHaveURL(/\/en\/debts/);
+    await expect(page.getByRole("heading", { name: "Debtors", exact: true })).toBeVisible();
   });
 
   test("global search finds a student, a group and a lead and navigates", async ({ page }) => {

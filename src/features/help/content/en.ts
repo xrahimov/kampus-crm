@@ -475,6 +475,40 @@ export const en: HelpContent = {
         },
       },
     },
+    debts: {
+      title: "Debtors",
+      summary:
+        "Following a debt from the first short balance to the payment: the list, calls and promises, and the automatic reminders.",
+      sections: {
+        list: {
+          title: "The debtor list",
+          body: [
+            "**Debtors** lists every student whose balance in the branch is short: the amount, how many days it has been short (counted from the first unpaid month), the promise made, and who last spoke to them and how it went. A student appears the moment a balance turns short and leaves the list when it is paid; nothing is opened or closed by hand.",
+            "The cards above the list count the debtors, the total owed, how many promised to pay and how many wait for a call. **Show** narrows the list to open cases, promises, those needing a call or closed cases; the search box finds a name or phone. **Excel** downloads the list as shown.",
+          ],
+        },
+        contact: {
+          title: "Calls, promises and reminders",
+          body: [
+            {
+              steps: [
+                "Open the row's menu and choose **Call and log the outcome** (the phone numbers are links) or **Log a contact** for a visit, an SMS or a note.",
+                "Pick how you reached the student and the outcome: no answer, promised to pay, refused, wrong number or other.",
+                "For a promise, enter the day and, if agreed, the amount. The case shows **Promised** and automatic reminders pause until that day.",
+                "**Send a Telegram reminder** messages the student right away through the centre's bot, when their Telegram is connected.",
+              ],
+            },
+            "When the debt is paid the case closes as **Promise kept** or **Paid**. If the promised day passes with the debt still open, the case is open again with the promise marked as missed, the branch managers are told, and the row is flagged **Call**. **History** shows every contact and automatic message.",
+          ],
+        },
+        cadence: {
+          title: "Automatic reminders",
+          body: [
+            "Each centre sets its own cadence under Settings → Center settings → **Debt reminders**: after how many days a debtor gets a Telegram message, then an SMS (the debtor text from Auto SMS settings, when that switch is on), and after how many days without a call the branch managers get a task in the bell. Leave a field empty to switch that step off. A student with a promise is not reminded until the promised day.",
+          ],
+        },
+      },
+    },
     exams: {
       title: "Exams",
       summary: "Group exams and mock exams: scheduling, registrations, scores and results.",

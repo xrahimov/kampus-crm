@@ -5,6 +5,7 @@ import { prisma, type DbClient } from "@/server/db/prisma";
 import { AppError, isAppError } from "@/server/errors/app-error";
 import { mapColumns, parseSignedMoney, pick, type ColumnSpec } from "@/server/excel/import-columns";
 import { authorize, authorizeBranch, type Actor } from "@/server/rbac/authorize";
+import { refreshStudentDebts } from "@/server/services/debts/debts.service";
 import { findGroupInScope } from "@/server/services/groups/shared";
 import { dateToIso, decimalToNumber, isoToDate, mustFind } from "@/server/services/settings/shared";
 
@@ -107,6 +108,7 @@ async function insertAdjustment(
       },
       branchId: m.group.branchId,
     });
+    await refreshStudentDebts(tx, m.studentId);
     return dto;
   });
 }
@@ -166,6 +168,7 @@ export async function deleteAdjustment(
       before: { amount: dto.amount, kind: dto.kind, date: dto.date, groupId: dto.groupId },
       branchId: row.branchId,
     });
+    await refreshStudentDebts(tx, row.studentId);
   });
 }
 

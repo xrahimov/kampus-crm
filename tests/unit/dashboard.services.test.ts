@@ -332,7 +332,7 @@ describe("notifications", () => {
     expect(first.created).toBeGreaterThan(0);
     const mine = await listNotifications(cashier, { unread: true, page: 1 });
     const debtors = mine.items.find((n) => n.kind === "DEBTORS" && n.params.day === day);
-    expect(debtors).toMatchObject({ href: "/students?paymentStatus=DEBTOR" });
+    expect(debtors).toMatchObject({ href: "/debts" });
     expect(Number(debtors?.params.count)).toBeGreaterThanOrEqual(1);
     const again = await runDailyNotifications(prisma, day);
     expect(again.created).toBe(0);

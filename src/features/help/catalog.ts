@@ -26,6 +26,7 @@ export const HELP_ARTICLE_IDS = [
   "teaching",
   "students",
   "payments",
+  "debts",
   "exams",
   "testsAndCoins",
   "finance",
@@ -172,6 +173,14 @@ export const HELP_ARTICLES = [
       { id: "log", screenshot: "payments-log" },
       { id: "online" },
     ],
+  },
+  {
+    id: "debts",
+    slug: "debtors",
+    audiences: ["CEO", "BRANCH_MANAGER", "ADMIN", "CASHIER"],
+    permission: "payments.create",
+    path: "/debts",
+    sections: [{ id: "list" }, { id: "contact" }, { id: "cadence" }],
   },
   {
     id: "exams",

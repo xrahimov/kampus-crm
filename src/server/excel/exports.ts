@@ -8,6 +8,7 @@ import { getMonthGrid } from "@/server/services/groups/lessons.service";
 import { listMembers } from "@/server/services/groups/memberships.service";
 import type { GroupDto } from "@/server/services/groups/groups.service";
 import type { LeadDto } from "@/server/services/leads/leads.service";
+import type { DebtCaseDto } from "@/server/services/debts/debts.service";
 import type { PayrollRunDto } from "@/server/services/finance/payroll.service";
 import type { StaffDto } from "@/server/services/staff/staff.service";
 import type { TeacherRowDto } from "@/server/services/staff/teachers.service";
@@ -311,6 +312,44 @@ export const PAYMENT_COLUMNS = [
   "receivedBy",
   "comment",
   "createdAt",
+];
+
+/** The debtor list (A-112), one row per case, as the page shows it. */
+export function debtRows(t: Translator, items: DebtCaseDto[]): Row[] {
+  return items.map((d, i) => ({
+    index: i + 1,
+    fullName: d.studentName,
+    phone: d.phone,
+    groups: list(d.groups.filter((g) => g.balance < 0).map((g) => g.groupName)),
+    debt: d.amount,
+    overdueDays: d.daysOverdue,
+    startDate: d.openedAt,
+    promisedAt: d.promisedAt,
+    amount: d.promisedAmount,
+    lastContact: d.lastContactAt
+      ? list([
+          d.lastContactAt.slice(0, 10),
+          d.lastChannel ? t(`debts.channels.${d.lastChannel}`) : null,
+          d.lastOutcome ? t(`debts.outcomes.${d.lastOutcome}`) : null,
+          d.lastContactBy,
+        ])
+      : null,
+    status: t(`debts.status.${d.status}`),
+  }));
+}
+
+export const DEBT_COLUMNS = [
+  "index",
+  "fullName",
+  "phone",
+  "groups",
+  "debt",
+  "overdueDays",
+  "startDate",
+  "promisedAt",
+  "amount",
+  "lastContact",
+  "status",
 ];
 
 export function payrollRows(t: Translator, run: PayrollRunDto): Row[] {

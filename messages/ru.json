@@ -43,6 +43,7 @@
     "teachers": "Преподаватели",
     "groups": "Группы",
     "students": "Ученики",
+    "debts": "Должники",
     "exams": "Экзамены",
     "settings": "Настройки",
     "finance": "Финансы",
@@ -196,7 +197,8 @@
     "importTimeInvalid": "Время не распознано (нужно ЧЧ:ММ)",
     "importNameExists": "Уже существует с таким названием",
     "importUserExists": "Пользователь с таким телефоном уже есть",
-    "importParentExists": "Этот родитель уже добавлен ученику"
+    "importParentExists": "Этот родитель уже добавлен ученику",
+    "debtCaseClosed": "Этот долг уже закрыт."
   },
   "validation": {
     "phone": "Введите номер в формате +998 90 123 45 67.",
@@ -339,6 +341,15 @@
       "tabs": {
         "center": "Настройки центра",
         "sms": "Настройки авто-SMS"
+      },
+      "debt": {
+        "title": "Напоминания о долге",
+        "hint": "Через сколько дней после появления долга. Пустое поле выключает шаг.",
+        "telegram": "Сообщение ученику в Telegram через",
+        "sms": "SMS через",
+        "task": "Задача менеджерам филиала через",
+        "days": "дней",
+        "off": "выкл."
       }
     },
     "switches": {
@@ -1391,6 +1402,100 @@
         "CORRECTION": "Корректировка"
       }
     }
+  },
+  "debts": {
+    "title": "Должники",
+    "description": "Ученики с долгом: сколько дней, что обещали и кто говорил с ними последним.",
+    "count": "{count, plural, =0 {Должников нет} one {# должник} few {# должника} other {# должников}}",
+    "summary": {
+      "debtors": "Должники",
+      "amount": "Общий долг",
+      "promised": "Обещали оплатить",
+      "needsCall": "Нужен звонок"
+    },
+    "filters": {
+      "status": "Показать",
+      "search": "Имя или телефон",
+      "ACTIVE": "Открытые и с обещанием",
+      "OPEN": "Открытые",
+      "PROMISED": "С обещанием",
+      "NEEDS_CALL": "Нужен звонок",
+      "CLOSED": "Закрытые",
+      "ALL": "Все"
+    },
+    "columns": {
+      "student": "Ученик",
+      "groups": "Группы",
+      "amount": "Долг",
+      "overdue": "Просрочка",
+      "promise": "Обещание",
+      "lastContact": "Последний контакт"
+    },
+    "days": "{count, plural, one {# день} few {# дня} other {# дней}}",
+    "since": "с {date}",
+    "missed": "не выполнено",
+    "brokenPromises": "{count, plural, one {# обещание нарушено} few {# обещания нарушены} other {# обещаний нарушено}}",
+    "noContact": "Ещё никто не звонил",
+    "by": "— {name}",
+    "auto": "автоматически",
+    "sentTelegram": "Telegram отправлен",
+    "sentSms": "SMS отправлено",
+    "needsCall": "Звонок",
+    "status": {
+      "OPEN": "Открыт",
+      "PROMISED": "Обещание",
+      "CLOSED": "Закрыт"
+    },
+    "closed": {
+      "PAID": "Оплачено",
+      "PROMISE_KEPT": "Обещание выполнено",
+      "LEFT": "Ученик ушёл"
+    },
+    "channels": {
+      "CALL": "Звонок",
+      "TELEGRAM": "Telegram",
+      "SMS": "SMS",
+      "VISIT": "Приходил(а)",
+      "NOTE": "Заметка"
+    },
+    "outcomes": {
+      "NO_ANSWER": "Не ответил(а)",
+      "PROMISED": "Обещал(а) оплатить",
+      "REFUSED": "Отказ",
+      "WRONG_NUMBER": "Неверный номер",
+      "OTHER": "Другое",
+      "PROMISE_KEPT": "Обещанная сумма внесена",
+      "PROMISE_BROKEN": "Обещание не выполнено"
+    },
+    "actions": {
+      "call": "Позвонить и записать итог",
+      "log": "Записать контакт",
+      "remind": "Напомнить в Telegram",
+      "history": "История",
+      "profile": "Открыть ученика"
+    },
+    "dialog": {
+      "title": "Контакт: {name}",
+      "channel": "Как",
+      "outcome": "Итог",
+      "none": "Не указан",
+      "promisedAt": "Обещал(а) оплатить до",
+      "promisedAmount": "Обещанная сумма (необязательно)",
+      "note": "Заметка",
+      "parentPhone": "родитель"
+    },
+    "history": {
+      "title": "История: {name}",
+      "loading": "Загрузка…",
+      "empty": "Контактов пока нет.",
+      "promise": "до {date}"
+    },
+    "remind": {
+      "sent": "Напоминание отправлено в {count, plural, one {# чат} few {# чата} other {# чатов}} Telegram.",
+      "none": "У этого ученика ещё не подключён Telegram."
+    },
+    "empty": "Должников нет.",
+    "emptyHint": "Ученик появляется здесь, как только его баланс в филиале уходит в минус, и исчезает после оплаты."
   },
   "discounts": {
     "title": "Скидки",
@@ -2833,6 +2938,10 @@
         "balance": {
           "adjust": "Баланс скорректирован",
           "adjustRemove": "Корректировка баланса удалена"
+        },
+        "debt": {
+          "contact": "Контакт с должником записан",
+          "remind": "Напоминание о долге отправлено"
         }
       }
     }
@@ -3038,7 +3147,8 @@
       "coursesTemplate": "kursy-shablon",
       "staffTemplate": "sotrudniki-shablon",
       "groupsTemplate": "gruppy-shablon",
-      "parentsTemplate": "roditeli-shablon"
+      "parentsTemplate": "roditeli-shablon",
+      "debtors": "dolzhniki"
     },
     "example": {
       "fullName": "<имя клиента>",
@@ -3152,7 +3262,10 @@
       "parentPhone": "Телефон родителя",
       "startTime": "Время начала",
       "endTime": "Время окончания",
-      "weekdays": "Дни"
+      "weekdays": "Дни",
+      "overdueDays": "Дней просрочки",
+      "promisedAt": "Дата обещания",
+      "lastContact": "Последний контакт"
     },
     "preview": "Предпросмотр: будет импортировано строк: {count}, пропущено: {skipped}. Пока ничего не записано.",
     "previewButton": "Предпросмотр",
@@ -3200,7 +3313,9 @@
       "PAYMENT": "{name} оплатил(а) {amount} за {group} (принял {by})",
       "LEAD": "Новый лид {name} в {column} ({source})",
       "DEBTORS": "Сегодня должников: {count}",
-      "BIRTHDAY": "У {name} сегодня день рождения"
+      "BIRTHDAY": "У {name} сегодня день рождения",
+      "DEBT_TASK": "{count, plural, one {# должник ждёт} few {# должника ждут} other {# должников ждут}} звонка уже {days} дней",
+      "DEBT_PROMISE_BROKEN": "{name} обещал(а) оплатить {amount} до {date}, но не оплатил(а)"
     }
   },
   "portal": {

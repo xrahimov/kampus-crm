@@ -133,6 +133,44 @@ export function OrgForm({ settings, onSaved }: { settings: OrgSettingsDto; onSav
             </div>
           </div>
 
+          <fieldset className="space-y-3" data-testid="debt-cadence">
+            <legend className="text-sm font-medium">{t("settings.general.debt.title")}</legend>
+            <p className="text-xs text-muted-foreground">{t("settings.general.debt.hint")}</p>
+            <div className="grid gap-4 sm:grid-cols-3">
+              {(["debtTelegramDays", "debtSmsDays", "debtTaskDays"] as const).map((key) => (
+                <div key={key} className="space-y-2">
+                  <Label htmlFor={`cadence-${key}`}>
+                    {t(
+                      `settings.general.debt.${
+                        key === "debtTelegramDays"
+                          ? "telegram"
+                          : key === "debtSmsDays"
+                            ? "sms"
+                            : "task"
+                      }`,
+                    )}
+                  </Label>
+                  <div className="flex items-center gap-2">
+                    <Input
+                      id={`cadence-${key}`}
+                      type="number"
+                      min={0}
+                      max={90}
+                      className="w-24"
+                      placeholder={t("settings.general.debt.off")}
+                      aria-invalid={!!errors[key]}
+                      {...form.register(key)}
+                    />
+                    <span className="text-sm text-muted-foreground">
+                      {t("settings.general.debt.days")}
+                    </span>
+                  </div>
+                  <FieldError id={`cadence-${key}-error`} message={errors[key]?.message} />
+                </div>
+              ))}
+            </div>
+          </fieldset>
+
           <fieldset className="space-y-1">
             <legend className="mb-2 text-sm font-medium">
               {t("settings.general.switchesTitle")}
