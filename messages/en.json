@@ -3502,7 +3502,7 @@
     },
     "telegram": {
       "title": "Telegram",
-      "intro": "Get lesson reminders, homework and payment notices in Telegram. Parents can connect too.",
+      "intro": "Get lesson reminders, homework and payment notices in Telegram. Parents can connect too. In the chat you can also ask for the balance, pay, or say the student will be absent today.",
       "connect": "Connect Telegram",
       "connectMore": "Connect another phone",
       "connected": "Connected: {name}",
@@ -3533,7 +3533,7 @@
     }
   },
   "telegramBot": {
-    "linked": "Connected. This chat now gets {student}'s lesson reminders, homework and payment notices from Kampus. Send /stop to disconnect.",
+    "linked": "Connected. This chat now gets {student}'s lesson reminders, homework and payment notices from Kampus. The buttons below show the balance, send a payment link or report an absence for today. Send /stop to disconnect.",
     "unlinked": "Disconnected. You will not get messages from Kampus any more.",
     "unknownCode": "This link is not valid any more. Open your Kampus page and tap “Connect Telegram” again.",
     "lessonSoon": "{group}: lesson at {start}–{end}, in about 30 minutes.{link, select, none {} other { Join: {link}}}",
@@ -3553,7 +3553,23 @@
     "weeklyNoLessons": "{group}: no lessons this week",
     "weeklyCoins": "Coins: {earned} this week, {total} in all",
     "weeklyBalance": "Balance: {balance}{next, select, none {} other {, next payment by {next}}}",
-    "weeklyDebt": "Debt: {debt}. Please pay at the learning centre or from your page."
+    "weeklyDebt": "Debt: {debt}. Please pay at the learning centre or from your page.",
+    "menuBalance": "Balance",
+    "menuPay": "Pay",
+    "menuAbsent": "Absent today",
+    "menuHint": "Send Balance, Pay or Absent today, or use the buttons below.",
+    "balanceGroup": "{group}: balance {balance}{next, select, none {} other {, next payment by {next}}}",
+    "balanceDebtGroup": "{group}: debt {debt}",
+    "balanceCoins": "Coins: {total}",
+    "noGroups": "No current group. Please ask your learning centre.",
+    "payTitle": "{group}: {amount} for {month}",
+    "payProvider": "{provider}: {url}",
+    "payOff": "Online payment is not set up at your learning centre yet. Please pay at the centre.",
+    "payNothing": "Nothing to pay right now.",
+    "absentMarked": "{group}, today {time}: noted as an excused absence{reason, select, none {} other { ({reason})}}. The teacher will see it.",
+    "absentPresent": "{group}, today {time}: the teacher has already marked present, nothing changed.",
+    "absentNoLesson": "No lesson today.{next, select, none {} other { Next lesson: {next}.}}",
+    "absentComment": "Via Telegram{reason, select, none {} other {: {reason}}}"
   },
   "video": {
     "title": "Video lesson",

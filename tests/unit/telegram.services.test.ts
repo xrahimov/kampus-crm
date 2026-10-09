@@ -77,7 +77,10 @@ const mine = async (from: number) => (await queued()).slice(from);
 const count = async () => (await queued()).length;
 
 beforeAll(async () => {
-  const stored = await prisma.integrationSetting.findFirst({ where: { provider: "TELEGRAM" } });
+  // The demo centre's row only: other test files give their own centres a TELEGRAM row.
+  const stored = await prisma.integrationSetting.findFirst({
+    where: { provider: "TELEGRAM", organizationId: DEMO_ORG_ID },
+  });
   previousTelegram = stored ? { isEnabled: stored.isEnabled, config: stored.config } : null;
   const teacherRole = await prisma.role.findFirstOrThrow({ where: { code: "TEACHER" } });
   for (const [a, n, withRole] of [
@@ -154,8 +157,7 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
-  const organizationId = (await prisma.organization.findFirst({ orderBy: { createdAt: "asc" } }))!
-    .id;
+  const organizationId = DEMO_ORG_ID;
   if (previousTelegram) {
     await prisma.integrationSetting.update({
       where: { organizationId_provider: { organizationId, provider: "TELEGRAM" } },

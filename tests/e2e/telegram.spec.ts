@@ -74,6 +74,45 @@ test.describe("Telegram for students", () => {
     await expect(card).toContainText("Connected: E2E Parent");
     await expect(card.getByTestId("telegram-connect")).toContainText("Connect another phone");
 
+    // Two-way (A-119): the linked chat asks for its balance and reports today's absence.
+    const say = (text: string) =>
+      student.request.post(`/api/v1/webhooks/telegram?secret=${secret}`, {
+        data: {
+          message: {
+            chat: { id: Number(chatId) },
+            from: { first_name: "E2E Parent", language_code: "en" },
+            text,
+          },
+        },
+      });
+    expect((await say("Balance")).ok()).toBe(true);
+    // An extra lesson today, so there is something to be absent from; its time
+    // follows the stamp so a re-run on the same day adds another one.
+    const today = new Intl.DateTimeFormat("en-CA", {
+      timeZone: "Asia/Tashkent",
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+    }).format(new Date());
+    const hour = 8 + (Number(stamp) % 11);
+    const start = `${String(hour).padStart(2, "0")}:${String(Number(stamp.slice(-2)) % 60).padStart(2, "0")}`;
+    const cookies = await ceoContext.cookies();
+    const extra = await ceo.request.post(`/api/v1/groups/${groupId}/lessons/extra`, {
+      headers: {
+        cookie: cookies.map((c) => `${c.name}=${c.value}`).join("; "),
+        "x-csrf-token": cookies.find((c) => c.name === "kampus_csrf")?.value ?? "",
+        "content-type": "application/json",
+      },
+      data: { date: today, startTime: start, endTime: `${String(hour + 1).padStart(2, "0")}:00` },
+    });
+    expect(extra.status()).toBe(201);
+    expect((await say("Absent today: dentist")).ok()).toBe(true);
+    // The teacher's Today screen shows the excused mark with the parent's reason.
+    await ceo.goto("/en/today");
+    const chip = ceo.getByTestId("today-member").filter({ hasText: first!.fullName }).first();
+    await expect(chip).toHaveAttribute("data-status", "EXCUSED");
+    await expect(chip.getByTestId("today-member-comment")).toHaveText("Via Telegram: dentist");
+
     // And can be removed again from the page.
     await card.getByRole("button", { name: "Disconnect" }).click();
     await expect(card).not.toContainText("E2E Parent");

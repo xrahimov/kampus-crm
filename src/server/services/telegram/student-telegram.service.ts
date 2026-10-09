@@ -59,7 +59,23 @@ export type BotMessageKind =
   | "weeklyNoLessons"
   | "weeklyCoins"
   | "weeklyBalance"
-  | "weeklyDebt";
+  | "weeklyDebt"
+  | "menuBalance"
+  | "menuPay"
+  | "menuAbsent"
+  | "menuHint"
+  | "balanceGroup"
+  | "balanceDebtGroup"
+  | "balanceCoins"
+  | "noGroups"
+  | "payTitle"
+  | "payProvider"
+  | "payOff"
+  | "payNothing"
+  | "absentMarked"
+  | "absentPresent"
+  | "absentNoLesson"
+  | "absentComment";
 
 /** Narrows Telegram's language_code to a language the bot speaks. */
 export function botLocale(languageCode: string | undefined | null): BotLocale {
