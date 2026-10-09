@@ -1,9 +1,9 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { useState } from "react";
-import { Controller, useForm } from "react-hook-form";
+import { Controller, useForm, useWatch } from "react-hook-form";
 import type { z } from "zod";
 
 import { FieldError } from "@/components/data/field-error";
@@ -27,6 +27,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
+import { Textarea } from "@/components/ui/textarea";
 import { api } from "@/lib/api-client";
 import { applyApiError } from "@/lib/api-errors";
 import { ORG_SWITCHES, orgSettingsSchema, SCHEDULE_STEPS } from "@/lib/validation/settings";
@@ -40,8 +41,19 @@ function toFormValues(settings: OrgSettingsDto): Input {
   return rest;
 }
 
-export function OrgForm({ settings, onSaved }: { settings: OrgSettingsDto; onSaved: () => void }) {
+const NO_FORM = "__auto";
+
+export function OrgForm({
+  settings,
+  forms,
+  onSaved,
+}: {
+  settings: OrgSettingsDto;
+  forms: Array<{ id: string; name: string }>;
+  onSaved: () => void;
+}) {
   const t = useTranslations();
+  const locale = useLocale();
   const [error, setError] = useState<string | null>(null);
   const [saved, setSaved] = useState(false);
   const form = useForm<Input, unknown, Output>({
@@ -63,6 +75,7 @@ export function OrgForm({ settings, onSaved }: { settings: OrgSettingsDto; onSav
   }
 
   const { errors, isSubmitting, isDirty } = form.formState;
+  const publicSlug = useWatch({ control: form.control, name: "publicSlug" });
 
   return (
     <form onSubmit={form.handleSubmit(onSubmit)} noValidate>
@@ -192,6 +205,114 @@ export function OrgForm({ settings, onSaved }: { settings: OrgSettingsDto; onSav
               </div>
               <FieldError id="referral-bonus-error" message={errors.referralBonus?.message} />
             </div>
+          </fieldset>
+
+          <fieldset className="space-y-3" data-testid="public-page">
+            <legend className="text-sm font-medium">
+              {t("settings.general.publicPage.title")}
+            </legend>
+            <p className="text-xs text-muted-foreground">{t("settings.general.publicPage.hint")}</p>
+            <div className="flex items-center justify-between gap-4 rounded-lg border px-4 py-3">
+              <Label htmlFor="switch-publicPage" className="font-normal">
+                {t("settings.general.publicPage.enabled")}
+              </Label>
+              <Controller
+                control={form.control}
+                name="publicPage"
+                render={({ field }) => (
+                  <Switch
+                    id="switch-publicPage"
+                    checked={!!field.value}
+                    onCheckedChange={field.onChange}
+                    data-testid="switch-publicPage"
+                  />
+                )}
+              />
+            </div>
+            <div className="grid gap-4 sm:grid-cols-2">
+              <div className="space-y-2">
+                <Label htmlFor="public-slug">{t("settings.general.publicPage.slug")}</Label>
+                <Input
+                  id="public-slug"
+                  placeholder="kingston"
+                  aria-invalid={!!errors.publicSlug}
+                  {...form.register("publicSlug")}
+                />
+                <p
+                  className="text-xs text-muted-foreground break-all"
+                  data-testid="public-page-link"
+                >
+                  {t("settings.general.publicPage.link", {
+                    path: `/${locale}/c/${publicSlug || "…"}`,
+                  })}
+                </p>
+                <FieldError id="public-slug-error" message={errors.publicSlug?.message} />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="public-form">{t("settings.general.publicPage.form")}</Label>
+                <Controller
+                  control={form.control}
+                  name="publicFormId"
+                  render={({ field }) => (
+                    <Select
+                      value={field.value ? String(field.value) : NO_FORM}
+                      onValueChange={(v) => field.onChange(v === NO_FORM ? "" : v)}
+                    >
+                      <SelectTrigger id="public-form" aria-invalid={!!errors.publicFormId}>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value={NO_FORM}>
+                          {t("settings.general.publicPage.formAuto")}
+                        </SelectItem>
+                        {forms.map((f) => (
+                          <SelectItem key={f.id} value={f.id}>
+                            {f.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  )}
+                />
+                <FieldError id="public-form-error" message={errors.publicFormId?.message} />
+              </div>
+              <div className="space-y-2 sm:col-span-2">
+                <Label htmlFor="public-intro">{t("settings.general.publicPage.intro")}</Label>
+                <Textarea
+                  id="public-intro"
+                  rows={3}
+                  aria-invalid={!!errors.publicIntro}
+                  {...form.register("publicIntro")}
+                />
+                <FieldError id="public-intro-error" message={errors.publicIntro?.message} />
+              </div>
+              {(["publicPhone", "publicAddress", "publicInstagram", "publicTelegram"] as const).map(
+                (key) => (
+                  <div key={key} className="space-y-2">
+                    <Label htmlFor={`field-${key}`}>
+                      {t(`settings.general.publicPage.${key}`)}
+                    </Label>
+                    <Input
+                      id={`field-${key}`}
+                      aria-invalid={!!errors[key]}
+                      {...form.register(key)}
+                    />
+                    <FieldError id={`field-${key}-error`} message={errors[key]?.message} />
+                  </div>
+                ),
+              )}
+            </div>
+            {settings.publicPage && settings.publicSlug && (
+              <a
+                href={`/${locale}/c/${settings.publicSlug}`}
+                target="_blank"
+                rel="noreferrer"
+                className="text-sm text-primary underline underline-offset-4"
+                data-testid="public-page-open"
+              >
+                {t("settings.general.publicPage.open")}
+              </a>
+            )}
           </fieldset>
 
           <fieldset className="space-y-1">

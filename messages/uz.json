@@ -340,7 +340,8 @@
     "nonZero": "Nol bo'lishi mumkin emas",
     "lessonExists": "Bu vaqtda dars allaqachon bor.",
     "referralSelf": "O‘quvchi o‘zini taklif qila olmaydi",
-    "referralUnknown": "O‘quvchi topilmadi"
+    "referralUnknown": "O‘quvchi topilmadi",
+    "formUnknown": "Forma topilmadi"
   },
   "roles": {
     "CEO": "CEO",
@@ -414,6 +415,21 @@
         "hint": "Do‘stini olib kelgan o‘quvchi coin oladi (Sozlamalar → Coinlar, «Tavsiya» hodisasi) va do‘sti guruhga qo‘shilganda balansiga shu bonus tushadi. 0 bo‘lsa faqat coin beriladi.",
         "bonus": "Taklif qilgan o‘quvchiga bonus",
         "currency": "so‘m"
+      },
+      "publicPage": {
+        "title": "Ommaviy sahifa",
+        "hint": "Kurslar, narxlar, dars jadvali, o‘qituvchilar va yozilish formasi bo‘lgan sahifa. O‘z manzilingizda bosh sahifada, server manzilida quyidagi havolada ochiladi. Havolani Instagram profilingizga qo‘ying.",
+        "enabled": "Sahifa yoqilgan",
+        "slug": "Sahifa manzili",
+        "link": "Havola: {path}",
+        "form": "Yozilish formasi",
+        "formAuto": "Birinchi faol forma",
+        "intro": "Markaz haqida",
+        "publicPhone": "Telefon",
+        "publicAddress": "Manzil",
+        "publicInstagram": "Instagram (nom yoki havola)",
+        "publicTelegram": "Telegram (nom yoki havola)",
+        "open": "Sahifani ochish"
       }
     },
     "switches": {
@@ -3774,5 +3790,36 @@
     "next": "Keyingi",
     "nav": "Yordam",
     "portalLink": "Bu sahifadan qanday foydalanish"
+  },
+  "publicPage": {
+    "signIn": "Xodimlar uchun kirish",
+    "cta": "Kursga yozilish",
+    "telegram": "Telegram",
+    "instagram": "Instagram",
+    "hours": "Ish vaqti {from}–{to}",
+    "branches": "Filiallar: {names}",
+    "coursesTitle": "Kurslar",
+    "noCourses": "Kurslar ro‘yxati tayyorlanmoqda.",
+    "perMonth": "{price} / oy",
+    "duration": "{count, plural, one {# oy} other {# oy}}",
+    "groupsCount": "{count, plural, =0 {Yangi guruhga qabul} one {# ochiq guruh} other {# ochiq guruh}}",
+    "enrol": "Yozilish",
+    "scheduleTitle": "Dars jadvali",
+    "noSchedule": "Yangi guruhlarga qabul ketmoqda. Ma'lumotlaringizni qoldiring, biz sizga qo‘ng‘iroq qilamiz.",
+    "columns": {
+      "group": "Guruh",
+      "days": "Kunlar",
+      "time": "Vaqt",
+      "teacher": "O‘qituvchi",
+      "branch": "Filial",
+      "starts": "Boshlanishi",
+      "seats": "Joylar"
+    },
+    "seatsLeft": "{count, plural, =0 {Joy yo‘q} one {# joy qoldi} other {# joy qoldi}}",
+    "teachersTitle": "O‘qituvchilar",
+    "signupTitle": "Yozilish",
+    "signupIntro": "Ismingiz va telefon raqamingizni qoldiring, {organization} sizga qo‘ng‘iroq qiladi.",
+    "signupClosed": "Bizga qo‘ng‘iroq qiling yoki yozing, sizni yozib qo‘yamiz.",
+    "courseInterest": "Kurs: {name}"
   }
 }

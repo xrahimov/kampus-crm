@@ -26,6 +26,7 @@ export function GeneralSettings({
   paymentMethods,
   gradingSystems,
   autoSms,
+  forms,
   tab,
 }: {
   settings: OrgSettingsDto;
@@ -33,6 +34,8 @@ export function GeneralSettings({
   paymentMethods: PaymentMethodDto[];
   gradingSystems: GradingSystemDto[];
   autoSms: AutoSmsSettingDto[];
+  /** The centre's lead forms, for the public page's sign-up form (A-121). */
+  forms: Array<{ id: string; name: string }>;
   tab: "center" | "sms";
 }) {
   const t = useTranslations("settings.general");
@@ -65,7 +68,7 @@ export function GeneralSettings({
         <AutoSmsSettings settings={autoSms} />
       ) : (
         <>
-          <OrgForm settings={settings} onSaved={refresh} />
+          <OrgForm settings={settings} forms={forms} onSaved={refresh} />
           <div className="grid gap-6 xl:grid-cols-2">
             <BranchesCard branches={branches} onChanged={refresh} />
             <PaymentMethodsCard methods={paymentMethods} onChanged={refresh} />
