@@ -108,6 +108,8 @@ beforeAll(async () => {
       startDate: "2026-10-01",
       endDate: null,
       status: "ACTIVE",
+      // The same teacher at the same hour twice: the clash check (A-116) has its own suite.
+      ignoreClashes: true,
     });
   groupA = (await group(`${TAG} Group A`)).id;
   groupB = (await group(`${TAG} Group B`)).id;

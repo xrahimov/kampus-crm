@@ -260,6 +260,12 @@ export const uz: HelpContent = {
             "Kurs tugaganda **Guruhni tugatish** ni bosing: har bir faol o‘quvchi bitiruvchiga aylanadi va qolgan darslar olib tashlanadi. Bitiruvchilar hisoboti ularni ko‘rsatadi. **Arxivlash** tashlab qo‘yilgan guruhni yashiradi; darslari va tarixi saqlanadi. Arxivlangan guruhlar Arxivlangan yorlig‘ida ko‘rinadi.",
           ],
         },
+        timetable: {
+          title: "Dars jadvali va ustma-ustlik",
+          body: [
+            "Guruh jadvali saqlanganda Kampus markazning boshqa joriy guruhlarini tekshiradi: o‘sha kunda vaqti ustma-ust tushgan o‘sha xona yoki bir vaqtda ikki joyda bo‘lgan o‘sha o‘qituvchi. Dialog ustma-ustliklarni (kun, vaqt, xona yoki o‘qituvchi, boshqa guruh) ko‘rsatadi va saqlash kutib turadi; vaqt, xona yoki o‘qituvchini o‘zgartiring yoki ustma-ustlik ataylab bo‘lsa, masalan umumiy zal, **Baribir saqlash** ni bosing. Asosiy menyudagi **Dars jadvali** bitta xona yoki bitta o‘qituvchining haftasini ko‘rsatadi: filialni tanlang, xonalar va o‘qituvchilar o‘rtasida almashing, guruhni ochish uchun blokni bosing. O‘qituvchilar o‘z haftasini ko‘radi.",
+          ],
+        },
       },
     },
     today: {

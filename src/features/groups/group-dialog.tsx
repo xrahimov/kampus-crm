@@ -8,6 +8,7 @@ import { Controller, useFieldArray, useForm, useWatch } from "react-hook-form";
 import { z } from "zod";
 
 import { FieldError } from "@/components/data/field-error";
+import { Alert } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
@@ -23,7 +24,7 @@ import { Switch } from "@/components/ui/switch";
 import { BranchSelect, type BranchOption } from "@/features/settings/shared/branch-select";
 import { FormDialog } from "@/features/settings/shared/form-dialog";
 import { todayIso } from "@/features/staff/password";
-import { api } from "@/lib/api-client";
+import { api, ApiError } from "@/lib/api-client";
 import { applyApiError } from "@/lib/api-errors";
 import { idSchema } from "@/lib/validation/common";
 import {
@@ -38,6 +39,7 @@ import {
 } from "@/lib/validation/groups";
 import { timeSchema } from "@/lib/validation/settings";
 import { useDateFormat } from "@/lib/use-date-format";
+import type { ClashDto } from "@/server/services/groups/clashes.service";
 import type { GroupDto } from "@/server/services/groups/groups.service";
 import type { GroupFormOptions } from "@/server/services/groups/options.service";
 
@@ -153,6 +155,8 @@ export function GroupDialog({
   const tg = useTranslations("groups.form");
   const fmt = useDateFormat();
   const [error, setError] = useState<string | null>(null);
+  /* The clash warning (A-116) belongs to one exact form state: any edit hides it again. */
+  const [clashState, setClashState] = useState<{ sig: string; clashes: ClashDto[] } | null>(null);
 
   const emptyDays = () =>
     WEEKDAYS.map((weekday) => ({ weekday, startTime: "09:00", endTime: "10:30", roomId: null }));
@@ -226,9 +230,14 @@ export function GroupDialog({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open, group, defaultBranchId]);
 
+  const watchedAll = useWatch({ control: form.control });
+  const sig = JSON.stringify(watchedAll);
+  const clashes = clashState && clashState.sig === sig ? clashState.clashes : null;
+
   async function onSubmit(values: FormOutput) {
     setError(null);
-    const body = toApiBody(values);
+    // "Save anyway" resends the very form state the warning was shown for.
+    const body: GroupInput = { ...toApiBody(values), ignoreClashes: clashes !== null };
     try {
       if (group) {
         const { branchId: _branchId, ...rest } = body;
@@ -237,12 +246,29 @@ export function GroupDialog({
       } else {
         await api("/groups", { method: "POST", body });
       }
+      setClashState(null);
       onOpenChange(false);
       onSaved();
     } catch (e) {
+      if (e instanceof ApiError && e.code === "CONFLICT" && Array.isArray(e.meta?.clashes)) {
+        setClashState({ sig, clashes: e.meta.clashes as ClashDto[] });
+        return;
+      }
       setError(applyApiError(e, form.setError));
     }
   }
+
+  const clashLine = (c: ClashDto) => {
+    const values = {
+      day: weekdayLabel(fmt, c.weekday as Weekday, "short"),
+      start: c.startTime,
+      end: c.endTime,
+      group: c.groupName,
+      room: c.roomName ?? "",
+      teacher: c.teacherName ?? "",
+    };
+    return c.kind === "ROOM" ? tg("clashes.room", values) : tg("clashes.teacher", values);
+  };
 
   const { errors, isSubmitting } = form.formState;
   const branchId = useWatch({ control: form.control, name: "branchId" });
@@ -277,7 +303,10 @@ export function GroupDialog({
     <FormDialog
       open={open}
       onOpenChange={(next) => {
-        if (!next) setError(null);
+        if (!next) {
+          setError(null);
+          setClashState(null);
+        }
         onOpenChange(next);
       }}
       title={group ? tg("edit") : tg("add")}
@@ -286,7 +315,19 @@ export function GroupDialog({
       error={error}
       side="right"
       testId="group-dialog"
+      submitLabel={clashes ? tg("clashes.saveAnyway") : undefined}
     >
+      {clashes && (
+        <Alert variant="destructive" data-testid="group-clashes">
+          <p className="font-medium">{tg("clashes.title")}</p>
+          <ul className="mt-1 list-disc space-y-0.5 pl-4">
+            {clashes.map((c, i) => (
+              <li key={i}>{clashLine(c)}</li>
+            ))}
+          </ul>
+          <p className="mt-2 text-xs">{tg("clashes.hint")}</p>
+        </Alert>
+      )}
       {!group && (
         <Controller
           control={form.control}

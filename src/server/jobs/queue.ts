@@ -1,4 +1,4 @@
-import type { Prisma } from "@/generated/prisma/client";
+import { Prisma } from "@/generated/prisma/client";
 import { prisma, type DbClient } from "@/server/db/prisma";
 
 /*
@@ -46,13 +46,18 @@ export async function enqueue(db: DbClient, input: JobInput): Promise<string | n
 const MAX_ATTEMPTS = 5;
 
 async function claim(db: DbClient, limit: number): Promise<string[]> {
+  // Only the job types this process can run: another process (the worker, a test
+  // file) must not take a job it has no handler for and burn one of its attempts.
+  const types = [...handlers.keys()];
+  if (types.length === 0) return [];
   // Claim rows atomically; a crashed worker's RUNNING rows are retried after 10 minutes.
   const rows = await db.$queryRaw<Array<{ id: string }>>`
     UPDATE "Job" SET status = 'RUNNING', "lockedAt" = now(), attempts = attempts + 1
     WHERE id IN (
       SELECT id FROM "Job"
-      WHERE ("status" = 'PENDING' AND "runAt" <= now())
-         OR ("status" = 'RUNNING' AND "lockedAt" < now() - interval '10 minutes')
+      WHERE type IN (${Prisma.join(types)})
+        AND (("status" = 'PENDING' AND "runAt" <= now())
+         OR ("status" = 'RUNNING' AND "lockedAt" < now() - interval '10 minutes'))
       ORDER BY "runAt"
       LIMIT ${limit}
       FOR UPDATE SKIP LOCKED

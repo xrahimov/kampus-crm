@@ -44,6 +44,7 @@
     "leads": "Leads",
     "teachers": "Teachers",
     "groups": "Groups",
+    "timetable": "Timetable",
     "students": "Students",
     "debts": "Debtors",
     "exams": "Exams",
@@ -250,7 +251,8 @@
     "importNameExists": "Already exists with this name",
     "importUserExists": "A user with this phone already exists",
     "importParentExists": "This parent is already on the student",
-    "debtCaseClosed": "This debt is already closed."
+    "debtCaseClosed": "This debt is already closed.",
+    "scheduleClash": "The room or the teacher is already busy at this time."
   },
   "validation": {
     "phone": "Enter a number like +998 90 123 45 67.",
@@ -881,7 +883,14 @@
       "addTeacher": "Add teacher",
       "startDate": "Start date",
       "endDate": "End date",
-      "endDateHint": "Left empty, it is the start date plus the course length."
+      "endDateHint": "Left empty, it is the start date plus the course length.",
+      "clashes": {
+        "title": "Already busy",
+        "room": "{day} {start}–{end}: room {room} is taken by {group}.",
+        "teacher": "{day} {start}–{end}: {teacher} teaches {group}.",
+        "saveAnyway": "Save anyway",
+        "hint": "Change the time, room or teacher, or save anyway if the overlap is intended."
+      }
     },
     "detail": {
       "info": "Group",
@@ -1086,6 +1095,20 @@
       "duration": "{minutes} min",
       "size": "{mb} MB"
     }
+  },
+  "timetable": {
+    "title": "Timetable",
+    "subtitle": "A week of one room or one teacher, built from the groups' schedules.",
+    "byRoom": "By room",
+    "byTeacher": "By teacher",
+    "room": "Room",
+    "teacher": "Teacher",
+    "branch": "Branch",
+    "empty": "Nothing scheduled here this week.",
+    "noRooms": "No rooms in this branch yet.",
+    "noTeachers": "No teachers in this branch yet.",
+    "noRoom": "No room",
+    "hours": "Working hours {start}–{end}"
   },
   "students": {
     "title": "Students",

@@ -25,6 +25,7 @@ import {
 import { TEACHER_ROLE_CODES } from "@/server/services/staff/staff.service";
 
 import { addMonths, courseMonths, PATTERN_WEEKDAYS, planLessons } from "./schedule";
+import { assertNoClashes } from "./clashes.service";
 import { findGroupInScope, groupScope, today } from "./shared";
 
 /* Groups (EXP §5): list, drawer form, detail card, actions. */
@@ -366,6 +367,14 @@ export async function createGroup(
     ),
   ]);
   const endDate = input.endDate ?? addMonths(input.startDate, course.durationMonths);
+  await assertNoClashes(db, {
+    organizationId: actor.organizationId,
+    slots: input.slots,
+    teacherIds: input.teachers.map((t) => t.userId),
+    startDate: input.startDate,
+    endDate,
+    ignore: input.ignoreClashes,
+  });
   try {
     return await db.$transaction(async (tx) => {
       const created = await tx.group.create({
@@ -453,6 +462,44 @@ export async function updateGroup(
       ? addMonths(startDate, course.durationMonths)
       : before.endDate);
   if (endDate < startDate) throw AppError.validation({ endDate: ["validation.endAfterStart"] });
+  // Only a changed schedule, teacher list or period is checked for clashes (A-116).
+  const teacherIds = (input.teachers ?? existing.teachers).map((t) => t.userId);
+  const plan = (x: {
+    slots: ScheduleSlotInput[];
+    teacherIds: string[];
+    start: string;
+    end: string;
+  }) =>
+    JSON.stringify({
+      slots: [...x.slots]
+        .map((sl) => ({ w: sl.weekday, s: sl.startTime, e: sl.endTime, r: sl.roomId ?? null }))
+        .sort((a, b) => a.w - b.w),
+      teachers: [...x.teacherIds].sort(),
+      start: x.start,
+      end: x.end,
+    });
+  const planBefore = plan({
+    slots: existing.slots.map((sl) => ({
+      weekday: sl.weekday,
+      startTime: sl.startTime,
+      endTime: sl.endTime,
+      roomId: sl.roomId,
+    })),
+    teacherIds: existing.teachers.map((t) => t.userId),
+    start: before.startDate,
+    end: before.endDate,
+  });
+  if (plan({ slots, teacherIds, start: startDate, end: endDate }) !== planBefore) {
+    await assertNoClashes(db, {
+      organizationId: actor.organizationId,
+      groupId: id,
+      slots,
+      teacherIds,
+      startDate,
+      endDate,
+      ignore: input.ignoreClashes,
+    });
+  }
 
   try {
     return await db.$transaction(async (tx) => {

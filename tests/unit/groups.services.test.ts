@@ -231,6 +231,8 @@ describe("groups", () => {
       name: `${TAG} Room`,
       slots: [{ ...slotsEven[0]!, roomId: roomA }],
       weekdayPattern: "CUSTOM",
+      // Teacher A already teaches GE-1 at this hour; the clash check (A-116) has its own suite.
+      ignoreClashes: true,
     });
     expect(ok.slots[0]?.roomName).toBe(`${TAG} R1`);
     expect(ok.months).toEqual(["2026-09", "2026-10", "2026-11"]);

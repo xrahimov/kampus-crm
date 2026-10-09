@@ -758,6 +758,8 @@ export async function importGroups(
           startDate,
           endDate,
           status,
+          // An imported timetable is the centre's existing reality (A-116).
+          ignoreClashes: true,
         },
         db,
       );

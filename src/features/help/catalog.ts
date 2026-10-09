@@ -122,6 +122,7 @@ export const HELP_ARTICLES = [
       { id: "members", screenshot: "group-members" },
       { id: "tabs" },
       { id: "changes" },
+      { id: "timetable" },
     ],
   },
   {

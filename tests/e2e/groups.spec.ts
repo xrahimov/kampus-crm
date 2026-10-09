@@ -165,6 +165,104 @@ test.describe("groups", () => {
     const body = (await mine.json()) as { items: Array<{ name: string }> };
     expect(body.items.map((g) => g.name).sort()).toEqual(["GE-Morning A1", "IELTS Evening"]);
   });
+
+  test("a doubled room and teacher warn before saving, and the timetable shows the week", async ({
+    page,
+  }) => {
+    await signIn(page, CEO_PHONE);
+    await page.goto("/en/groups");
+    const stamp = Date.now();
+    const nameA = `E2E Clash A ${stamp}`;
+    const nameB = `E2E Clash B ${stamp}`;
+    const dialog = page.getByTestId("group-dialog");
+    // Even days 16:00–17:30 in Room 102 with Demo Teacher Three: free in the seed.
+    const fill = async (name: string) => {
+      await page.getByTestId("add-button").click();
+      await expect(dialog).toBeVisible();
+      await dialog.getByLabel("Group name").fill(name);
+      await dialog.getByLabel("Course").click();
+      await page.getByRole("option", { name: "General English", exact: true }).click();
+      await dialog.getByLabel("Start", { exact: true }).fill("16:00");
+      await dialog.getByLabel("End", { exact: true }).fill("17:30");
+      await dialog.getByRole("combobox", { name: "Room", exact: true }).click();
+      await page.getByRole("option", { name: "Room 102" }).click();
+      await dialog.getByLabel("Start date").fill("2026-10-01");
+      await dialog.getByRole("button", { name: "Add teacher" }).click();
+      await dialog.getByRole("combobox", { name: "Teacher" }).first().click();
+      await page.getByRole("option", { name: "Demo Teacher Three" }).click();
+      await dialog.getByRole("button", { name: "Save", exact: true }).click();
+    };
+    await fill(nameA);
+    // A database that already carries an earlier run makes A itself a double.
+    const warning = dialog.getByTestId("group-clashes");
+    const rowA = page.getByTestId("group-row").filter({ hasText: nameA });
+    await expect(warning.or(rowA)).toBeVisible();
+    if (await warning.isVisible()) {
+      await dialog.getByRole("button", { name: "Save anyway" }).click();
+    }
+    await expect(dialog).toBeHidden();
+    await expect(rowA).toBeVisible();
+
+    await fill(nameB);
+    await expect(warning).toBeVisible();
+    await expect(warning).toContainText("Already busy");
+    await expect(warning).toContainText(`Tue 16:00–17:30: room Room 102 is taken by ${nameA}.`);
+    await expect(warning).toContainText(`Tue 16:00–17:30: Demo Teacher Three teaches ${nameA}.`);
+    // Changing the time hides the warning and the plain Save comes back.
+    await dialog.getByLabel("End", { exact: true }).fill("17:00");
+    await expect(warning).toBeHidden();
+    await expect(dialog.getByRole("button", { name: "Save", exact: true })).toBeVisible();
+    await dialog.getByRole("button", { name: "Save", exact: true }).click();
+    await expect(warning).toBeVisible();
+    await dialog.getByRole("button", { name: "Save anyway" }).click();
+    await expect(dialog).toBeHidden();
+    await expect(page.getByTestId("group-row").filter({ hasText: nameB })).toBeVisible();
+
+    // The timetable: Room 102's week carries both groups on Tuesday.
+    await page
+      .getByRole("navigation", { name: "Main" })
+      .getByRole("link", { name: "Timetable" })
+      .click();
+    await expect(page).toHaveURL(/\/en\/timetable/);
+    await expect(page.getByRole("heading", { name: "Timetable" })).toBeVisible();
+    await page.getByTestId("timetable-pick").click();
+    await page.getByRole("option", { name: "Room 102" }).click();
+    await expect(page).toHaveURL(/id=/);
+    const tuesday = page.getByTestId("timetable-day-2");
+    await expect(tuesday.getByTestId("timetable-block").filter({ hasText: nameA })).toBeVisible();
+    await expect(tuesday.getByTestId("timetable-block").filter({ hasText: nameB })).toBeVisible();
+    await expect(page.getByTestId("timetable-day-1").getByTestId("timetable-block")).toContainText([
+      "IELTS Evening",
+    ]);
+    // By teacher: Demo Teacher Three's week.
+    await page.getByRole("tab", { name: "By teacher" }).click();
+    await expect(page).toHaveURL(/mode=teacher/);
+    await page.getByTestId("timetable-pick").click();
+    await page.getByRole("option", { name: "Demo Teacher Three" }).click();
+    await expect(tuesday.getByTestId("timetable-block").filter({ hasText: nameA })).toBeVisible();
+    await expect(
+      page
+        .getByTestId("timetable-day-1")
+        .getByTestId("timetable-block")
+        .filter({ hasText: "IELTS Evening" }),
+    ).toBeVisible();
+  });
+
+  test("a teacher's timetable opens on their own week", async ({ page }) => {
+    await signIn(page, TEACHER_PHONE);
+    await page.goto("/en/timetable");
+    await expect(page.getByRole("heading", { name: "Timetable" })).toBeVisible();
+    await expect(page.getByTestId("timetable-pick")).toContainText("Demo Teacher");
+    await expect(
+      page
+        .getByTestId("timetable-day-2")
+        .getByTestId("timetable-block")
+        .filter({ hasText: "GE-Morning A1" }),
+    ).toBeVisible();
+    await expect(
+      page.getByTestId("timetable-block").filter({ hasText: "GE-Riverside B1" }),
+    ).toHaveCount(0);
+  });
 });
 
 test.describe("groups import", () => {

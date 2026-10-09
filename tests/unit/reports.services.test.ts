@@ -140,6 +140,8 @@ beforeAll(async () => {
       startDate: start,
       endDate: null,
       status: "ACTIVE",
+      // Both groups share the room and the teacher: the clash check (A-116) has its own suite.
+      ignoreClashes: true,
     });
   groupA = (await group(`${TAG} GE-A`, MONTH_START)).id;
   groupB = (await group(`${TAG} GE-B`, MONTH_START)).id;
