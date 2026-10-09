@@ -34,9 +34,9 @@ export function KpiCards({ items, columns = 3 }: { items: KpiItem[]; columns?: 3
                   className={cn(
                     "rounded px-1.5 py-0.5 text-[11px] font-medium tabular-nums",
                     k.change > 0
-                      ? "bg-emerald-100 text-emerald-800"
+                      ? "bg-emerald-100 text-emerald-800 dark:bg-emerald-500/20 dark:text-emerald-300"
                       : k.change < 0
-                        ? "bg-red-100 text-red-700"
+                        ? "bg-red-100 text-red-700 dark:bg-red-500/20 dark:text-red-300"
                         : "bg-muted text-muted-foreground",
                   )}
                 >

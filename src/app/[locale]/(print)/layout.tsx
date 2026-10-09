@@ -16,6 +16,15 @@ export default async function PrintLayout({
   const current = await getCurrentUser();
   if (!current) return redirect({ href: "/login", locale });
   return (
-    <div className="print-page mx-auto max-w-3xl p-4 print:max-w-none print:p-0">{children}</div>
+    <>
+      {/* Paper is white: these pages ignore the dark theme (A-136). */}
+      <script
+        dangerouslySetInnerHTML={{
+          __html:
+            'document.documentElement.classList.remove("dark");document.documentElement.style.colorScheme="light";',
+        }}
+      />
+      <div className="print-page mx-auto max-w-3xl p-4 print:max-w-none print:p-0">{children}</div>
+    </>
   );
 }

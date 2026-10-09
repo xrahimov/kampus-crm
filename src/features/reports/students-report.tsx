@@ -133,7 +133,9 @@ export function StudentsReport({
             </span>
             <span>
               {t("totals.present")}:{" "}
-              <b className="tabular-nums text-emerald-700">{totals.present}</b>
+              <b className="tabular-nums text-emerald-700 dark:text-emerald-300">
+                {totals.present}
+              </b>
             </span>
             <span>
               {t("totals.absent")}: <b className="tabular-nums text-destructive">{totals.absent}</b>
@@ -175,7 +177,7 @@ export function StudentsReport({
                       <TableCell className="text-right tabular-nums text-destructive">
                         {r.absent}
                       </TableCell>
-                      <TableCell className="text-right tabular-nums text-emerald-700">
+                      <TableCell className="text-right tabular-nums text-emerald-700 dark:text-emerald-300">
                         {r.present}
                       </TableCell>
                     </TableRow>

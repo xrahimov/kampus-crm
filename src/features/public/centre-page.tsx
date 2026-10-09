@@ -3,6 +3,7 @@ import { getTranslations } from "next-intl/server";
 
 import { KampusMark } from "@/components/brand/logo";
 import { LocaleSwitcher } from "@/components/layout/locale-switcher";
+import { ThemeToggle } from "@/components/layout/theme-toggle";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -107,6 +108,7 @@ export async function CentrePage({
           </div>
           <div className="flex items-center gap-2 [&_button]:text-white">
             <LocaleSwitcher />
+            <ThemeToggle />
             <Button asChild variant="ghost" size="sm" className="text-white hover:bg-white/10">
               <Link href="/login">{t("signIn")}</Link>
             </Button>

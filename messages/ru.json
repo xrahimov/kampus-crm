@@ -12,6 +12,7 @@
     "search": "Поиск…",
     "allBranches": "Все филиалы",
     "language": "Язык",
+    "theme": "Тема",
     "comingSoon": "Этот раздел будет построен на этапе {phase}.",
     "retry": "Повторить",
     "delete": "Удалить",
@@ -555,6 +556,11 @@
     "uz": "O‘zbekcha",
     "ru": "Русский",
     "en": "English"
+  },
+  "theme": {
+    "light": "Светлая",
+    "dark": "Тёмная",
+    "system": "Как на устройстве"
   },
   "settings": {
     "title": "Настройки",
