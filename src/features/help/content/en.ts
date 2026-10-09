@@ -926,10 +926,19 @@ export const en: HelpContent = {
             "The new centre starts with its branches, one cash payment method and the standard roles. Everything else (courses, rooms, staff, students) its CEO adds from inside, the same way as any centre; the article “Getting started” is the place to send them.",
           ],
         },
+        domain: {
+          title: "A centre's own address",
+          body: [
+            "A centre can sign in on an address of its own, for example kingston.kampus.uz, instead of the server's: the login page then carries the centre's name and logo, and the links Kampus sends its students lead to that address. Once the domain points at this server, the site owner enters the name in the centre's row (**Own address**); the certificate is issued by itself on the first visit. The server's address keeps working for every centre.",
+            {
+              note: "The field takes a bare host name (no https://, no slash) and one address per centre. Pointing the domain at the server is done at the domain's registrar, not in Kampus; the deployment guide has the steps.",
+            },
+          ],
+        },
         afterwards: {
           title: "Afterwards",
           body: [
-            "The list shows each centre's branches, CEO, staff and student counts; the row menu renames a centre. Every centre signs in on the same address and sets up its own integrations: its own Telegram bot, SMS account, Payme or Click merchant and webhook secrets, since the shared webhook addresses tell centres apart by the secret or merchant credentials they present.",
+            "The list shows each centre's branches, CEO, staff and student counts; the row menu edits a centre's name and own address. Every centre signs in on the same address and sets up its own integrations: its own Telegram bot, SMS account, Payme or Click merchant and webhook secrets, since the shared webhook addresses tell centres apart by the secret or merchant credentials they present.",
             {
               note: "Nothing deletes a centre; archive its staff and students from inside if it stops using Kampus.",
             },

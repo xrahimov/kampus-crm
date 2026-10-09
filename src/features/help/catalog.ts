@@ -302,7 +302,7 @@ export const HELP_ARTICLES = [
     permission: "settings.org",
     path: "/settings/organizations",
     siteOwner: true,
-    sections: [{ id: "what" }, { id: "create" }, { id: "afterwards" }],
+    sections: [{ id: "what" }, { id: "create" }, { id: "domain" }, { id: "afterwards" }],
   },
   {
     id: "studentPortal",

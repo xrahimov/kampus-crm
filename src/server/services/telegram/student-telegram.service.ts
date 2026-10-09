@@ -10,6 +10,7 @@ import { prisma, type DbClient } from "@/server/db/prisma";
 import { AppError } from "@/server/errors/app-error";
 import { enqueue } from "@/server/jobs/queue";
 import { loadIntegrationConfig } from "@/server/services/integrations/integrations.service";
+import { appOriginForGroup } from "@/server/services/settings/domains.service";
 import { isoToDate, organizationOfBranch } from "@/server/services/settings/shared";
 import { classLink, membershipByToken } from "@/server/services/video/video.service";
 
@@ -239,6 +240,7 @@ export async function notifyLessonStarted(
     where: { groupId: input.groupId, status: { in: ["NEW", "TRIAL", "ACTIVE"] } },
     select: { studentId: true, videoToken: true },
   });
+  const origin = await appOriginForGroup(input.groupId, tx);
   let queued = 0;
   for (const m of memberships) {
     if (!m.videoToken) continue;
@@ -246,7 +248,7 @@ export async function notifyLessonStarted(
       studentIds: [m.studentId],
       kind: "lessonStarted",
       refKey: `lesson-started:${input.roomId}`,
-      values: { group: input.groupName, link: classLink(appOrigin(), m.videoToken) },
+      values: { group: input.groupName, link: classLink(origin, m.videoToken) },
     });
   }
   return queued;
@@ -261,6 +263,7 @@ export async function notifyMaterial(
     where: { groupId: input.groupId, status: { in: ["NEW", "TRIAL", "ACTIVE"] } },
     select: { studentId: true, videoToken: true },
   });
+  const origin = await appOriginForGroup(input.groupId, tx);
   let queued = 0;
   for (const m of memberships) {
     if (!m.videoToken) continue;
@@ -272,7 +275,7 @@ export async function notifyMaterial(
         group: input.groupName,
         kind: input.kind,
         title: input.title,
-        link: classLink(appOrigin(), m.videoToken),
+        link: classLink(origin, m.videoToken),
       },
     });
   }
@@ -315,10 +318,6 @@ export async function notifyHomework(
       comment: "comment" in input && input.comment ? `\n${input.comment}` : "",
     }),
   });
-}
-
-function appOrigin(): string {
-  return process.env.APP_URL ?? "http://localhost:3000";
 }
 
 /* ----- lesson reminders ------------------------------------------------------------------- */
@@ -375,6 +374,7 @@ export async function runLessonReminders(
       where: { groupId: lesson.groupId, status: { in: ["NEW", "TRIAL", "ACTIVE"] } },
       select: { studentId: true, videoToken: true },
     });
+    const origin = await appOriginForGroup(lesson.groupId, db);
     for (const m of memberships) {
       queued += await db.$transaction((tx) =>
         notifyStudents(tx, {
@@ -385,7 +385,7 @@ export async function runLessonReminders(
             group: lesson.group.name,
             start: lesson.startTime,
             end: lesson.endTime,
-            link: m.videoToken ? classLink(appOrigin(), m.videoToken) : "",
+            link: m.videoToken ? classLink(origin, m.videoToken) : "",
           },
         }),
       );

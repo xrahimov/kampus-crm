@@ -930,10 +930,19 @@ export const uz: HelpContent = {
             "Yangi markaz filiallari, bitta naqd to‘lov usuli va standart rollar bilan boshlanadi. Qolgan hamma narsani (kurslar, xonalar, xodimlar, o‘quvchilar) uning rahbari ichkaridan, har qanday markaz kabi qo‘shadi; uni «Ishni boshlash» maqolasiga yo‘naltiring.",
           ],
         },
+        domain: {
+          title: "Markazning o‘z manzili",
+          body: [
+            "Markaz server manzili o‘rniga o‘z manzili orqali kirishi mumkin, masalan kingston.kampus.uz: kirish sahifasida markazning nomi va logotipi ko‘rinadi, Kampus o‘quvchilarga yuboradigan havolalar shu manzilga olib boradi. Domen shu serverga yo‘naltirilgach, sayt egasi markaz qatoriga nomni kiritadi (**O‘z manzili**); sertifikat birinchi kirishda o‘zi beriladi. Server manzili barcha markazlar uchun ishlashda davom etadi.",
+            {
+              note: "Maydon faqat xost nomini qabul qiladi (https:// va slesh yo‘q), har markazga bitta manzil. Domen Kampusda emas, registrator saytida serverga yo‘naltiriladi; qadamlar o‘rnatish qo‘llanmasida.",
+            },
+          ],
+        },
         afterwards: {
           title: "Keyin",
           body: [
-            "Ro‘yxatda har bir markazning filiallari, rahbari, xodimlar va o‘quvchilar soni ko‘rinadi; qator menyusi markaz nomini o‘zgartiradi. Har bir markaz bitta manzildan kiradi va o‘z integratsiyalarini o‘zi sozlaydi: o‘z Telegram boti, SMS hisobi, Payme yoki Click merchanti va webhook maxfiy kalitlari, chunki umumiy webhook manzillari markazlarni ular ko‘rsatgan maxfiy kalit yoki merchant ma’lumotlari orqali ajratadi.",
+            "Ro‘yxatda har bir markazning filiallari, rahbari, xodimlar va o‘quvchilar soni ko‘rinadi; qator menyusi markaz nomi va o‘z manzilini tahrirlaydi. Har bir markaz bitta manzildan kiradi va o‘z integratsiyalarini o‘zi sozlaydi: o‘z Telegram boti, SMS hisobi, Payme yoki Click merchanti va webhook maxfiy kalitlari, chunki umumiy webhook manzillari markazlarni ular ko‘rsatgan maxfiy kalit yoki merchant ma’lumotlari orqali ajratadi.",
             {
               note: "Markazni o‘chirib bo‘lmaydi; u Kampusdan foydalanishni to‘xtatsa, xodimlari va o‘quvchilarini ichkaridan arxivlang.",
             },

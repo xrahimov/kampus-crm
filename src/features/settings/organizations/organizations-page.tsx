@@ -63,6 +63,7 @@ export function OrganizationsPage({
               <TableRow>
                 <TableHead>{t("name")}</TableHead>
                 <TableHead>{t("branches")}</TableHead>
+                <TableHead>{t("domain")}</TableHead>
                 <TableHead>{t("ceo")}</TableHead>
                 <TableHead className="text-right">{t("staffCount")}</TableHead>
                 <TableHead className="text-right">{t("studentsCount")}</TableHead>
@@ -88,6 +89,20 @@ export function OrganizationsPage({
                         </Badge>
                       ))}
                     </div>
+                  </TableCell>
+                  <TableCell data-testid="organization-domain">
+                    {org.domain ? (
+                      <a
+                        href={`https://${org.domain}/`}
+                        className="hover:underline"
+                        target="_blank"
+                        rel="noreferrer"
+                      >
+                        {org.domain}
+                      </a>
+                    ) : (
+                      <span className="text-muted-foreground">—</span>
+                    )}
                   </TableCell>
                   <TableCell>
                     {org.ceo ? (

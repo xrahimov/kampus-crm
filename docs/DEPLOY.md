@@ -164,6 +164,32 @@ docker compose -f docker-compose.prod.yml cp backups/uploads/. app:/data/uploads
 docker compose -f docker-compose.prod.yml exec -u root app chown -R nextjs:nodejs /data/uploads
 ```
 
+## 9. A centre's own address
+
+Every centre signs in on the server's address (`DOMAIN`). A centre can also
+have an address of its own, for example `kingston.kampus.uz` (A-114): the login
+page then carries the centre's name and logo, and the links Kampus sends its
+students (Telegram, the class-link SMS) use that address. Certificates for such
+addresses are fetched by Caddy on the first visit, so nothing on the server
+changes per centre.
+
+1. At the domain's registrar, add an `A` record for the name that points at the
+   server's IP. For subdomains of one domain, a single wildcard record
+   (`*.kampus.uz → <server IP>`) covers every centre.
+2. Wait until `dig +short kingston.kampus.uz` (or an online DNS checker) shows
+   the server's IP.
+3. As the site owner, open Settings → Organisations, edit the centre and enter
+   the name in **Own address**: a bare host name, no `https://`, no path, one
+   per centre.
+4. Open `https://kingston.kampus.uz/` once. Caddy asks the app whether the name
+   is known (`GET /api/v1/public/tls-ask?domain=…`, 200 for the main address
+   and every claimed name, 403 otherwise) and fetches a Let's Encrypt
+   certificate for it; the first page load takes a few seconds longer.
+
+Clearing the field stops the name from being served; its certificate lapses by
+itself. `DOMAIN` and `APP_URL` stay the main address: it keeps working for
+every centre, and the payment and amoCRM callback URLs always use it.
+
 ## Troubleshooting
 
 - **No certificate / browser warning:** the DNS record does not point at the
