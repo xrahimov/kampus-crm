@@ -116,6 +116,13 @@ export const en: HelpContent = {
             },
           ],
         },
+        mySalary: {
+          title: "Your salary",
+          body: [
+            "Teachers and other paid staff find **My salary** under their name in the top right corner. It shows the month's figures the way the accountant's payroll computes them: the fixed salary if you have one, each group with its rule (a percent of the course price per student, a fee per lesson held, or a fee per student) and the amount so far, then the bonuses, fines and advances recorded this month.",
+            "The amount is a running estimate until the accountant opens and approves the month's payroll; the page says which it is. The arrows show earlier months. If the page says no salary rule is set, ask the administrator to fill in the salary method on your staff card or to add you to a group as its teacher.",
+          ],
+        },
         help: {
           title: "Using this help",
           body: [

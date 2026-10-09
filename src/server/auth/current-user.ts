@@ -17,6 +17,8 @@ export interface CurrentUser {
     /** Someone else chose the password: the app shows only the change-password page (A-124). */
     mustChangePassword: boolean;
     signInCode: "OFF" | "TELEGRAM";
+    /** Has a salary rule or teaches a group, so "My salary" applies (A-127). */
+    hasSalary: boolean;
   };
   roles: Array<{ code: string; name: string }>;
   branches: Array<{ id: string; name: string }>;
@@ -40,6 +42,7 @@ export async function resolveCurrentUser(
     include: {
       roles: { include: { role: true } },
       branches: { include: { branch: true } },
+      _count: { select: { groupsTaught: true } },
     },
   });
   if (!user || user.isArchived) return null;
@@ -77,6 +80,7 @@ export async function resolveCurrentUser(
       photoUrl: user.photoUrl,
       mustChangePassword: user.mustChangePassword,
       signInCode: user.signInCode,
+      hasSalary: user.salaryMethod !== null || user._count.groupsTaught > 0,
     },
     roles: roles.map((r) => ({ code: r.code, name: r.name })),
     branches: visibleBranches,

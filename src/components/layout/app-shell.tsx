@@ -25,6 +25,8 @@ export interface AppShellProps {
   permissions: string[];
   branches: Array<{ id: string; name: string }>;
   activeBranch: { id: string; name: string } | null;
+  /** Shows "My salary" in the user menu (A-127). */
+  canSalary?: boolean;
   children: React.ReactNode;
 }
 
@@ -40,6 +42,7 @@ export async function AppShell({
   permissions,
   branches,
   activeBranch,
+  canSalary = false,
   children,
 }: AppShellProps) {
   const t = await getTranslations();
@@ -79,7 +82,7 @@ export async function AppShell({
               />
               <LocaleSwitcher />
               <NotificationBell initialUnread={unread} />
-              <UserMenu user={user} roles={roles} canReceipt={canReceipt} />
+              <UserMenu user={user} roles={roles} canReceipt={canReceipt} canSalary={canSalary} />
             </div>
           </div>
         </header>

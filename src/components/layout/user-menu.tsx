@@ -1,6 +1,6 @@
 "use client";
 
-import { Bell, CircleHelp, LogOut, Receipt, UserRound } from "lucide-react";
+import { Bell, CircleHelp, LogOut, Receipt, UserRound, Wallet } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useTransition } from "react";
 
@@ -20,11 +20,14 @@ export function UserMenu({
   user,
   roles,
   canReceipt = false,
+  canSalary = false,
 }: {
   user: { fullName: string; phone: string };
   roles: Array<{ code: string; name: string }>;
   /** Shows "Chek sozlamalari" (EXP §11) for users who may edit organisation settings. */
   canReceipt?: boolean;
+  /** Shows "My salary" (A-127) for people with a salary rule or a group to teach. */
+  canSalary?: boolean;
 }) {
   const t = useTranslations();
   const router = useRouter();
@@ -65,6 +68,14 @@ export function UserMenu({
             {t("account.title")}
           </Link>
         </DropdownMenuItem>
+        {canSalary && (
+          <DropdownMenuItem asChild>
+            <Link href="/account/salary" data-testid="menu-salary">
+              <Wallet />
+              {t("salary.title")}
+            </Link>
+          </DropdownMenuItem>
+        )}
         <DropdownMenuItem asChild>
           <Link href="/notifications" data-testid="menu-notifications">
             <Bell />

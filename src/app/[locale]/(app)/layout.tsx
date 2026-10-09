@@ -39,6 +39,7 @@ export default async function AppLayout({
       permissions={current.actor.permissions}
       branches={current.branches}
       activeBranch={current.activeBranch}
+      canSalary={current.user.hasSalary}
     >
       {children}
     </AppShell>

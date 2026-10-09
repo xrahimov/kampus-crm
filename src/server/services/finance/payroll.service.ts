@@ -128,30 +128,40 @@ function runDto(
 
 const round = (v: number) => Math.round(v * 100) / 100;
 
+/** One computed payroll line before it is stored: the running figures of a month. */
+export type PayrollComputedLine = Omit<
+  PayrollLineDto,
+  "id" | "status" | "approvedByName" | "approvedAt"
+>;
+
 /**
  * Computes one month for every staff member who teaches a group or has a
  * salary method (A-12): MONTHLY fixed salary, plus per group the share set on
  * the group (PERCENT of course price × students, PER_LESSON × lessons held,
  * PER_STUDENT × students), plus bonuses, minus fines and advances.
+ * With `only`, the one person's line over every branch (their own view, A-127).
  */
-async function computeLines(
+export async function computePayrollLines(
   db: DbClient,
   actor: Actor,
   monthStart: Date,
   monthEnd: Date,
-): Promise<Array<Omit<PayrollLineDto, "id" | "status" | "approvedByName" | "approvedAt">>> {
-  const scope = branchScope(actor);
+  only?: { userId: string },
+): Promise<PayrollComputedLine[]> {
+  const scope = only ? {} : branchScope(actor);
   const settings = await db.orgSettings.findFirst({
     where: { organizationId: actor.organizationId },
     select: { payOnlyAttendedLessons: true, payTeacherOnGroupDayOff: true },
   });
   const users = await db.user.findMany({
-    where: {
-      isArchived: false,
-      organizationId: actor.organizationId,
-      branches: { some: scope },
-      OR: [{ salaryMethod: { not: null } }, { groupsTaught: { some: {} } }],
-    },
+    where: only
+      ? { id: only.userId, organizationId: actor.organizationId }
+      : {
+          isArchived: false,
+          organizationId: actor.organizationId,
+          branches: { some: scope },
+          OR: [{ salaryMethod: { not: null } }, { groupsTaught: { some: {} } }],
+        },
     include: {
       roles: { include: { role: { select: { name: true } } }, take: 1 },
       groupsTaught: {
@@ -256,7 +266,7 @@ async function computeLines(
   });
 }
 
-function monthBounds(month: string) {
+export function monthBounds(month: string) {
   const [y, m] = month.split("-").map(Number) as [number, number];
   const { from, to } = periodRange(y, m);
   return { from, to };
@@ -273,7 +283,7 @@ async function loadRun(db: DbClient, organizationId: string, monthStart: Date) {
 async function writeLines(
   tx: DbClient,
   runId: string,
-  computed: Awaited<ReturnType<typeof computeLines>>,
+  computed: PayrollComputedLine[],
   approvedUserIds: Set<string>,
 ) {
   const keep = new Set(approvedUserIds);
@@ -299,7 +309,7 @@ export async function getPayroll(
   const { from, to } = monthBounds(month);
   let run = await loadRun(db, organizationId, from);
   if (!run) {
-    const computed = await computeLines(db, actor, from, to);
+    const computed = await computePayrollLines(db, actor, from, to);
     await db.$transaction(async (tx) => {
       const created = await tx.payrollRun.create({ data: { organizationId, month: from } });
       await writeLines(tx, created.id, computed, new Set());
@@ -326,7 +336,7 @@ export async function recalculatePayroll(
   const { from, to } = monthBounds(month);
   const run = await loadRun(db, organizationId, from);
   if (!run) return getPayroll(actor, month, db);
-  const computed = await computeLines(db, actor, from, to);
+  const computed = await computePayrollLines(db, actor, from, to);
   await db.$transaction(async (tx) => {
     await writeLines(
       tx,

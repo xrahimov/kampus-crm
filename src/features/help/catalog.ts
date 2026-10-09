@@ -81,6 +81,7 @@ export const HELP_ARTICLES = [
       { id: "notifications", screenshot: "notifications" },
       { id: "roles" },
       { id: "account" },
+      { id: "mySalary" },
       { id: "help", screenshot: "help" },
     ],
   },
