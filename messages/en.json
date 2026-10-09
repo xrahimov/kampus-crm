@@ -1,7 +1,8 @@
 {
   "app": {
     "name": "Kampus",
-    "tagline": "Learning center CRM"
+    "tagline": "Learning center CRM",
+    "poweredBy": "Powered by Kampus"
   },
   "common": {
     "loading": "Loading…",
@@ -253,6 +254,7 @@
   },
   "validation": {
     "phone": "Enter a number like +998 90 123 45 67.",
+    "domain": "Enter a domain name like kingston.kampus.uz.",
     "passwordMin": "At least 8 characters.",
     "passwordMax": "At most 128 characters.",
     "required": "Required.",
@@ -583,8 +585,10 @@
       "add": "New organisation",
       "addDescription": "Creates the centre with its branches and its first CEO account. Pass the phone and password on to the CEO; they change the password after signing in.",
       "create": "Create organisation",
-      "edit": "Rename organisation",
+      "edit": "Edit organisation",
       "name": "Name",
+      "domain": "Own address",
+      "domainHint": "A web address of the centre's own, for example kingston.kampus.uz: point its DNS at this server first, then enter it here; the certificate is issued on the first visit. Empty means the server's address.",
       "branches": "Branches",
       "branchesPlaceholder": "Main branch\nSecond branch",
       "branchesHint": "One branch per line. The CEO is attached to all of them.",

@@ -1,7 +1,29 @@
 # Reverse proxy in front of the app (docs/DEPLOY.md).
 # DOMAIN=crm.example.uz  -> automatic HTTPS with a Let's Encrypt certificate.
 # DOMAIN=:80             -> plain HTTP on the server's IP (then set COOKIE_SECURE=false).
-{$DOMAIN}
+#
+# A centre's own address (Settings -> Organisations -> Own address, A-114) is
+# served by the catch-all block below: its certificate is fetched on the first
+# visit, after the app has confirmed the name at /api/v1/public/tls-ask.
+{
+	on_demand_tls {
+		ask http://app:3000/api/v1/public/tls-ask
+	}
+}
 
-encode gzip
-reverse_proxy app:3000
+{$DOMAIN} {
+	encode gzip
+	reverse_proxy app:3000
+}
+
+https:// {
+	tls {
+		on_demand
+	}
+	encode gzip
+	reverse_proxy app:3000
+}
+
+http:// {
+	redir https://{host}{uri} permanent
+}

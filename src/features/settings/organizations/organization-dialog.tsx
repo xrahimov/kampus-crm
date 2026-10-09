@@ -12,7 +12,11 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { api } from "@/lib/api-client";
 import { applyApiError } from "@/lib/api-errors";
-import { organizationCreateSchema, organizationUpdateSchema } from "@/lib/validation/settings";
+import {
+  domainFieldSchema,
+  organizationCreateSchema,
+  organizationUpdateSchema,
+} from "@/lib/validation/settings";
 import type { OrganizationDto } from "@/server/services/settings/organizations.service";
 
 import { FormDialog } from "../shared/form-dialog";
@@ -20,9 +24,11 @@ import { FormDialog } from "../shared/form-dialog";
 /* The form types the branches one per line; the API gets the list. */
 const createFormSchema = organizationCreateSchema.omit({ branches: true }).extend({
   branchesText: z.string().trim().min(1, "validation.required"),
+  domain: z.string(),
 });
-/* Renaming touches the name only; the other fields stay in the form untouched. */
+/* Editing touches the name and the address; the other fields stay in the form untouched. */
 const editFormSchema = organizationUpdateSchema.extend({
+  domain: domainFieldSchema,
   branchesText: z.string(),
   ceoFullName: z.string(),
   ceoPhone: z.string(),
@@ -57,6 +63,7 @@ export function OrganizationDialog({
     resolver: zodResolver(organization ? editFormSchema : createFormSchema),
     defaultValues: {
       name: "",
+      domain: "",
       branchesText: "",
       ceoFullName: "",
       ceoPhone: "+998",
@@ -68,6 +75,7 @@ export function OrganizationDialog({
     if (!open) return;
     form.reset({
       name: organization?.name ?? "",
+      domain: organization?.domain ?? "",
       branchesText: organization?.branches.map((b) => b.name).join("\n") ?? "",
       ceoFullName: organization?.ceo?.fullName ?? "",
       ceoPhone: organization?.ceo?.phone ?? "+998",
@@ -81,7 +89,7 @@ export function OrganizationDialog({
       if (organization) {
         await api(`/organizations/${organization.id}`, {
           method: "PATCH",
-          body: { name: values.name },
+          body: { name: values.name, domain: values.domain },
         });
       } else {
         const { branchesText, ...rest } = values;
@@ -118,6 +126,21 @@ export function OrganizationDialog({
         <Input id="org-name" aria-invalid={!!errors.name} {...form.register("name")} />
         <FieldError id="org-name-error" message={errors.name?.message} />
       </div>
+      {organization && (
+        <div className="space-y-2">
+          <Label htmlFor="org-domain">{t("domain")}</Label>
+          <Input
+            id="org-domain"
+            placeholder="kingston.kampus.uz"
+            autoCapitalize="none"
+            spellCheck={false}
+            aria-invalid={!!errors.domain}
+            {...form.register("domain")}
+          />
+          <p className="text-xs text-muted-foreground">{t("domainHint")}</p>
+          <FieldError id="org-domain-error" message={errors.domain?.message} />
+        </div>
+      )}
       {!organization && (
         <>
           <div className="space-y-2">

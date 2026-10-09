@@ -12,6 +12,7 @@ import { findGroupInScope, today } from "@/server/services/groups/shared";
 import { loadIntegrationConfig } from "@/server/services/integrations/integrations.service";
 import { deliverMessage } from "@/server/services/sms/sms.service";
 import { notifyLessonStarted } from "@/server/services/telegram/student-telegram.service";
+import { appOriginForGroup } from "@/server/services/settings/domains.service";
 import { dateToIso, isoToDate, organizationOfBranch } from "@/server/services/settings/shared";
 
 /*
@@ -738,12 +739,14 @@ export async function smsStudentLinks(
   actor: Actor,
   groupId: string,
   input: VideoLinksSmsInput,
-  origin = process.env.APP_URL ?? "http://localhost:3000",
+  origin?: string,
   db: DbClient = prisma,
 ): Promise<{ total: number; sent: number; failed: number; skipped: number }> {
   authorize(actor, "sms.send");
   authorize(actor, "groups.attendance.mark");
   const group = await findGroupInScope(db, actor, groupId, {});
+  // Links carry the centre's own address when it has one (A-114).
+  const base = origin ?? (await appOriginForGroup(groupId, db));
   const members = await ensureTokens(db, groupId);
   const withPhone = members.filter((m) => m.student.phone);
   if (withPhone.length === 0) throw AppError.validation({ text: ["validation.noRecipients"] });
@@ -752,7 +755,7 @@ export async function smsStudentLinks(
     const created: string[] = [];
     for (const m of withPhone) {
       const text = input.text
-        .replaceAll("{link}", classLink(origin, m.videoToken!))
+        .replaceAll("{link}", classLink(base, m.videoToken!))
         .replaceAll("{studentName}", m.student.fullName);
       const row = await tx.smsMessage.create({
         data: {

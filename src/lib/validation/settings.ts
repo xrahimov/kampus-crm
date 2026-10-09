@@ -102,7 +102,22 @@ export const organizationCreateSchema = z.object({
   ceoPassword: passwordSchema,
 });
 export type OrganizationCreateInput = z.infer<typeof organizationCreateSchema>;
-export const organizationUpdateSchema = z.object({ name });
+/** A centre's own address: a bare host name such as kingston.kampus.uz (A-114). */
+const HOSTNAME = /^(?=.{1,253}$)([a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.)+[a-z]{2,63}$/;
+export const domainSchema = z
+  .union([
+    z.literal("").transform(() => null),
+    z.null(),
+    z.string().trim().toLowerCase().regex(HOSTNAME, "validation.domain"),
+  ])
+  .optional();
+/** The same rule for a form field, which keeps the empty string instead of null. */
+export const domainFieldSchema = z
+  .string()
+  .trim()
+  .toLowerCase()
+  .refine((value) => value === "" || HOSTNAME.test(value), "validation.domain");
+export const organizationUpdateSchema = z.object({ name, domain: domainSchema });
 export type OrganizationUpdateInput = z.infer<typeof organizationUpdateSchema>;
 
 // --- Payment methods ----------------------------------------------------------

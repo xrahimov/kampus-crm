@@ -1,7 +1,8 @@
 {
   "app": {
     "name": "Kampus",
-    "tagline": "O‘quv markazi uchun CRM"
+    "tagline": "O‘quv markazi uchun CRM",
+    "poweredBy": "Kampus asosida ishlaydi"
   },
   "common": {
     "loading": "Yuklanmoqda…",
@@ -253,6 +254,7 @@
   },
   "validation": {
     "phone": "+998 90 123 45 67 ko‘rinishida raqam kiriting.",
+    "domain": "kingston.kampus.uz kabi domen nomini kiriting.",
     "passwordMin": "Kamida 8 ta belgi.",
     "passwordMax": "Ko‘pi bilan 128 ta belgi.",
     "required": "Majburiy.",
@@ -583,8 +585,10 @@
       "add": "Yangi tashkilot",
       "addDescription": "Markaz, uning filiallari va birinchi rahbar (CEO) hisobi yaratiladi. Telefon va parolni rahbarga ayting; u tizimga kirgach parolni o‘zgartiradi.",
       "create": "Tashkilot yaratish",
-      "edit": "Tashkilot nomini o‘zgartirish",
+      "edit": "Tashkilotni tahrirlash",
       "name": "Nomi",
+      "domain": "O‘z manzili",
+      "domainHint": "Markazning o‘z veb-manzili, masalan kingston.kampus.uz: avval uning DNS yozuvini shu serverga yo‘naltiring, keyin bu yerga kiriting; sertifikat birinchi kirishda beriladi. Bo‘sh — server manzili ishlatiladi.",
       "branches": "Filiallar",
       "branchesPlaceholder": "Asosiy filial\nIkkinchi filial",
       "branchesHint": "Har bir filial alohida qatorda. Rahbar barcha filiallarga biriktiriladi.",

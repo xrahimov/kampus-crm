@@ -32,6 +32,8 @@ export const SYSTEM_ROLE_NAMES: Record<(typeof SYSTEM_ROLES)[number], string> = 
 export interface OrganizationDto {
   id: string;
   name: string;
+  /** The centre's own address, e.g. "kingston.kampus.uz" (A-114); null = the server's domain. */
+  domain: string | null;
   createdAt: string;
   branches: Array<{ id: string; name: string; isActive: boolean }>;
   ceo: { fullName: string; phone: string } | null;
@@ -114,6 +116,7 @@ async function toDto(db: DbClient, row: Row): Promise<OrganizationDto> {
   return {
     id: row.id,
     name: row.name,
+    domain: row.domain,
     createdAt: row.createdAt.toISOString(),
     branches: row.branches,
     ceo: row.users[0] ?? null,
@@ -178,22 +181,31 @@ export async function updateOrganization(
   db: DbClient = prisma,
 ): Promise<OrganizationDto> {
   authorizeSiteOwner(actor);
-  const row = await db.$transaction(async (tx) => {
-    const before = await mustFind(tx.organization.findUnique({ where: { id }, include }));
-    const after = await tx.organization.update({
-      where: { id },
-      data: { name: input.name },
-      include,
+  const { domain } = input;
+  try {
+    const row = await db.$transaction(async (tx) => {
+      const before = await mustFind(tx.organization.findUnique({ where: { id }, include }));
+      const after = await tx.organization.update({
+        where: { id },
+        data: { name: input.name, ...(domain === undefined ? {} : { domain }) },
+        include,
+      });
+      await recordAudit(tx, actor, {
+        action: "organization.update",
+        entity: "Organization",
+        entityId: id,
+        before: { name: before.name, domain: before.domain },
+        after: { name: after.name, domain: after.domain },
+        branchId: null,
+      });
+      return after;
     });
-    await recordAudit(tx, actor, {
-      action: "organization.update",
-      entity: "Organization",
-      entityId: id,
-      before: { name: before.name },
-      after: { name: after.name },
-      branchId: null,
-    });
-    return after;
-  });
-  return toDto(db, row);
+    return toDto(db, row);
+  } catch (error) {
+    // Two centres cannot share one address.
+    if (prismaCode(error) === "P2002") {
+      throw AppError.validation({ domain: ["validation.duplicate"] });
+    }
+    throw error;
+  }
 }

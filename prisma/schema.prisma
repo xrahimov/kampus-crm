@@ -19,6 +19,9 @@ model Organization {
   id        String   @id @default(cuid())
   name      String
   logoUrl   String?
+  /// The centre's own address (A-114), e.g. "kingston.kampus.uz": the login page
+  /// carries its name there and student links use it. Null = the server's domain.
+  domain    String?  @unique
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
