@@ -338,7 +338,9 @@
     "botUsername": "Letters, digits and underscores only.",
     "recordingSize": "The recording must be 400 MB or smaller.",
     "nonZero": "Must not be zero",
-    "lessonExists": "There is already a lesson at this time."
+    "lessonExists": "There is already a lesson at this time.",
+    "referralSelf": "A student cannot invite themselves",
+    "referralUnknown": "Student not found"
   },
   "roles": {
     "CEO": "CEO",
@@ -406,6 +408,12 @@
         "task": "Task for the branch managers after",
         "days": "days",
         "off": "off"
+      },
+      "referral": {
+        "title": "Referral programme",
+        "hint": "A student who brings a friend gets coins (Settings → Coins, event Referral) and this bonus on their balance when the friend joins a group. 0 means coins only.",
+        "bonus": "Bonus for the inviting student",
+        "currency": "so'm"
       }
     },
     "switches": {
@@ -1215,7 +1223,9 @@
       "parentName": "Parent's name",
       "schoolSection": "Add a school",
       "school": "School",
-      "schoolPlaceholder": "Choose a school"
+      "schoolPlaceholder": "Choose a school",
+      "referredBy": "Invited by",
+      "referredByPlaceholder": "Search a student by name or phone"
     },
     "genders": {
       "MALE": "Male",
@@ -1260,7 +1270,10 @@
       "hideArchivedGroups": "Hide archived groups",
       "paymentHistory": "Payment history",
       "allGroups": "All groups",
-      "adjust": "Adjust balance"
+      "adjust": "Adjust balance",
+      "referredBy": "Invited by",
+      "referralCode": "Invite code",
+      "referrals": "Friends brought"
     },
     "groupCard": {
       "grade": "Grade",
@@ -1337,6 +1350,9 @@
         "balance": {
           "adjust": "Balance adjusted",
           "adjustRemove": "Balance adjustment removed"
+        },
+        "referral": {
+          "credit": "Referral credited"
         }
       }
     },
@@ -1399,7 +1415,11 @@
     "importBalances": "Import opening balances",
     "importBalancesHint": "One row per student and group with the balance they bring from the previous system: a debt is a negative number, money the student has is positive. Students are found by Kampus ID, phone or exact name; a preview shows the matches before anything is written.",
     "importMenu": "Import",
-    "importParents": "Import parents"
+    "importParents": "Import parents",
+    "picker": {
+      "noResults": "No students found",
+      "clear": "Clear"
+    }
   },
   "payments": {
     "pay": "Payment",
@@ -1685,7 +1705,9 @@
       "comment": "Comment",
       "createNew": "Create new…",
       "newColumn": "New column name",
-      "newSource": "New source name"
+      "newSource": "New source name",
+      "referrer": "Invited by",
+      "referrerPlaceholder": "Search a student by name or phone"
     },
     "addToGroup": {
       "button": "Add leads to group ({count})",
@@ -1717,9 +1739,11 @@
       "comment": "Comment",
       "submit": "Send",
       "thanksTitle": "Thank you!",
-      "thanksText": "We received your request and will contact you soon."
+      "thanksText": "We received your request and will contact you soon.",
+      "refHint": "You were invited by a student of the centre. The invite will be noted with your request."
     },
-    "amocrmHint": "AmoCRM sync is set up under Settings → Integrations"
+    "amocrmHint": "AmoCRM sync is set up under Settings → Integrations",
+    "referredBy": "Invited by {name}"
   },
   "exams": {
     "title": "Exams",
@@ -1992,7 +2016,8 @@
         "ATTENDANCE": "Attendance",
         "HOMEWORK": "Homework",
         "TEST_RESULT": "Test result",
-        "BIRTHDAY": "Birthday"
+        "BIRTHDAY": "Birthday",
+        "REFERRAL": "Referral"
       },
       "notWired": "Saved, but nothing triggers it yet (a homework record arrives later).",
       "reasonsTitle": "Manual coin reasons",
@@ -2080,7 +2105,8 @@
         "ATTENDANCE": "Attendance",
         "HOMEWORK": "Homework",
         "TEST_RESULT": "Test result",
-        "BIRTHDAY": "Birthday"
+        "BIRTHDAY": "Birthday",
+        "REFERRAL": "Referral"
       }
     },
     "marketplace": {
@@ -2289,7 +2315,8 @@
       "coins": "Coins",
       "leads": "Lead statements",
       "students": "Students",
-      "statistics": "Center statistics"
+      "statistics": "Center statistics",
+      "referrals": "Referral programme"
     },
     "filters": {
       "all": "All",
@@ -2565,6 +2592,39 @@
         "planSeatHours": "Planned seat-hours",
         "fik": "Utilisation"
       }
+    },
+    "referrals": {
+      "title": "Referral programme",
+      "kpis": {
+        "leads": "Leads from invites",
+        "joined": "Friends who joined",
+        "referrers": "Students who invited",
+        "coins": "Coins awarded",
+        "bonus": "Bonuses paid"
+      },
+      "byMonthTitle": "Invites in {year}",
+      "series": {
+        "leads": "Leads",
+        "joined": "Joined"
+      },
+      "referrersTitle": "Who invited",
+      "referredTitle": "Who was invited",
+      "columns": {
+        "student": "Student",
+        "leads": "Leads",
+        "joined": "Joined",
+        "coins": "Coins",
+        "bonus": "Bonus",
+        "who": "Who",
+        "invitedBy": "Invited by",
+        "date": "Date",
+        "state": "State"
+      },
+      "state": {
+        "joined": "Joined a group on {date}",
+        "lead": "Lead"
+      },
+      "noData": "Nothing this month"
     }
   },
   "sms": {
@@ -3043,6 +3103,9 @@
         "debt": {
           "contact": "Debtor contacted",
           "remind": "Debt reminder sent"
+        },
+        "referral": {
+          "credit": "Referral credited"
         }
       }
     }
@@ -3255,7 +3318,8 @@
       "staffTemplate": "staff-template",
       "groupsTemplate": "groups-template",
       "parentsTemplate": "parents-template",
-      "debtors": "debtors"
+      "debtors": "debtors",
+      "referralsReport": "referral-programme"
     },
     "example": {
       "fullName": "<client name>",
@@ -3372,7 +3436,10 @@
       "weekdays": "Days",
       "overdueDays": "Days overdue",
       "promisedAt": "Promised date",
-      "lastContact": "Last contact"
+      "lastContact": "Last contact",
+      "leads": "Leads",
+      "joined": "Joined",
+      "coins": "Coins"
     },
     "preview": "Preview: {count} rows would be imported and {skipped} skipped. Nothing has been written yet.",
     "previewButton": "Preview",
@@ -3530,6 +3597,15 @@
       "cancelled": "The payment was not completed. You can try again.",
       "pending": "The payment is still being confirmed. This page updates by itself.",
       "failed": "Could not start the payment. Try again in a moment."
+    },
+    "referral": {
+      "title": "Invite a friend",
+      "intro": "Share your code or link with friends. When a friend signs up with it and joins a group, you earn coins, and a bonus if your centre offers one.",
+      "code": "Your code",
+      "copyLink": "Copy link",
+      "copyCode": "Copy code",
+      "copied": "Copied",
+      "joined": "{count, plural, =0 {No friends have joined yet.} one {# friend has joined through you.} other {# friends have joined through you.}}"
     }
   },
   "telegramBot": {

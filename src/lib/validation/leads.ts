@@ -44,6 +44,8 @@ export const leadSchema = z.object({
   age: optionalAge,
   sourceId: optionalId,
   teacherId: optionalId,
+  /** The student whose invite brought the lead (A-120). */
+  referrerId: optionalId,
   days: blankToNull(z.enum(LEAD_DAYS)),
   lessonTime: optionalTime,
   status: z.enum(LEAD_STATUSES).default("NEW"),
@@ -125,5 +127,7 @@ export const publicLeadSchema = z.object({
   fullName: name,
   phone: phoneSchema,
   comment: text(1000).nullable().optional(),
+  /** An invite code from a student's link (`?ref=`), A-120; unknown codes are ignored. */
+  ref: z.string().trim().max(32).nullable().optional(),
 });
 export type PublicLeadInput = z.infer<typeof publicLeadSchema>;

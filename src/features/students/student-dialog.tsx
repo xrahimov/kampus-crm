@@ -24,6 +24,7 @@ import type { BranchOption } from "@/features/settings/shared/branch-select";
 import { FormDialog } from "@/features/settings/shared/form-dialog";
 import { generatePassword, todayIso } from "@/features/staff/password";
 import { PhotoField } from "@/features/staff/photo-field";
+import { StudentPicker } from "@/features/students/student-picker";
 import { api } from "@/lib/api-client";
 import { applyApiError } from "@/lib/api-errors";
 import {
@@ -64,6 +65,7 @@ export function StudentDialog({
   const [showPassword, setShowPassword] = useState(false);
   const [sections, setSections] = useState({ group: false, parent: false, school: false });
   const [groupFilter, setGroupFilter] = useState({ branchId: ALL, teacherId: ALL, courseId: ALL });
+  const [referredByName, setReferredByName] = useState<string | null>(null);
 
   const empty = (): Input => ({
     branchId: defaultBranchId,
@@ -74,6 +76,7 @@ export function StudentDialog({
     photoUrl: null,
     password: "",
     sourceId: "",
+    referredById: "",
     schoolId: "",
     note: "",
     membership: null,
@@ -93,6 +96,7 @@ export function StudentDialog({
     if (open) {
       setError(null);
       setShowPassword(false);
+      setReferredByName(student?.referredByName ?? null);
       setSections({ group: false, parent: false, school: !!student?.schoolId });
       setGroupFilter({ branchId: defaultBranchId || ALL, teacherId: ALL, courseId: ALL });
     }
@@ -111,6 +115,7 @@ export function StudentDialog({
             photoUrl: student.photoUrl,
             password: "",
             sourceId: student.sourceId ?? "",
+            referredById: student.referredById ?? "",
             schoolId: student.schoolId ?? "",
             note: student.note ?? "",
             membership: null,
@@ -308,6 +313,30 @@ export function StudentDialog({
                   </SelectContent>
                 </Select>
               )}
+            />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="student-referredById">{tf("referredBy")}</Label>
+            <Controller
+              control={form.control}
+              name="referredById"
+              render={({ field }) => (
+                <StudentPicker
+                  id="student-referredById"
+                  value={field.value ? String(field.value) : null}
+                  valueName={referredByName}
+                  placeholder={tf("referredByPlaceholder")}
+                  invalid={!!errors.referredById}
+                  onChange={(id, name) => {
+                    field.onChange(id ?? "");
+                    setReferredByName(name);
+                  }}
+                />
+              )}
+            />
+            <FieldError
+              id="student-referredById-error"
+              message={err(errors.referredById?.message)}
             />
           </div>
         </>

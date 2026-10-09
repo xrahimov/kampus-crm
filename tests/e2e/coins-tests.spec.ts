@@ -18,7 +18,7 @@ test.describe("coins and tests", () => {
 
     // Settings → Coin settings: rules seeded with the reference's amounts, add a manual reason.
     await page.goto("/en/settings/coins");
-    await expect(page.getByTestId("coin-rule")).toHaveCount(4);
+    await expect(page.getByTestId("coin-rule")).toHaveCount(5);
     await expect(page.getByTestId("coin-rule").first()).toContainText("Attendance");
     const reasonName = `E2E reason ${STAMP}`;
     await page.getByTestId("add-reason").click();

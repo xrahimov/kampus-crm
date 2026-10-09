@@ -23,6 +23,7 @@ export const DEFAULT_COIN_RULES: Record<CoinEvent, number> = {
   HOMEWORK: 10,
   TEST_RESULT: 20,
   BIRTHDAY: 50,
+  REFERRAL: 30,
 };
 
 export interface CoinRuleDto {

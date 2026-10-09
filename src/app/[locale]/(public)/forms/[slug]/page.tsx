@@ -6,7 +6,10 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { PublicLeadForm } from "@/features/leads/public-form";
 import { getPublicForm } from "@/server/services/leads/forms.service";
 
-type Props = { params: Promise<{ locale: string; slug: string }> };
+type Props = {
+  params: Promise<{ locale: string; slug: string }>;
+  searchParams: Promise<{ ref?: string }>;
+};
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
@@ -15,8 +18,10 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 }
 
 /** `/forms/:slug`: the public lead-capture page a form's link points to (EXP §8 Formalar). */
-export default async function Page({ params }: Props) {
+export default async function Page({ params, searchParams }: Props) {
   const { locale, slug } = await params;
+  // A student's invite link carries their code (A-120); the form sends it back with the lead.
+  const { ref } = await searchParams;
   setRequestLocale(locale);
   const form = await getPublicForm(slug);
   if (!form) notFound();
@@ -33,7 +38,10 @@ export default async function Page({ params }: Props) {
           <CardDescription>{t("intro", { organization: form.organizationName })}</CardDescription>
         </CardHeader>
         <CardContent>
-          <PublicLeadForm slug={slug} />
+          <PublicLeadForm
+            slug={slug}
+            inviteCode={typeof ref === "string" ? ref.slice(0, 32) : null}
+          />
         </CardContent>
       </Card>
     </div>

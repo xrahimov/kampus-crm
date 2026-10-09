@@ -188,6 +188,7 @@ export const en: HelpContent = {
           title: "Sources",
           body: [
             "The **Sources** button opens the list of places leads come from: Instagram, Telegram, a friend, a banner. Each source shows how many leads it brought and how many became students, so you can see what advertising works. Create sources here before using them on cards; a source that is no longer used can be switched off without losing its history.",
+            "**Referral programme.** Every student has an invite code, shown on their personal page and on their profile in Kampus. A friend who fills in the public form through the student's link, or a lead or student on whom the office picks **Invited by**, is tied to that student. When the friend joins a group, the student is credited once: the coins of the **Referral** coin rule and, if Settings → General names a bonus, that amount on their balance as a bonus payment. Leads from invite links take the centre's **Friend** source when it has one. **Reports → Referral programme** shows who invited whom in a month and what it earned them.",
           ],
         },
         forms: {
@@ -1011,6 +1012,7 @@ export const en: HelpContent = {
           title: "Payments",
           body: [
             "The **Payments** tab shows your balance, the monthly fee, the next payment date and every payment you made. A red line means you owe money; pay at the centre or, if **Pay online** is offered, with your card: choose the month and the amount, press **Pay with Payme** or **Pay with Click**, finish on the provider's page and come back. The payment appears here as soon as it is confirmed.",
+            "**Invite a friend** shows your invite code and a link to share. When a friend signs up with it and joins a group, you get coins, and a bonus on your balance if your centre offers one. The card counts the friends who have joined.",
           ],
         },
         results: {

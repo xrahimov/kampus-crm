@@ -56,6 +56,8 @@ const studentBase = z.object({
   sourceId: optionalId,
   schoolId: optionalId,
   note: text(500).nullable().optional(),
+  /** The student who brought this one (A-120); credited when this one has a group. */
+  referredById: optionalId,
 });
 
 /** "O'quvchi qo'shish": the profile plus the optional group and parent sections. */

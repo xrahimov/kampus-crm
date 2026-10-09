@@ -171,6 +171,29 @@ export function OrgForm({ settings, onSaved }: { settings: OrgSettingsDto; onSav
             </div>
           </fieldset>
 
+          <fieldset className="space-y-3" data-testid="referral-settings">
+            <legend className="text-sm font-medium">{t("settings.general.referral.title")}</legend>
+            <p className="text-xs text-muted-foreground">{t("settings.general.referral.hint")}</p>
+            <div className="space-y-2">
+              <Label htmlFor="referral-bonus">{t("settings.general.referral.bonus")}</Label>
+              <div className="flex items-center gap-2">
+                <Input
+                  id="referral-bonus"
+                  type="number"
+                  min={0}
+                  step={1000}
+                  className="w-40"
+                  aria-invalid={!!errors.referralBonus}
+                  {...form.register("referralBonus")}
+                />
+                <span className="text-sm text-muted-foreground">
+                  {t("settings.general.referral.currency")}
+                </span>
+              </div>
+              <FieldError id="referral-bonus-error" message={errors.referralBonus?.message} />
+            </div>
+          </fieldset>
+
           <fieldset className="space-y-1">
             <legend className="mb-2 text-sm font-medium">
               {t("settings.general.switchesTitle")}

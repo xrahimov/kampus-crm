@@ -20,6 +20,7 @@ import {
 
 import { membershipBalances, syncCharges } from "@/server/services/students/balances";
 import { chargedFrom, monthStart } from "@/server/services/students/fees";
+import { creditReferral } from "@/server/services/students/referrals.service";
 
 import { findGroupInScope, today } from "./shared";
 
@@ -210,6 +211,8 @@ export async function addMember(
         after: dto,
         branchId: group.branchId,
       });
+      // A student brought by a friend: the friend is credited when the student gets a group (A-120).
+      await creditReferral(tx, row.studentId, actor);
       // "Guruhga birinchi qo'shilganda" (A-88).
       await queueAutoSms(tx, {
         event: "ADDED_TO_GROUP",

@@ -159,12 +159,18 @@ beforeAll(async () => {
   studentOne = one.studentId;
   studentTwo = two.studentId;
   membershipOne = one.id;
-  settingsBefore = (await prisma.orgSettings.findFirst())?.autoCoins ?? null;
+  // This centre's switch only: other test files run their own centres at the same time.
+  settingsBefore =
+    (await prisma.orgSettings.findUnique({ where: { organizationId: ceo.organizationId } }))
+      ?.autoCoins ?? null;
 });
 
 afterAll(async () => {
   if (settingsBefore !== null) {
-    await prisma.orgSettings.updateMany({ data: { autoCoins: settingsBefore } });
+    await prisma.orgSettings.updateMany({
+      where: { organizationId: ceo.organizationId },
+      data: { autoCoins: settingsBefore },
+    });
   }
   const students = await prisma.student.findMany({ where: { branchId: branchA } });
   const groups = await prisma.group.findMany({ where: { branchId: branchA } });
@@ -223,13 +229,14 @@ describe("validation", () => {
 });
 
 describe("coin settings and reasons", () => {
-  it("creates the four reference rules on first read and saves the switch", async () => {
+  it("creates the reference rules and the referral rule on first read and saves the switch", async () => {
     const settings = await getCoinSettings(ceo);
     expect(settings.rules.map((r) => r.event)).toEqual([
       "ATTENDANCE",
       "HOMEWORK",
       "TEST_RESULT",
       "BIRTHDAY",
+      "REFERRAL",
     ]);
     const updated = await updateCoinSettings(ceo, {
       autoCoins: true,

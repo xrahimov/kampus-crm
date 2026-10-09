@@ -74,6 +74,13 @@ export const orgSettingsSchema = z
     debtTelegramDays: cadenceDays,
     debtSmsDays: cadenceDays,
     debtTaskDays: cadenceDays,
+    /** Referral programme (A-120): so'm given to the referrer when a friend joins; 0 = coins only. */
+    referralBonus: z.coerce
+      .number()
+      .int("validation.min")
+      .min(0, "validation.min")
+      .max(99_999_999, "validation.max")
+      .default(0),
   })
   .refine((v) => v.workStart < v.workEnd, {
     message: "validation.workHours",

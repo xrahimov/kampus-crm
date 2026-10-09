@@ -11,6 +11,7 @@ import type {
   ToLeadInput,
 } from "@/lib/validation/leads";
 import { recordAudit } from "@/server/audit/audit";
+import { assertReferrer, creditReferral } from "@/server/services/students/referrals.service";
 import { enqueue } from "@/server/jobs/queue";
 import { notifyUsers } from "@/server/services/dashboard/notifications.service";
 import { loadIntegrationConfig } from "@/server/services/integrations/integrations.service";
@@ -50,6 +51,9 @@ export interface LeadDto {
   sourceName: string | null;
   teacherId: string | null;
   teacherName: string | null;
+  /** The student whose invite brought the lead (A-120). */
+  referrerId: string | null;
+  referrerName: string | null;
   days: LeadDays | null;
   lessonTime: string | null;
   status: LeadStatus;
@@ -97,6 +101,7 @@ const include = {
   source: { select: { name: true } },
   teacher: { select: { fullName: true } },
   form: { select: { name: true } },
+  referrer: { select: { fullName: true } },
 } satisfies Prisma.LeadInclude;
 type Row = Prisma.LeadGetPayload<{ include: typeof include }>;
 
@@ -114,6 +119,8 @@ function toDto(row: Row): LeadDto {
     sourceName: row.source?.name ?? null,
     teacherId: row.teacherId,
     teacherName: row.teacher?.fullName ?? null,
+    referrerId: row.referrerId,
+    referrerName: row.referrer?.fullName ?? null,
     days: row.days,
     lessonTime: row.lessonTime,
     status: row.status,
@@ -267,6 +274,11 @@ function leadData(input: LeadUpdateInput): Prisma.LeadUpdateInput {
     ...(input.teacherId !== undefined
       ? { teacher: input.teacherId ? { connect: { id: input.teacherId } } : { disconnect: true } }
       : {}),
+    ...(input.referrerId !== undefined
+      ? {
+          referrer: input.referrerId ? { connect: { id: input.referrerId } } : { disconnect: true },
+        }
+      : {}),
     ...(input.days !== undefined ? { days: input.days } : {}),
     ...(input.lessonTime !== undefined ? { lessonTime: input.lessonTime } : {}),
     ...(input.status !== undefined ? { status: input.status } : {}),
@@ -287,6 +299,8 @@ export async function createLead(
   const column = await findColumnInScope(db, actor, input.columnId);
   const branchId = column.board.branchId;
   if (input.teacherId) await assertTeacherInBranch(db, input.teacherId, branchId);
+  if (input.referrerId)
+    await assertReferrer(db, actor.organizationId, input.referrerId, "referrerId");
   try {
     return await db.$transaction(async (tx) => {
       const last = await tx.lead.findFirst({
@@ -304,6 +318,7 @@ export async function createLead(
           age: input.age ?? null,
           sourceId: input.sourceId ?? null,
           teacherId: input.teacherId ?? null,
+          referrerId: input.referrerId ?? null,
           days: input.days ?? null,
           lessonTime: input.lessonTime ?? null,
           status: input.status,
@@ -382,6 +397,9 @@ export async function updateLead(
     };
   }
   if (input.teacherId) await assertTeacherInBranch(db, input.teacherId, row.branchId);
+  if (input.referrerId) {
+    await assertReferrer(db, actor.organizationId, input.referrerId, "referrerId", row.studentId);
+  }
   try {
     return await db.$transaction(async (tx) => {
       if (input.phones !== undefined) {
@@ -547,6 +565,7 @@ export async function addLeadsToGroup(
             birthDate: lead.birthDate,
             sourceId: lead.sourceId,
             note: lead.comment,
+            referredById: lead.referrerId === lead.studentId ? null : lead.referrerId,
           },
         });
         studentId = student.id;
@@ -602,6 +621,14 @@ export async function addLeadsToGroup(
         where: { id: lead.id },
         data: { studentId, convertedAt: new Date(), isArchived: true },
       });
+      // The invite that brought the lead follows the student and is credited now (A-120).
+      if (lead.referrerId && lead.referrerId !== studentId) {
+        await tx.student.updateMany({
+          where: { id: studentId, referredById: null },
+          data: { referredById: lead.referrerId },
+        });
+      }
+      await creditReferral(tx, studentId, actor);
       await recordAudit(tx, actor, {
         action: "lead.convert",
         entity: "Lead",

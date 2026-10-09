@@ -87,6 +87,10 @@ export const graduateRecordSchema = z.object({
 export type GraduateRecordInput = z.infer<typeof graduateRecordSchema>;
 
 /** "Lidlar hisoboti". */
+/** Reports → Referral programme (A-120): the period only. */
+export const referralsReportFilterSchema = reportPeriodSchema;
+export type ReferralsReportFilters = z.infer<typeof referralsReportFilterSchema>;
+
 export const leadsReportFilterSchema = reportPeriodSchema.extend({
   sourceId: idSchema.optional(),
 });
