@@ -742,61 +742,6 @@ export async function setSupportTeachers(
   });
 }
 
-export interface GroupDayOffDto {
-  id: string;
-  date: string;
-  reason: string;
-}
-
-export async function listGroupDaysOff(
-  actor: Actor,
-  id: string,
-  db: DbClient = prisma,
-): Promise<GroupDayOffDto[]> {
-  authorize(actor, "groups.view");
-  await findGroupInScope(db, actor, id, {});
-  const rows = await db.groupDayOff.findMany({ where: { groupId: id }, orderBy: { date: "asc" } });
-  return rows.map((r) => ({ id: r.id, date: dateToIso(r.date), reason: r.reason }));
-}
-
-/** "Dam berish": the group skips that day; an unmarked lesson on it is removed (A-53). */
-export async function addGroupDayOff(
-  actor: Actor,
-  id: string,
-  input: { date: string; reason: string },
-  db: DbClient = prisma,
-): Promise<GroupDayOffDto> {
-  authorize(actor, "groups.update");
-  const group = await findGroupInScope(db, actor, id, {});
-  try {
-    return await db.$transaction(async (tx) => {
-      const row = await tx.groupDayOff.create({
-        data: { groupId: id, date: isoToDate(input.date), reason: input.reason },
-      });
-      await tx.lesson.deleteMany({
-        where: {
-          groupId: id,
-          date: isoToDate(input.date),
-          isExtra: false,
-          attendances: { none: {} },
-          grades: { none: {} },
-        },
-      });
-      const dto = { id: row.id, date: input.date, reason: input.reason };
-      await recordAudit(tx, actor, {
-        action: "group.dayOff",
-        entity: "Group",
-        entityId: id,
-        after: dto,
-        branchId: group.branchId,
-      });
-      return dto;
-    });
-  } catch (error) {
-    rethrowAsAppError(error, "date");
-  }
-}
-
 // --- notes and history ---------------------------------------------------------
 
 export interface GroupNoteDto {

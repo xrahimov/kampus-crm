@@ -255,7 +255,7 @@ export const uz: HelpContent = {
         changes: {
           title: "Dam kunlari, o‘qituvchini o‘zgartirish va tugatish",
           body: [
-            "**Dam berish** shu guruh uchun bitta sanadagi darsni olib tashlaydi, masalan o‘qituvchining safari uchun. Filial bo‘yicha bayramlar esa Sozlamalar → Dam olish kunlari bo‘limiga kiritiladi va har bir guruhga amal qiladi.",
+            "**Dam berish** shu guruh uchun bitta sanadagi darsni olib tashlaydi, masalan o‘qituvchining safari uchun, va o‘quvchilar bilan ota-onalarga darhol Telegram va SMS orqali xabar bera oladi (SMS tugmalari Sozlamalar → Umumiy → Avto SMS bo‘limida). Darsni bekor qilish o‘rniga ko‘chirish uchun yangi sana va vaqtni tanlang. Oyning bekor qilingan va ko‘chirilgan darslari davomat jadvali tepasida ro‘yxat bo‘lib chiqadi, dam kunini o‘sha yerda qaytarish mumkin. Filial bo‘yicha bayramlar esa Sozlamalar → Dam olish kunlari bo‘limiga kiritiladi va har bir guruhga amal qiladi.",
             "**O‘qituvchini o‘zgartirish** ketayotgan o‘qituvchini bugundan boshlab yangisi bilan almashtiradi; yangi o‘qituvchining ish haqi ulushi bugundan, eskisiniki kechagacha hisoblanadi. **Support o‘qituvchilar** davomat qila oladigan va guruhni ko‘ra oladigan, lekin ish haqi ulushi bo‘lmagan qo‘shimcha o‘qituvchilarni biriktiradi.",
             "Kurs tugaganda **Guruhni tugatish** ni bosing: har bir faol o‘quvchi bitiruvchiga aylanadi va qolgan darslar olib tashlanadi. Bitiruvchilar hisoboti ularni ko‘rsatadi. **Arxivlash** tashlab qo‘yilgan guruhni yashiradi; darslari va tarixi saqlanadi. Arxivlangan guruhlar Arxivlangan yorlig‘ida ko‘rinadi.",
           ],

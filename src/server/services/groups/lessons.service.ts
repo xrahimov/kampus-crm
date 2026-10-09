@@ -26,8 +26,20 @@ export interface LessonDto {
   topic: string | null;
   attachmentUrl: string | null;
   isExtra: boolean;
+  /** The date this extra lesson was moved from (A-117). */
+  movedFrom: string | null;
   attendance: Record<string, { status: AttendanceStatus; comment: string | null }>;
   grades: Record<string, { score: number; comment: string | null }>;
+}
+
+/** A cancelled or moved lesson of the month: the group's own day off or a branch holiday (A-117). */
+export interface LessonChangeDto {
+  id: string;
+  scope: "GROUP" | "BRANCH";
+  date: string;
+  reason: string;
+  startTime: string | null;
+  movedTo: { date: string; startTime: string; endTime: string } | null;
 }
 
 export interface MemberRowDto {
@@ -43,6 +55,7 @@ export interface MonthGridDto {
   month: string;
   lessons: LessonDto[];
   members: MemberRowDto[];
+  changes: LessonChangeDto[];
 }
 
 /** One month of the grid: lessons as columns, members as rows. */
@@ -53,15 +66,15 @@ export async function getMonthGrid(
   db: DbClient = prisma,
 ): Promise<MonthGridDto> {
   authorize(actor, "groups.view");
-  await findGroupInScope(db, actor, groupId, {});
+  const group = await findGroupInScope(db, actor, groupId, {});
   if (!/^\d{4}-(0[1-9]|1[0-2])$/.test(month))
     throw AppError.validation({ month: ["validation.date"] });
   const from = isoToDate(`${month}-01`);
   const to = new Date(Date.UTC(from.getUTCFullYear(), from.getUTCMonth() + 1, 1));
-  const [lessons, memberships] = await Promise.all([
+  const [lessons, memberships, groupDays, branchDays] = await Promise.all([
     db.lesson.findMany({
       where: { groupId, date: { gte: from, lt: to } },
-      include: { attendances: true, grades: true },
+      include: { attendances: true, grades: true, movedFrom: { select: { date: true } } },
       orderBy: [{ date: "asc" }, { startTime: "asc" }],
     }),
     db.groupMembership.findMany({
@@ -69,7 +82,36 @@ export async function getMonthGrid(
       include: { student: { select: { fullName: true } } },
       orderBy: { student: { fullName: "asc" } },
     }),
+    db.groupDayOff.findMany({
+      where: { groupId, date: { gte: from, lt: to } },
+      include: { movedTo: { select: { date: true, startTime: true, endTime: true } } },
+    }),
+    db.dayOff.findMany({ where: { branchId: group.branchId, date: { gte: from, lt: to } } }),
   ]);
+  const changes: LessonChangeDto[] = [
+    ...groupDays.map((d) => ({
+      id: d.id,
+      scope: "GROUP" as const,
+      date: dateToIso(d.date),
+      reason: d.reason,
+      startTime: d.startTime,
+      movedTo: d.movedTo
+        ? {
+            date: dateToIso(d.movedTo.date),
+            startTime: d.movedTo.startTime,
+            endTime: d.movedTo.endTime,
+          }
+        : null,
+    })),
+    ...branchDays.map((d) => ({
+      id: d.id,
+      scope: "BRANCH" as const,
+      date: dateToIso(d.date),
+      reason: d.reason,
+      startTime: null,
+      movedTo: null,
+    })),
+  ].sort((a, b) => a.date.localeCompare(b.date));
   const sums = new Map<string, { total: number; count: number }>();
   const lessonDtos: LessonDto[] = lessons.map((l) => {
     const attendance: LessonDto["attendance"] = {};
@@ -90,12 +132,14 @@ export async function getMonthGrid(
       topic: l.topic,
       attachmentUrl: l.attachmentUrl,
       isExtra: l.isExtra,
+      movedFrom: l.movedFrom ? dateToIso(l.movedFrom.date) : null,
       attendance,
       grades,
     };
   });
   return {
     month,
+    changes,
     lessons: lessonDtos,
     members: memberships.map((m) => {
       const s = sums.get(m.id);
@@ -163,6 +207,7 @@ export async function addExtraLesson(
         topic: null,
         attachmentUrl: null,
         isExtra: true,
+        movedFrom: null,
         attendance: {},
         grades: {},
       };

@@ -337,7 +337,8 @@
     "homeworkEmpty": "Напишите ответ или прикрепите файл.",
     "botUsername": "Только буквы, цифры и подчёркивание.",
     "recordingSize": "Запись должна быть не больше 400 МБ.",
-    "nonZero": "Не может быть нулём"
+    "nonZero": "Не может быть нулём",
+    "lessonExists": "В это время уже есть занятие."
   },
   "roles": {
     "CEO": "CEO",
@@ -502,7 +503,8 @@
       "date": "Дата",
       "reason": "Причина",
       "deleteTitle": "Удалить выходной?",
-      "deleteText": "{date} будет удалён."
+      "deleteText": "{date} будет удалён.",
+      "notify": "Сообщить ученикам и родителям групп этого дня (Telegram и SMS)"
     },
     "schools": {
       "title": "Школы",
@@ -912,7 +914,7 @@
       "incomingTeacher": "Новый учитель",
       "noCandidates": "Нет свободных",
       "dayOff": "Дать выходной",
-      "dayOffHint": "Группа пропускает этот день; неотмеченное занятие на него удаляется.",
+      "dayOffHint": "Группа пропускает этот день: неотмеченное занятие удаляется или переносится, если указать новое время. Ученикам и родителям можно сообщить сразу.",
       "date": "Дата",
       "reason": "Причина",
       "laterPhase": "Появится в фазе {phase}",
@@ -930,7 +932,13 @@
         "homework": "Домашние задания",
         "materials": "Материалы"
       },
-      "changeTeacherHint": "Доля нового учителя считается с сегодняшнего дня."
+      "changeTeacherHint": "Доля нового учителя считается с сегодняшнего дня.",
+      "notify": "Сообщить ученикам и родителям (Telegram и SMS)",
+      "moveLesson": "Перенести занятие на другое время",
+      "newDate": "Новая дата",
+      "newStart": "Начало",
+      "newEnd": "Конец",
+      "movedTo": "перенесено на {date}, {start}–{end}"
     },
     "attendance": {
       "PRESENT": "Был",
@@ -945,7 +953,13 @@
       "topics": "Тема",
       "setTopic": "Тема занятия",
       "topic": "Тема",
-      "attachment": "Ссылка на материал"
+      "attachment": "Ссылка на материал",
+      "changes": "Отменённые и перенесённые занятия",
+      "cancelled": "{date}: отменено — {reason}",
+      "moved": "{date}: перенесено на {newDate}, {start}–{end} — {reason}",
+      "holiday": "{date}: выходной филиала — {reason}",
+      "undo": "Вернуть",
+      "movedFrom": "Перенесено с {date}"
     },
     "grades": {
       "system": "Оценки",
@@ -2588,7 +2602,10 @@
       "DEBTOR": "Предупреждение должнику",
       "GRADES": "Оценки",
       "DAY_BEFORE_FIRST_LESSON": "За день до первого урока",
-      "ADDED_TO_GROUP": "Добавлен в группу"
+      "ADDED_TO_GROUP": "Добавлен в группу",
+      "LESSON_CANCELLED": "Занятие отменено",
+      "LESSON_MOVED": "Занятие перенесено",
+      "LESSON_RESTORED": "Отменённое занятие состоится"
     },
     "variables": {
       "studentName": "Имя ученика",
@@ -2597,7 +2614,11 @@
       "amount": "Сумма",
       "debt": "Долг",
       "score": "Балл",
-      "centerName": "Название центра"
+      "centerName": "Название центра",
+      "time": "Время занятия",
+      "newDate": "Новая дата",
+      "newTime": "Новое время",
+      "reason": "Причина"
     },
     "studentTab": {
       "title": "SMS ученику",
@@ -3520,7 +3541,10 @@
     "homeworkReturned": "{group}: домашнее задание к уроку {date} возвращено, посмотрите ещё раз.{comment}",
     "debtor": "{group}: на балансе не хватает {debt}. Пожалуйста, оплатите в учебном центре.",
     "materialAdded": "{group}: {kind, select, RECORDING {новая запись урока} LINK {новая ссылка} other {новый файл}}: {title}. Открыть страницу: {link}",
-    "paymentReceived": "{group}: ваш платёж на {amount} сум получен. Спасибо!"
+    "paymentReceived": "{group}: ваш платёж на {amount} сум получен. Спасибо!",
+    "lessonCancelled": "{group}: занятие {date}{time, select, none {} other { в {time}}} отменено. {reason}",
+    "lessonMoved": "{group}: занятие {date}{time, select, none {} other { в {time}}} перенесено на {newDate}, {newTime}. {reason}",
+    "lessonRestored": "{group}: занятие {date}{time, select, none {} other { в {time}}} всё же состоится."
   },
   "video": {
     "title": "Видеоурок",

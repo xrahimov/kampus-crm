@@ -429,12 +429,14 @@ model Room {
 
 /// "Dam olish kunlari": a date on which the branch holds no lessons.
 model DayOff {
-  id        String   @id @default(cuid())
-  branchId  String
-  date      DateTime @db.Date
-  reason    String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id         String    @id @default(cuid())
+  branchId   String
+  date       DateTime  @db.Date
+  reason     String
+  /// Set when that day's groups were told (A-117).
+  notifiedAt DateTime?
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
 
   branch Branch @relation(fields: [branchId], references: [id])
 
@@ -585,13 +587,22 @@ model GroupSupportTeacher {
 }
 
 /// "Dam berish": a day the group does not meet; its lesson is removed (A-53).
+/// "Dam berish": one date the group skips (A-53); since A-117 also a moved lesson with a notice.
 model GroupDayOff {
-  id      String   @id @default(cuid())
-  groupId String
-  date    DateTime @db.Date
-  reason  String
+  id              String    @id @default(cuid())
+  groupId         String
+  date            DateTime  @db.Date
+  reason          String
+  /// Start time of the lesson that was taken off, kept for the notice and the undo.
+  startTime       String?
+  /// When the lesson was moved rather than dropped: the extra lesson it moved to.
+  movedToLessonId String?   @unique
+  /// Set when the students and parents were told (Telegram, auto-SMS).
+  notifiedAt      DateTime?
+  createdAt       DateTime  @default(now())
 
-  group Group @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  group   Group   @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  movedTo Lesson? @relation(fields: [movedToLessonId], references: [id], onDelete: SetNull)
 
   @@unique([groupId, date])
 }
@@ -615,6 +626,8 @@ model Lesson {
   videoRooms  VideoRoom[]
   homework    Homework?
   materials   LessonMaterial[]
+  /// The day off this extra lesson replaces, when it was moved here (A-117).
+  movedFrom   GroupDayOff?
 
   @@unique([groupId, date, startTime])
   @@index([groupId, date])
@@ -1807,6 +1820,9 @@ enum AutoSmsEvent {
   GRADES
   DAY_BEFORE_FIRST_LESSON
   ADDED_TO_GROUP
+  LESSON_CANCELLED
+  LESSON_MOVED
+  LESSON_RESTORED
 }
 
 model AutoSmsSetting {

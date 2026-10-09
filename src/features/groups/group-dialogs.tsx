@@ -14,6 +14,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Switch } from "@/components/ui/switch";
 import { FormDialog } from "@/features/settings/shared/form-dialog";
 import { todayIso } from "@/features/staff/password";
 import { api, ApiError } from "@/lib/api-client";
@@ -264,7 +265,7 @@ export function ChangeTeacherDialog({
   );
 }
 
-/** "Dam berish": a day the group skips; the unmarked lesson that day is removed (A-53). */
+/** "Dam berish": a day the group skips; the lesson is removed or moved, and the families told (A-53, A-117). */
 export function DayOffDialog({
   group,
   open,
@@ -277,16 +278,23 @@ export function DayOffDialog({
   onSaved: () => void;
 }) {
   const t = useTranslations("groups.detail");
+  const [move, setMove] = useState(false);
+  const [notify, setNotify] = useState(true);
   const { busy, error, fields, run, reset } = useSubmit(() => {
     onOpenChange(false);
     onSaved();
   });
+  const slot = group.slots[0];
 
   return (
     <FormDialog
       open={open}
       onOpenChange={(next) => {
-        if (!next) reset();
+        if (!next) {
+          reset();
+          setMove(false);
+          setNotify(true);
+        }
         onOpenChange(next);
       }}
       title={t("dayOff")}
@@ -297,7 +305,18 @@ export function DayOffDialog({
         run(() =>
           api(`/groups/${group.id}/day-off`, {
             method: "POST",
-            body: { date: data.get("date"), reason: data.get("reason") },
+            body: {
+              date: data.get("date"),
+              reason: data.get("reason"),
+              notify,
+              moveTo: move
+                ? {
+                    date: data.get("moveDate"),
+                    startTime: data.get("moveStart"),
+                    endTime: data.get("moveEnd"),
+                  }
+                : null,
+            },
           }),
         );
       }}
@@ -314,6 +333,48 @@ export function DayOffDialog({
         <Label htmlFor="dayoff-reason">{t("reason")}</Label>
         <Input id="dayoff-reason" name="reason" required maxLength={200} />
         <FieldError id="dayoff-reason-error" message={fields.reason?.[0]} />
+      </div>
+      <div className="flex items-center gap-2">
+        <Switch id="dayoff-move" checked={move} onCheckedChange={setMove} />
+        <Label htmlFor="dayoff-move">{t("moveLesson")}</Label>
+      </div>
+      {move && (
+        <div className="grid gap-3 sm:grid-cols-3" data-testid="dayoff-move-fields">
+          <div className="space-y-2">
+            <Label htmlFor="dayoff-move-date">{t("newDate")}</Label>
+            <Input id="dayoff-move-date" name="moveDate" type="date" required />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="dayoff-move-start">{t("newStart")}</Label>
+            <Input
+              id="dayoff-move-start"
+              name="moveStart"
+              type="time"
+              defaultValue={slot?.startTime ?? "09:00"}
+              required
+            />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="dayoff-move-end">{t("newEnd")}</Label>
+            <Input
+              id="dayoff-move-end"
+              name="moveEnd"
+              type="time"
+              defaultValue={slot?.endTime ?? "10:30"}
+              required
+            />
+          </div>
+          <FieldError
+            id="dayoff-move-error"
+            message={
+              fields.moveTo?.[0] ?? fields["moveTo.date"]?.[0] ?? fields["moveTo.endTime"]?.[0]
+            }
+          />
+        </div>
+      )}
+      <div className="flex items-center gap-2">
+        <Switch id="dayoff-notify" checked={notify} onCheckedChange={setNotify} />
+        <Label htmlFor="dayoff-notify">{t("notify")}</Label>
       </div>
     </FormDialog>
   );

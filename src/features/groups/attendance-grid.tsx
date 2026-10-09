@@ -1,6 +1,6 @@
 "use client";
 
-import { Paperclip, Plus } from "lucide-react";
+import { Paperclip, Plus, Undo2 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useState, useTransition } from "react";
 
@@ -58,6 +58,30 @@ export function AttendanceGrid({
   const [extraOpen, setExtraOpen] = useState(false);
   const [topicLesson, setTopicLesson] = useState<MonthGridDto["lessons"][number] | null>(null);
   const refresh = () => startTransition(() => router.refresh());
+  const day = (iso: string) => fmt(parseDateOnly(iso), { day: "numeric", month: "short" });
+  const changeLine = (c: MonthGridDto["changes"][number]) =>
+    c.scope === "BRANCH"
+      ? t("groups.attendance.holiday", { date: day(c.date), reason: c.reason })
+      : c.movedTo
+        ? t("groups.attendance.moved", {
+            date: day(c.date),
+            newDate: day(c.movedTo.date),
+            start: c.movedTo.startTime,
+            end: c.movedTo.endTime,
+            reason: c.reason,
+          })
+        : t("groups.attendance.cancelled", { date: day(c.date), reason: c.reason });
+
+  /** Undoes a day off (A-117): the planned lesson comes back. */
+  async function undo(dayOffId: string) {
+    setError(null);
+    try {
+      await api(`/groups/${groupId}/day-off/${dayOffId}`, { method: "DELETE" });
+      refresh();
+    } catch (e) {
+      setError(e instanceof ApiError ? e.message : "errors.internal");
+    }
+  }
 
   async function cycle(lessonId: string, membershipId: string, current: AttendanceStatus) {
     if (!canMark) return;
@@ -111,6 +135,35 @@ export function AttendanceGrid({
           </span>
         ))}
       </div>
+      {grid.changes.length > 0 && (
+        <ul
+          className="space-y-1 rounded-md border bg-muted/30 px-3 py-2 text-sm"
+          data-testid="lesson-changes"
+        >
+          <li className="text-xs font-medium text-muted-foreground">
+            {t("groups.attendance.changes")}
+          </li>
+          {grid.changes.map((c) => (
+            <li
+              key={c.id}
+              className="flex flex-wrap items-center justify-between gap-2"
+              data-testid="lesson-change"
+            >
+              <span>{changeLine(c)}</span>
+              {canEdit && c.scope === "GROUP" && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => undo(c.id)}
+                  data-testid="lesson-change-undo"
+                >
+                  <Undo2 /> {t("groups.attendance.undo")}
+                </Button>
+              )}
+            </li>
+          ))}
+        </ul>
+      )}
       {grid.lessons.length === 0 ? (
         <EmptyState title={t("groups.attendance.noLessons")} />
       ) : grid.members.length === 0 ? (
@@ -130,10 +183,25 @@ export function AttendanceGrid({
                       className="rounded px-1 hover:bg-secondary disabled:cursor-default"
                       disabled={!canMark}
                       onClick={() => setTopicLesson(l)}
-                      title={l.topic ?? t("groups.attendance.setTopic")}
+                      title={[
+                        l.movedFrom
+                          ? t("groups.attendance.movedFrom", { date: day(l.movedFrom) })
+                          : null,
+                        l.topic ?? t("groups.attendance.setTopic"),
+                      ]
+                        .filter(Boolean)
+                        .join(" · ")}
                     >
                       {fmt(parseDateOnly(l.date), { day: "numeric", month: "short" })}
                       {l.isExtra && <span className="ml-0.5 text-[10px] text-primary">+</span>}
+                      {l.movedFrom && (
+                        <span
+                          className="ml-0.5 text-[10px] text-muted-foreground"
+                          data-testid="lesson-moved-from"
+                        >
+                          ↩
+                        </span>
+                      )}
                       {l.attachmentUrl && <Paperclip className="ml-0.5 inline size-3" />}
                     </button>
                   </th>

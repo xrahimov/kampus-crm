@@ -194,6 +194,8 @@ export const dayOffSchema = z.object({
   branchId: idSchema,
   date: dateOnlySchema,
   reason: z.string().trim().min(1, "validation.required").max(500, "validation.tooLong"),
+  /** Tell the students and parents of that day's groups (A-117). */
+  notify: z.boolean().default(true),
 });
 export type DayOffInput = z.infer<typeof dayOffSchema>;
 export const dayOffUpdateSchema = dayOffSchema.omit({ branchId: true }).partial();

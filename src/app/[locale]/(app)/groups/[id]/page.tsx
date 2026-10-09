@@ -10,9 +10,9 @@ import { isAppError } from "@/server/errors/app-error";
 import { can, canAccessAllBranches } from "@/server/rbac/authorize";
 import { listCoinReasons, listGroupCoins } from "@/server/services/coins/coins.service";
 import { getExamOptions, listGroupExams } from "@/server/services/exams/exams.service";
+import { listGroupDaysOff } from "@/server/services/groups/day-off.service";
 import {
   getGroup,
-  listGroupDaysOff,
   listGroupHistory,
   listGroupNotes,
 } from "@/server/services/groups/groups.service";

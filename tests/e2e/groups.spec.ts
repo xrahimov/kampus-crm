@@ -105,6 +105,31 @@ test.describe("groups", () => {
       page.getByTestId("history-row").filter({ hasText: "Group created" }),
     ).toBeVisible();
 
+    // A day off that moves the lesson (A-117): listed above the grid and undone from there.
+    await page.getByTestId("group-more").click();
+    await page.getByRole("menuitem", { name: "Give a day off" }).click();
+    const dayOff = page.getByTestId("day-off-dialog");
+    await expect(dayOff).toBeVisible();
+    await dayOff.getByLabel("Date", { exact: true }).fill("2026-11-09");
+    await dayOff.getByLabel("Reason").fill("Teacher at a conference");
+    await dayOff.getByLabel("Move the lesson to another time instead").click();
+    await dayOff.getByLabel("New date").fill("2026-11-10");
+    await dayOff.getByLabel("Start", { exact: true }).fill("12:00");
+    await dayOff.getByLabel("End", { exact: true }).fill("13:30");
+    await dayOff.getByRole("button", { name: "Save" }).click();
+    await expect(dayOff).toBeHidden();
+    await expect(page.getByTestId("group-days-off")).toContainText("Teacher at a conference");
+    await page.getByTestId("tab-attendance").click();
+    await page.getByTestId("month-2026-11").click();
+    await expect(page).toHaveURL(/month=2026-11/);
+    await expect(page.getByTestId("lesson-change")).toContainText(
+      "Nov 9: moved to Nov 10, 12:00–13:30 — Teacher at a conference",
+    );
+    await expect(page.getByTestId("lesson-moved-from")).toHaveCount(1);
+    await page.getByTestId("lesson-change-undo").click();
+    await expect(page.getByTestId("lesson-changes")).toHaveCount(0);
+    await expect(page.getByTestId("lesson-moved-from")).toHaveCount(0);
+
     // Finish the group from the header menu; it leaves the active list.
     await page.getByTestId("group-more").click();
     await page.getByRole("menuitem", { name: "Finish group" }).click();

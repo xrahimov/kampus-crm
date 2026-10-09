@@ -337,7 +337,8 @@
     "homeworkEmpty": "Javob yozing yoki fayl biriktiring.",
     "botUsername": "Faqat harflar, raqamlar va pastki chiziq.",
     "recordingSize": "Yozuv hajmi 400 MB dan oshmasligi kerak.",
-    "nonZero": "Nol bo'lishi mumkin emas"
+    "nonZero": "Nol bo'lishi mumkin emas",
+    "lessonExists": "Bu vaqtda dars allaqachon bor."
   },
   "roles": {
     "CEO": "CEO",
@@ -502,7 +503,8 @@
       "date": "Sana",
       "reason": "Sabab",
       "deleteTitle": "Dam olish kuni o‘chirilsinmi?",
-      "deleteText": "{date} o‘chiriladi."
+      "deleteText": "{date} o‘chiriladi.",
+      "notify": "Shu kungi guruhlarning o'quvchilari va ota-onalariga xabar berish (Telegram va SMS)"
     },
     "schools": {
       "title": "Maktablar",
@@ -912,7 +914,7 @@
       "incomingTeacher": "Yangi o'qituvchi",
       "noCandidates": "Bo'sh o'qituvchi yo'q",
       "dayOff": "Dam berish",
-      "dayOffHint": "Guruh bu kunni o'tkazib yuboradi; belgilanmagan dars o'chiriladi.",
+      "dayOffHint": "Guruh bu kuni dam oladi: belgilanmagan dars o'chiriladi yoki yangi vaqt tanlansa ko'chiriladi. O'quvchilar va ota-onalarga darhol xabar berish mumkin.",
       "date": "Sana",
       "reason": "Sabab",
       "laterPhase": "{phase}-bosqichda qo'shiladi",
@@ -930,7 +932,13 @@
         "homework": "Uy vazifasi",
         "materials": "Materiallar"
       },
-      "changeTeacherHint": "Yangi o'qituvchining ulushi bugundan hisoblanadi."
+      "changeTeacherHint": "Yangi o'qituvchining ulushi bugundan hisoblanadi.",
+      "notify": "O'quvchilar va ota-onalarga xabar berish (Telegram va SMS)",
+      "moveLesson": "Darsni boshqa vaqtga ko'chirish",
+      "newDate": "Yangi sana",
+      "newStart": "Boshlanishi",
+      "newEnd": "Tugashi",
+      "movedTo": "{date}, {start}–{end} ga ko'chirildi"
     },
     "attendance": {
       "PRESENT": "Keldi",
@@ -945,7 +953,13 @@
       "topics": "Mavzu",
       "setTopic": "Dars mavzusi",
       "topic": "Mavzu",
-      "attachment": "Material havolasi"
+      "attachment": "Material havolasi",
+      "changes": "Bekor qilingan va ko'chirilgan darslar",
+      "cancelled": "{date}: bekor qilindi — {reason}",
+      "moved": "{date}: {newDate}, {start}–{end} ga ko'chirildi — {reason}",
+      "holiday": "{date}: filial dam kuni — {reason}",
+      "undo": "Qaytarish",
+      "movedFrom": "{date} dan ko'chirilgan"
     },
     "grades": {
       "system": "Baholash",
@@ -2588,7 +2602,10 @@
       "DEBTOR": "Qarzdorlarni ogohlantirish",
       "GRADES": "O'quvchi baholarini yuborish",
       "DAY_BEFORE_FIRST_LESSON": "Birinchi dars sanasiga bir kun qolganda",
-      "ADDED_TO_GROUP": "Guruhga birinchi qo'shilganda"
+      "ADDED_TO_GROUP": "Guruhga birinchi qo'shilganda",
+      "LESSON_CANCELLED": "Dars bekor qilindi",
+      "LESSON_MOVED": "Dars ko'chirildi",
+      "LESSON_RESTORED": "Bekor qilingan dars qayta tiklandi"
     },
     "variables": {
       "studentName": "Talaba ismi",
@@ -2597,7 +2614,11 @@
       "amount": "Summa",
       "debt": "Qarzdorlik summasi",
       "score": "Ball",
-      "centerName": "Markaz nomi"
+      "centerName": "Markaz nomi",
+      "time": "Dars vaqti",
+      "newDate": "Yangi sana",
+      "newTime": "Yangi vaqt",
+      "reason": "Sabab"
     },
     "studentTab": {
       "title": "O'quvchiga yuborilgan SMSlar",
@@ -3520,7 +3541,10 @@
     "homeworkReturned": "{group}: {date} darsi uchun uy vazifangiz qaytarildi, qayta ko‘rib chiqing.{comment}",
     "debtor": "{group}: balansingizda {debt} yetishmayapti. Iltimos, o‘quv markazida to‘lang.",
     "materialAdded": "{group}: {kind, select, RECORDING {yangi dars yozuvi} LINK {yangi havola} other {yangi fayl}}: {title}. Sahifangizni oching: {link}",
-    "paymentReceived": "{group}: {amount} so‘m to‘lovingiz qabul qilindi. Rahmat!"
+    "paymentReceived": "{group}: {amount} so‘m to‘lovingiz qabul qilindi. Rahmat!",
+    "lessonCancelled": "{group}: {date}{time, select, none {} other { soat {time}}} dagi dars bekor qilindi. {reason}",
+    "lessonMoved": "{group}: {date}{time, select, none {} other { soat {time}}} dagi dars {newDate}, {newTime} ga ko'chirildi. {reason}",
+    "lessonRestored": "{group}: {date}{time, select, none {} other { soat {time}}} dagi dars o'z vaqtida o'tkaziladi."
   },
   "video": {
     "title": "Video dars",
