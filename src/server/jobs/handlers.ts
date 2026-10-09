@@ -15,6 +15,7 @@ import {
   type AmoCrmImportPayload,
 } from "@/server/services/leads/amocrm-inbound.service";
 import { runDailyNotifications } from "@/server/services/dashboard/notifications.service";
+import { issueFiscalReceipt } from "@/server/services/payments/fiscal.service";
 import { runDailyDebtCollection } from "@/server/services/debts/debts.service";
 import { purgeOldRecordings } from "@/server/services/materials/materials.service";
 import { runDailyAutoSms } from "@/server/services/sms/auto-sms.service";
@@ -44,6 +45,7 @@ export const JOB_TYPES = [
   "leads.followUp",
   "amocrm.pushLead",
   "amocrm.importLead",
+  "fiscal.issue",
 ] as const;
 
 function payloadOf<T>(payload: unknown): T {
@@ -134,6 +136,11 @@ export function registerJobHandlers(): void {
 
   registerJobHandler("amocrm.importLead", async (payload, db) => {
     await importAmoCrmLead(db, payloadOf<AmoCrmImportPayload>(payload));
+  });
+
+  // Fiscal receipts (A-147): one receipt per job; a refusal is retried with backoff.
+  registerJobHandler("fiscal.issue", async (payload, db) => {
+    await issueFiscalReceipt(db, payloadOf<{ receiptId: string }>(payload).receiptId);
   });
 }
 

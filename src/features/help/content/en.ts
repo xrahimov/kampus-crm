@@ -1094,6 +1094,12 @@ export const en: HelpContent = {
             "Enter the merchant details from your Payme Business cashbox or Click merchant cabinet and set the webhook address there as described in the hint under each form. Once enabled, students see **Pay online** on their personal page, and confirmed payments appear in Kampus as payments with the method Payme or Click.",
           ],
         },
+        fiscal: {
+          title: "Fiscal receipts",
+          body: [
+            "Uzbekistan's online cash registers are reached through an OFD provider. Ask your accountant which provider the centre uses and enter its API address and key, the taxpayer number (STIR), the cash register ID, the VAT rate and the MXIK code of educational services. With **Issue a receipt for every payment automatically** on, each cash-desk payment and refund gets a fiscal receipt in the background; its number and fiscal sign appear on the printed receipt, and the **Fiscal receipt** column in payment lists shows Pending, Issued or Failed with a retry button. Switched on without an API address, Kampus' test provider issues receipts so you can try the flow before the contract is signed. Online payments through Payme and Click are fiscalised by those providers themselves.",
+          ],
+        },
         jobs: {
           title: "Background jobs",
           body: [

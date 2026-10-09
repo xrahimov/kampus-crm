@@ -1098,6 +1098,12 @@ export const uz: HelpContent = {
             "Payme Business kassangiz yoki Click merchant kabinetingizdan merchant ma’lumotlarini kiriting va har bir forma ostidagi ko‘rsatmada tasvirlanganidek, webhook manzilini u yerda belgilang. Yoqilgach, o‘quvchilar shaxsiy sahifasida **Onlayn to‘lash** ni ko‘radi va tasdiqlangan to‘lovlar Kampusda Payme yoki Click to‘lov turi bilan to‘lov sifatida paydo bo‘ladi.",
           ],
         },
+        fiscal: {
+          title: "Fiskal cheklar",
+          body: [
+            "O'zbekistonda onlayn kassalar OFD provayderi orqali ishlaydi. Buxgalterdan markaz qaysi provayderdan foydalanishini so'rang va uning API manzili va kalitini, STIR, kassa ID, QQS stavkasi va ta'lim xizmatlarining MXIK kodini kiriting. **Har bir to'lovga chekni avtomatik berish** yoqilganda kassadagi har bir to'lov va qaytarish fonda fiskal chek oladi; uning raqami va fiskal belgisi chop etilgan kvitansiyada ko'rinadi, to'lovlar ro'yxatidagi **Fiskal chek** ustuni esa Navbatda, Berildi yoki Xato holatini qayta yuborish tugmasi bilan ko'rsatadi. API manzilsiz yoqilsa, cheklarni Kampus sinov provayderi beradi — shartnoma imzolanishidan oldin jarayonni sinab ko'rish mumkin. Payme va Click orqali to'lovlarni o'sha provayderlar o'zlari fiskallashtiradi.",
+          ],
+        },
         jobs: {
           title: "Fon vazifalari",
           body: [

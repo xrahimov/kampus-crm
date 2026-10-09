@@ -134,6 +134,21 @@ export function IntegrationsPage({
         }
         testId="integration-click"
       />
+      <IntegrationForm
+        provider="FISCAL"
+        dto={by("FISCAL")}
+        fields={[
+          { key: "apiUrl" },
+          { key: "apiKey", secret: true },
+          { key: "inn" },
+          { key: "cashRegisterId" },
+          { key: "vatPercent", type: "number" },
+          { key: "ikpuCode" },
+          { key: "autoIssue", type: "boolean" },
+        ]}
+        extra={<p className="text-xs text-muted-foreground">{t("FISCAL.hint")}</p>}
+        testId="integration-fiscal"
+      />
       <Card>
         <CardHeader>
           <CardTitle>{t("queue.title")}</CardTitle>

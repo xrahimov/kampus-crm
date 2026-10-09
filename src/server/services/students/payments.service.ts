@@ -10,6 +10,11 @@ import { recordAudit } from "@/server/audit/audit";
 import { notifyUsers } from "@/server/services/dashboard/notifications.service";
 import { refreshStudentDebts } from "@/server/services/debts/debts.service";
 import { notifyStaff } from "@/server/services/integrations/bot-recipients.service";
+import {
+  fiscalToDto,
+  queueFiscalReceipt,
+  type FiscalReceiptDto,
+} from "@/server/services/payments/fiscal.service";
 import { queueAutoSms } from "@/server/services/sms/auto-sms.service";
 import { prisma, type DbClient } from "@/server/db/prisma";
 import { AppError } from "@/server/errors/app-error";
@@ -40,6 +45,8 @@ export interface PaymentDto {
   comment: string | null;
   receivedByName: string | null;
   createdAt: string;
+  /** The sale's fiscal receipt (A-147); null when the centre does not fiscalise or none was filed. */
+  fiscal: FiscalReceiptDto | null;
 }
 
 export interface PaymentInfoDto extends MembershipBalance {
@@ -70,6 +77,7 @@ const include = {
   paymentMethod: { select: { name: true } },
   receivedBy: { select: { fullName: true } },
   refunds: { select: { amount: true } },
+  fiscalReceipts: { where: { kind: "SALE" }, orderBy: { createdAt: "desc" }, take: 1 },
 } satisfies Prisma.PaymentInclude;
 type Row = Prisma.PaymentGetPayload<{ include: typeof include }>;
 
@@ -91,6 +99,7 @@ function toDto(row: Row): PaymentDto {
     comment: row.comment,
     receivedByName: row.receivedBy?.fullName ?? null,
     createdAt: row.createdAt.toISOString(),
+    fiscal: row.fiscalReceipts[0] ? fiscalToDto(row.fiscalReceipts[0]) : null,
   };
 }
 
@@ -198,6 +207,17 @@ export async function createPayment(
       branchId: m.group.branchId,
       text: `To'lov: ${dto.studentName} — ${dto.amount} (${dto.groupName}), ${actor.fullName}`,
     });
+    // The online fiscal receipt, when the centre fiscalises (A-147).
+    const fiscalId = await queueFiscalReceipt(tx, {
+      organizationId,
+      paymentId: row.id,
+      kind: "SALE",
+    });
+    if (fiscalId) {
+      dto.fiscal = fiscalToDto(
+        await tx.fiscalReceipt.findUniqueOrThrow({ where: { id: fiscalId } }),
+      );
+    }
     // The in-app bell for the branch's cashiers and managers (A-97).
     await notifyUsers(tx, {
       kind: "PAYMENT",
@@ -362,13 +382,20 @@ export async function refundPayment(
   const left = payment.amount - payment.refunded;
   if (input.amount > left) throw AppError.validation({ amount: ["validation.refundTooLarge"] });
   return db.$transaction(async (tx) => {
-    await tx.refund.create({
+    const refund = await tx.refund.create({
       data: {
         paymentId,
         amount: input.amount,
         reason: input.reason ?? null,
         refundedById: actor.userId || null,
       },
+    });
+    // A refund receipt returns the money in the fiscal record too (A-147).
+    await queueFiscalReceipt(tx, {
+      organizationId: actor.organizationId,
+      paymentId,
+      kind: "REFUND",
+      refundId: refund.id,
     });
     await recordAudit(tx, actor, {
       action: "payment.refund",

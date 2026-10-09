@@ -477,7 +477,9 @@
     "waitlistDuplicate": "Bu telefon bu kursni allaqachon kutmoqda.",
     "waitlistClosed": "Bu yozuv allaqachon qo‘shilgan.",
     "certificateExists": "Bu bitiruvchida sertifikat bor",
-    "certificateRevoked": "Bu sertifikat allaqachon bekor qilingan"
+    "certificateRevoked": "Bu sertifikat allaqachon bekor qilingan",
+    "fiscalDisabled": "Fiskal cheklar Sozlamalar → Integratsiyalar bo'limida o'chirilgan.",
+    "fiscalIssued": "Bu to'lov uchun fiskal chek allaqachon berilgan."
   },
   "validation": {
     "phone": "+998 90 123 45 67 ko‘rinishida raqam kiriting.",
@@ -584,7 +586,9 @@
     "trialOtherBranch": "Guruh liddan boshqa filialda.",
     "courseTopic": "Bu mavzu guruh kursining dasturida yo‘q",
     "courseBranch": "Kurs boshqa filialga tegishli",
-    "waitlistCourse": "Yozuvdagi kurs guruhini tanlang"
+    "waitlistCourse": "Yozuvdagi kurs guruhini tanlang",
+    "inn": "9 raqamli STIR kiriting.",
+    "ikpu": "17 raqamli MXIK kodini kiriting."
   },
   "roles": {
     "CEO": "CEO",
@@ -2056,7 +2060,14 @@
       "createdAt": "Yaratilgan vaqt",
       "receipt": "Chek",
       "total": "Jami: {amount}",
-      "excel": "Excelga eksport qilish"
+      "excel": "Excelga eksport qilish",
+      "fiscal": "Fiskal chek",
+      "fiscalStatus": {
+        "PENDING": "Navbatda",
+        "ISSUED": "Berildi",
+        "FAILED": "Xato"
+      },
+      "fiscalRetry": "Fiskal chekni qayta yuborish"
     },
     "log": {
       "title": "To‘lovlar",
@@ -2081,7 +2092,10 @@
       "cashier": "Kassir",
       "amount": "Summa",
       "printedAt": "Chek chiqarilgan vaqt",
-      "thanks": "To‘lovingiz uchun rahmat!"
+      "thanks": "To‘lovingiz uchun rahmat!",
+      "fiscalTitle": "Fiskal chek",
+      "fiscalNumber": "Fiskal raqam",
+      "fiscalSign": "Fiskal belgi"
     },
     "adjust": {
       "title": "Qoldiqni to'g'rilash",
@@ -4039,7 +4053,8 @@
           "create": "To'lov qabul qilindi",
           "refund": "Pul qaytarildi",
           "importHistory": "To‘lov tarixi qatori import qilindi",
-          "importHistoryRemove": "To‘lov tarixi qatori o‘chirildi"
+          "importHistoryRemove": "To‘lov tarixi qatori o‘chirildi",
+          "fiscal": "Fiskal chek berildi"
         },
         "paymentMethod": {
           "create": "To'lov usuli yaratildi",
@@ -4343,6 +4358,20 @@
         "secretKey": "Maxfiy kalit"
       },
       "hint": "Click merchant kabinetida shu webhookni prepare URL va complete URL sifatida ko‘rsating."
+    },
+    "FISCAL": {
+      "title": "Fiskal cheklar (OFD)",
+      "description": "Kassadagi har bir to'lov va qaytarish uchun OFD provayderingiz orqali onlayn fiskal chek beriladi; uning raqami va fiskal belgisi kvitansiyada chop etiladi.",
+      "fields": {
+        "apiUrl": "Provayder API manzili",
+        "apiKey": "API kaliti",
+        "inn": "STIR",
+        "cashRegisterId": "Kassa apparati ID",
+        "vatPercent": "QQS, %",
+        "ikpuCode": "Xizmatning MXIK kodi",
+        "autoIssue": "Har bir to'lovga chekni avtomatik berish"
+      },
+      "hint": "Buxgalter OFD provayderini aytadi va API manzili va kaliti, kassa ID va MXIK kodini beradi. Manzilsiz yoqilsa, cheklarni Kampus sinov provayderi beradi — jarayonni shunday sinab ko'rish mumkin."
     }
   },
   "staffAttendance": {

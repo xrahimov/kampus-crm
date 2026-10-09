@@ -60,6 +60,7 @@ model Organization {
   announcements     Announcement[]
   certificates      Certificate[]
   leadConversations LeadConversation[]
+  fiscalReceipts    FiscalReceipt[]
 }
 
 model Branch {
@@ -1130,13 +1131,14 @@ model Payment {
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
 
-  student       Student         @relation(fields: [studentId], references: [id])
-  membership    GroupMembership @relation(fields: [membershipId], references: [id])
-  branch        Branch          @relation(fields: [branchId], references: [id])
-  paymentMethod PaymentMethod?  @relation(fields: [paymentMethodId], references: [id], onDelete: SetNull)
-  receivedBy    User?           @relation(fields: [receivedById], references: [id], onDelete: SetNull)
-  refunds       Refund[]
-  onlinePayment OnlinePayment?
+  student        Student         @relation(fields: [studentId], references: [id])
+  membership     GroupMembership @relation(fields: [membershipId], references: [id])
+  branch         Branch          @relation(fields: [branchId], references: [id])
+  paymentMethod  PaymentMethod?  @relation(fields: [paymentMethodId], references: [id], onDelete: SetNull)
+  receivedBy     User?           @relation(fields: [receivedById], references: [id], onDelete: SetNull)
+  refunds        Refund[]
+  onlinePayment  OnlinePayment?
+  fiscalReceipts FiscalReceipt[]
 
   @@index([studentId, paidAt])
   @@index([membershipId])
@@ -1198,10 +1200,51 @@ model Refund {
   refundedById String?
   createdAt    DateTime @default(now())
 
-  payment    Payment @relation(fields: [paymentId], references: [id], onDelete: Cascade)
-  refundedBy User?   @relation(fields: [refundedById], references: [id], onDelete: SetNull)
+  payment       Payment        @relation(fields: [paymentId], references: [id], onDelete: Cascade)
+  refundedBy    User?          @relation(fields: [refundedById], references: [id], onDelete: SetNull)
+  fiscalReceipt FiscalReceipt?
 
   @@index([paymentId])
+}
+
+/// Online fiscal receipts (round 2 item C6, A-147): one row per sale or
+/// refund sent to the fiscal provider; the printable receipt shows the sign.
+enum FiscalReceiptKind {
+  SALE
+  REFUND
+}
+
+enum FiscalReceiptStatus {
+  PENDING
+  ISSUED
+  FAILED
+}
+
+model FiscalReceipt {
+  id             String              @id @default(cuid())
+  organizationId String
+  paymentId      String
+  /// Set on a REFUND receipt: the refund it fiscalises.
+  refundId       String?             @unique
+  kind           FiscalReceiptKind
+  status         FiscalReceiptStatus @default(PENDING)
+  provider       String
+  externalId     String?
+  fiscalSign     String?
+  receiptUrl     String?
+  qrUrl          String?
+  error          String?
+  attempts       Int                 @default(0)
+  issuedAt       DateTime?
+  createdAt      DateTime            @default(now())
+  updatedAt      DateTime            @updatedAt
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  payment      Payment      @relation(fields: [paymentId], references: [id], onDelete: Cascade)
+  refund       Refund?      @relation(fields: [refundId], references: [id], onDelete: Cascade)
+
+  @@index([paymentId])
+  @@index([organizationId, status])
 }
 
 /// Why a membership's balance was changed by hand (A-109).
@@ -2348,6 +2391,7 @@ enum IntegrationProvider {
   VIDEO
   PAYME
   CLICK
+  FISCAL
 }
 
 /// One row per provider: enabled flag plus its settings (A-83). Secrets are masked in the API.

@@ -8,11 +8,14 @@ import type { ReceiptDto } from "@/server/services/students/payments.service";
 export async function Receipt({
   receipt,
   qr,
+  fiscalQr = null,
   locale,
   printedAt = new Date(),
 }: {
   receipt: ReceiptDto;
   qr: string | null;
+  /** QR of the OFD provider's receipt page, when the sale was fiscalised (A-147). */
+  fiscalQr?: string | null;
   locale: string;
   printedAt?: Date;
 }) {
@@ -85,6 +88,31 @@ export async function Receipt({
           className="mx-auto mt-4 size-24 [&_svg]:size-full"
           dangerouslySetInnerHTML={{ __html: qr }}
         />
+      )}
+      {receipt.fiscal?.status === "ISSUED" && (
+        <section className="mt-4 border-t pt-3 text-xs" data-testid="receipt-fiscal">
+          <p className="mb-1 text-center font-semibold uppercase tracking-wide">
+            {t("fiscalTitle")}
+          </p>
+          <dl className="divide-y">
+            <div className="flex justify-between gap-3 py-1">
+              <dt className="text-neutral-600">{t("fiscalNumber")}</dt>
+              <dd className="text-right font-medium">{receipt.fiscal.externalId ?? "—"}</dd>
+            </div>
+            <div className="flex justify-between gap-3 py-1">
+              <dt className="text-neutral-600">{t("fiscalSign")}</dt>
+              <dd className="text-right font-mono font-medium" data-testid="receipt-fiscal-sign">
+                {receipt.fiscal.fiscalSign ?? "—"}
+              </dd>
+            </div>
+          </dl>
+          {fiscalQr && (
+            <div
+              className="mx-auto mt-2 size-20 [&_svg]:size-full"
+              dangerouslySetInnerHTML={{ __html: fiscalQr }}
+            />
+          )}
+        </section>
       )}
       {show("footer") && (
         <footer className="mt-4 text-center text-xs text-neutral-600">
