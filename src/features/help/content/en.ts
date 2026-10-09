@@ -367,6 +367,13 @@ export const en: HelpContent = {
             "Each lesson card shows its homework: the text, the due date, how many answers came in and how many wait for a check. **Set homework** writes one in two fields; to check answers or attach a file, open the group's Homework tab.",
           ],
         },
+        scan: {
+          title: "Attendance by badge",
+          body: [
+            "Every student has a printable badge with a QR code (Students → Badge). **Scan badges** on a lesson card opens the camera: hold each badge in front of it and the student is marked present in that lesson, with a tone and a line in the list (present, already present, no lesson, not a badge). The button at the top of Today does the same for the whole day at the door: each badge is matched to the student's lesson under way, or the next one today.",
+            "A USB or Bluetooth hand scanner works too: it types the code into the field and presses Enter by itself, so a tablet at the entrance needs no camera. Marks made this way count like any other marks: coins, auto-SMS and the attendance percentage follow them, and the teacher can still correct a mark in the grid.",
+          ],
+        },
         install: {
           title: "Kampus on your phone",
           body: [

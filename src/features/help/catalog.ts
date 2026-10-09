@@ -140,7 +140,13 @@ export const HELP_ARTICLES = [
     audiences: ["TEACHER", "BRANCH_MANAGER", "ADMIN"],
     permission: "groups.view",
     path: "/today",
-    sections: [{ id: "day" }, { id: "attendance" }, { id: "homework" }, { id: "install" }],
+    sections: [
+      { id: "day" },
+      { id: "attendance" },
+      { id: "homework" },
+      { id: "scan" },
+      { id: "install" },
+    ],
   },
   {
     id: "teaching",

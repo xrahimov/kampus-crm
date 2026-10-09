@@ -332,6 +332,31 @@
       "came": "Came",
       "noShow": "Didn't come",
       "hint": "Mark whether the visitor came; the office adds them to the group from the leads board."
+    },
+    "scan": {
+      "title": "Scan badges",
+      "button": "Scan badges",
+      "back": "Today",
+      "forLesson": "Badges scanned here mark students present in {group}, {time}.",
+      "anyLesson": "Badges scanned here mark students present in their lesson of the day: the one under way, else the next one.",
+      "camera": "Camera",
+      "start": "Start camera",
+      "stop": "Stop camera",
+      "denied": "The camera was not allowed. Allow it in the browser's address bar, or type the code below.",
+      "unsupported": "This browser cannot open the camera. Use a hand scanner or type the code below.",
+      "manual": "Hand scanner or keyboard",
+      "code": "Badge code",
+      "manualHint": "A USB or Bluetooth scanner types the code here and presses Enter by itself. Keep this field focused.",
+      "log": "Scanned",
+      "markedCount": "{count, plural, =0 {Nobody marked yet} one {# marked present} other {# marked present}}",
+      "empty": "Nothing scanned yet. Point the camera at a student badge.",
+      "status": {
+        "marked": "Present",
+        "already": "Already present",
+        "noLesson": "No lesson today",
+        "unknown": "Not a badge",
+        "error": "Error"
+      }
     }
   },
   "errors": {

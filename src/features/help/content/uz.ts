@@ -370,6 +370,13 @@ export const uz: HelpContent = {
             "Har bir dars kartasida uning vazifasi ko‘rinadi: matn, muddat, nechta javob kelgani va nechtasi tekshirishni kutayotgani. **Uy vazifasi berish** uni ikki maydonda yozadi; javoblarni tekshirish yoki fayl biriktirish uchun guruhning «Uy vazifalari» bo‘limini oching.",
           ],
         },
+        scan: {
+          title: "Beyjik bo‘yicha davomat",
+          body: [
+            "Har bir o‘quvchining QR kodli chop etiladigan beyjigi bor (O‘quvchilar → Beyjik). Dars kartasidagi **Beyjik skanerlash** kamerani ochadi: beyjikni ko‘rsating, o‘quvchi shu darsda bor deb belgilanadi, tovush va ro‘yxatda qator bilan (bor, allaqachon belgilangan, dars yo‘q, beyjik emas). Bugun sahifasi tepasidagi tugma kirish eshigida butun kun uchun shunday ishlaydi: har bir beyjik o‘quvchining hozir ketayotgan yoki bugungi keyingi darsiga mos keladi.",
+            "USB yoki Bluetooth qo‘l skaneri ham ishlaydi: u kodni maydonga o‘zi yozadi va Enter bosadi, shuning uchun kirishdagi planshetga kamera kerak emas. Bunday belgilar boshqa belgilar kabi hisoblanadi: coinlar, avto SMS va davomat foizi ularga ergashadi, o‘qituvchi esa jadvaldagi belgini tuzatishi mumkin.",
+          ],
+        },
         install: {
           title: "Kampus telefoningizda",
           body: [

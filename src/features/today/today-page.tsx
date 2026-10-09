@@ -9,6 +9,7 @@ import {
   DoorOpen,
   GraduationCap,
   HandCoins,
+  ScanLine,
   Smartphone,
 } from "lucide-react";
 import { useTranslations } from "next-intl";
@@ -76,6 +77,13 @@ export function TodayPage({ data, userName }: { data: TodayDto; userName: string
           </p>
         </div>
         <div className="flex items-center gap-1" data-testid="today-nav">
+          {data.canMark && (
+            <Button variant="outline" size="sm" asChild>
+              <Link href="/today/scan" data-testid="today-scan-door">
+                <ScanLine /> {t("scan.button")}
+              </Link>
+            </Button>
+          )}
           <Button variant="outline" size="icon" asChild>
             <Link
               href={`/today?date=${shiftDay(data.date, -1)}`}
@@ -394,11 +402,28 @@ function LessonCard({
               </p>
             )}
           </div>
-          {canMark && total > 0 && marked < total && (
-            <Button size="sm" onClick={allPresent} disabled={busy} data-testid="today-all-present">
-              {t("attendance.allPresent")}
-            </Button>
-          )}
+          <div className="flex flex-wrap gap-2">
+            {canMark && total > 0 && (
+              <Button asChild size="sm" variant="outline">
+                <Link
+                  href={`/today/scan?lesson=${lesson.id}&date=${lesson.date}`}
+                  data-testid="today-scan"
+                >
+                  <ScanLine /> {t("scan.button")}
+                </Link>
+              </Button>
+            )}
+            {canMark && total > 0 && marked < total && (
+              <Button
+                size="sm"
+                onClick={allPresent}
+                disabled={busy}
+                data-testid="today-all-present"
+              >
+                {t("attendance.allPresent")}
+              </Button>
+            )}
+          </div>
         </div>
       </CardHeader>
       <CardContent className="space-y-4">

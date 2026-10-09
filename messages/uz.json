@@ -332,6 +332,31 @@
       "came": "Keldi",
       "noShow": "Kelmadi",
       "hint": "Mehmon kelgan-kelmaganini belgilang; guruhga uni ofis lidlar doskasidan qo‘shadi."
+    },
+    "scan": {
+      "title": "Beyjik skanerlash",
+      "button": "Beyjik skanerlash",
+      "back": "Bugun",
+      "forLesson": "Bu yerda skanerlangan beyjiklar o‘quvchilarni {group} guruhining {time} darsida bor deb belgilaydi.",
+      "anyLesson": "Bu yerda skanerlangan beyjiklar o‘quvchilarni bugungi darsida bor deb belgilaydi: hozir ketayotganida, bo‘lmasa keyingisida.",
+      "camera": "Kamera",
+      "start": "Kamerani yoqish",
+      "stop": "Kamerani o‘chirish",
+      "denied": "Kameraga ruxsat berilmadi. Brauzer manzil satrida ruxsat bering yoki kodni pastga yozing.",
+      "unsupported": "Bu brauzer kamerani ocha olmaydi. Qo‘l skaneridan foydalaning yoki kodni pastga yozing.",
+      "manual": "Qo‘l skaneri yoki klaviatura",
+      "code": "Beyjik kodi",
+      "manualHint": "USB yoki Bluetooth skaner kodni shu yerga o‘zi yozadi va Enter bosadi. Bu maydon fokusda tursin.",
+      "log": "Skanerlangan",
+      "markedCount": "{count, plural, =0 {Hali hech kim belgilanmadi} one {# kishi bor deb belgilandi} other {# kishi bor deb belgilandi}}",
+      "empty": "Hali hech narsa skanerlanmadi. Kamerani o‘quvchi beyjigiga qarating.",
+      "status": {
+        "marked": "Bor",
+        "already": "Allaqachon belgilangan",
+        "noLesson": "Bugun dars yo‘q",
+        "unknown": "Beyjik emas",
+        "error": "Xato"
+      }
     }
   },
   "errors": {
