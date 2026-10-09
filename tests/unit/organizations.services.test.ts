@@ -149,6 +149,7 @@ describe("organisations (site owner)", () => {
       webhookSecret: `${TAG}-hook`,
       botUsername: `${TAG}_bot`,
       weeklyReport: true,
+      sharedWithAllCentres: false,
     });
     expect(await assertWebhookSecret(prisma, "TELEGRAM", `${TAG}-hook`)).toBe(createdOrgId);
     await expect(assertWebhookSecret(prisma, "TELEGRAM", `${TAG}-other`)).rejects.toMatchObject({

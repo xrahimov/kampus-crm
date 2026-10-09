@@ -1022,6 +1022,7 @@ export const en: HelpContent = {
           title: "Telegram bot",
           body: [
             "Create a bot with BotFather, paste its token and username, set a webhook secret and enable it. Two things then work. Staff listed under Settings → Bot notifications get a Telegram message about payments and new students: each staff member sends **/id** to the bot, and you enter the ID they receive with the branches they should hear about. Students and parents press **Connect Telegram** on the student's personal page and get lesson reminders about thirty minutes before, a message when the teacher starts a video lesson, homework notices, new materials, debt reminders and payment confirmations. Every Sunday evening the same chats get a weekly report: lessons attended and missed, grades, homework done, coins, and the balance with the next payment date (the **Weekly report to parents** switch on the Telegram card). Linked chats can also write to the bot: **Balance** answers with the balance per group and the coins, **Pay** sends Payme and Click links for the amount due (when online payments are set up), and **Absent today** marks an excused absence on today's lesson with the reason sent, which the teacher sees on the Today screen and as a dot in the attendance grid.",
+            "A centre does not have to create a bot of its own. The server's owner can tick **Shared with every centre on this server** on their Telegram card; every centre that has not set up a bot then uses that one, for student links, staff IDs and every message, and a note on its Telegram card says so. A centre that later enters its own bot switches to it by itself.",
           ],
         },
         amocrm: {
@@ -1110,7 +1111,7 @@ export const en: HelpContent = {
         afterwards: {
           title: "Afterwards",
           body: [
-            "The list shows each centre's branches, CEO, staff and student counts; the row menu edits a centre's name and own address. Every centre signs in on the same address and sets up its own integrations: its own Telegram bot, SMS account, Payme or Click merchant and webhook secrets, since the shared webhook addresses tell centres apart by the secret or merchant credentials they present.",
+            "The list shows each centre's branches, CEO, staff and student counts; the row menu edits a centre's name and own address. Every centre signs in on the same address and sets up its own integrations: its own Telegram bot, SMS account, Payme or Click merchant and webhook secrets, since the shared webhook addresses tell centres apart by the secret or merchant credentials they present. Telegram is the exception: tick **Shared with every centre on this server** on your own Telegram card, and centres without a bot of their own use yours.",
             {
               note: "Nothing deletes a centre; archive its staff and students from inside if it stops using Kampus.",
             },

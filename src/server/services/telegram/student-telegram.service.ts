@@ -9,7 +9,7 @@ import { generateToken } from "@/server/auth/tokens";
 import { prisma, type DbClient } from "@/server/db/prisma";
 import { AppError } from "@/server/errors/app-error";
 import { enqueue } from "@/server/jobs/queue";
-import { loadIntegrationConfig } from "@/server/services/integrations/integrations.service";
+import { telegramConfigFor } from "@/server/services/integrations/integrations.service";
 import { appOriginForGroup } from "@/server/services/settings/domains.service";
 import { isoToDate, organizationOfBranch } from "@/server/services/settings/shared";
 import { classLink, membershipByToken } from "@/server/services/video/video.service";
@@ -115,11 +115,9 @@ export function botDate(locale: BotLocale, iso: string): string {
 }
 
 async function botUsername(db: DbClient, organizationId: string): Promise<string | null> {
-  const config = (await loadIntegrationConfig(db, "TELEGRAM", organizationId)) as {
-    isEnabled: boolean;
-    botUsername?: string;
-  } | null;
-  return config?.isEnabled && config.botUsername ? config.botUsername : null;
+  // The centre's own bot, or the server's shared one (A-135).
+  const effective = await telegramConfigFor(db, organizationId);
+  return effective?.config.botUsername || null;
 }
 
 /* ----- the portal's side ---------------------------------------------------------------- */
@@ -179,7 +177,8 @@ export async function unlinkPortalChat(
  */
 export async function handleStudentCommand(
   db: DbClient,
-  organizationId: string,
+  /** The centre whose bot received the update; null for the shared bot, which serves every centre (A-135). */
+  organizationId: string | null,
   message: {
     chatId: string;
     text: string;
@@ -191,7 +190,10 @@ export async function handleStudentCommand(
   const start = message.text.match(/^\/start\s+([A-Za-z0-9_-]{8,64})\s*$/);
   if (start) {
     const student = await db.student.findFirst({
-      where: { telegramCode: start[1]!, branch: { organizationId } },
+      where: {
+        telegramCode: start[1]!,
+        ...(organizationId ? { branch: { organizationId } } : {}),
+      },
       select: { id: true, fullName: true, isArchived: true },
     });
     if (!student || student.isArchived) return botText(locale, "unknownCode");
@@ -209,7 +211,10 @@ export async function handleStudentCommand(
   }
   if (/^\/stop\b/.test(message.text)) {
     const gone = await db.studentTelegramChat.deleteMany({
-      where: { chatId: message.chatId, student: { branch: { organizationId } } },
+      where: {
+        chatId: message.chatId,
+        ...(organizationId ? { student: { branch: { organizationId } } } : {}),
+      },
     });
     return gone.count > 0 ? botText(locale, "unlinked") : null;
   }

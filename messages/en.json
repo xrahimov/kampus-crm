@@ -3930,8 +3930,12 @@
         "botToken": "Bot token",
         "webhookSecret": "Webhook secret",
         "botUsername": "Bot username (without @)",
-        "weeklyReport": "Weekly report to parents on Sunday evening"
-      }
+        "weeklyReport": "Weekly report to parents on Sunday evening",
+        "sharedWithAllCentres": "Shared with every centre on this server"
+      },
+      "sharedHint": "As the server's owner you can offer this bot to every centre that has not set up a bot of its own: their students connect to it from their pages, their staff send /id to it, and their messages go out through it. A centre that enters its own bot keeps using that one.",
+      "sharedNote": "Your centre uses this server's shared bot @{username}: students connect to it from their personal pages and staff send /id to it for Bot notifications. Enter a bot of your own above to use that instead.",
+      "sharedNoteNoUsername": "Your centre uses this server's shared Telegram bot. Enter a bot of your own above to use that instead."
     },
     "TELEPHONY": {
       "title": "Telephony",

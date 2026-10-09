@@ -1,7 +1,7 @@
 import { formatMoneyUz } from "@/lib/dates";
 import type { DbClient } from "@/server/db/prisma";
 import { studentBalance } from "@/server/services/coins/coins.service";
-import { loadIntegrationConfig } from "@/server/services/integrations/integrations.service";
+import { telegramConfigFor } from "@/server/services/integrations/integrations.service";
 import { dateToIso, isoToDate } from "@/server/services/settings/shared";
 import { membershipBalances } from "@/server/services/students/balances";
 
@@ -239,8 +239,8 @@ export async function runWeeklyReports(
     const organizationId = chat.student.branch.organizationId;
     let on = centreOn.get(organizationId);
     if (on === undefined) {
-      const config = await loadIntegrationConfig(db, "TELEGRAM", organizationId);
-      on = Boolean(config?.isEnabled && config.weeklyReport);
+      const effective = await telegramConfigFor(db, organizationId);
+      on = Boolean(effective?.config.weeklyReport);
       centreOn.set(organizationId, on);
     }
     if (!on) continue;

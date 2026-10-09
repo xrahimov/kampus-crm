@@ -17,5 +17,10 @@ export default async function Page({ params }: { params: Promise<{ locale: strin
   setRequestLocale(locale);
   const current = await requireCurrentUser();
   if (!can(current.actor, "settings.integrations")) return <Forbidden />;
-  return <IntegrationsPage integrations={await listIntegrations(current.actor)} />;
+  return (
+    <IntegrationsPage
+      integrations={await listIntegrations(current.actor)}
+      isSiteOwner={current.actor.isSiteOwner === true}
+    />
+  );
 }
