@@ -452,6 +452,20 @@ export const uz: HelpContent = {
             "**O‘quvchi progressi** davomat foizini, o‘rtacha bahoni va imtihon natijalarini oy va guruh bo‘yicha ko‘rsatadi. **Test natijalari** topshirishlar va mavzu bo‘yicha aniqlikni ko‘rsatadi. **Izoh va eslatmalar** xodimlar sezgan narsalarni saqlaydi; izohni guruh sahifasidan ham qo‘shish mumkin. **SMS** shu o‘quvchiga yuborilgan har bir xabarni ko‘rsatadi. **O‘quvchi tarixi** yaratilishidan oxirgi to‘lovgacha har bir o‘zgarishning vaqt chizig‘i. **Ota-onasi** da SMS olishi mumkin bo‘lgan, telefonli ota-onalar turadi. **Qo‘ng‘iroqlar** telefoniya integratsiyasi yozib olgan qo‘ng‘iroqlarni ko‘rsatadi va bir bosishda qo‘ng‘iroq qilish uchun **Qo‘ng‘iroq qilish** tugmasi bor.",
           ],
         },
+        familyInstalments: {
+          title: "Bo‘lib to‘lash va aka-uka, opa-singillar",
+          body: [
+            "Oylik to‘lovni **ikki yoki uch qismga** bo‘lish mumkin, har birining o‘z muddati bor. Qismlar belgilangach, o‘quvchi sahifasidagi guruh kartasi ularni ko‘rsatadi; qism faqat muddati o‘tgach qarz hisoblanadi, shuning uchun muddati kelmagan qism uchun o‘quvchi qarzdorlar qatoriga tushmaydi va har bir qismdan ikki kun oldin Telegram orqali xabar oladi (Sozlamalar → SMS bo‘limida **To‘lov qismi muddati yaqin** matni yoqilgan bo‘lsa, SMS ham).",
+            {
+              steps: [
+                "O‘quvchi sahifasini oching va «Guruhlar» bo‘limida guruhni toping.",
+                "Karta menyusida **Oylik to‘lovni bo‘lish**ni tanlang va oyni ko‘rsating.",
+                "Ikki yoki uch qismni muddati va summasi bilan belgilang (**Teng bo‘lish** summalarni oylik to‘lovga teng bo‘ladigan qilib to‘ldiradi) va saqlang. **Bo‘lishni bekor qilish** butun to‘lovni yana oy boshidan muddatli qiladi.",
+              ],
+            },
+            "**Aka-uka va opa-singillar** o‘quvchi sahifasidagi **Oila** kartasida bog‘lanadi: **Aka-uka yoki opa-singilni bog‘lash**, o‘quvchini tanlang va markaz bersa, oilaviy chegirma foizini kiriting. Foiz oila a‘zolarining barcha guruhlari oylik narxidan keyingi hisoblanadigan oydan boshlab oddiy chegirma sifatida chegiriladi va guruhning «Chegirmalar» bo‘limida ham ko‘rinadi; **Oilani tahrirlash** uni o‘zgartiradi, **Oiladan chiqarish** bir o‘quvchi uchun to‘xtatadi. Keyinchalik boshqa guruhga qo‘shilgan oila a‘zosi u yerda ham chegirma oladi.",
+          ],
+        },
         importExport: {
           title: "Excel import va eksport",
           body: [

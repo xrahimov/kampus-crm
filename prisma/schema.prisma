@@ -53,6 +53,7 @@ model Organization {
   integrations      IntegrationSetting[]
   leaveReasons      LeaveReason[]
   cashCloses        CashClose[]
+  families          Family[]
 }
 
 model Branch {
@@ -141,6 +142,7 @@ model User {
   refundsMade        Refund[]
   cashClosesMade     CashClose[]      @relation("cashCloseCashier")
   cashClosesAccepted CashClose[]      @relation("cashCloseAcceptor")
+  instalmentsCreated Instalment[]     @relation("instalmentCreator")
   discountsGiven     Discount[]
   studentComments    StudentComment[]
 
@@ -675,6 +677,8 @@ model Student {
   referredById       String?
   /// When the referrer was credited for this student; set once, on the first membership.
   referralCreditedAt DateTime?
+  /// Siblings share one family discount (A-123).
+  familyId           String?
   /// "Manba": a lead source; the catalogue gets its own pages with leads (Phase 7).
   sourceId           String?
   schoolId           String?
@@ -690,6 +694,7 @@ model Student {
   referredBy     Student?              @relation("referrals", fields: [referredById], references: [id], onDelete: SetNull)
   referrals      Student[]             @relation("referrals")
   referredLeads  Lead[]                @relation("leadReferrer")
+  family         Family?               @relation(fields: [familyId], references: [id], onDelete: SetNull)
   memberships    GroupMembership[]
   parents        Parent[]
   customFields   StudentCustomField[]
@@ -714,6 +719,7 @@ model Student {
   @@index([schoolId])
   @@index([sourceId])
   @@index([referredById])
+  @@index([familyId])
 }
 
 /// A Telegram chat (the student's own, or a parent's) that hears about the
@@ -770,6 +776,7 @@ model GroupMembership {
   onlinePayments OnlinePayment[]
   homework       HomeworkSubmission[]
   adjustments    BalanceAdjustment[]
+  instalments    Instalment[]
 
   @@unique([groupId, studentId])
   @@index([studentId])
@@ -972,13 +979,17 @@ model Discount {
   givenAt         DateTime @db.Date
   comment         String?
   createdById     String?
+  /// Set when the discount comes from the family discount (A-123); replaced when the percent changes.
+  familyId        String?
   createdAt       DateTime @default(now())
 
   membership GroupMembership @relation(fields: [membershipId], references: [id], onDelete: Cascade)
   createdBy  User?           @relation(fields: [createdById], references: [id], onDelete: SetNull)
+  family     Family?         @relation(fields: [familyId], references: [id], onDelete: Cascade)
   charges    Charge[]
 
   @@index([membershipId])
+  @@index([familyId])
 }
 
 /// One monthly fee per membership and course month (A-10). `month` is the first
@@ -1866,6 +1877,7 @@ enum AutoSmsEvent {
   LESSON_CANCELLED
   LESSON_MOVED
   LESSON_RESTORED
+  INSTALMENT_DUE
 }
 
 model AutoSmsSetting {
@@ -2229,4 +2241,42 @@ model CashClose {
 
   @@unique([branchId, cashierId, date])
   @@index([organizationId, date])
+}
+
+/// Siblings studying at the centre (A-123): one link, one discount for all of them.
+model Family {
+  id              String   @id @default(cuid())
+  organizationId  String
+  name            String
+  /// Percent off the monthly price of every member's groups; 0 keeps the link without a discount.
+  discountPercent Int      @default(0)
+  note            String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  students     Student[]
+  discounts    Discount[]
+
+  @@index([organizationId])
+}
+
+/// One part of a month's fee with its own due day (A-123). The parts of a month
+/// schedule its charge; a part is a debt only once its day has passed.
+model Instalment {
+  id           String    @id @default(cuid())
+  membershipId String
+  month        DateTime  @db.Date
+  dueDate      DateTime  @db.Date
+  amount       Decimal   @db.Decimal(15, 2)
+  /// When the student was reminded that this part is due soon.
+  remindedAt   DateTime?
+  createdById  String?
+  createdAt    DateTime  @default(now())
+
+  membership GroupMembership @relation(fields: [membershipId], references: [id], onDelete: Cascade)
+  createdBy  User?           @relation("instalmentCreator", fields: [createdById], references: [id], onDelete: SetNull)
+
+  @@index([membershipId, month])
+  @@index([dueDate])
 }

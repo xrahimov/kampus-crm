@@ -62,6 +62,7 @@ import { useMoneyFormat } from "@/lib/use-money-format";
 import type { Page } from "@/lib/validation/common";
 import type { MembershipStatus } from "@/lib/validation/groups";
 import type { AdjustmentDto } from "@/server/services/students/adjustments.service";
+import type { FamilyDto } from "@/server/services/students/families.service";
 import type { PaymentDto, PaymentOptionsDto } from "@/server/services/students/payments.service";
 import type {
   StudentCommentDto,
@@ -82,7 +83,9 @@ import { CommentDialog } from "./comment-dialog";
 import { SmsTab } from "./sms-tab";
 import { ProgressTab } from "./progress-tab";
 import { TestResultsTab } from "./test-results-tab";
+import { FamilyCard } from "./family-card";
 import { GroupCard } from "./group-card";
+import { InstalmentsDialog } from "./instalments-dialog";
 import { StudentDialog } from "./student-dialog";
 import { BalanceBadge } from "./students-page";
 
@@ -115,6 +118,7 @@ export function StudentDetail({
   options,
   paymentOptions,
   branches,
+  family,
   can,
 }: {
   student: StudentDetailDto;
@@ -131,6 +135,7 @@ export function StudentDetail({
   options: StudentOptions;
   paymentOptions: PaymentOptionsDto;
   branches: BranchOption[];
+  family: FamilyDto | null;
   can: {
     update: boolean;
     delete: boolean;
@@ -140,6 +145,7 @@ export function StudentDetail({
     groups: boolean;
     leads: boolean;
     sms: boolean;
+    discounts: boolean;
   };
 }) {
   const t = useTranslations();
@@ -167,6 +173,7 @@ export function StudentDetail({
   const [transferring, setTransferring] = useState<StudentDetailDto["groups"][number] | null>(null);
   const [removing, setRemoving] = useState<StudentDetailDto["groups"][number] | null>(null);
   const [returning, setReturning] = useState<StudentDetailDto["groups"][number] | null>(null);
+  const [splitting, setSplitting] = useState<StudentDetailDto["groups"][number] | null>(null);
   const [removeReason, setRemoveReason] = useState("");
   const [parentsSms, setParentsSms] = useState(false);
   const [deletingParent, setDeletingParent] = useState<StudentDetailDto["parents"][number] | null>(
@@ -324,6 +331,14 @@ export function StudentDetail({
             </CardContent>
           </Card>
 
+          <FamilyCard
+            student={student}
+            family={family}
+            canEdit={can.update && !student.isArchived}
+            canDiscount={can.discounts}
+            onChanged={refresh}
+          />
+
           <div className="grid gap-2">
             {can.update && !student.isArchived && (
               <Button variant="outline" onClick={() => setDialog("field")} data-testid="add-field">
@@ -417,6 +432,9 @@ export function StudentDetail({
                         onToLead={can.leads ? () => setReturning(g) : null}
                         onRemove={() => setRemoving(g)}
                         onStatus={(s) => void setStatus(g.membershipId, s)}
+                        onInstalments={
+                          can.pay && !student.isArchived ? () => setSplitting(g) : null
+                        }
                       />
                     ))
                   )}
@@ -631,6 +649,13 @@ export function StudentDetail({
           groupName: g.groupName,
           status: g.status,
         }))}
+        onSaved={refresh}
+      />
+      <InstalmentsDialog
+        open={!!splitting}
+        onOpenChange={(open) => !open && setSplitting(null)}
+        membershipId={splitting?.membershipId ?? null}
+        groupName={splitting?.groupName ?? ""}
         onSaved={refresh}
       />
       <TransferDialog

@@ -254,7 +254,8 @@
     "importUserExists": "Bu telefonli foydalanuvchi allaqachon bor",
     "importParentExists": "Bu ota-ona o‘quvchiga allaqachon qo‘shilgan",
     "debtCaseClosed": "Bu qarz allaqachon yopilgan.",
-    "scheduleClash": "Bu vaqtda xona yoki o‘qituvchi band."
+    "scheduleClash": "Bu vaqtda xona yoki o‘qituvchi band.",
+    "familyOther": "Bu o‘quvchi allaqachon boshqa oilada."
   },
   "validation": {
     "phone": "+998 90 123 45 67 ko‘rinishida raqam kiriting.",
@@ -344,7 +345,13 @@
     "referralSelf": "O‘quvchi o‘zini taklif qila olmaydi",
     "referralUnknown": "O‘quvchi topilmadi",
     "formUnknown": "Forma topilmadi",
-    "futureDate": "Kelajakdagi kunni yopib bo‘lmaydi."
+    "futureDate": "Kelajakdagi kunni yopib bo‘lmaydi.",
+    "familySelf": "O‘quvchi o‘ziga o‘zi aka-uka bo‘la olmaydi.",
+    "instalmentsMin": "Kamida ikki qismga bo‘ling.",
+    "instalmentsMax": "Ko‘pi bilan uch qism.",
+    "instalmentsSum": "Qismlar yig‘indisi oylik to‘lovga teng bo‘lishi kerak.",
+    "instalmentsDays": "Har bir qismning o‘z kuni bo‘lishi kerak.",
+    "percent": "0 dan 100 gacha butun son kiriting."
   },
   "roles": {
     "CEO": "CEO",
@@ -1325,8 +1332,12 @@
         "transfer": "Boshqa guruhga ko‘chirish",
         "status": "Holatni o‘zgartirish",
         "remove": "Guruhdan chiqarish",
-        "toLead": "Lidlarga qaytarish"
-      }
+        "toLead": "Lidlarga qaytarish",
+        "instalments": "Oylik to‘lovni bo‘lish"
+      },
+      "instalments": "Bo‘lib to‘lash",
+      "instalmentPaid": "to‘langan",
+      "familyDiscount": "Oilaviy chegirma {percent}%: oyiga {price}. «Oila» kartasida boshqariladi."
     },
     "comments": {
       "title": "Izoh va eslatmalar",
@@ -1374,6 +1385,14 @@
         },
         "referral": {
           "credit": "Tavsiya hisobga olindi"
+        },
+        "instalment": {
+          "set": "To‘lov qismlarga bo‘lindi",
+          "clear": "Bo‘lish bekor qilindi"
+        },
+        "family": {
+          "link": "Oilaga bog‘landi",
+          "unlink": "Oiladan chiqarildi"
         }
       }
     },
@@ -1440,6 +1459,46 @@
     "picker": {
       "noResults": "O‘quvchi topilmadi",
       "clear": "Tozalash"
+    },
+    "instalments": {
+      "title": "Oylik to‘lovni bo‘lish",
+      "hint": "Ikki yoki uch qism, har birining o‘z muddati bor. Qism faqat muddati o‘tgach qarz hisoblanadi; muddatdan ikki kun oldin o‘quvchiga eslatma boradi.",
+      "month": "Oy",
+      "amount": "Oylik to‘lov",
+      "parts": "Qismlar",
+      "part": "{n}-qism",
+      "dueDate": "Muddat",
+      "partAmount": "Summa",
+      "addPart": "Qism qo‘shish",
+      "removePart": "Qismni olib tashlash",
+      "equal": "Teng bo‘lish",
+      "remaining": "Taqsimlanmagan: {amount}",
+      "save": "Bo‘lishni saqlash",
+      "clear": "Bo‘lishni bekor qilish",
+      "paid": "to‘langan",
+      "loading": "Yuklanmoqda…",
+      "balance": "Hozirgi balans: {balance}"
+    },
+    "family": {
+      "title": "Oila",
+      "none": "Aka-uka yoki opa-singillar hali bog‘lanmagan.",
+      "link": "Aka-uka yoki opa-singilni bog‘lash",
+      "edit": "Oilani tahrirlash",
+      "unlink": "Oiladan chiqarish",
+      "unlinkTitle": "{name} oiladan chiqarilsinmi?",
+      "unlinkText": "Oilaviy chegirma keyingi hisoblanadigan oydan to‘xtaydi; hisoblangan oylar o‘z narxini saqlaydi.",
+      "discount": "Oilaviy chegirma {percent}%",
+      "noDiscount": "Oilaviy chegirmasiz",
+      "members": "{count, plural, one {# a‘zo} other {# a‘zo}}",
+      "noGroups": "guruhsiz",
+      "form": {
+        "sibling": "Aka-uka yoki opa-singil",
+        "name": "Oila nomi",
+        "discountPercent": "Oilaviy chegirma, %",
+        "note": "Izoh",
+        "hint": "Foiz oila a‘zolarining barcha guruhlari oylik narxidan keyingi hisoblanadigan oydan boshlab chegiriladi; 0 bog‘lanishni chegirmasiz qoldiradi.",
+        "linkHint": "Aka-uka yoki opa-singilni tanlang. Ulardan birida oila bo‘lsa, ikkinchisi unga qo‘shiladi."
+      }
     }
   },
   "payments": {
@@ -1653,7 +1712,8 @@
       "comment": "Izoh"
     },
     "deleteTitle": "Chegirma o‘chirilsinmi?",
-    "deleteText": "“{name}” uchun chegirma hozir tugaydi. O‘tgan oylar hisoblanganicha qoladi."
+    "deleteText": "“{name}” uchun chegirma hozir tugaydi. O‘tgan oylar hisoblanganicha qoladi.",
+    "family": "Oila"
   },
   "leads": {
     "title": "Lidlar",
@@ -2771,7 +2831,8 @@
       "ADDED_TO_GROUP": "Guruhga birinchi qo'shilganda",
       "LESSON_CANCELLED": "Dars bekor qilindi",
       "LESSON_MOVED": "Dars ko'chirildi",
-      "LESSON_RESTORED": "Bekor qilingan dars qayta tiklandi"
+      "LESSON_RESTORED": "Bekor qilingan dars qayta tiklandi",
+      "INSTALMENT_DUE": "To‘lov qismi muddati yaqin"
     },
     "variables": {
       "studentName": "Talaba ismi",
@@ -2938,7 +2999,8 @@
         "Homework": "Uy vazifasi",
         "HomeworkSubmission": "Uy vazifasi javobi",
         "LessonMaterial": "Dars materiali",
-        "BalanceAdjustment": "Qoldiq to'g'rilashi"
+        "BalanceAdjustment": "Qoldiq to'g'rilashi",
+        "Family": "Oila"
       },
       "names": {
         "attendance": {
@@ -3216,6 +3278,15 @@
           "create": "Kassada kun yopildi",
           "update": "Kun yopilishi o‘zgartirildi",
           "accept": "Kun yopilishi qabul qilindi"
+        },
+        "instalment": {
+          "set": "To‘lov qismlarga bo‘lindi",
+          "clear": "Bo‘lish bekor qilindi"
+        },
+        "family": {
+          "link": "Oilaga bog‘landi",
+          "unlink": "Oiladan chiqarildi",
+          "update": "Oila o‘zgartirildi"
         }
       }
     }
@@ -3755,7 +3826,8 @@
     "absentMarked": "{group}, bugun {time}: sababli qoldirilgan deb belgilandi{reason, select, none {} other { ({reason})}}. O‘qituvchi buni ko‘radi.",
     "absentPresent": "{group}, bugun {time}: o‘qituvchi allaqachon kelgan deb belgilagan, hech narsa o‘zgarmadi.",
     "absentNoLesson": "Bugun dars yo‘q.{next, select, none {} other { Keyingi dars: {next}.}}",
-    "absentComment": "Telegram orqali{reason, select, none {} other {: {reason}}}"
+    "absentComment": "Telegram orqali{reason, select, none {} other {: {reason}}}",
+    "instalment": "{group}: to‘lovning {amount} qismi {date} gacha to‘lanishi kerak. O‘quv markazida yoki o‘z sahifangizdan to‘lashingiz mumkin."
   },
   "video": {
     "title": "Video dars",

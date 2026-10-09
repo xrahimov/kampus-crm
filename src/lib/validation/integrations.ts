@@ -43,6 +43,7 @@ export const AUTO_SMS_EVENTS = [
   "LESSON_CANCELLED",
   "LESSON_MOVED",
   "LESSON_RESTORED",
+  "INSTALMENT_DUE",
 ] as const;
 export type AutoSmsEvent = (typeof AUTO_SMS_EVENTS)[number];
 

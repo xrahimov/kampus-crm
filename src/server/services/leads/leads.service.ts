@@ -11,6 +11,7 @@ import type {
   ToLeadInput,
 } from "@/lib/validation/leads";
 import { recordAudit } from "@/server/audit/audit";
+import { applyFamilyDiscount } from "@/server/services/students/families.service";
 import { assertReferrer, creditReferral } from "@/server/services/students/referrals.service";
 import { enqueue } from "@/server/jobs/queue";
 import { notifyUsers } from "@/server/services/dashboard/notifications.service";
@@ -629,6 +630,7 @@ export async function addLeadsToGroup(
         });
       }
       await creditReferral(tx, studentId, actor);
+      await applyFamilyDiscount(tx, studentId);
       await recordAudit(tx, actor, {
         action: "lead.convert",
         entity: "Lead",

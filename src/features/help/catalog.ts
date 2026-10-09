@@ -163,6 +163,7 @@ export const HELP_ARTICLES = [
       { id: "profile", screenshot: "student-profile" },
       { id: "groupsTab" },
       { id: "moreTabs" },
+      { id: "familyInstalments" },
       { id: "importExport" },
       { id: "leaving" },
     ],

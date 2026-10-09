@@ -449,6 +449,20 @@ export const en: HelpContent = {
             "**Progress** shows the attendance percentage, the average grade and exam results by month and by group. **Test results** shows attempts and accuracy by topic. **Comments and notes** keep what staff noticed; a comment can also be added from the group page. **SMS** lists every message sent to this student. **History** is a timeline of every change, from creation to the last payment. **Parents** holds parents with phones, who can get SMS. **Calls** shows calls recorded by the telephony integration and has a **Call** button for click-to-call.",
           ],
         },
+        familyInstalments: {
+          title: "Instalments and siblings",
+          body: [
+            "A month's fee can be paid in **two or three parts**, each with its own day. The group card on the student's page lists the parts once they are set; a part counts as a debt only after its day has passed, so the student is not among the debtors for a part that is not due yet, and gets a Telegram message (and an SMS when the **Instalment due soon** text is switched on under Settings → SMS) two days before each part.",
+            {
+              steps: [
+                "Open the student's page and find the group in the Groups tab.",
+                "Choose **Split the month's fee** in the card's menu and pick the month.",
+                "Set two or three parts with their days and amounts (**Split equally** fills the amounts so they add up to the month's fee) and save. **Remove the split** makes the whole fee due with the month again.",
+              ],
+            },
+            "**Siblings** are linked in the **Family** card on the student's page: **Link a sibling**, pick the brother or sister and, when the centre gives one, type the family discount percent. The percent comes off the monthly price of every family member's groups from the next charged month, as an ordinary discount that the group's Discounts tab also shows; **Edit family** changes it and **Remove from family** ends it for one student. A family member who later joins another group gets the discount there too.",
+          ],
+        },
         importExport: {
           title: "Excel import and export",
           body: [

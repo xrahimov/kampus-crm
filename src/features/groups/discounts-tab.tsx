@@ -7,6 +7,7 @@ import { useState, useTransition } from "react";
 import { ConfirmDialog } from "@/components/data/confirm-dialog";
 import { EmptyState } from "@/components/data/empty-state";
 import { FieldError } from "@/components/data/field-error";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -89,7 +90,14 @@ export function DiscountsTab({
           <TableBody>
             {discounts.map((d) => (
               <TableRow key={d.id} data-testid="discount-row">
-                <TableCell className="font-medium">{d.studentName}</TableCell>
+                <TableCell className="font-medium">
+                  {d.studentName}
+                  {d.familyId && (
+                    <Badge variant="outline" className="ml-1">
+                      {td("family")}
+                    </Badge>
+                  )}
+                </TableCell>
                 <TableCell className="text-right tabular-nums whitespace-nowrap">
                   {money(d.discountedPrice)}
                 </TableCell>
@@ -106,7 +114,7 @@ export function DiscountsTab({
                 </TableCell>
                 <TableCell>{d.createdByName ?? "—"}</TableCell>
                 <TableCell>
-                  {canGive && d.remainingMonths > 0 && (
+                  {canGive && d.remainingMonths > 0 && !d.familyId && (
                     <Button
                       variant="ghost"
                       size="sm"

@@ -228,3 +228,38 @@ export const receiptSettingsSchema = z.object({
   footerText: text(500).nullable().optional(),
 });
 export type ReceiptSettingsInput = z.infer<typeof receiptSettingsSchema>;
+
+/** "Bo'lib to'lash" (A-123): a month's fee in two or three parts, each with its own day. */
+export const instalmentPartSchema = z.object({
+  dueDate: dateOnlySchema,
+  amount: positiveMoney,
+});
+export const instalmentsSchema = z.object({
+  month: monthSchema,
+  parts: z
+    .array(instalmentPartSchema)
+    .min(2, "validation.instalmentsMin")
+    .max(3, "validation.instalmentsMax"),
+});
+export type InstalmentsInput = z.infer<typeof instalmentsSchema>;
+
+const percent = z.coerce
+  .number()
+  .int("validation.percent")
+  .min(0, "validation.percent")
+  .max(100, "validation.percent");
+
+/** Linking a sibling (A-123): the family is made when neither student has one yet. */
+export const familyLinkSchema = z.object({
+  studentId: idSchema,
+  name: name.optional(),
+  discountPercent: percent.optional(),
+});
+export type FamilyLinkInput = z.infer<typeof familyLinkSchema>;
+
+export const familyUpdateSchema = z.object({
+  name,
+  discountPercent: percent,
+  note: text(500).nullable().optional(),
+});
+export type FamilyUpdateInput = z.infer<typeof familyUpdateSchema>;

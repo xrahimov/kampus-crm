@@ -20,6 +20,7 @@ import {
 
 import { membershipBalances, syncCharges } from "@/server/services/students/balances";
 import { chargedFrom, monthStart } from "@/server/services/students/fees";
+import { applyFamilyDiscount } from "@/server/services/students/families.service";
 import { creditReferral } from "@/server/services/students/referrals.service";
 
 import { findGroupInScope, today } from "./shared";
@@ -213,6 +214,8 @@ export async function addMember(
       });
       // A student brought by a friend: the friend is credited when the student gets a group (A-120).
       await creditReferral(tx, row.studentId, actor);
+      // A sibling's new group gets the family discount (A-123).
+      await applyFamilyDiscount(tx, row.studentId);
       // "Guruhga birinchi qo'shilganda" (A-88).
       await queueAutoSms(tx, {
         event: "ADDED_TO_GROUP",
@@ -451,6 +454,7 @@ export async function transferMember(
         after: { ...dto, fromGroupId: group.id },
         branchId: target.branchId,
       });
+      await applyFamilyDiscount(tx, created.studentId);
       return dto;
     });
   } catch (error) {

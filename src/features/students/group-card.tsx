@@ -60,12 +60,15 @@ export function GroupCard({
   onToLead,
   onRemove,
   onStatus,
+  onInstalments,
 }: {
   group: StudentGroupDto;
   canEdit: boolean;
   canPay: boolean;
   onPay: () => void;
   onTransfer: () => void;
+  /** "Split the month's fee" (A-123); null when the user may not take payments. */
+  onInstalments: (() => void) | null;
   /** Null when the user may not create leads. */
   onToLead: (() => void) | null;
   onRemove: () => void;
@@ -106,6 +109,21 @@ export function GroupCard({
       : []),
     [left ? tg("left") : tg("ends"), date(group.leftAt ?? group.groupEndDate)],
     [tg("nextPayment"), group.nextPaymentDate ? date(group.nextPaymentDate) : "—"],
+    ...(group.instalments.length > 0
+      ? [
+          [
+            tg("instalments"),
+            <ul key="instalments" className="space-y-0.5" data-testid="instalments-row">
+              {group.instalments.map((p) => (
+                <li key={p.id} className={cn(p.paid && "text-muted-foreground")}>
+                  {money(p.amount)} · {date(p.dueDate)}
+                  {p.paid && <span className="ml-1 text-success">✓ {tg("instalmentPaid")}</span>}
+                </li>
+              ))}
+            </ul>,
+          ] as [string, React.ReactNode],
+        ]
+      : []),
     [
       tg("price"),
       <span key="price">
@@ -167,6 +185,11 @@ export function GroupCard({
                   {canPay && (
                     <DropdownMenuItem onSelect={onPay}>{tg("actions.pay")}</DropdownMenuItem>
                   )}
+                  {onInstalments && (
+                    <DropdownMenuItem onSelect={onInstalments} data-testid="split-fee">
+                      {tg("actions.instalments")}
+                    </DropdownMenuItem>
+                  )}
                   {canEdit && (
                     <>
                       <DropdownMenuItem onSelect={onTransfer}>
@@ -203,11 +226,16 @@ export function GroupCard({
 
         {group.discount && (
           <div className="rounded-md bg-success/10 p-3 text-sm" data-testid="discount-banner">
-            {tg("discount", {
-              price: money(group.discount.discountedPrice),
-              months: group.discount.remainingMonths,
-              date: date(group.discount.givenAt),
-            })}
+            {group.discount.familyId
+              ? tg("familyDiscount", {
+                  percent: group.discount.percent,
+                  price: money(group.discount.discountedPrice),
+                })
+              : tg("discount", {
+                  price: money(group.discount.discountedPrice),
+                  months: group.discount.remainingMonths,
+                  date: date(group.discount.givenAt),
+                })}
             {group.discount.comment && (
               <p className="text-muted-foreground">
                 {tg("discountComment", { comment: group.discount.comment })}

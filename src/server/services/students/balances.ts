@@ -9,6 +9,7 @@ import {
 
 import {
   addMonthsIso,
+  allocateInstalments,
   chargeAmount,
   chargeableMonths,
   countLessons,
@@ -16,6 +17,7 @@ import {
   firstUnpaidMonth,
   monthStart,
   type ChargeWindow,
+  type InstalmentPart,
 } from "./fees";
 
 /*
@@ -44,9 +46,16 @@ export interface MembershipBalance {
   discount: {
     remainingMonths: number;
     discountedPrice: number;
+    percent: number;
     givenAt: string;
     comment: string | null;
+    /** Set when the discount is the family's (A-123). */
+    familyId: string | null;
   } | null;
+  /** Unpaid parts of a split fee whose day has not come yet (A-123): owed, but not a debt today. */
+  deferred: number;
+  /** The parts of the split months from the first unpaid one on; empty when no fee is split. */
+  instalments: InstalmentPart[];
 }
 
 const todayIso = () => dateToIso(new Date());
@@ -74,10 +83,12 @@ const membershipSelect = {
       months: true,
       givenAt: true,
       comment: true,
+      familyId: true,
       _count: { select: { charges: true } },
     },
   },
-  charges: { select: { month: true, amount: true } },
+  charges: { select: { month: true, amount: true, price: true } },
+  instalments: { select: { id: true, month: true, dueDate: true, amount: true } },
 } satisfies Prisma.GroupMembershipSelect;
 
 type MembershipRow = Prisma.GroupMembershipGetPayload<{ select: typeof membershipSelect }>;
@@ -121,19 +132,23 @@ export async function syncCharges(db: DbClient, membershipIds: string[]): Promis
     }));
     try {
       for (const month of months) {
-        const has = existing.has(month);
-        if (has && month !== currentMonth) continue;
+        const row = existing.get(month);
+        if (row && month !== currentMonth) continue;
         const { total, counted } = countLessons(lessons, window, month);
         let discount = null;
-        if (!has) {
+        if (!row) {
           discount = discountFor(discounts, month);
           if (discount) discount.used += 1;
         }
-        const price = discount ? discount.discountedPrice : basePrice;
+        // The current month moves with the membership until it ends; the price it
+        // was charged at (and any discount) stays.
+        const price = row
+          ? decimalToNumber(row.price)
+          : discount
+            ? discount.discountedPrice
+            : basePrice;
         const amount = chargeAmount(price, total, counted);
-        if (has) {
-          // The current month moves with the membership until it ends; the price it
-          // was charged at (and any discount) stays.
+        if (row) {
           await db.charge.update({
             where: { membershipId_month: { membershipId: m.id, month: isoToDate(month) } },
             data: { lessonsTotal: total, lessonsCounted: counted, amount },
@@ -242,23 +257,48 @@ export async function membershipBalances(
     const balance = credit - charged;
     const lastChargedMonth = charges.at(-1)?.month ?? null;
     const unpaid = firstUnpaidMonth(charges, credit);
+    // A split month's parts fall due on their own days (A-123).
+    const split = allocateInstalments(
+      charges,
+      m.instalments.map((i) => ({
+        id: i.id,
+        month: dateToIso(i.month),
+        dueDate: dateToIso(i.dueDate),
+        amount: decimalToNumber(i.amount),
+      })),
+      credit,
+      today,
+    );
+    const deferred = split.deferred;
+    const dueNow = Math.max(0, -(balance + deferred));
+    const nextPart = split.parts.find((p) => p.remaining > 0) ?? null;
     const window = windowOf(m);
     const endMonth = monthStart(dateToIso(m.group.endDate));
     const stillCharged = window.status === "ACTIVE" || window.status === "FROZEN";
     const nextMonth = lastChargedMonth ? addMonthsIso(lastChargedMonth, 1) : currentMonth;
     const nextPaymentDate =
-      balance < 0 ? (unpaid ?? today) : stillCharged && nextMonth <= endMonth ? nextMonth : null;
+      balance < 0
+        ? (split.firstUnpaidDate ?? split.nextDueDate ?? unpaid ?? today)
+        : stillCharged && nextMonth <= endMonth
+          ? nextMonth
+          : null;
     const basePrice = m.customPrice
       ? decimalToNumber(m.customPrice)
       : decimalToNumber(m.group.course.price);
     const openDiscount =
       m.discounts
-        .map((d) => ({
-          remainingMonths: d.months - d._count.charges,
-          discountedPrice: decimalToNumber(d.discountedPrice),
-          givenAt: dateToIso(d.givenAt),
-          comment: d.comment,
-        }))
+        .map((d) => {
+          const discountedPrice = decimalToNumber(d.discountedPrice);
+          return {
+            remainingMonths: d.months - d._count.charges,
+            discountedPrice,
+            percent:
+              basePrice > 0 ? Math.round(((basePrice - discountedPrice) / basePrice) * 100) : 0,
+            givenAt: dateToIso(d.givenAt),
+            comment: d.comment,
+            familyId: d.familyId,
+          };
+        })
         .filter((d) => d.remainingMonths > 0)
         .sort((a, b) => a.givenAt.localeCompare(b.givenAt))[0] ?? null;
     const monthlyPrice = openDiscount ? openDiscount.discountedPrice : basePrice;
@@ -272,10 +312,13 @@ export async function membershipBalances(
       balance,
       nextPaymentDate,
       suggestedMonth: unpaid ?? (nextMonth <= endMonth ? nextMonth : currentMonth),
-      suggestedAmount: balance < 0 ? -balance : monthlyPrice,
+      suggestedAmount:
+        balance < 0 ? (dueNow > 0 ? dueNow : (nextPart?.remaining ?? -balance)) : monthlyPrice,
       monthlyPrice,
       lastChargedMonth,
       discount: openDiscount,
+      deferred,
+      instalments: split.parts.filter((p) => p.month >= (unpaid ?? currentMonth)),
     });
   }
   return result;

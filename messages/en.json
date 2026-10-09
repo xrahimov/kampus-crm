@@ -254,7 +254,8 @@
     "importUserExists": "A user with this phone already exists",
     "importParentExists": "This parent is already on the student",
     "debtCaseClosed": "This debt is already closed.",
-    "scheduleClash": "The room or the teacher is already busy at this time."
+    "scheduleClash": "The room or the teacher is already busy at this time.",
+    "familyOther": "This student already belongs to another family."
   },
   "validation": {
     "phone": "Enter a number like +998 90 123 45 67.",
@@ -344,7 +345,13 @@
     "referralSelf": "A student cannot invite themselves",
     "referralUnknown": "Student not found",
     "formUnknown": "Form not found",
-    "futureDate": "A day in the future cannot be closed."
+    "futureDate": "A day in the future cannot be closed.",
+    "familySelf": "A student cannot be their own sibling.",
+    "instalmentsMin": "Split into at least two parts.",
+    "instalmentsMax": "At most three parts.",
+    "instalmentsSum": "The parts must add up to the month's fee.",
+    "instalmentsDays": "Each part needs its own day.",
+    "percent": "Enter a whole number from 0 to 100."
   },
   "roles": {
     "CEO": "CEO",
@@ -1325,8 +1332,12 @@
         "transfer": "Move to another group",
         "status": "Change status",
         "remove": "Remove from group",
-        "toLead": "Return to leads"
-      }
+        "toLead": "Return to leads",
+        "instalments": "Split the month's fee"
+      },
+      "instalments": "Instalments",
+      "instalmentPaid": "paid",
+      "familyDiscount": "Family discount {percent}%: {price} per month. Managed in the Family card."
     },
     "comments": {
       "title": "Comments and notes",
@@ -1374,6 +1385,14 @@
         },
         "referral": {
           "credit": "Referral credited"
+        },
+        "instalment": {
+          "set": "Fee split into instalments",
+          "clear": "Instalments removed"
+        },
+        "family": {
+          "link": "Linked to a family",
+          "unlink": "Removed from the family"
         }
       }
     },
@@ -1440,6 +1459,46 @@
     "picker": {
       "noResults": "No students found",
       "clear": "Clear"
+    },
+    "instalments": {
+      "title": "Split the month's fee",
+      "hint": "Two or three parts, each with its own day. A part counts as a debt only once its day has passed; the student is reminded two days before.",
+      "month": "Month",
+      "amount": "Month's fee",
+      "parts": "Parts",
+      "part": "Part {n}",
+      "dueDate": "Due date",
+      "partAmount": "Amount",
+      "addPart": "Add a part",
+      "removePart": "Remove part",
+      "equal": "Split equally",
+      "remaining": "Left to allocate: {amount}",
+      "save": "Save the split",
+      "clear": "Remove the split",
+      "paid": "paid",
+      "loading": "Loading…",
+      "balance": "Balance now: {balance}"
+    },
+    "family": {
+      "title": "Family",
+      "none": "No siblings linked yet.",
+      "link": "Link a sibling",
+      "edit": "Edit family",
+      "unlink": "Remove from family",
+      "unlinkTitle": "Remove {name} from the family?",
+      "unlinkText": "Their family discount ends with the next charged month; months already charged keep their price.",
+      "discount": "Family discount {percent}%",
+      "noDiscount": "No family discount",
+      "members": "{count, plural, one {# member} other {# members}}",
+      "noGroups": "no groups",
+      "form": {
+        "sibling": "Sibling",
+        "name": "Family name",
+        "discountPercent": "Family discount, %",
+        "note": "Note",
+        "hint": "The percent comes off the monthly price of every member's groups from the next charged month; 0 keeps the link without a discount.",
+        "linkHint": "Pick the brother or sister. If either student already has a family, the other joins it."
+      }
     }
   },
   "payments": {
@@ -1653,7 +1712,8 @@
       "comment": "Comment"
     },
     "deleteTitle": "Remove discount?",
-    "deleteText": "The discount for “{name}” ends now. Past months stay as charged."
+    "deleteText": "The discount for “{name}” ends now. Past months stay as charged.",
+    "family": "Family"
   },
   "leads": {
     "title": "Leads",
@@ -2771,7 +2831,8 @@
       "ADDED_TO_GROUP": "Added to a group",
       "LESSON_CANCELLED": "Lesson cancelled",
       "LESSON_MOVED": "Lesson moved",
-      "LESSON_RESTORED": "Cancelled lesson back on"
+      "LESSON_RESTORED": "Cancelled lesson back on",
+      "INSTALMENT_DUE": "Instalment due soon"
     },
     "variables": {
       "studentName": "Student name",
@@ -2938,7 +2999,8 @@
         "Homework": "Homework",
         "HomeworkSubmission": "Homework answer",
         "LessonMaterial": "Lesson material",
-        "BalanceAdjustment": "Balance adjustment"
+        "BalanceAdjustment": "Balance adjustment",
+        "Family": "Family"
       },
       "names": {
         "attendance": {
@@ -3216,6 +3278,15 @@
           "create": "Day closed at the cash desk",
           "update": "Day close changed",
           "accept": "Day close accepted"
+        },
+        "instalment": {
+          "set": "Fee split into instalments",
+          "clear": "Instalments removed"
+        },
+        "family": {
+          "link": "Linked to a family",
+          "unlink": "Removed from the family",
+          "update": "Family changed"
         }
       }
     }
@@ -3755,7 +3826,8 @@
     "absentMarked": "{group}, today {time}: noted as an excused absence{reason, select, none {} other { ({reason})}}. The teacher will see it.",
     "absentPresent": "{group}, today {time}: the teacher has already marked present, nothing changed.",
     "absentNoLesson": "No lesson today.{next, select, none {} other { Next lesson: {next}.}}",
-    "absentComment": "Via Telegram{reason, select, none {} other {: {reason}}}"
+    "absentComment": "Via Telegram{reason, select, none {} other {: {reason}}}",
+    "instalment": "{group}: a part of the fee, {amount}, is due by {date}. Please pay at the learning centre or from your page."
   },
   "video": {
     "title": "Video lesson",
