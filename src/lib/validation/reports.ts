@@ -118,3 +118,14 @@ export const statisticsFilterSchema = reportPeriodSchema.extend({
   date: dateOnlySchema.optional(),
 });
 export type StatisticsFilters = z.infer<typeof statisticsFilterSchema>;
+
+/** Issuing a certificate to a graduate (round 2 G2, A-140). */
+export const certificateSchema = z.object({
+  title: z.string().trim().min(1, "validation.required").max(120, "validation.tooLong"),
+  level: blankToNull(z.string().trim().max(40, "validation.tooLong")),
+  issuedAt: z
+    .string()
+    .regex(/^\d{4}-\d{2}-\d{2}$/, "validation.date")
+    .optional(),
+});
+export type CertificateInput = z.infer<typeof certificateSchema>;

@@ -25,7 +25,7 @@ function onOwnHost(request: NextRequest): boolean {
 
 const PUBLIC_PATHS = new Set(["/login"]);
 /** Path prefixes anyone may open (public lead forms, students' pages, centres' public pages). */
-const PUBLIC_PREFIXES = ["/forms/", "/class/", "/family/", "/c/"];
+const PUBLIC_PREFIXES = ["/forms/", "/class/", "/family/", "/c/", "/cert/"];
 
 function stripLocale(pathname: string): { locale: string | null; rest: string } {
   const match = pathname.match(/^\/([a-z]{2})(\/.*)?$/);

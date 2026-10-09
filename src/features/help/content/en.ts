@@ -903,7 +903,7 @@ export const en: HelpContent = {
         students: {
           title: "Students reports",
           body: [
-            "**Left students**: churn rate, how many left, lost revenue and average lifetime, with leavers by month, by reason, by course, teacher and branch; **Set up reasons** edits the list of leave reasons staff pick when removing a student. **Graduates**: who finished, with fields for IELTS, CEFR, university and employment to record what happened to them. **Students**: attendance and performance across the centre.",
+            "**Left students**: churn rate, how many left, lost revenue and average lifetime, with leavers by month, by reason, by course, teacher and branch; **Set up reasons** edits the list of leave reasons staff pick when removing a student. **Graduates**: who finished, with fields for IELTS, CEFR, university and employment to record what happened to them. **Issue certificate** on a graduate's row makes their certificate: a numbered sheet with the centre's logo, the student's name, the course title and level and a QR code; **Print** saves it as PDF or prints it, and anyone who scans the code or opens the link sees whether the certificate is valid. **Revoke** withdraws it; the public page then says so. The student gets the link on Telegram and sees it on their personal page under Results. **Students**: attendance and performance across the centre.",
           ],
         },
         center: {

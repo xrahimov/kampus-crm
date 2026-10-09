@@ -463,7 +463,9 @@
     "trialConverted": "The lead already joined the group; the trial is closed.",
     "telegramNotConfigured": "This centre's Telegram bot is not set up (Settings → Integrations → Telegram).",
     "waitlistDuplicate": "This phone is already waiting for this course.",
-    "waitlistClosed": "This entry is already enrolled."
+    "waitlistClosed": "This entry is already enrolled.",
+    "certificateExists": "This graduate already has a certificate",
+    "certificateRevoked": "This certificate is already revoked"
   },
   "validation": {
     "phone": "Enter a number like +998 90 123 45 67.",
@@ -3344,6 +3346,18 @@
         "university": "Went to university",
         "employed": "Employed",
         "note": "Note"
+      },
+      "certificate": {
+        "number": "Certificate {number}",
+        "issue": "Issue certificate",
+        "revoke": "Revoke",
+        "title": "Certificate for {name}",
+        "hint": "The paper shows the centre's logo, the student's name, this title and level, the dates of the course and a QR code anyone can scan to check it.",
+        "titleField": "Title",
+        "level": "Level",
+        "issuedAt": "Issued on",
+        "revokeTitle": "Revoke the certificate?",
+        "revokeText": "Certificate {number} of {name} will be marked as withdrawn. The public page will say so; the printed paper stays as it is."
       }
     },
     "leads": {
@@ -4023,6 +4037,10 @@
           "update": "Waiting list entry changed",
           "offer": "Seats offered to the waiting list",
           "enrol": "Enrolled from the waiting list"
+        },
+        "certificate": {
+          "issue": "Certificate issued",
+          "revoke": "Certificate revoked"
         }
       }
     }
@@ -4470,7 +4488,11 @@
       "missed": "Missed",
       "pending": "Not graded yet",
       "passed": "Passed",
-      "failed": "Not passed"
+      "failed": "Not passed",
+      "certificates": "Certificates",
+      "certificateMeta": "No. {number} · {date}",
+      "openCertificate": "Open",
+      "certificateHint": "Anyone can open this link to check your certificate. Share it where you like."
     },
     "schedule": {
       "empty": "The group has no fixed lesson times.",
@@ -4607,7 +4629,8 @@
     "leadCallsLine": "• {name} — {phone} ({when})",
     "leadCallsMore": "… and {count} more",
     "announcement": "📢 {title}\n\n{body}\n\n— {from}",
-    "waitlistOffer": "{group} is opening: {days} {time}, from {date}. Call the centre to take your seat."
+    "waitlistOffer": "{group} is opening: {days} {time}, from {date}. Call the centre to take your seat.",
+    "certificate": "{org}: your certificate “{title}” is ready. Open or share it here: {url}"
   },
   "video": {
     "title": "Video lesson",
@@ -4767,5 +4790,32 @@
     "signupIntro": "Leave your name and phone number, and {organization} will call you back.",
     "signupClosed": "Call us or write to us and we will sign you up.",
     "courseInterest": "Course: {name}"
+  },
+  "certificate": {
+    "heading": "Certificate",
+    "confirms": "This is to certify that",
+    "completed": "has successfully completed the course",
+    "level": "Level",
+    "period": "Course",
+    "issuedOn": "Issued on",
+    "number": "No.",
+    "teacher": "Teacher",
+    "director": "Director",
+    "verify": "Scan the code to check this certificate",
+    "revoked": "Revoked",
+    "print": "Print",
+    "back": "Back to graduates",
+    "check": {
+      "title": "Certificate check",
+      "valid": "Valid certificate",
+      "revoked": "This certificate was revoked",
+      "notFound": "No such certificate",
+      "notFoundHint": "Check the link or the QR code on the paper. The centre that issued it can help.",
+      "student": "Issued to",
+      "course": "Course",
+      "level": "Level",
+      "issuedOn": "Issued on",
+      "number": "Number"
+    }
   }
 }

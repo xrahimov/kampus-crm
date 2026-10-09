@@ -39,6 +39,8 @@ export interface GraduateRowDto {
   /** Last group exam score as "score/max", or null. */
   examResult: string | null;
   result: GraduateResultDto | null;
+  /** The graduate's certificate (A-140), if one was issued. */
+  certificate: { id: string; number: string; code: string; revokedAt: string | null } | null;
 }
 
 export interface GraduatesReportDto {
@@ -63,6 +65,7 @@ export interface GraduatesReportDto {
 const include = {
   student: { select: { fullName: true } },
   graduate: true,
+  certificate: { select: { id: true, number: true, code: true, revokedAt: true } },
   group: {
     select: {
       id: true,
@@ -146,6 +149,14 @@ export async function getGraduatesReport(
     graduatedAt: dateToIso(m.leftAt!),
     examResult: examOf.get(`${m.studentId}:${m.group.id}`) ?? null,
     result: m.graduate ? resultDto(m.graduate) : null,
+    certificate: m.certificate
+      ? {
+          id: m.certificate.id,
+          number: m.certificate.number,
+          code: m.certificate.code,
+          revokedAt: m.certificate.revokedAt ? m.certificate.revokedAt.toISOString() : null,
+        }
+      : null,
   }));
   const withResult = rows.map((r) => r.result).filter((r): r is GraduateResultDto => r !== null);
   const ielts = withResult.map((r) => r.ieltsScore).filter((x): x is number => x !== null);
