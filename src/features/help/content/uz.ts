@@ -597,6 +597,39 @@ export const uz: HelpContent = {
         },
       },
     },
+    absences: {
+      title: "Kelmayotganlar",
+      summary:
+        "O‘quvchi ketib qolishidan oldin payqash: kim kelmay qo‘ydi, kim qo‘ng‘iroq qildi va nima dedi.",
+      sections: {
+        list: {
+          title: "Kelmayotganlar ro‘yxati",
+          body: [
+            "**Kelmayotganlar** guruhga kelmay qo‘ygan har bir faol o‘quvchini ko‘rsatadi: guruh va uning o‘qituvchisi, sabab (ketma-ket qoldirilgan darslar yoki uzoq vaqt bitta ham «keldi» belgisi yo‘qligi), qaysi kundan beri, oxirgi kelgan darsi, kim oxirgi marta bog‘langani va natijasi. O‘quvchi davomati qoidalarga tushgan zahoti ro‘yxatda paydo bo‘ladi va yana «keldi» deb belgilansa yoki guruhdan chiqsa ro‘yxatdan chiqadi; hech narsa qo‘lda ochilmaydi va yopilmaydi.",
+            "Ro‘yxat ustidagi kartochkalar ro‘yxatdagilarni, hali qo‘ng‘iroq qilinmaganlarni va har bir qoidaga tushganlarni sanaydi. **Ko‘rsatish** ro‘yxatni ochiq, qo‘ng‘iroq qilinmagan yoki yopilganlarga toraytiradi; **Sabab** bitta qoidani tanlaydi; qidiruv ism yoki telefonni topadi. **Excel** ro‘yxatni ko‘ringanicha yuklab beradi. Yangi holatlar har kuni ertalab filial menejerlariga qo‘ng‘iroqchada bildiriladi, dushanba ertalab esa xodimlar Telegramiga har bir filial bo‘yicha xulosa keladi.",
+          ],
+        },
+        contact: {
+          title: "Qo‘ng‘iroqlar va natijalar",
+          body: [
+            {
+              steps: [
+                "Qator menyusini ochib **Qo‘ng‘iroq qilib natijani yozish**ni (telefon raqamlari — havola) yoki tashrif, xabar yoki izoh uchun **Aloqani yozish**ni tanlang.",
+                "O‘quvchi bilan qanday bog‘langaningizni va natijani ko‘rsating: javob bermadi, qaytadi, kasal, guruhdan ketmoqda yoki boshqa; istasangiz izoh qo‘shing.",
+                "Qatorda oxirgi aloqa va kim qilgani ko‘rinadi, shunda bitta oilaga ikki marta qo‘ng‘iroq qilinmaydi. **Tarix** barcha aloqalarni ko‘rsatadi.",
+              ],
+            },
+            "Ketishini aytgan o‘quvchi kimdir guruh sahifasida uning a’zoligini tugatmaguncha ro‘yxatda qoladi; qaytgan o‘quvchi keyingi «keldi» belgisi bilan **Qaytdi** deb yopiladi.",
+          ],
+        },
+        rules: {
+          title: "Qoidalar",
+          body: [
+            "Har bir markaz o‘z qoidalarini Sozlamalar → Markaz sozlamalari → **Kelmayotganlar nazorati** bo‘limida belgilaydi: necha dars ketma-ket qoldirilgach o‘quvchi ro‘yxatga tushadi (belgilanmagan darslar va sababli qoldirishlar hisobga olinmaydi) va necha kun «keldi» belgisi bo‘lmasa — faqat guruh shu vaqt ichida kamida ikki marta yig‘ilgan bo‘lsa, shuning uchun o‘qituvchisi davomat qo‘ymaydigan guruh ham ro‘yxatga tushadi. Bo‘sh qoldirilgan maydon qoidani o‘chiradi.",
+          ],
+        },
+      },
+    },
     exams: {
       title: "Imtihonlar",
       summary:

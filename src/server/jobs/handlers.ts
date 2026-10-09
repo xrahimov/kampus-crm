@@ -1,5 +1,10 @@
 import type { DbClient } from "@/server/db/prisma";
 import {
+  runDailyAbsenceFollowUp,
+  runWeeklyAbsenceSummary,
+  weeklyAbsenceSummaryDue,
+} from "@/server/services/absences/absences.service";
+import {
   getAmoCrmClient,
   getTelegramNotifier,
   saveAmoCrmTokens,
@@ -34,6 +39,7 @@ export const JOB_TYPES = [
   "auto-sms.daily",
   "telegram.reminders",
   "telegram.weeklyReport",
+  "telegram.absenceSummary",
   "amocrm.pushLead",
   "amocrm.importLead",
 ] as const;
@@ -71,6 +77,8 @@ export function registerJobHandlers(): void {
     // Debt collection (A-112): reconcile the cases, then Telegram → SMS → manager task.
     await runDailyDebtCollection(db, day);
     await runInstalmentReminders(db, day);
+    // Absence follow-up (A-125): open and close the cases, tell the managers about new ones.
+    await runDailyAbsenceFollowUp(db, day);
     // Old lesson recordings go once a day too (Settings → Integrations → Video lessons).
     const purged = await purgeOldRecordings(db);
     if (purged > 0) console.log(`[worker] deleted ${purged} old lesson recording(s)`);
@@ -85,6 +93,13 @@ export function registerJobHandlers(): void {
     const { date } = payloadOf<{ date?: string }>(payload);
     if (!date) throw new Error("telegram.weeklyReport without date");
     await runWeeklyReports(db, date);
+  });
+
+  // The Monday morning absence summary for the staff feed (A-125).
+  registerJobHandler("telegram.absenceSummary", async (payload, db) => {
+    const { date } = payloadOf<{ date?: string }>(payload);
+    if (!date) throw new Error("telegram.absenceSummary without date");
+    await runWeeklyAbsenceSummary(db, date);
   });
 
   registerJobHandler("amocrm.pushLead", async (payload, db) => {
@@ -132,6 +147,15 @@ export async function ensureDailyJob(
       type: "telegram.weeklyReport",
       payload: { date: weekly.date },
       uniqueKey: weekly.key,
+    });
+  }
+  // The absence summary for the staff feed, once per Monday morning (A-125).
+  const absences = weeklyAbsenceSummaryDue();
+  if (absences) {
+    await enqueue(db, {
+      type: "telegram.absenceSummary",
+      payload: { date: absences.date },
+      uniqueKey: absences.key,
     });
   }
 }

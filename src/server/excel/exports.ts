@@ -8,6 +8,7 @@ import { getMonthGrid } from "@/server/services/groups/lessons.service";
 import { listMembers } from "@/server/services/groups/memberships.service";
 import type { GroupDto } from "@/server/services/groups/groups.service";
 import type { LeadDto } from "@/server/services/leads/leads.service";
+import type { AbsenceCaseDto } from "@/server/services/absences/absences.service";
 import type { DebtCaseDto } from "@/server/services/debts/debts.service";
 import type { PayrollRunDto } from "@/server/services/finance/payroll.service";
 import type { StaffDto } from "@/server/services/staff/staff.service";
@@ -337,6 +338,46 @@ export function debtRows(t: Translator, items: DebtCaseDto[]): Row[] {
     status: t(`debts.status.${d.status}`),
   }));
 }
+
+/** The absence list (A-125), one row per case, as the page shows it. */
+export function absenceRows(t: Translator, items: AbsenceCaseDto[]): Row[] {
+  return items.map((d, i) => ({
+    index: i + 1,
+    fullName: d.studentName,
+    phone: d.phone,
+    group: d.groupName,
+    teacher: d.teacher,
+    reason: t(`absences.reasonShort.${d.reason}`),
+    missedLessons: d.missed,
+    absentSince: d.sinceAt,
+    lastPresent: d.lastPresentAt,
+    lastContact: d.lastContactAt
+      ? list([
+          d.lastContactAt.slice(0, 10),
+          d.lastChannel ? t(`absences.channels.${d.lastChannel}`) : null,
+          d.lastOutcome ? t(`absences.outcomes.${d.lastOutcome}`) : null,
+          d.lastContactBy,
+        ])
+      : null,
+    status: d.closedReason
+      ? t(`absences.closed.${d.closedReason}`)
+      : t(`absences.status.${d.status}`),
+  }));
+}
+
+export const ABSENCE_COLUMNS = [
+  "index",
+  "fullName",
+  "phone",
+  "group",
+  "teacher",
+  "reason",
+  "missedLessons",
+  "absentSince",
+  "lastPresent",
+  "lastContact",
+  "status",
+];
 
 export const DEBT_COLUMNS = [
   "index",

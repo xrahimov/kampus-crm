@@ -38,6 +38,20 @@ const cadenceDays = z
   ])
   .optional();
 
+/** Absence follow-up rules (A-125); an empty field switches the rule off. */
+const absenceCount = (max: number) =>
+  z
+    .union([
+      z.literal("").transform(() => null),
+      z.null(),
+      z.coerce
+        .number()
+        .int("validation.integer")
+        .min(1, "validation.min")
+        .max(max, "validation.max"),
+    ])
+    .optional();
+
 /** Public page (A-121): an empty field clears the value. */
 const publicText = (max: number) =>
   z
@@ -96,6 +110,9 @@ export const orgSettingsSchema = z
     debtTelegramDays: cadenceDays,
     debtSmsDays: cadenceDays,
     debtTaskDays: cadenceDays,
+    /** Absence follow-up (A-125): lessons missed in a row, and days without a present mark. */
+    absenceStreak: absenceCount(10),
+    absenceSilentDays: absenceCount(90),
     /** Referral programme (A-120): so'm given to the referrer when a friend joins; 0 = coins only. */
     referralBonus: z.coerce
       .number()

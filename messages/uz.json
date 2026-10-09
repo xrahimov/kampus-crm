@@ -46,6 +46,7 @@
     "groups": "Guruhlar",
     "timetable": "Dars jadvali",
     "students": "O‘quvchilar",
+    "absences": "Kelmayotganlar",
     "debts": "Qarzdorlar",
     "cashdesk": "Kassa",
     "exams": "Imtihonlar",
@@ -301,7 +302,8 @@
     "signInCodeWrong": "Kod noto‘g‘ri. Qaytadan urinib ko‘ring.",
     "signInCodeExpired": "Kod muddati tugadi yoki juda ko‘p marta noto‘g‘ri kiritildi. Qaytadan kiring.",
     "signInCodeFailed": "Kodni Telegramga yuborib bo‘lmadi. Administratordan kirish kodini o‘chirib qo‘yishni so‘rang.",
-    "passwordChangeRequired": "Avval o‘z parolingizni tanlang."
+    "passwordChangeRequired": "Avval o‘z parolingizni tanlang.",
+    "absenceCaseClosed": "Bu holat allaqachon yopilgan."
   },
   "validation": {
     "phone": "+998 90 123 45 67 ko‘rinishida raqam kiriting.",
@@ -470,6 +472,15 @@
         "sms": "SMS",
         "task": "Filial menejerlariga vazifa",
         "days": "kundan keyin",
+        "off": "o‘chiq"
+      },
+      "absence": {
+        "title": "Kelmayotganlar nazorati",
+        "hint": "O‘quvchi qachon «Kelmayotganlar» ro‘yxatiga tushadi. Bo‘sh qoldirilsa, qoida o‘chadi.",
+        "streak": "Ketma-ket qoldirilgan darslar",
+        "silent": "«Keldi» belgisisiz kunlar",
+        "lessons": "dars",
+        "days": "kun",
         "off": "o‘chiq"
       },
       "referral": {
@@ -1747,6 +1758,96 @@
     },
     "empty": "Qarzdorlar yo‘q.",
     "emptyHint": "O‘quvchi filialdagi balansi minusga tushishi bilan shu yerda paydo bo‘ladi va to‘lagach ro‘yxatdan chiqadi."
+  },
+  "absences": {
+    "title": "Kelmayotganlar",
+    "description": "Darsga kelmay qo‘ygan o‘quvchilar: qanchadan beri yo‘q, nega ro‘yxatda va ular bilan oxirgi marta kim bog‘langan.",
+    "count": "{count, plural, =0 {Ro‘yxat bo‘sh} other {# o‘quvchi}}",
+    "summary": {
+      "open": "Ro‘yxatda",
+      "noContact": "Qo‘ng‘iroq qilinmagan",
+      "streak": "Ketma-ket qoldirgan",
+      "silent": "{days} kun ko‘rinmagan",
+      "silentOff": "Uzoq vaqt ko‘rinmagan"
+    },
+    "filters": {
+      "status": "Ko‘rsatish",
+      "reason": "Sabab",
+      "search": "Ism yoki telefon",
+      "OPEN": "Ochiq",
+      "NO_CONTACT": "Qo‘ng‘iroq qilinmagan",
+      "CLOSED": "Yopilgan",
+      "ALL": "Barchasi",
+      "anyReason": "Barcha sabablar",
+      "STREAK": "Ketma-ket qoldirgan",
+      "SILENT": "Ko‘rinmagan"
+    },
+    "columns": {
+      "student": "O‘quvchi",
+      "group": "Guruh",
+      "absence": "Qoldirish",
+      "lastSeen": "Oxirgi kelgan kuni",
+      "lastContact": "Oxirgi aloqa"
+    },
+    "reason": {
+      "STREAK": "ketma-ket {count} dars qoldirilgan",
+      "SILENT": "{count} darsda «keldi» belgisi yo‘q"
+    },
+    "reasonShort": {
+      "STREAK": "Ketma-ket",
+      "SILENT": "Ko‘rinmagan"
+    },
+    "since": "{date} dan",
+    "days": "{count} kun",
+    "never": "Hech qachon «keldi» deb belgilanmagan",
+    "teacher": "O‘qituvchi: {name}",
+    "noContact": "Hali hech kim qo‘ng‘iroq qilmagan",
+    "by": "— {name}",
+    "status": {
+      "OPEN": "Ochiq",
+      "CLOSED": "Yopilgan"
+    },
+    "closed": {
+      "RETURNED": "Qaytdi",
+      "LEFT": "Guruhdan chiqdi",
+      "CLEARED": "Endi ro‘yxatda emas"
+    },
+    "channels": {
+      "CALL": "Qo‘ng‘iroq",
+      "TELEGRAM": "Telegram",
+      "SMS": "SMS",
+      "VISIT": "O‘zi keldi",
+      "NOTE": "Izoh"
+    },
+    "outcomes": {
+      "NO_ANSWER": "Javob bermadi",
+      "WILL_RETURN": "Qaytadi",
+      "ILL": "Kasal",
+      "LEAVING": "Guruhdan ketmoqda",
+      "OTHER": "Boshqa"
+    },
+    "actions": {
+      "call": "Qo‘ng‘iroq qilib natijani yozish",
+      "log": "Aloqani yozish",
+      "history": "Tarix",
+      "profile": "O‘quvchini ochish",
+      "group": "Guruhni ochish"
+    },
+    "dialog": {
+      "title": "Aloqa: {name}",
+      "channel": "Qanday",
+      "outcome": "Natija",
+      "none": "Ko‘rsatilmagan",
+      "note": "Izoh",
+      "parentPhone": "ota-ona"
+    },
+    "history": {
+      "title": "Tarix: {name}",
+      "loading": "Yuklanmoqda…",
+      "empty": "Hali aloqa yozilmagan."
+    },
+    "empty": "Bu yerda darsni qoldirayotganlar yo‘q.",
+    "emptyHint": "O‘quvchi ketma-ket darslarni qoldirsa yoki uzoq vaqt «keldi» belgisi bo‘lmasa (qoidalar Sozlamalar → Markaz sozlamalari da) ro‘yxatga tushadi, qaytgach ro‘yxatdan chiqadi."
   },
   "discounts": {
     "title": "Chegirmalar",
@@ -3331,6 +3432,9 @@
           "contact": "Qarzdor bilan aloqa yozildi",
           "remind": "Qarz eslatmasi yuborildi"
         },
+        "absence": {
+          "contact": "Kelmayotgan o‘quvchi bilan aloqa yozildi"
+        },
         "referral": {
           "credit": "Tavsiya hisobga olindi"
         },
@@ -3565,7 +3669,8 @@
       "groupsTemplate": "guruhlar-shablon",
       "parentsTemplate": "ota-onalar-shablon",
       "debtors": "qarzdorlar",
-      "referralsReport": "tavsiya-dasturi"
+      "referralsReport": "tavsiya-dasturi",
+      "absences": "absences"
     },
     "example": {
       "fullName": "<mijoz ismi>",
@@ -3685,7 +3790,10 @@
       "lastContact": "Oxirgi aloqa",
       "leads": "Lidlar",
       "joined": "Qo‘shildi",
-      "coins": "Coinlar"
+      "coins": "Coinlar",
+      "missedLessons": "Qoldirilgan darslar",
+      "absentSince": "Kelmagan sana",
+      "lastPresent": "Oxirgi kelgan kuni"
     },
     "preview": "Oldindan ko'rish: {count} qator import qilinadi, {skipped} qator o'tkazib yuboriladi. Hali hech narsa yozilmadi.",
     "previewButton": "Oldindan ko'rish",
@@ -3735,7 +3843,8 @@
       "DEBTORS": "Bugun {count} o'quvchi qarzdor",
       "BIRTHDAY": "Bugun {name} tug'ilgan kuni",
       "DEBT_TASK": "{count} qarzdor {days} kundan beri qo‘ng‘iroq kutmoqda",
-      "DEBT_PROMISE_BROKEN": "{name} {date} gacha {amount} to‘lashga va’da bergan edi, to‘lamadi"
+      "DEBT_PROMISE_BROKEN": "{name} {date} gacha {amount} to‘lashga va’da bergan edi, to‘lamadi",
+      "ABSENCES": "{count} o‘quvchi darsga kelmay qo‘ydi: qo‘ng‘iroq qiling"
     }
   },
   "portal": {
@@ -3894,7 +4003,10 @@
     "absentComment": "Telegram orqali{reason, select, none {} other {: {reason}}}",
     "instalment": "{group}: to‘lovning {amount} qismi {date} gacha to‘lanishi kerak. O‘quv markazida yoki o‘z sahifangizdan to‘lashingiz mumkin.",
     "signInCode": "Kampus: kirish kodingiz — {code}. U 5 daqiqa amal qiladi. Agar siz kirmoqchi bo‘lmagan bo‘lsangiz, parolni o‘zgartiring.",
-    "signInAlert": "Kampus: {name} hisobiga {when} da {device} orqali yangi kirish, IP {ip}. Agar bu siz bo‘lmasangiz, parolni o‘zgartiring va hisob sahifasida barcha qurilmalardan chiqing."
+    "signInAlert": "Kampus: {name} hisobiga {when} da {device} orqali yangi kirish, IP {ip}. Agar bu siz bo‘lmasangiz, parolni o‘zgartiring va hisob sahifasida barcha qurilmalardan chiqing.",
+    "absenceWeeklyTitle": "Davomat, {branch}, {from} – {to}: ro‘yxatda {open} o‘quvchi, {noContact} tasiga hali qo‘ng‘iroq qilinmagan. Shu hafta: yangi {opened}, qaytgan {returned}, ketgan {left}.",
+    "absenceWeeklyLine": "• {student}, {group}: {days} kundan beri kelmaydi",
+    "absenceWeeklyMore": "… va yana {count} o‘quvchi"
   },
   "video": {
     "title": "Video dars",

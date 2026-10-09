@@ -38,6 +38,8 @@ function toDto(
     debtTelegramDays: settings.debtTelegramDays,
     debtSmsDays: settings.debtSmsDays,
     debtTaskDays: settings.debtTaskDays,
+    absenceStreak: settings.absenceStreak,
+    absenceSilentDays: settings.absenceSilentDays,
     referralBonus: settings.referralBonus,
     publicPage: settings.publicPage,
     publicSlug: settings.publicSlug,
@@ -80,6 +82,9 @@ export async function updateOrgSettings(
     debtTelegramDays: input.debtTelegramDays,
     debtSmsDays: input.debtSmsDays,
     debtTaskDays: input.debtTaskDays,
+    // Absence follow-up rules (A-125): the same convention.
+    absenceStreak: input.absenceStreak,
+    absenceSilentDays: input.absenceSilentDays,
     // Referral programme (A-120): the bonus a student earns when a friend they invited joins.
     referralBonus: input.referralBonus,
     // Public page (A-121); a field left out keeps its value, "" clears it.

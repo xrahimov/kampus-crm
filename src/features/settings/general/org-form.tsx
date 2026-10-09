@@ -184,6 +184,38 @@ export function OrgForm({
             </div>
           </fieldset>
 
+          <fieldset className="space-y-3" data-testid="absence-rules">
+            <legend className="text-sm font-medium">{t("settings.general.absence.title")}</legend>
+            <p className="text-xs text-muted-foreground">{t("settings.general.absence.hint")}</p>
+            <div className="grid gap-4 sm:grid-cols-2">
+              {(["absenceStreak", "absenceSilentDays"] as const).map((key) => (
+                <div key={key} className="space-y-2">
+                  <Label htmlFor={`absence-${key}`}>
+                    {t(`settings.general.absence.${key === "absenceStreak" ? "streak" : "silent"}`)}
+                  </Label>
+                  <div className="flex items-center gap-2">
+                    <Input
+                      id={`absence-${key}`}
+                      type="number"
+                      min={1}
+                      max={key === "absenceStreak" ? 10 : 90}
+                      className="w-24"
+                      placeholder={t("settings.general.absence.off")}
+                      aria-invalid={!!errors[key]}
+                      {...form.register(key)}
+                    />
+                    <span className="text-sm text-muted-foreground">
+                      {t(
+                        `settings.general.absence.${key === "absenceStreak" ? "lessons" : "days"}`,
+                      )}
+                    </span>
+                  </div>
+                  <FieldError id={`absence-${key}-error`} message={errors[key]?.message} />
+                </div>
+              ))}
+            </div>
+          </fieldset>
+
           <fieldset className="space-y-3" data-testid="referral-settings">
             <legend className="text-sm font-medium">{t("settings.general.referral.title")}</legend>
             <p className="text-xs text-muted-foreground">{t("settings.general.referral.hint")}</p>

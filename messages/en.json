@@ -46,6 +46,7 @@
     "groups": "Groups",
     "timetable": "Timetable",
     "students": "Students",
+    "absences": "Absences",
     "debts": "Debtors",
     "cashdesk": "Cash desk",
     "exams": "Exams",
@@ -301,7 +302,8 @@
     "signInCodeWrong": "Wrong code. Try again.",
     "signInCodeExpired": "The code has expired or was entered wrongly too often. Sign in again.",
     "signInCodeFailed": "The code could not be sent to Telegram. Ask an administrator to switch the sign-in code off for you.",
-    "passwordChangeRequired": "Choose your own password first."
+    "passwordChangeRequired": "Choose your own password first.",
+    "absenceCaseClosed": "This case is already closed."
   },
   "validation": {
     "phone": "Enter a number like +998 90 123 45 67.",
@@ -469,6 +471,15 @@
         "telegram": "Telegram message to the student after",
         "sms": "SMS after",
         "task": "Task for the branch managers after",
+        "days": "days",
+        "off": "off"
+      },
+      "absence": {
+        "title": "Absence follow-up",
+        "hint": "When a student lands on the Absences list. Leave a field empty to switch that rule off.",
+        "streak": "Absences in a row",
+        "silent": "Days without a present mark",
+        "lessons": "lessons",
         "days": "days",
         "off": "off"
       },
@@ -1747,6 +1758,96 @@
     },
     "empty": "No debtors here.",
     "emptyHint": "A student appears as soon as their balance in the branch is short, and leaves the list once it is paid."
+  },
+  "absences": {
+    "title": "Absences",
+    "description": "Students who stopped coming: how long they have been away, why they are on the list and who last reached them.",
+    "count": "{count, plural, =0 {Nobody on the list} one {# student} other {# students}}",
+    "summary": {
+      "open": "On the list",
+      "noContact": "Nobody has called",
+      "streak": "Missing in a row",
+      "silent": "Not seen for {days} days",
+      "silentOff": "Not seen for a while"
+    },
+    "filters": {
+      "status": "Show",
+      "reason": "Reason",
+      "search": "Name or phone",
+      "OPEN": "Open",
+      "NO_CONTACT": "Nobody has called",
+      "CLOSED": "Closed",
+      "ALL": "All",
+      "anyReason": "Any reason",
+      "STREAK": "Missing in a row",
+      "SILENT": "Not seen"
+    },
+    "columns": {
+      "student": "Student",
+      "group": "Group",
+      "absence": "Absence",
+      "lastSeen": "Last present",
+      "lastContact": "Last contact"
+    },
+    "reason": {
+      "STREAK": "{count, plural, one {# lesson missed in a row} other {# lessons missed in a row}}",
+      "SILENT": "{count, plural, one {# lesson} other {# lessons}} without a present mark"
+    },
+    "reasonShort": {
+      "STREAK": "Missing in a row",
+      "SILENT": "Not seen"
+    },
+    "since": "since {date}",
+    "days": "{count, plural, one {# day} other {# days}}",
+    "never": "Never marked present",
+    "teacher": "Teacher: {name}",
+    "noContact": "Nobody has called yet",
+    "by": "by {name}",
+    "status": {
+      "OPEN": "Open",
+      "CLOSED": "Closed"
+    },
+    "closed": {
+      "RETURNED": "Came back",
+      "LEFT": "Left the group",
+      "CLEARED": "No longer flagged"
+    },
+    "channels": {
+      "CALL": "Call",
+      "TELEGRAM": "Telegram",
+      "SMS": "SMS",
+      "VISIT": "Came in",
+      "NOTE": "Note"
+    },
+    "outcomes": {
+      "NO_ANSWER": "No answer",
+      "WILL_RETURN": "Will come back",
+      "ILL": "Ill",
+      "LEAVING": "Leaving the group",
+      "OTHER": "Other"
+    },
+    "actions": {
+      "call": "Call and log the outcome",
+      "log": "Log a contact",
+      "history": "History",
+      "profile": "Open the student",
+      "group": "Open the group"
+    },
+    "dialog": {
+      "title": "Contact: {name}",
+      "channel": "How",
+      "outcome": "Outcome",
+      "none": "Not set",
+      "note": "Note",
+      "parentPhone": "parent"
+    },
+    "history": {
+      "title": "History: {name}",
+      "loading": "Loading…",
+      "empty": "No contacts recorded yet."
+    },
+    "empty": "Nobody is missing lessons here.",
+    "emptyHint": "A student appears after missing lessons in a row or after a while without a present mark, by the rules under Settings → Centre settings, and leaves the list once they are back."
   },
   "discounts": {
     "title": "Discounts",
@@ -3331,6 +3432,9 @@
           "contact": "Debtor contacted",
           "remind": "Debt reminder sent"
         },
+        "absence": {
+          "contact": "Absent student contacted"
+        },
         "referral": {
           "credit": "Referral credited"
         },
@@ -3565,7 +3669,8 @@
       "groupsTemplate": "groups-template",
       "parentsTemplate": "parents-template",
       "debtors": "debtors",
-      "referralsReport": "referral-programme"
+      "referralsReport": "referral-programme",
+      "absences": "absences"
     },
     "example": {
       "fullName": "<client name>",
@@ -3685,7 +3790,10 @@
       "lastContact": "Last contact",
       "leads": "Leads",
       "joined": "Joined",
-      "coins": "Coins"
+      "coins": "Coins",
+      "missedLessons": "Lessons missed",
+      "absentSince": "Away since",
+      "lastPresent": "Last present"
     },
     "preview": "Preview: {count} rows would be imported and {skipped} skipped. Nothing has been written yet.",
     "previewButton": "Preview",
@@ -3735,7 +3843,8 @@
       "DEBTORS": "{count} students owe money today",
       "BIRTHDAY": "{name} has a birthday today",
       "DEBT_TASK": "{count, plural, one {# debtor has} other {# debtors have}} waited {days} days without a call",
-      "DEBT_PROMISE_BROKEN": "{name} promised to pay {amount} by {date} and has not"
+      "DEBT_PROMISE_BROKEN": "{name} promised to pay {amount} by {date} and has not",
+      "ABSENCES": "{count, plural, one {# student stopped} other {# students stopped}} coming to lessons: call them"
     }
   },
   "portal": {
@@ -3894,7 +4003,10 @@
     "absentComment": "Via Telegram{reason, select, none {} other {: {reason}}}",
     "instalment": "{group}: a part of the fee, {amount}, is due by {date}. Please pay at the learning centre or from your page.",
     "signInCode": "Kampus: your sign-in code is {code}. It is valid for 5 minutes. If you did not try to sign in, change your password.",
-    "signInAlert": "Kampus: new sign-in for {name} at {when} from {device}, IP {ip}. If this was not you, change your password and sign out everywhere on your account page."
+    "signInAlert": "Kampus: new sign-in for {name} at {when} from {device}, IP {ip}. If this was not you, change your password and sign out everywhere on your account page.",
+    "absenceWeeklyTitle": "Absences, {branch}, {from} – {to}: {open} on the list, {noContact} without a call yet. This week: {opened} new, {returned} came back, {left} left.",
+    "absenceWeeklyLine": "• {student}, {group}: away for {days} days",
+    "absenceWeeklyMore": "… and {count} more"
   },
   "video": {
     "title": "Video lesson",
