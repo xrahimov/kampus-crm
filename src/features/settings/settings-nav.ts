@@ -26,6 +26,7 @@ export const SETTINGS_NAV: SettingsNavItem[] = [
   { key: "daysOff", href: "/settings/days-off", permission: "settings.catalog" },
   { key: "schools", href: "/settings/schools", permission: "settings.catalog" },
   { key: "staff", href: "/settings/staff", permission: "staff.view" },
+  { key: "migration", href: "/settings/migration", permission: "students.create" },
   { key: "roles", href: "/settings/roles", permission: "settings.roles" },
   { key: "sms", href: "/settings/sms", permission: "settings.catalog" },
   { key: "receipt", href: "/settings/receipt", permission: "settings.org" },

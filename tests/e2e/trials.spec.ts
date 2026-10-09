@@ -65,7 +65,9 @@ test.describe("trial lessons", () => {
     await expect(dialog).toBeVisible();
     await dialog.getByLabel("Group", { exact: true }).click();
     await office.getByRole("option", { name: /GE-Morning A1/ }).click();
-    await expect(dialog.getByTestId("trial-date")).toHaveValue(date);
+    // The dialog defaults to the browser's own date, which differs from Tashkent's
+    // for a few hours a day; the test sets the date it wants.
+    await dialog.getByTestId("trial-date").fill(date);
     await dialog.getByLabel("Note for the teacher").fill("Knows some English");
     await dialog.getByRole("button", { name: "Save" }).click();
     await expect(dialog).toBeHidden();

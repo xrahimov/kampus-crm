@@ -1020,6 +1020,12 @@ export const uz: HelpContent = {
             "**Tizimga kirishlar**: kim, qaysi manzildan kirgani va muvaffaqiyatsiz urinishlar. **Amallar tarixi**: xodimlar qilgan har bir o‘zgarish, yangilari yuqorida, yozuv turi va odam bilan; tur, odam va sanalar bo‘yicha saralang. **Yuborilgan SMS lar**: har bir xabar holati bilan. **Qo‘ng‘iroqlar**: telefoniya integratsiyasidan qo‘ng‘iroqlar jurnali. **To‘lovlar**: to‘lovlar jurnali. Jurnallarni tahrirlab bo‘lmaydi.",
           ],
         },
+        migration: {
+          title: "SOFF CRM’dan import",
+          body: [
+            "Ko‘p o‘zbek markazlari SOFF CRM’da ishlaydi va uning har bir ro‘yxatida EXCEL tugmasi bor. Sozlamalar → **SOFF CRM’dan import** shu fayllarni birma-bir oladi: faylni tashlang, Kampus bu qaysi ro‘yxat ekanini aytadi (xodimlar, guruhlar, o‘quvchilar yoki o‘quvchi to‘lovlari), qaysi ustun qayerga tushishini va qaysilarini e‘tiborsiz qoldirishini ko‘rsatadi va yozishdan oldin ko‘rib chiqishni beradi. Tartib: xodimlar (har biri bir marta ko‘rsatiladigan vaqtinchalik parol oladi), guruhlar (kurs va o‘qituvchi nomi bo‘yicha topiladi, shuning uchun avval kurslarni yarating), o‘quvchilar (guruhlari shu oyning 1-sanasidan a‘zolik bo‘ladi, balansi boshlang‘ich qoldiq bo‘ladi, shuning uchun o‘tgan davr uchun hech kimga hisob yozilmaydi) va o‘quvchi to‘lovlari (har bir o‘quvchi ostida **Oldingi tizimdagi to‘lovlar** sifatida saqlanadi, balansni o‘zgartirmaydi). Fayl allaqachon olib kelgan qatorlar o‘tkazib yuboriladi, shuning uchun faylni tuzatib qayta yuklash mumkin.",
+          ],
+        },
       },
     },
     integrations: {
