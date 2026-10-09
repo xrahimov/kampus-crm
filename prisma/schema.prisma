@@ -97,6 +97,12 @@ enum Gender {
   FEMALE
 }
 
+/// Second step of the sign-in (A-124): nothing, or a code sent to the person's Telegram chat.
+enum SignInCode {
+  OFF
+  TELEGRAM
+}
+
 /// How a teacher is paid (EXP §4 "Maosh hisoblash usuli"); see A-12.
 enum SalaryMethod {
   PERCENT
@@ -106,33 +112,39 @@ enum SalaryMethod {
 }
 
 model User {
-  id             String        @id @default(cuid())
+  id                 String        @id @default(cuid())
   /// The centre this account belongs to; a login is scoped to it (A-108).
-  organizationId String
-  fullName       String
-  phone          String        @unique // E.164, e.g. +998901234567
-  passwordHash   String
-  gender         Gender        @default(MALE)
-  birthDate      DateTime?     @db.Date
-  hireDate       DateTime?     @db.Date
-  photoUrl       String?
-  salaryMethod   SalaryMethod?
-  fixedSalary    Decimal?      @db.Decimal(15, 2) // MONTHLY: UZS per month
-  percentShare   Decimal?      @db.Decimal(5, 2) // PERCENT: % of course price
-  perLessonFee   Decimal?      @db.Decimal(15, 2) // PER_LESSON: UZS per lesson
-  perStudentFee  Decimal?      @db.Decimal(15, 2) // PER_STUDENT: UZS per active student
-  isArchived     Boolean       @default(false)
+  organizationId     String
+  fullName           String
+  phone              String        @unique // E.164, e.g. +998901234567
+  passwordHash       String
+  gender             Gender        @default(MALE)
+  birthDate          DateTime?     @db.Date
+  hireDate           DateTime?     @db.Date
+  photoUrl           String?
+  salaryMethod       SalaryMethod?
+  fixedSalary        Decimal?      @db.Decimal(15, 2) // MONTHLY: UZS per month
+  percentShare       Decimal?      @db.Decimal(5, 2) // PERCENT: % of course price
+  perLessonFee       Decimal?      @db.Decimal(15, 2) // PER_LESSON: UZS per lesson
+  perStudentFee      Decimal?      @db.Decimal(15, 2) // PER_STUDENT: UZS per active student
+  isArchived         Boolean       @default(false)
   /// The person who runs the server: may create organisations for other centres (A-108).
-  isSiteOwner    Boolean       @default(false)
-  createdAt      DateTime      @default(now())
-  updatedAt      DateTime      @updatedAt
+  isSiteOwner        Boolean       @default(false)
+  /// Someone else chose the password (a new account, an admin reset): the user picks their own at the next sign-in (A-124).
+  mustChangePassword Boolean       @default(false)
+  passwordChangedAt  DateTime?
+  /// A one-time code by Telegram is asked for after the password (A-124).
+  signInCode         SignInCode    @default(OFF)
+  createdAt          DateTime      @default(now())
+  updatedAt          DateTime      @updatedAt
 
-  organization Organization @relation(fields: [organizationId], references: [id])
-  roles        UserRole[]
-  branches     UserBranch[]
-  sessions     Session[]
-  loginLogs    LoginLog[]
-  auditLogs    AuditLog[]
+  organization    Organization     @relation(fields: [organizationId], references: [id])
+  roles           UserRole[]
+  branches        UserBranch[]
+  sessions        Session[]
+  loginLogs       LoginLog[]
+  loginChallenges LoginChallenge[]
+  auditLogs       AuditLog[]
 
   groupsTaught    GroupTeacher[]
   groupsSupported GroupSupportTeacher[] @relation("supportOf")
@@ -269,6 +281,25 @@ model LoginLog {
 
   @@index([userId, createdAt])
   @@index([createdAt])
+}
+
+/// A sign-in that passed the password and waits for the Telegram code (A-124).
+/// Deleted once used, expired or after too many wrong codes.
+model LoginChallenge {
+  id             String   @id
+  userId         String
+  codeHash       String
+  attempts       Int      @default(0)
+  activeBranchId String?
+  ip             String?
+  userAgent      String?
+  expiresAt      DateTime
+  createdAt      DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([expiresAt])
 }
 
 // ---------------------------------------------------------------------------

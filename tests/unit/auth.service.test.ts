@@ -10,6 +10,13 @@ import { prisma } from "@/server/db/prisma";
 import { AppError } from "@/server/errors/app-error";
 import { login, logout, setActiveBranch } from "@/server/services/auth.service";
 
+/** The tests here sign in without a Telegram code: the outcome is always a session. */
+async function signIn(input: Parameters<typeof login>[0], ctx: Parameters<typeof login>[1]) {
+  const outcome = await login(input, ctx);
+  if (outcome.kind !== "session") throw new Error("expected a session, got a challenge");
+  return outcome.issued;
+}
+
 const PHONE = "+998901110001";
 const LOCKED_PHONE = "+998901110002";
 const PASSWORD = "test-password-1";
@@ -56,7 +63,7 @@ afterAll(async () => {
 
 describe("login", () => {
   it("issues a session whose token hash is stored and resolves back to the user", async () => {
-    const issued = await login({ phone: PHONE, password: PASSWORD }, { ip: "10.0.0.1" });
+    const issued = await signIn({ phone: PHONE, password: PASSWORD }, { ip: "10.0.0.1" });
     expect(issued.token).toHaveLength(43);
     expect(issued.session.activeBranchId).toBe(branchA); // single branch → preselected
 
@@ -106,7 +113,7 @@ describe("login", () => {
   });
 
   it("expired sessions are not returned", async () => {
-    const issued = await login({ phone: PHONE, password: PASSWORD }, { ip: "10.0.0.4" });
+    const issued = await signIn({ phone: PHONE, password: PASSWORD }, { ip: "10.0.0.4" });
     await prisma.session.update({
       where: { id: issued.session.id },
       data: { expiresAt: new Date(Date.now() - 1000) },
@@ -115,7 +122,7 @@ describe("login", () => {
   });
 
   it("logout revokes the session", async () => {
-    const issued = await login({ phone: PHONE, password: PASSWORD }, { ip: "10.0.0.5" });
+    const issued = await signIn({ phone: PHONE, password: PASSWORD }, { ip: "10.0.0.5" });
     await logout(issued.session.id);
     expect(await findSessionByToken(prisma, issued.token)).toBeNull();
   });
@@ -133,7 +140,7 @@ describe("setActiveBranch", () => {
   });
 
   it("allows one of the user's branches and rejects others or 'all'", async () => {
-    const issued = await login({ phone: PHONE, password: PASSWORD }, { ip: "10.0.0.6" });
+    const issued = await signIn({ phone: PHONE, password: PASSWORD }, { ip: "10.0.0.6" });
     await setActiveBranch(actor(), issued.session.id, branchA);
     await expect(setActiveBranch(actor(), issued.session.id, branchB)).rejects.toMatchObject({
       code: "FORBIDDEN",
@@ -147,7 +154,7 @@ describe("setActiveBranch", () => {
   });
 
   it("lets an org-wide actor pick any branch or all", async () => {
-    const issued = await login({ phone: PHONE, password: PASSWORD }, { ip: "10.0.0.7" });
+    const issued = await signIn({ phone: PHONE, password: PASSWORD }, { ip: "10.0.0.7" });
     const ceo = { ...actor(), permissions: ["*"], branchIds: [branchA, branchB] };
     await setActiveBranch(ceo, issued.session.id, branchB);
     await setActiveBranch(ceo, issued.session.id, null);

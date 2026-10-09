@@ -63,7 +63,49 @@
     "signingIn": "Kirilmoqda…",
     "signOut": "Chiqish",
     "signedInAs": "Foydalanuvchi",
-    "role": "Rol"
+    "role": "Rol",
+    "codeTitle": "Kodni kiriting",
+    "codeSubtitle": "Olti xonali kod Telegramingizga yuborildi. U besh daqiqa amal qiladi.",
+    "code": "Telegramdagi kod",
+    "confirmCode": "Tasdiqlash",
+    "startOver": "Qaytadan boshlash",
+    "changePasswordTitle": "O‘z parolingizni tanlang",
+    "changePasswordSubtitle": "Kirgan parolingizni administrator bergan. Faqat o‘zingiz biladigan yangi parol tanlang.",
+    "currentPassword": "Joriy parol",
+    "newPassword": "Yangi parol",
+    "confirmPassword": "Yangi parolni takrorlang",
+    "savePassword": "Parolni saqlash",
+    "passwordSaved": "Parol o‘zgartirildi. Boshqa qurilmalaringiz tizimdan chiqarildi.",
+    "passwordHint": "Kamida 8 belgi; boshqa joyda ishlatmaydigan parol bo‘lsin."
+  },
+  "account": {
+    "title": "Mening hisobim",
+    "description": "Parolingiz, kirish kodi va tizimga kirgan qurilmalaringiz.",
+    "password": {
+      "title": "Parol",
+      "changed": "Oxirgi o‘zgartirish: {date}",
+      "never": "Hisob yaratilganidan beri o‘zgartirilmagan"
+    },
+    "signInCode": {
+      "title": "Telegram orqali kirish kodi",
+      "label": "Telegram orqali kod so‘ralsin",
+      "hint": "Paroldan keyin Telegramingizga olti xonali kod yuboriladi. To‘lov qabul qilsangiz yoki markazni boshqarsangiz, yoqib qo‘ying.",
+      "on": "Har kirishda kod so‘raladi.",
+      "off": "Faqat parol so‘raladi.",
+      "needsTelegram": "Telegramingiz hali bog‘lanmagan. Administratordan sizni Sozlamalar → Bot xabarnomalariga qo‘shishni so‘rang."
+    },
+    "sessions": {
+      "title": "Qurilmalar",
+      "hint": "Hozir qayerda kirganingiz. Yangi qurilma yoki manzildan kirish Telegramingizga xabar qilinadi.",
+      "device": "Qurilma",
+      "address": "Manzil",
+      "lastSeen": "Oxirgi faollik",
+      "signedIn": "Kirgan vaqti",
+      "current": "Shu qurilma",
+      "signOut": "Chiqish",
+      "signOutOthers": "Boshqa barcha qurilmalardan chiqish",
+      "signedOutOthers": "{count, plural, =0 {Boshqa qurilma yo‘q edi.} one {# boshqa qurilmadan chiqildi.} other {# boshqa qurilmadan chiqildi.}}"
+    }
   },
   "branch": {
     "select": "Filial",
@@ -255,7 +297,11 @@
     "importParentExists": "Bu ota-ona o‘quvchiga allaqachon qo‘shilgan",
     "debtCaseClosed": "Bu qarz allaqachon yopilgan.",
     "scheduleClash": "Bu vaqtda xona yoki o‘qituvchi band.",
-    "familyOther": "Bu o‘quvchi allaqachon boshqa oilada."
+    "familyOther": "Bu o‘quvchi allaqachon boshqa oilada.",
+    "signInCodeWrong": "Kod noto‘g‘ri. Qaytadan urinib ko‘ring.",
+    "signInCodeExpired": "Kod muddati tugadi yoki juda ko‘p marta noto‘g‘ri kiritildi. Qaytadan kiring.",
+    "signInCodeFailed": "Kodni Telegramga yuborib bo‘lmadi. Administratordan kirish kodini o‘chirib qo‘yishni so‘rang.",
+    "passwordChangeRequired": "Avval o‘z parolingizni tanlang."
   },
   "validation": {
     "phone": "+998 90 123 45 67 ko‘rinishida raqam kiriting.",
@@ -351,7 +397,13 @@
     "instalmentsMax": "Ko‘pi bilan uch qism.",
     "instalmentsSum": "Qismlar yig‘indisi oylik to‘lovga teng bo‘lishi kerak.",
     "instalmentsDays": "Har bir qismning o‘z kuni bo‘lishi kerak.",
-    "percent": "0 dan 100 gacha butun son kiriting."
+    "percent": "0 dan 100 gacha butun son kiriting.",
+    "code": "Olti xonali kodni kiriting.",
+    "wrongPassword": "Joriy parol noto‘g‘ri.",
+    "passwordSame": "Yangi parol joriy paroldan farq qilishi kerak.",
+    "passwordMatch": "Parollar mos kelmadi.",
+    "signInCodeNeedsTelegram": "Avval Telegramni bog‘lang (Sozlamalar → Bot xabarnomalari).",
+    "currentSession": "Bu siz ishlayotgan qurilma; «Chiqish»dan foydalaning."
   },
   "roles": {
     "CEO": "CEO",
@@ -722,8 +774,14 @@
       "password": "Parol",
       "newPassword": "Yangi parol",
       "keepPassword": "O'zgartirmaslik uchun bo'sh qoldiring",
-      "generate": "Yaratish"
-    }
+      "generate": "Yaratish",
+      "safety": "Hisob xavfsizligi",
+      "signInCode": "Kirishda Telegram kodi so‘ralsin",
+      "signInCodeHint": "Xodimning Telegrami Sozlamalar → Bot xabarnomalarida bo‘lishi kerak.",
+      "signOutAll": "Barcha qurilmalardan chiqarish",
+      "signedOutAll": "Hamma joydan chiqarildi."
+    },
+    "temporaryPassword": "Vaqtinchalik parol"
   },
   "permissions": {
     "modules": {
@@ -3210,7 +3268,8 @@
         "staff": {
           "create": "Xodim yaratildi",
           "update": "Xodim yangilandi",
-          "archive": "Xodim arxivlandi"
+          "archive": "Xodim arxivlandi",
+          "signOutAll": "Barcha qurilmalardan chiqarildi"
         },
         "staffAttendance": {
           "set": "Xodim davomati belgilandi"
@@ -3231,7 +3290,8 @@
         "teacher": {
           "create": "O'qituvchi yaratildi",
           "update": "O'qituvchi yangilandi",
-          "archive": "O'qituvchi arxivlandi"
+          "archive": "O'qituvchi arxivlandi",
+          "signOutAll": "Barcha qurilmalardan chiqarildi"
         },
         "test": {
           "create": "Test yaratildi",
@@ -3287,6 +3347,11 @@
           "link": "Oilaga bog‘landi",
           "unlink": "Oiladan chiqarildi",
           "update": "Oila o‘zgartirildi"
+        },
+        "auth": {
+          "passwordChange": "Parol o‘zgartirildi",
+          "signOutAll": "Barcha qurilmalardan chiqildi",
+          "signInCode": "Kirish kodi o‘zgartirildi"
         }
       }
     }
@@ -3827,7 +3892,9 @@
     "absentPresent": "{group}, bugun {time}: o‘qituvchi allaqachon kelgan deb belgilagan, hech narsa o‘zgarmadi.",
     "absentNoLesson": "Bugun dars yo‘q.{next, select, none {} other { Keyingi dars: {next}.}}",
     "absentComment": "Telegram orqali{reason, select, none {} other {: {reason}}}",
-    "instalment": "{group}: to‘lovning {amount} qismi {date} gacha to‘lanishi kerak. O‘quv markazida yoki o‘z sahifangizdan to‘lashingiz mumkin."
+    "instalment": "{group}: to‘lovning {amount} qismi {date} gacha to‘lanishi kerak. O‘quv markazida yoki o‘z sahifangizdan to‘lashingiz mumkin.",
+    "signInCode": "Kampus: kirish kodingiz — {code}. U 5 daqiqa amal qiladi. Agar siz kirmoqchi bo‘lmagan bo‘lsangiz, parolni o‘zgartiring.",
+    "signInAlert": "Kampus: {name} hisobiga {when} da {device} orqali yangi kirish, IP {ip}. Agar bu siz bo‘lmasangiz, parolni o‘zgartiring va hisob sahifasida barcha qurilmalardan chiqing."
   },
   "video": {
     "title": "Video dars",

@@ -2,6 +2,7 @@ import { z } from "zod";
 
 import { PERMISSIONS, type Permission } from "@/lib/rbac/permissions";
 
+import { SIGN_IN_CODES } from "./auth";
 import { idSchema, passwordSchema, phoneSchema } from "./common";
 import { dateOnlySchema } from "./settings";
 
@@ -57,6 +58,8 @@ export type StaffCreateInput = z.infer<typeof staffCreateSchema>;
 export const staffUpdateSchema = staffBase.partial().extend({
   password: passwordSchema.optional().or(z.literal("").transform(() => undefined)),
   isArchived: z.boolean().optional(),
+  /** Whether a Telegram code is asked for after the password (A-124). */
+  signInCode: z.enum(SIGN_IN_CODES).optional(),
 });
 export type StaffUpdateInput = z.infer<typeof staffUpdateSchema>;
 

@@ -107,6 +107,14 @@ export function route(
 
       if (options.auth !== false) {
         if (!current) throw AppError.unauthenticated();
+        // Until the person has picked their own password, only the account
+        // endpoints answer (A-124); the pages redirect to the same place.
+        if (
+          current.user.mustChangePassword &&
+          !request.nextUrl.pathname.startsWith("/api/v1/auth/")
+        ) {
+          throw AppError.forbidden("errors.passwordChangeRequired");
+        }
         if (options.permission) authorize(current.actor, options.permission);
       }
 

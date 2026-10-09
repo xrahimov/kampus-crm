@@ -103,6 +103,22 @@ export const uz: HelpContent = {
             "Rolingizga ruxsat berilmagan sahifani ochsangiz, u **Ruxsat yo‘q** deb yozadi. Huquq kerak bo‘lsa, administratoringizdan so‘rang; rollar Sozlamalar → Rollar bo‘limida sozlanadi.",
           ],
         },
+        account: {
+          title: "Hisobingiz va uning xavfsizligi",
+          body: [
+            "Yuqori o‘ng burchakdagi ismingizni ochib **Mening hisobim**ni tanlang. Sahifada parolingiz, Telegram orqali kirish kodi va tizimga kirgan qurilmalaringiz bor.",
+            {
+              steps: [
+                "**Parol.** Administrator hisobingizni yaratganda yoki parolni tiklaganda u vaqtinchalik bo‘ladi: birinchi kirishda o‘z parolingizni tanlaydigan sahifa ochiladi. Uni bu yerda istalgan vaqt o‘zgartirsangiz bo‘ladi; o‘zgartirilganda boshqa barcha qurilmalardan chiqiladi.",
+                "**Telegram orqali kirish kodi.** Tugma yoqilgan bo‘lsa, har kirishda paroldan keyin Telegramingizga yuborilgan olti xonali kod so‘raladi. Buning uchun chatingiz Sozlamalar → Bot xabarnomalariga qo‘shilgan bo‘lishi kerak. Rahbar, kassir va administratorlarga tavsiya etiladi.",
+                "**Qurilmalar.** Ro‘yxatda qayerda kirganingiz ko‘rinadi. **Boshqa barcha qurilmalardan chiqish** shu qurilmadan tashqari barcha seanslarni yakunlaydi; telefon yoki kompyuter yo‘qolganda foydalaning. Yangi qurilma yoki manzildan kirish Telegramingizga xabar qilinadi.",
+              ],
+            },
+            {
+              note: "Administrator hamkasbiga Telegram kodini yoqib, uni barcha qurilmalardan chiqarib yuborishi mumkin: Sozlamalar → Xodimlar bo‘limidagi xodim formasidan.",
+            },
+          ],
+        },
         help: {
           title: "Bu yordamdan foydalanish",
           body: [

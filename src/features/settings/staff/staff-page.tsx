@@ -181,9 +181,14 @@ export function StaffPage({
               {page.items.map((person) => (
                 <TableRow key={person.id} data-testid="staff-row">
                   <TableCell className="font-medium">
-                    <span className="inline-flex items-center gap-3">
+                    <span className="inline-flex flex-wrap items-center gap-3">
                       <Avatar src={person.photoUrl} name={person.fullName} />
                       {person.fullName}
+                      {person.mustChangePassword && (
+                        <Badge variant="muted" data-testid="temporary-password">
+                          {t("staff.temporaryPassword")}
+                        </Badge>
+                      )}
                     </span>
                   </TableCell>
                   <TableCell className="tabular-nums whitespace-nowrap">{person.phone}</TableCell>

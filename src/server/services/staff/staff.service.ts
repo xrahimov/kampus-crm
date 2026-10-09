@@ -10,6 +10,7 @@ import {
 } from "@/lib/validation/staff";
 import type { Prisma } from "@/generated/prisma/client";
 import { recordAudit } from "@/server/audit/audit";
+import { requireTelegramChat } from "@/server/services/account.service";
 import { hashPassword } from "@/server/auth/password";
 import { prisma, type DbClient } from "@/server/db/prisma";
 import { AppError } from "@/server/errors/app-error";
@@ -57,6 +58,12 @@ export interface StaffDto {
   createdAt: string;
   roles: Array<{ code: string; name: string }>;
   branches: Array<{ id: string; name: string }>;
+  /** Account safety (A-124). */
+  signInCode: "OFF" | "TELEGRAM";
+  /** The bot knows the person's chat (Settings → Bot notifications): the code and the alerts can reach them. */
+  telegramLinked: boolean;
+  /** The person still signs in with a password someone else chose. */
+  mustChangePassword: boolean;
 }
 
 export interface StaffFilters {
@@ -76,6 +83,7 @@ export interface RoleCount {
 const include = {
   roles: { include: { role: { select: { code: true, name: true } } } },
   branches: { include: { branch: { select: { id: true, name: true } } } },
+  botRecipient: { select: { id: true } },
 };
 
 type Row = NonNullable<
@@ -101,6 +109,9 @@ export function toStaffDto(row: Row): StaffDto {
     createdAt: row.createdAt.toISOString(),
     roles: row.roles.map((r) => r.role),
     branches: row.branches.map((b) => b.branch),
+    signInCode: row.signInCode,
+    telegramLinked: row.botRecipient !== null,
+    mustChangePassword: row.mustChangePassword,
   };
 }
 
@@ -277,6 +288,8 @@ export async function createStaff(
           fullName: input.fullName,
           phone: input.phone,
           passwordHash,
+          // The creator chose this password: the person picks their own at the first sign-in (A-124).
+          mustChangePassword: true,
           gender: input.gender,
           birthDate: input.birthDate ? isoToDate(input.birthDate) : null,
           hireDate: input.hireDate ? isoToDate(input.hireDate) : null,
@@ -329,6 +342,7 @@ export async function updateStaff(
     input.branchIds !== undefined ? resolveBranches(db, actor, input.branchIds) : undefined,
     input.password ? hashPassword(input.password) : undefined,
   ]);
+  if (input.signInCode === "TELEGRAM") await requireTelegramChat(db, id);
   const method =
     input.salaryMethod !== undefined ? (input.salaryMethod ?? null) : before.salaryMethod;
   const salary =
@@ -366,13 +380,22 @@ export async function updateStaff(
             : {}),
           ...(input.photoUrl !== undefined ? { photoUrl: input.photoUrl ?? null } : {}),
           ...(input.isArchived !== undefined ? { isArchived: input.isArchived } : {}),
-          ...(passwordHash ? { passwordHash } : {}),
+          // A password set by someone else is temporary (A-124); your own is final.
+          ...(passwordHash
+            ? self
+              ? { passwordHash, mustChangePassword: false, passwordChangedAt: new Date() }
+              : { passwordHash, mustChangePassword: true }
+            : {}),
+          ...(input.signInCode !== undefined ? { signInCode: input.signInCode } : {}),
           ...salary,
         },
         include,
       });
-      // Archiving ends every session so the user is signed out at once.
-      if (input.isArchived) await tx.session.deleteMany({ where: { userId: id } });
+      // Archiving ends every session so the user is signed out at once; so does a
+      // password reset by someone else, since whoever held the old password is out.
+      if (input.isArchived || (passwordHash && !self)) {
+        await tx.session.deleteMany({ where: { userId: id } });
+      }
       const after = toStaffDto(row);
       await recordAudit(tx, actor, {
         action: `${scope === "teachers" ? "teacher" : "staff"}.${input.isArchived ? "archive" : "update"}`,
@@ -398,4 +421,26 @@ export async function archiveStaff(
 ): Promise<void> {
   authorize(actor, perm(scope, "delete"));
   await updateStaff(actor, scope, id, { isArchived: true }, db);
+}
+
+/** "Sign out of all devices" on the staff form (A-124): every session of the person ends. */
+export async function signOutEverywhere(
+  actor: Actor,
+  scope: StaffScope,
+  id: string,
+  db: DbClient = prisma,
+): Promise<number> {
+  authorize(actor, perm(scope, "update"));
+  const existing = await findInScope(db, actor, scope, id);
+  return db.$transaction(async (tx) => {
+    const { count } = await tx.session.deleteMany({ where: { userId: id } });
+    await recordAudit(tx, actor, {
+      action: `${scope === "teachers" ? "teacher" : "staff"}.signOutAll`,
+      entity: "User",
+      entityId: id,
+      after: { sessions: count },
+      branchId: existing.branches[0]?.branchId ?? null,
+    });
+    return count;
+  });
 }
