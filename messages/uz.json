@@ -1038,7 +1038,8 @@
         "changeTeacher": "O'qituvchi o'zgartirildi",
         "supportTeachers": "Support o'qituvchilar o'zgartirildi",
         "dayOff": "Dam berildi",
-        "note": "Eslatma qo'shildi"
+        "note": "Eslatma qo'shildi",
+        "dayOffRemove": "Dam olish kuni bekor qilindi"
       }
     },
     "homework": {
@@ -2855,7 +2856,8 @@
           "supportTeachers": "Yordamchi o'qituvchilar o'zgartirildi",
           "moveBranch": "Guruh boshqa filialga ko'chirildi",
           "dayOff": "Guruh dam olish kuni belgilandi",
-          "note": "Guruh izohi qo'shildi"
+          "note": "Guruh izohi qo'shildi",
+          "dayOffRemove": "Guruh dam olish kuni bekor qilindi"
         },
         "integration": {
           "update": "Integratsiya sozlamalari yangilandi"

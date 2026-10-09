@@ -1038,7 +1038,8 @@
         "changeTeacher": "Teacher changed",
         "supportTeachers": "Support teachers changed",
         "dayOff": "Day off given",
-        "note": "Note added"
+        "note": "Note added",
+        "dayOffRemove": "Day off undone"
       }
     },
     "homework": {
@@ -2855,7 +2856,8 @@
           "supportTeachers": "Support teachers changed",
           "moveBranch": "Group moved to another branch",
           "dayOff": "Group day off set",
-          "note": "Group note added"
+          "note": "Group note added",
+          "dayOffRemove": "Group day off undone"
         },
         "integration": {
           "update": "Integration settings updated"
