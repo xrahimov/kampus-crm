@@ -306,7 +306,7 @@ export const en: HelpContent = {
         tabs: {
           title: "What the tabs are for",
           body: [
-            "**Attendance** and **Grades**: a month per tab, students in rows and lessons in columns. **Homework** and **Materials**: what students see on their personal page. **Tests** and **Knowledge analysis**: tests given to the group and how students did by topic. **Exams**: the group's exams, with a button to add one. **Discounts**: a lower monthly price for a student for a number of months. **Coins**: the ranking and giving coins. **Comments**: notes about individual students. **Notes**: notes about the group. **History**: every change, who made it and when.",
+            "**Attendance** and **Grades**: a month per tab, students in rows and lessons in columns. **Homework** and **Materials**: what students see on their personal page. **Syllabus**: the course's topics in order, which ones this group has covered and which comes next. **Tests** and **Knowledge analysis**: tests given to the group and how students did by topic. **Exams**: the group's exams, with a button to add one. **Discounts**: a lower monthly price for a student for a number of months. **Coins**: the ranking and giving coins. **Comments**: notes about individual students. **Notes**: notes about the group. **History**: every change, who made it and when.",
             "The teacher's view of attendance, grades, homework, materials and coins is described step by step in “Teaching a group”.",
           ],
         },
@@ -334,7 +334,7 @@ export const en: HelpContent = {
         day: {
           title: "What Today shows",
           body: [
-            "Teachers land on **Today** after signing in. It lists the lessons of the day for the groups you teach or support, in order of time, with the course, the room and the topic. The arrows at the top move a day back or forward; the office sees every group of the branch here.",
+            "Teachers land on **Today** after signing in. It lists the lessons of the day for the groups you teach or support, in order of time, with the course, the room and the topic. A lesson without a topic shows the next topic of the course syllabus with a **Use it** button; marking attendance takes it anyway. The arrows at the top move a day back or forward; the office sees every group of the branch here.",
             "Below the lessons sit the **next lesson** after now and the **debtors in your groups** with what they owe. A friendly word after the lesson helps; payments are taken by the office.",
           ],
         },
@@ -973,7 +973,7 @@ export const en: HelpContent = {
         catalog: {
           title: "Courses, rooms, days off, schools",
           body: [
-            "**Courses**: a course has a name, a branch, a monthly price, a length in months, a colour and a grading system; groups are created from courses. Grading systems (CEFR, IELTS, 1 to 5, 0 to 100 or your own) are set up on the same page. **Rooms**: a name and a capacity per branch; the home page's schedule is built from them. **Days off**: branch-wide holidays on which no lesson is planned. **Schools**: the schools students attend, for the student form and the filters.",
+            "**Courses**: a course has a name, a branch, a monthly price, a length in months, a colour and a grading system; groups are created from courses. Grading systems (CEFR, IELTS, 1 to 5, 0 to 100 or your own) are set up on the same page. **Syllabus** in a course's row menu holds its topics, one per line in teaching order; a group's lessons take the next uncovered topic when attendance is marked, the group's Syllabus tab shows the progress, and the lesson topic dialog can pick a topic from the list. **Rooms**: a name and a capacity per branch; the home page's schedule is built from them. **Days off**: branch-wide holidays on which no lesson is planned. **Schools**: the schools students attend, for the student form and the filters.",
           ],
         },
         sms: {

@@ -259,6 +259,24 @@ function LessonCard({
   const present = Object.values(marks).filter((s) => s === "PRESENT").length;
   const refresh = () => startTransition(() => router.refresh());
 
+  /** Takes the group's next syllabus topic for this lesson (A-137). */
+  async function takeSuggested() {
+    if (!canMark || !lesson.suggestedTopic) return;
+    setBusy(true);
+    setError(null);
+    try {
+      await api(`/lessons/${lesson.id}`, {
+        method: "PATCH",
+        body: { courseTopicId: lesson.suggestedTopic.id },
+      });
+      refresh();
+    } catch (e) {
+      setError(e instanceof ApiError ? e.message : "errors.internal");
+    } finally {
+      setBusy(false);
+    }
+  }
+
   async function send(next: Array<{ membershipId: string; status: AttendanceStatus }>) {
     if (!canMark || next.length === 0) return;
     const before = marks;
@@ -354,6 +372,27 @@ function LessonCard({
               {lesson.teacherNames.length > 0 && <span>{lesson.teacherNames.join(", ")}</span>}
             </p>
             {lesson.topic && <p className="mt-1 text-sm">{lesson.topic}</p>}
+            {!lesson.topic && lesson.suggestedTopic && (
+              <p
+                className="mt-1 flex flex-wrap items-center gap-2 text-sm"
+                data-testid="today-suggested-topic"
+              >
+                <span className="text-muted-foreground">
+                  {t("lesson.suggested", { title: lesson.suggestedTopic.title })}
+                </span>
+                {canMark && (
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    disabled={busy}
+                    onClick={() => void takeSuggested()}
+                    data-testid="today-use-topic"
+                  >
+                    {t("lesson.useTopic")}
+                  </Button>
+                )}
+              </p>
+            )}
           </div>
           {canMark && total > 0 && marked < total && (
             <Button size="sm" onClick={allPresent} disabled={busy} data-testid="today-all-present">

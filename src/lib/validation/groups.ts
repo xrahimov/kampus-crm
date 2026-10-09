@@ -118,6 +118,8 @@ export const extraLessonSchema = z
   .refine((s) => s.endTime > s.startTime, { message: "validation.workHours", path: ["endTime"] });
 export const lessonUpdateSchema = z.object({
   topic: z.string().trim().max(500, "validation.tooLong").nullable().optional(),
+  /** A topic of the group's course syllabus (A-137); null clears it. */
+  courseTopicId: z.string().max(50).nullable().optional(),
   attachmentUrl: z.string().max(500).nullable().optional(),
 });
 export const attendanceSchema = z.object({

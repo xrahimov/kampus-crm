@@ -6,6 +6,7 @@ import { authorize, can, type Actor } from "@/server/rbac/authorize";
 import { groupScope } from "@/server/services/groups/shared";
 import { trialsOfDay, type TodayTrialDto } from "@/server/services/leads/trials.service";
 import { dateToIso, isoToDate } from "@/server/services/settings/shared";
+import { nextTopicForGroup } from "@/server/services/settings/syllabus.service";
 import { membershipBalances } from "@/server/services/students/balances";
 
 /*
@@ -58,7 +59,10 @@ export interface TodayLessonDto {
   startTime: string;
   endTime: string;
   roomName: string | null;
+  /** The free-text topic, else the syllabus topic's title (A-137). */
   topic: string | null;
+  /** The group's next uncovered syllabus topic, offered while the lesson has none. */
+  suggestedTopic: { id: string; title: string } | null;
   isExtra: boolean;
   teacherNames: string[];
   members: TodayMemberDto[];
@@ -101,10 +105,12 @@ export interface TodayDto {
 }
 
 const lessonInclude = {
+  courseTopic: { select: { title: true } },
   group: {
     select: {
       id: true,
       name: true,
+      courseId: true,
       course: { select: { name: true, color: true } },
       slots: { select: { weekday: true, startTime: true, room: { select: { name: true } } } },
       teachers: { select: { user: { select: { fullName: true } } }, orderBy: { since: "asc" } },
@@ -208,6 +214,14 @@ export async function getToday(
     byGroup.set(m.groupId, list);
   }
 
+  // The next uncovered syllabus topic per group, offered on lessons without one (A-137).
+  const suggestions = new Map<string, { id: string; title: string }>();
+  for (const l of lessons) {
+    if (l.topic || l.courseTopicId || suggestions.has(l.groupId)) continue;
+    const next = await nextTopicForGroup(db, { id: l.groupId, courseId: l.group.courseId });
+    if (next) suggestions.set(l.groupId, { id: next.id, title: next.title });
+  }
+
   const lessonDtos: TodayLessonDto[] = lessons.map((l) => {
     const marks = new Map(l.attendances.map((a) => [a.membershipId, a]));
     const members: TodayMemberDto[] = (byGroup.get(l.groupId) ?? [])
@@ -248,7 +262,8 @@ export async function getToday(
       startTime: l.startTime,
       endTime: l.endTime,
       roomName: roomOf(l, date, l.startTime),
-      topic: l.topic,
+      topic: l.topic ?? l.courseTopic?.title ?? null,
+      suggestedTopic: l.topic || l.courseTopicId ? null : (suggestions.get(l.groupId) ?? null),
       isExtra: l.isExtra,
       teacherNames: l.group.teachers.map((t) => t.user.fullName),
       members,

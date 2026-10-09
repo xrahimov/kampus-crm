@@ -33,6 +33,7 @@ import { creatableBranches, type BranchOption } from "../shared/branch-select";
 import { ListHeader } from "../shared/list-header";
 import { RowActions } from "../shared/row-actions";
 import { CourseDialog } from "./course-dialog";
+import { SyllabusDialog } from "./syllabus-dialog";
 
 export function CoursesPage({
   page,
@@ -62,6 +63,7 @@ export function CoursesPage({
     course: null,
   });
   const [archiving, setArchiving] = useState<CourseDto | null>(null);
+  const [syllabusOf, setSyllabusOf] = useState<CourseDto | null>(null);
   const [importing, setImporting] = useState(false);
   const { options, defaultId } = creatableBranches(
     branches,
@@ -170,6 +172,13 @@ export function CoursesPage({
                         onEdit={() => setDialog({ open: true, course })}
                         onDelete={() => setArchiving(course)}
                         deleteLabel={t("common.archive")}
+                        extra={[
+                          {
+                            label: t("settings.courses.syllabus"),
+                            onSelect: () => setSyllabusOf(course),
+                            testId: "course-syllabus",
+                          },
+                        ]}
                       />
                     )}
                   </TableCell>
@@ -188,6 +197,11 @@ export function CoursesPage({
         branches={options}
         gradingSystems={gradingSystems}
         defaultBranchId={defaultId}
+        onSaved={refresh}
+      />
+      <SyllabusDialog
+        course={syllabusOf}
+        onOpenChange={(open) => !open && setSyllabusOf(null)}
         onSaved={refresh}
       />
       <ConfirmDialog

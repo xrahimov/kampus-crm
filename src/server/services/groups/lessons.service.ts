@@ -2,6 +2,7 @@ import type { Prisma } from "@/generated/prisma/client";
 import type { AttendanceStatus, MembershipStatus } from "@/lib/validation/groups";
 import { recordAudit } from "@/server/audit/audit";
 import { awardAutoCoins } from "@/server/services/coins/coins.service";
+import { assignNextTopic } from "@/server/services/settings/syllabus.service";
 import { queueAutoSms } from "@/server/services/sms/auto-sms.service";
 import { prisma, type DbClient } from "@/server/db/prisma";
 import { AppError } from "@/server/errors/app-error";
@@ -24,6 +25,9 @@ export interface LessonDto {
   startTime: string;
   endTime: string;
   topic: string | null;
+  /** The syllabus topic the lesson covers (A-137); shown when there is no free text. */
+  courseTopicId: string | null;
+  courseTopicTitle: string | null;
   attachmentUrl: string | null;
   isExtra: boolean;
   /** The date this extra lesson was moved from (A-117). */
@@ -74,7 +78,12 @@ export async function getMonthGrid(
   const [lessons, memberships, groupDays, branchDays] = await Promise.all([
     db.lesson.findMany({
       where: { groupId, date: { gte: from, lt: to } },
-      include: { attendances: true, grades: true, movedFrom: { select: { date: true } } },
+      include: {
+        attendances: true,
+        grades: true,
+        movedFrom: { select: { date: true } },
+        courseTopic: { select: { title: true } },
+      },
       orderBy: [{ date: "asc" }, { startTime: "asc" }],
     }),
     db.groupMembership.findMany({
@@ -130,6 +139,8 @@ export async function getMonthGrid(
       startTime: l.startTime,
       endTime: l.endTime,
       topic: l.topic,
+      courseTopicId: l.courseTopicId,
+      courseTopicTitle: l.courseTopic?.title ?? null,
       attachmentUrl: l.attachmentUrl,
       isExtra: l.isExtra,
       movedFrom: l.movedFrom ? dateToIso(l.movedFrom.date) : null,
@@ -155,14 +166,14 @@ export async function getMonthGrid(
 }
 
 type LessonRow = Prisma.LessonGetPayload<{
-  include: { group: { select: { branchId: true; name: true } } };
+  include: { group: { select: { branchId: true; name: true; courseId: true } } };
 }>;
 
 async function findLessonInScope(db: DbClient, actor: Actor, lessonId: string): Promise<LessonRow> {
   const lesson = await mustFind(
     db.lesson.findUnique({
       where: { id: lessonId },
-      include: { group: { select: { branchId: true, name: true } } },
+      include: { group: { select: { branchId: true, name: true, courseId: true } } },
     }),
   );
   if (!actor.branchIds.includes(lesson.group.branchId)) {
@@ -205,6 +216,8 @@ export async function addExtraLesson(
         startTime: row.startTime,
         endTime: row.endTime,
         topic: null,
+        courseTopicId: null,
+        courseTopicTitle: null,
         attachmentUrl: null,
         isExtra: true,
         movedFrom: null,
@@ -217,20 +230,29 @@ export async function addExtraLesson(
   }
 }
 
-/** Topic and attachment on the lesson header ("Mavzular"). */
+/** Topic (free text or a syllabus topic, A-137) and attachment on the lesson header ("Mavzular"). */
 export async function updateLesson(
   actor: Actor,
   lessonId: string,
-  input: { topic?: string | null; attachmentUrl?: string | null },
+  input: { topic?: string | null; courseTopicId?: string | null; attachmentUrl?: string | null },
   db: DbClient = prisma,
 ): Promise<void> {
   authorize(actor, "groups.attendance.mark");
   const lesson = await findLessonInScope(db, actor, lessonId);
+  if (input.courseTopicId) {
+    // Only a topic of this group's own course.
+    const topic = await db.courseTopic.findFirst({
+      where: { id: input.courseTopicId, courseId: lesson.group.courseId },
+      select: { id: true },
+    });
+    if (!topic) throw AppError.validation({ courseTopicId: ["validation.courseTopic"] });
+  }
   await db.$transaction(async (tx) => {
     const row = await tx.lesson.update({
       where: { id: lessonId },
       data: {
         ...(input.topic !== undefined ? { topic: input.topic } : {}),
+        ...(input.courseTopicId !== undefined ? { courseTopicId: input.courseTopicId } : {}),
         ...(input.attachmentUrl !== undefined ? { attachmentUrl: input.attachmentUrl } : {}),
       },
     });
@@ -238,8 +260,16 @@ export async function updateLesson(
       action: "lesson.update",
       entity: "Lesson",
       entityId: lessonId,
-      before: { topic: lesson.topic, attachmentUrl: lesson.attachmentUrl },
-      after: { topic: row.topic, attachmentUrl: row.attachmentUrl },
+      before: {
+        topic: lesson.topic,
+        courseTopicId: lesson.courseTopicId,
+        attachmentUrl: lesson.attachmentUrl,
+      },
+      after: {
+        topic: row.topic,
+        courseTopicId: row.courseTopicId,
+        attachmentUrl: row.attachmentUrl,
+      },
       branchId: lesson.group.branchId,
     });
   });
@@ -272,6 +302,8 @@ export async function markAttendance(
   });
   const studentOf = new Map(members.map((m) => [m.id, m.studentId]));
   await db.$transaction(async (tx) => {
+    // The first marks of a lesson give it the group's next syllabus topic (A-137).
+    await assignNextTopic(tx, lesson);
     for (const mark of marks) {
       await tx.attendance.upsert({
         where: { lessonId_membershipId: { lessonId, membershipId: mark.membershipId } },

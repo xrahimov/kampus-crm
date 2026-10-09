@@ -309,7 +309,7 @@ export const uz: HelpContent = {
         tabs: {
           title: "Yorliqlar nima uchun",
           body: [
-            "**Davomat** va **Baho**: har bir yorliqda bir oy, qatorlarda o‘quvchilar va ustunlarda darslar. **Uy vazifasi** va **Materiallar**: o‘quvchilar shaxsiy sahifasida ko‘radigan narsalar. **Test** va **Bilim tahlili**: guruhga berilgan testlar va o‘quvchilar mavzular bo‘yicha qanday natija ko‘rsatgani. **Imtihonlar**: guruh imtihonlari, qo‘shish tugmasi bilan. **Chegirmalar**: o‘quvchi uchun bir necha oyga pasaytirilgan oylik narx. **Coinlar**: reyting va coin berish. **Izohlar**: alohida o‘quvchilar haqida eslatmalar. **Eslatmalar**: guruh haqida eslatmalar. **Guruh tarixi**: har bir o‘zgarish, kim va qachon qilgani.",
+            "**Davomat** va **Baho**: har bir yorliqda bir oy, qatorlarda o‘quvchilar va ustunlarda darslar. **Uy vazifasi** va **Materiallar**: o‘quvchilar shaxsiy sahifasida ko‘radigan narsalar. **Dastur**: kurs mavzulari tartib bilan, guruh qaysilarini o‘tgani va keyingisi qaysi. **Test** va **Bilim tahlili**: guruhga berilgan testlar va o‘quvchilar mavzular bo‘yicha qanday natija ko‘rsatgani. **Imtihonlar**: guruh imtihonlari, qo‘shish tugmasi bilan. **Chegirmalar**: o‘quvchi uchun bir necha oyga pasaytirilgan oylik narx. **Coinlar**: reyting va coin berish. **Izohlar**: alohida o‘quvchilar haqida eslatmalar. **Eslatmalar**: guruh haqida eslatmalar. **Guruh tarixi**: har bir o‘zgarish, kim va qachon qilgani.",
             "O‘qituvchining davomat, baho, uy vazifasi, materiallar va coinlar bilan ishlashi “Guruhga dars berish” da bosqichma-bosqich tasvirlangan.",
           ],
         },
@@ -337,7 +337,7 @@ export const uz: HelpContent = {
         day: {
           title: "«Bugun» nimani ko‘rsatadi",
           body: [
-            "O‘qituvchilar tizimga kirganidan so‘ng **Bugun** sahifasiga tushadi. Unda siz dars beradigan yoki support qiladigan guruhlarning kun darslari vaqt tartibida, kurs, xona va mavzu bilan ko‘rsatiladi. Yuqoridagi strelkalar kunni oldinga yoki orqaga suradi; ofis bu yerda filialning barcha guruhlarini ko‘radi.",
+            "O‘qituvchilar tizimga kirganidan so‘ng **Bugun** sahifasiga tushadi. Unda siz dars beradigan yoki support qiladigan guruhlarning kun darslari vaqt tartibida, kurs, xona va mavzu bilan ko‘rsatiladi. Mavzusi yo‘q darsda kurs dasturining keyingi mavzusi **Olish** tugmasi bilan ko‘rsatiladi; davomat belgilanganda u o‘zi olinadi. Yuqoridagi strelkalar kunni oldinga yoki orqaga suradi; ofis bu yerda filialning barcha guruhlarini ko‘radi.",
             "Darslar ostida hozirgi vaqtdan keyingi **keyingi dars** va qarz summasi bilan **guruhlaringizdagi qarzdorlar** turadi. Darsdan keyin bir og‘iz eslatish yordam beradi; to‘lovni administrator qabul qiladi.",
           ],
         },
@@ -977,7 +977,7 @@ export const uz: HelpContent = {
         catalog: {
           title: "Kurslar, xonalar, dam olish kunlari, maktablar",
           body: [
-            "**Kurslar**: kursning nomi, filiali, oylik narxi, oylardagi davomiyligi, rangi va baholash tizimi bor; guruhlar kurslardan yaratiladi. Baholash tizimlari (CEFR, IELTS, 1 dan 5 gacha, 0 dan 100 gacha yoki o‘zingizniki) xuddi shu sahifada sozlanadi. **Xonalar**: har bir filial uchun nom va sig‘im; bosh sahifadagi jadval ulardan tuziladi. **Dam olish kunlari**: filial bo‘yicha dars rejalashtirilmaydigan bayramlar. **Maktablar**: o‘quvchilar o‘qiydigan maktablar, o‘quvchi formasi va filtrlar uchun.",
+            "**Kurslar**: kursning nomi, filiali, oylik narxi, oylardagi davomiyligi, rangi va baholash tizimi bor; guruhlar kurslardan yaratiladi. Baholash tizimlari (CEFR, IELTS, 1 dan 5 gacha, 0 dan 100 gacha yoki o‘zingizniki) xuddi shu sahifada sozlanadi. Kurs qatori menyusidagi **Dastur** uning mavzularini saqlaydi, har bir qatorda bir mavzu, o‘qitish tartibida; davomat belgilanganda guruh darslari keyingi o‘tilmagan mavzuni oladi, guruhning «Dastur» yorlig‘i jarayonni ko‘rsatadi, dars mavzusi oynasida esa mavzuni ro‘yxatdan tanlash mumkin. **Xonalar**: har bir filial uchun nom va sig‘im; bosh sahifadagi jadval ulardan tuziladi. **Dam olish kunlari**: filial bo‘yicha dars rejalashtirilmaydigan bayramlar. **Maktablar**: o‘quvchilar o‘qiydigan maktablar, o‘quvchi formasi va filtrlar uchun.",
           ],
         },
         sms: {

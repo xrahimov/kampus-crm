@@ -17,6 +17,7 @@ import {
   listGroupNotes,
 } from "@/server/services/groups/groups.service";
 import { getMonthGrid } from "@/server/services/groups/lessons.service";
+import { getGroupSyllabus } from "@/server/services/settings/syllabus.service";
 import { listGroupHomework } from "@/server/services/homework/homework.service";
 import { listGroupMaterials } from "@/server/services/materials/materials.service";
 import { listMembers } from "@/server/services/groups/memberships.service";
@@ -96,6 +97,7 @@ export default async function Page({ params, searchParams }: Props) {
     video,
     homework,
     materials,
+    syllabus,
   ] = await Promise.all([
     getMonthGrid(current.actor, id, month),
     listMembers(current.actor, id, { archived: str(sp.archived) === "1" }),
@@ -129,6 +131,7 @@ export default async function Page({ params, searchParams }: Props) {
     getGroupVideo(current.actor, id),
     listGroupHomework(current.actor, id),
     listGroupMaterials(current.actor, id),
+    getGroupSyllabus(current.actor, id),
   ]);
 
   return (
@@ -138,6 +141,7 @@ export default async function Page({ params, searchParams }: Props) {
       members={members}
       daysOff={daysOff}
       notes={notes}
+      syllabus={syllabus}
       history={history}
       discounts={discounts}
       comments={comments}

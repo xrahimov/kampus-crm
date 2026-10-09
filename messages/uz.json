@@ -289,7 +289,9 @@
     },
     "lesson": {
       "extra": "Qo'shimcha dars",
-      "noRoom": "Xona belgilanmagan"
+      "noRoom": "Xona belgilanmagan",
+      "suggested": "Dastur bo‘yicha keyingi: {title}",
+      "useTopic": "Olish"
     },
     "attendance": {
       "summary": "{total} dan {marked} belgilandi · {present} keldi",
@@ -538,7 +540,8 @@
     "signInCodeNeedsTelegram": "Avval Telegramni bog‘lang (Sozlamalar → Bot xabarnomalari).",
     "currentSession": "Bu siz ishlayotgan qurilma; «Chiqish»dan foydalaning.",
     "ownerUnknown": "Bu xodim filialda lidlarga mas‘ul bo‘la olmaydi.",
-    "trialOtherBranch": "Guruh liddan boshqa filialda."
+    "trialOtherBranch": "Guruh liddan boshqa filialda.",
+    "courseTopic": "Bu mavzu guruh kursining dasturida yo‘q"
   },
   "roles": {
     "CEO": "CEO",
@@ -721,7 +724,12 @@
       "noGradingSystem": "Sozlanmagan",
       "color": "Rang",
       "archiveTitle": "Kurs arxivlansinmi?",
-      "archiveText": "“{name}” yangi guruhlar uchun ko‘rinmaydi. Mavjud guruhlarda qoladi."
+      "archiveText": "“{name}” yangi guruhlar uchun ko‘rinmaydi. Mavjud guruhlarda qoladi.",
+      "syllabus": "Dastur",
+      "syllabusTitle": "Dastur: {name}",
+      "syllabusHint": "Har bir qatorda bir mavzu, o‘qitish tartibida. Davomat belgilanganda har bir dars keyingi o‘tilmagan mavzuni oladi.",
+      "syllabusTopics": "Mavzular",
+      "syllabusCount": "{count, plural, =0 {Mavzu yo‘q} one {# mavzu} other {# mavzu}}"
     },
     "rooms": {
       "title": "Xonalar",
@@ -1247,7 +1255,8 @@
         "coins": "Coinlar",
         "comments": "Izohlar",
         "homework": "Uy vazifasi",
-        "materials": "Materiallar"
+        "materials": "Materiallar",
+        "syllabus": "Dastur"
       },
       "changeTeacherHint": "Yangi o'qituvchining ulushi bugundan hisoblanadi.",
       "notify": "O'quvchilar va ota-onalarga xabar berish (Telegram va SMS)",
@@ -1276,7 +1285,9 @@
       "moved": "{date}: {newDate}, {start}–{end} ga ko'chirildi — {reason}",
       "holiday": "{date}: filial dam kuni — {reason}",
       "undo": "Qaytarish",
-      "movedFrom": "{date} dan ko'chirilgan"
+      "movedFrom": "{date} dan ko'chirilgan",
+      "syllabusTopic": "Dasturdagi mavzu",
+      "noSyllabusTopic": "— yo‘q —"
     },
     "grades": {
       "system": "Baholash",
@@ -1426,6 +1437,17 @@
       "addedBy": "{name} qo‘shdi",
       "duration": "{minutes} daqiqa",
       "size": "{mb} MB"
+    },
+    "syllabus": {
+      "progress": "{total} mavzudan {done} tasi o‘tildi",
+      "next": "Keyingi mavzu",
+      "empty": "Kursning dasturi hali yo‘q. Mavzularni Sozlamalar → Kurslar → Dastur bo‘limida qo‘shing.",
+      "coveredOn": "{date} o‘tildi",
+      "status": {
+        "done": "O‘tildi",
+        "next": "Keyingi",
+        "planned": "Rejada"
+      }
     }
   },
   "timetable": {
@@ -3615,7 +3637,8 @@
         },
         "course": {
           "create": "Kurs yaratildi",
-          "update": "Kurs yangilandi"
+          "update": "Kurs yangilandi",
+          "syllabus": "Kurs dasturi o‘zgartirildi"
         },
         "dayOff": {
           "create": "Dam olish kuni qo'shildi",
@@ -4312,7 +4335,8 @@
       "date": "Sana",
       "topic": "Mavzu",
       "attendance": "Davomat",
-      "grade": "Baho"
+      "grade": "Baho",
+      "nextTopic": "Keyingi mavzu: {title}"
     },
     "money": {
       "balance": "Balans",
