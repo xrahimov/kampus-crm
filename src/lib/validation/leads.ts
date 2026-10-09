@@ -253,3 +253,20 @@ export const waitlistEnrolSchema = z.object({
   status: z.enum(MEMBERSHIP_STATUSES).default("NEW"),
 });
 export type WaitlistEnrolInput = z.infer<typeof waitlistEnrolSchema>;
+
+/* ----- the lead inbox (A-146) ------------------------------------------------------------ */
+
+export const INBOX_STATUSES = ["open", "closed", "all"] as const;
+export const inboxFilterSchema = z.object({
+  status: z.enum(INBOX_STATUSES).default("open"),
+  q: z.string().trim().max(120).optional(),
+});
+export type InboxFilters = z.output<typeof inboxFilterSchema>;
+
+export const inboxReplySchema = z.object({
+  text: z.string().trim().min(1, "validation.required").max(4000, "validation.max"),
+});
+export type InboxReplyInput = z.output<typeof inboxReplySchema>;
+
+export const inboxCloseSchema = z.object({ closed: z.boolean() });
+export type InboxCloseInput = z.output<typeof inboxCloseSchema>;

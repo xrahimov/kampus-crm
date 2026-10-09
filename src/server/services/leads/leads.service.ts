@@ -19,6 +19,7 @@ import { applyFamilyDiscount } from "@/server/services/students/families.service
 import { assertReferrer, creditReferral } from "@/server/services/students/referrals.service";
 import { enqueue } from "@/server/jobs/queue";
 import { notifyUsers } from "@/server/services/dashboard/notifications.service";
+import { countUnreadConversations } from "@/server/services/leads/inbox.service";
 import { loadIntegrationConfig } from "@/server/services/integrations/integrations.service";
 import { prisma, type DbClient } from "@/server/db/prisma";
 import { AppError } from "@/server/errors/app-error";
@@ -113,6 +114,8 @@ export interface LeadOptions {
   courses: Array<{ id: string; name: string; branchId: string }>;
   /** People waiting for a course in the branches in scope (A-138). */
   waiting: number;
+  /** Chats in Leads → Inbox with something unread (A-146). */
+  unreadConversations: number;
   boards: Array<{
     id: string;
     name: string;
@@ -248,8 +251,8 @@ export async function getLeadOptions(actor: Actor, db: DbClient = prisma): Promi
   authorize(actor, "leads.view");
   const organizationId = actor.organizationId;
   const scope = branchScope(actor);
-  const [teachers, sources, slots, leadTimes, groups, boards, courses, waiting] = await Promise.all(
-    [
+  const [teachers, sources, slots, leadTimes, groups, boards, courses, waiting, unread] =
+    await Promise.all([
       db.user.findMany({
         where: {
           isArchived: false,
@@ -296,8 +299,8 @@ export async function getLeadOptions(actor: Actor, db: DbClient = prisma): Promi
         orderBy: { name: "asc" },
       }),
       db.waitlistEntry.count({ where: { ...scope, status: "WAITING" } }),
-    ],
-  );
+      countUnreadConversations(actor, db),
+    ]);
   const times = new Set<string>();
   for (const s of slots) times.add(s.startTime);
   for (const l of leadTimes) if (l.lessonTime) times.add(l.lessonTime);
@@ -310,6 +313,7 @@ export async function getLeadOptions(actor: Actor, db: DbClient = prisma): Promi
     groups,
     courses,
     waiting,
+    unreadConversations: unread,
     boards,
   };
 }

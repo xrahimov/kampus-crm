@@ -8,6 +8,7 @@ import {
   isSharedTelegramBot,
 } from "@/server/services/integrations/integrations.service";
 
+import { receiveTelegramLeadMessage } from "@/server/services/leads/inbox.service";
 import { handleBotUpdate } from "@/server/services/telegram/bot-commands.service";
 
 import { presentedSecret } from "../_secret";
@@ -16,8 +17,14 @@ const update = z.object({
   message: z
     .object({
       chat: z.object({ id: z.union([z.number(), z.string()]) }),
+      message_id: z.union([z.number(), z.string()]).optional(),
       from: z
-        .object({ first_name: z.string().optional(), language_code: z.string().optional() })
+        .object({
+          first_name: z.string().optional(),
+          last_name: z.string().optional(),
+          username: z.string().optional(),
+          language_code: z.string().optional(),
+        })
         .optional(),
       text: z.string().optional(),
     })
@@ -31,7 +38,8 @@ const update = z.object({
  * from students and parents linking their chat from the portal (A-103), and a
  * linked chat may ask for its balance, a payment link or report an absence
  * (A-119); a bare `/start` or `/id` is answered with the chat id, the "Mahsus
- * ID" a manager types into Bot xabarnoma (A-85).
+ * ID" a manager types into Bot xabarnoma (A-85). Anyone else who writes is a
+ * prospective student: their messages open a chat in Leads → Inbox (A-146).
  */
 export const POST = route<z.output<typeof update>>(
   { auth: false, body: update, skipCsrf: true },
@@ -51,6 +59,20 @@ export const POST = route<z.output<typeof update>>(
     if (reply) {
       const notifier = await getTelegramNotifier(prisma, organizationId);
       await notifier.sendMessage(chatId, reply.text, { replyMarkup: reply.replyMarkup });
+      return json({ ok: true });
+    }
+    const lead = await receiveTelegramLeadMessage(prisma, shared ? null : organizationId, {
+      chatId,
+      text: message.text,
+      firstName: message.from?.first_name ?? null,
+      lastName: message.from?.last_name ?? null,
+      username: message.from?.username ?? null,
+      languageCode: message.from?.language_code ?? null,
+      externalId: message.message_id === undefined ? null : String(message.message_id),
+    });
+    if (lead) {
+      const notifier = await getTelegramNotifier(prisma, organizationId);
+      await notifier.sendMessage(chatId, lead.text);
     } else if (/^\/(start|id)\b/.test(message.text)) {
       const notifier = await getTelegramNotifier(prisma, organizationId);
       await notifier.sendMessage(chatId, `Kampus ID: ${chatId}`);

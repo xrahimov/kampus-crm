@@ -114,6 +114,7 @@ export const HELP_ARTICLES = [
       { id: "trials" },
       { id: "toGroup", screenshot: "leads-to-group" },
       { id: "waitlist" },
+      { id: "inbox" },
       { id: "sources", screenshot: "lead-sources" },
       { id: "forms" },
     ],

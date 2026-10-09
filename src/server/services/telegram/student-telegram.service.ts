@@ -68,6 +68,7 @@ export type BotMessageKind =
   | "weeklyTitle"
   | "weeklyGroup"
   | "weeklyNoLessons"
+  | "leadWelcome"
   | "weeklyCoins"
   | "weeklyBalance"
   | "weeklyDebt"

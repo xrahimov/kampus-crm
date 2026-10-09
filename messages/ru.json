@@ -424,6 +424,8 @@
     "testAttempted": "Вы уже прошли этот тест.",
     "testTimeUp": "Время на этот тест вышло.",
     "testNotStarted": "Сначала откройте тест, потом сдавайте.",
+    "conversationNotFound": "Чат не найден.",
+    "channelNotConnected": "Этот канал ещё не подключён, ответы отправить нельзя.",
     "categoryHasTemplates": "В этой категории ещё есть шаблоны.",
     "webhookRejected": "Секрет вебхука отсутствует или неверен, либо интеграция выключена.",
     "staffNotFound": "Сотрудник не найден.",
@@ -2607,6 +2609,30 @@
       "smsTitle": "SMS {count} лидам",
       "done": "Выполнено: {done}, пропущено: {skipped}."
     },
+    "inbox": {
+      "title": "Входящие",
+      "button": "Входящие ({count})",
+      "hint": "Люди, написавшие вашему Telegram-боту. Первое сообщение создаёт лид на доске; отвечайте здесь, и ответ уйдёт в их чат.",
+      "linkLabel": "Ваша ссылка для будущих учеников:",
+      "copy": "Скопировать ссылку",
+      "noBot": "Подключите Telegram-бота в Настройки → Интеграции, и написавшие ему люди появятся здесь.",
+      "status": {
+        "open": "Открытые",
+        "closed": "Закрытые",
+        "all": "Все"
+      },
+      "empty": "Чатов пока нет.",
+      "emptyHint": "Разместите ссылку выше в Instagram и на сайте.",
+      "you": "Вы",
+      "noMessages": "Нет сообщений",
+      "closed": "Закрыт",
+      "pick": "Выберите чат слева.",
+      "openLead": "Открыть лид",
+      "close": "Закрыть чат",
+      "reopen": "Открыть снова",
+      "replyPlaceholder": "Напишите ответ… (Ctrl+Enter — отправить)",
+      "send": "Отправить"
+    },
     "waitlist": {
       "title": "Лист ожидания",
       "button": "Лист ожидания ({count})",
@@ -3961,6 +3987,9 @@
           "create": "Лид создан",
           "update": "Лид обновлён",
           "move": "Лид перемещён",
+          "message": "Ответ отправлен в чат лида",
+          "conversationClose": "Чат лида закрыт",
+          "conversationReopen": "Чат лида открыт снова",
           "archive": "Лид отправлен в архив",
           "restore": "Лид восстановлен",
           "delete": "Лид удалён",
@@ -4590,7 +4619,8 @@
       "DEBT_TASK": "{count, plural, one {# должник ждёт} few {# должника ждут} other {# должников ждут}} звонка уже {days} дней",
       "DEBT_PROMISE_BROKEN": "{name} обещал(а) оплатить {amount} до {date}, но не оплатил(а)",
       "ABSENCES": "{count, plural, one {# ученик перестал} few {# ученика перестали} other {# учеников перестали}} ходить на занятия: нужен звонок",
-      "LEAD_FOLLOW_UP": "{count, plural, one {# лид ждёт} few {# лида ждут} other {# лидов ждут}} звонка сегодня ({overdue} просрочено)"
+      "LEAD_FOLLOW_UP": "{count, plural, one {# лид ждёт} few {# лида ждут} other {# лидов ждут}} звонка сегодня ({overdue} просрочено)",
+      "LEAD_MESSAGE": "{name} написал(а) в Telegram: {text}"
     }
   },
   "portal": {
@@ -4820,6 +4850,7 @@
     "leadCallsTitle": "📞 {name}, звонки на сегодня: {count} лидов, {overdue} просрочено",
     "leadCallsLine": "• {name} — {phone} ({when})",
     "leadCallsMore": "… и ещё {count}",
+    "leadWelcome": "Здравствуйте! Это {centre}. Спасибо за сообщение: менеджер скоро ответит здесь. Напишите, какой курс вас интересует, и оставьте номер телефона.",
     "announcement": "📢 {title}\n\n{body}\n\n— {from}",
     "waitlistOffer": "Открывается группа {group}: {days} {time}, с {date}. Позвоните в центр, чтобы занять место.",
     "certificate": "{org}: ваш сертификат «{title}» готов. Открыть или поделиться: {url}"
@@ -4957,6 +4988,7 @@
     "cta": "Записаться на курс",
     "telegram": "Telegram",
     "instagram": "Instagram",
+    "chat": "Написать нам в Telegram",
     "hours": "Работаем {from}–{to}",
     "branches": "Филиалы: {names}",
     "coursesTitle": "Курсы",

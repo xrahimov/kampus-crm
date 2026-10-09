@@ -2,6 +2,7 @@
 
 import {
   ListOrdered,
+  MessageCircle,
   MoreHorizontal,
   Pencil,
   PhoneCall,
@@ -330,6 +331,15 @@ export function LeadsBoard({
           <Button asChild variant={view.due > 0 ? "default" : "outline"} size="sm">
             <Link href="/leads/calls" data-testid="leads-calls">
               <PhoneCall /> {tl("calls.button", { count: view.due })}
+            </Link>
+          </Button>
+          <Button
+            asChild
+            variant={options.unreadConversations > 0 ? "default" : "outline"}
+            size="sm"
+          >
+            <Link href="/leads/inbox" data-testid="leads-inbox">
+              <MessageCircle /> {tl("inbox.button", { count: options.unreadConversations })}
             </Link>
           </Button>
           <Button asChild variant="outline" size="sm">

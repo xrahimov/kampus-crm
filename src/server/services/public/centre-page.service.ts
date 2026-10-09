@@ -3,6 +3,7 @@ import { PUBLIC_SLUG } from "@/lib/validation/settings";
 import { prisma, type DbClient } from "@/server/db/prisma";
 import { today } from "@/server/services/groups/shared";
 import { normalizeHost } from "@/server/services/settings/domains.service";
+import { leadChatLink } from "@/server/services/leads/inbox.service";
 import { dateToIso, decimalToNumber, isoToDate } from "@/server/services/settings/shared";
 
 /*
@@ -70,6 +71,8 @@ export interface PublicCentreDto {
   teachers: PublicTeacherDto[];
   /** The lead form the page embeds; null when the centre has no active form. */
   formSlug: string | null;
+  /** "Write to us in Telegram": the centre's bot with the lead code (A-146), when it has a bot. */
+  chatLink: string | null;
 }
 
 async function load(
@@ -201,6 +204,7 @@ async function load(
     groups: groupDtos,
     teachers: [...teachers.values()].sort((a, b) => a.fullName.localeCompare(b.fullName)),
     formSlug: settings.publicForm?.isActive ? settings.publicForm.slug : (firstForm?.slug ?? null),
+    chatLink: await leadChatLink(db, organizationId),
   };
 }
 
