@@ -424,6 +424,8 @@
     "testAttempted": "Siz bu testni allaqachon topshirgansiz.",
     "testTimeUp": "Bu test uchun vaqt tugadi.",
     "testNotStarted": "Topshirishdan oldin testni oching.",
+    "conversationNotFound": "Chat topilmadi.",
+    "channelNotConnected": "Bu kanal hali ulanmagan, javob yuborib bo‘lmaydi.",
     "categoryHasTemplates": "Bu kategoriyada hali shablonlar bor.",
     "webhookRejected": "Webhook maxfiy kaliti yo'q yoki noto'g'ri, yoki integratsiya o'chirilgan.",
     "staffNotFound": "Xodim topilmadi.",
@@ -2607,6 +2609,30 @@
       "smsTitle": "{count} lidga SMS",
       "done": "{done} bajarildi, {skipped} o‘tkazib yuborildi."
     },
+    "inbox": {
+      "title": "Kirish xabarlari",
+      "button": "Xabarlar ({count})",
+      "hint": "Telegram botingizga yozgan odamlar. Birinchi xabar doskada lid yaratadi; shu yerda javob bering, javob ularning chatiga boradi.",
+      "linkLabel": "Bo‘lajak o‘quvchilar uchun havolangiz:",
+      "copy": "Havolani nusxalash",
+      "noBot": "Sozlamalar → Integratsiyalar bo‘limida Telegram botni ulang, unga yozganlar shu yerda ko‘rinadi.",
+      "status": {
+        "open": "Ochiq",
+        "closed": "Yopilgan",
+        "all": "Barchasi"
+      },
+      "empty": "Hali chatlar yo‘q.",
+      "emptyHint": "Yuqoridagi havolani Instagram sahifangiz va saytingizga qo‘ying.",
+      "you": "Siz",
+      "noMessages": "Xabarlar yo‘q",
+      "closed": "Yopilgan",
+      "pick": "Chapdan chatni tanlang.",
+      "openLead": "Lidni ochish",
+      "close": "Chatni yopish",
+      "reopen": "Qayta ochish",
+      "replyPlaceholder": "Javob yozing… (Ctrl+Enter — yuborish)",
+      "send": "Yuborish"
+    },
     "waitlist": {
       "title": "Kutish ro‘yxati",
       "button": "Kutish ro‘yxati ({count})",
@@ -3961,6 +3987,9 @@
           "create": "Lid yaratildi",
           "update": "Lid yangilandi",
           "move": "Lid ko'chirildi",
+          "message": "Lid chatiga javob yuborildi",
+          "conversationClose": "Lid chati yopildi",
+          "conversationReopen": "Lid chati qayta ochildi",
           "archive": "Lid arxivlandi",
           "restore": "Lid tiklandi",
           "delete": "Lid o'chirildi",
@@ -4590,7 +4619,8 @@
       "DEBT_TASK": "{count} qarzdor {days} kundan beri qo‘ng‘iroq kutmoqda",
       "DEBT_PROMISE_BROKEN": "{name} {date} gacha {amount} to‘lashga va’da bergan edi, to‘lamadi",
       "ABSENCES": "{count} o‘quvchi darsga kelmay qo‘ydi: qo‘ng‘iroq qiling",
-      "LEAD_FOLLOW_UP": "Bugun {count} lidga qo‘ng‘iroq qilish kerak ({overdue} tasi kechikkan)"
+      "LEAD_FOLLOW_UP": "Bugun {count} lidga qo‘ng‘iroq qilish kerak ({overdue} tasi kechikkan)",
+      "LEAD_MESSAGE": "{name} Telegramda yozdi: {text}"
     }
   },
   "portal": {
@@ -4820,6 +4850,7 @@
     "leadCallsTitle": "📞 {name}, bugungi qo‘ng‘iroqlar: {count} lid, {overdue} tasi kechikkan",
     "leadCallsLine": "• {name} — {phone} ({when})",
     "leadCallsMore": "… va yana {count} ta",
+    "leadWelcome": "Assalomu alaykum! Bu {centre}. Yozganingiz uchun rahmat: menejer tez orada shu yerda javob beradi. Qaysi kurs qiziqtirayotganini yozing va telefon raqamingizni qoldiring.",
     "announcement": "📢 {title}\n\n{body}\n\n— {from}",
     "waitlistOffer": "{group} guruhi ochilmoqda: {days} {time}, {date} dan. Joyni band qilish uchun markazga qo‘ng‘iroq qiling.",
     "certificate": "{org}: “{title}” sertifikatingiz tayyor. Ochish yoki ulashish: {url}"
@@ -4957,6 +4988,7 @@
     "cta": "Kursga yozilish",
     "telegram": "Telegram",
     "instagram": "Instagram",
+    "chat": "Telegramda yozing",
     "hours": "Ish vaqti {from}–{to}",
     "branches": "Filiallar: {names}",
     "coursesTitle": "Kurslar",

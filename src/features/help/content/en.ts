@@ -250,6 +250,21 @@ export const en: HelpContent = {
             "When a group of that course opens or a seat frees up, open the group and choose **Offer seats to the waiting list** in its menu. Kampus shows the free seats (the smallest room on the schedule minus the current members), who is next in line and whether the **Waiting list offer** SMS is switched on under Settings → General → Auto SMS; on confirm the first people get a text with the group's days, time and start date (and a Telegram message when they are a linked student) and are marked **Offered**. Then **Enrol in a group** on the entry adds the person to the group (a lead is converted, a new person becomes a student); **Declined** and **Remove** close the entry, **Back to waiting** returns it to the queue.",
           ],
         },
+        inbox: {
+          title: "Inbox",
+          body: [
+            "People who write to your Telegram bot without being a student become leads. **Inbox** on the lead board lists their chats, newest message first; the number on the button is how many chats have something unread.",
+            {
+              steps: [
+                "Share the link shown at the top of the Inbox (your bot with the centre's code) on Instagram and your website; the public page shows it as **Write to us in Telegram**.",
+                "A first message creates a lead in the first column of the branch's first board under the source **Telegram**, with the person's Telegram name; a phone number typed in the chat is added to the lead.",
+                "Open the chat, read it and write your answer: it goes to the person's Telegram. **Open lead** jumps to the card on the board.",
+                "**Close chat** hides a finished conversation; it reopens by itself when the person writes again.",
+              ],
+            },
+            "The bot greets a new chat once and then waits for a person. Chats of students and parents connected from their page never become leads.",
+          ],
+        },
         sources: {
           title: "Sources",
           body: [

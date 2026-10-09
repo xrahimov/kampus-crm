@@ -424,6 +424,8 @@
     "testAttempted": "You have already taken this test.",
     "testTimeUp": "The time for this test has run out.",
     "testNotStarted": "Open the test before handing it in.",
+    "conversationNotFound": "Chat not found.",
+    "channelNotConnected": "This channel is not connected yet, so replies cannot be sent.",
     "categoryHasTemplates": "This category still has templates.",
     "webhookRejected": "The webhook secret is missing or wrong, or the integration is off.",
     "staffNotFound": "Staff member not found.",
@@ -2607,6 +2609,30 @@
       "smsTitle": "SMS to {count} leads",
       "done": "{done} done, {skipped} skipped."
     },
+    "inbox": {
+      "title": "Inbox",
+      "button": "Inbox ({count})",
+      "hint": "People who wrote to your Telegram bot. The first message makes a lead on the board; answer here and the reply goes to their chat.",
+      "linkLabel": "Your link for prospective students:",
+      "copy": "Copy link",
+      "noBot": "Connect a Telegram bot in Settings → Integrations and the people who write to it will appear here.",
+      "status": {
+        "open": "Open",
+        "closed": "Closed",
+        "all": "All"
+      },
+      "empty": "No chats yet.",
+      "emptyHint": "Put the link above on your Instagram page and your website.",
+      "you": "You",
+      "noMessages": "No messages",
+      "closed": "Closed",
+      "pick": "Pick a chat on the left.",
+      "openLead": "Open lead",
+      "close": "Close chat",
+      "reopen": "Reopen",
+      "replyPlaceholder": "Write a reply… (Ctrl+Enter to send)",
+      "send": "Send"
+    },
     "waitlist": {
       "title": "Waiting list",
       "button": "Waiting list ({count})",
@@ -3961,6 +3987,9 @@
           "create": "Lead created",
           "update": "Lead updated",
           "move": "Lead moved",
+          "message": "Reply sent to a lead's chat",
+          "conversationClose": "Lead chat closed",
+          "conversationReopen": "Lead chat reopened",
           "archive": "Lead archived",
           "restore": "Lead restored",
           "delete": "Lead deleted",
@@ -4590,7 +4619,8 @@
       "DEBT_TASK": "{count, plural, one {# debtor has} other {# debtors have}} waited {days} days without a call",
       "DEBT_PROMISE_BROKEN": "{name} promised to pay {amount} by {date} and has not",
       "ABSENCES": "{count, plural, one {# student stopped} other {# students stopped}} coming to lessons: call them",
-      "LEAD_FOLLOW_UP": "{count, plural, one {# lead is} other {# leads are}} due for a call today ({overdue} overdue)"
+      "LEAD_FOLLOW_UP": "{count, plural, one {# lead is} other {# leads are}} due for a call today ({overdue} overdue)",
+      "LEAD_MESSAGE": "{name} wrote in Telegram: {text}"
     }
   },
   "portal": {
@@ -4820,6 +4850,7 @@
     "leadCallsTitle": "📞 {name}, calls today: {count} leads, {overdue} overdue",
     "leadCallsLine": "• {name} — {phone} ({when})",
     "leadCallsMore": "… and {count} more",
+    "leadWelcome": "Hello! This is {centre}. Thank you for writing: a manager will reply here shortly. Tell us which course you are interested in and leave your phone number.",
     "announcement": "📢 {title}\n\n{body}\n\n— {from}",
     "waitlistOffer": "{group} is opening: {days} {time}, from {date}. Call the centre to take your seat.",
     "certificate": "{org}: your certificate “{title}” is ready. Open or share it here: {url}"
@@ -4957,6 +4988,7 @@
     "cta": "Sign up for a course",
     "telegram": "Telegram",
     "instagram": "Instagram",
+    "chat": "Write to us in Telegram",
     "hours": "Open {from}–{to}",
     "branches": "Branches: {names}",
     "coursesTitle": "Courses",

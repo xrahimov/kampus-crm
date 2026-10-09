@@ -1,4 +1,4 @@
-import { AtSign, Clock, MapPin, Phone, Send } from "lucide-react";
+import { AtSign, Clock, MapPin, MessageCircle, Phone, Send } from "lucide-react";
 import { getTranslations } from "next-intl/server";
 
 import { KampusMark } from "@/components/brand/logo";
@@ -74,6 +74,12 @@ export async function CentrePage({
       icon: Phone,
       label: centre.phone,
       href: `tel:${centre.phone.replace(/[^\d+]/g, "")}`,
+    },
+    centre.chatLink && {
+      key: "chat",
+      icon: MessageCircle,
+      label: t("chat"),
+      href: centre.chatLink,
     },
     centre.telegram && {
       key: "telegram",

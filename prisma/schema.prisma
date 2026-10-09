@@ -59,6 +59,7 @@ model Organization {
   families          Family[]
   announcements     Announcement[]
   certificates      Certificate[]
+  leadConversations LeadConversation[]
 }
 
 model Branch {
@@ -206,6 +207,8 @@ model User {
   debtContacts        DebtContact[]        @relation("debtContactAuthor")
   absenceContacts     AbsenceContact[]     @relation("absenceContactAuthor")
   announcements       Announcement[]       @relation("announcementAuthor")
+
+  leadMessagesSent LeadMessage[] @relation("leadMessageAuthor")
 
   @@index([organizationId])
 }
@@ -1513,6 +1516,60 @@ model LeadColumn {
 }
 
 /// "Yangi Lid" (EXP §2 form). Phones live in LeadPhone ("+ Telefon raqam qo'shish").
+/// Where a prospective student wrote from (round 2 items E5 and E6).
+enum LeadChannel {
+  TELEGRAM
+  INSTAGRAM
+}
+
+enum LeadMessageDirection {
+  IN
+  OUT
+}
+
+/// One chat with a prospective student (A-146): the first message makes the
+/// lead, every later one lands here and managers answer from Kampus.
+model LeadConversation {
+  id             String      @id @default(cuid())
+  organizationId String
+  leadId         String?     @unique
+  channel        LeadChannel
+  /// The chat id in Telegram, the sender id in Instagram.
+  externalChatId String
+  displayName    String?
+  username       String?
+  /// uz / ru / en from the sender's client; the automatic replies go out in it.
+  locale         String      @default("uz")
+  unreadCount    Int         @default(0)
+  isClosed       Boolean     @default(false)
+  lastMessageAt  DateTime    @default(now())
+  createdAt      DateTime    @default(now())
+  updatedAt      DateTime    @updatedAt
+
+  organization Organization  @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  lead         Lead?         @relation(fields: [leadId], references: [id], onDelete: SetNull)
+  messages     LeadMessage[]
+
+  @@unique([organizationId, channel, externalChatId])
+  @@index([organizationId, isClosed, lastMessageAt])
+}
+
+model LeadMessage {
+  id             String               @id @default(cuid())
+  conversationId String
+  direction      LeadMessageDirection
+  text           String
+  /// The staff member who answered; null for the prospective student's own messages.
+  sentById       String?
+  externalId     String?
+  createdAt      DateTime             @default(now())
+
+  conversation LeadConversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  sentBy       User?            @relation("leadMessageAuthor", fields: [sentById], references: [id], onDelete: SetNull)
+
+  @@index([conversationId, createdAt])
+}
+
 model Lead {
   id            String              @id @default(cuid())
   branchId      String
@@ -1548,21 +1605,22 @@ model Lead {
   createdAt     DateTime            @default(now())
   updatedAt     DateTime            @updatedAt
 
-  owner     User?          @relation("leadOwner", fields: [ownerId], references: [id], onDelete: SetNull)
-  contacts  LeadContact[]
-  trials    TrialBooking[]
-  branch    Branch         @relation(fields: [branchId], references: [id])
-  board     LeadBoard      @relation(fields: [boardId], references: [id], onDelete: Cascade)
-  column    LeadColumn     @relation(fields: [columnId], references: [id])
-  source    LeadSource?    @relation(fields: [sourceId], references: [id], onDelete: SetNull)
-  teacher   User?          @relation("leadTeacher", fields: [teacherId], references: [id], onDelete: SetNull)
-  student   Student?       @relation(fields: [studentId], references: [id], onDelete: SetNull)
-  form      LeadForm?      @relation(fields: [formId], references: [id], onDelete: SetNull)
-  createdBy User?          @relation("leadCreator", fields: [createdById], references: [id], onDelete: SetNull)
-  referrer  Student?       @relation("leadReferrer", fields: [referrerId], references: [id], onDelete: SetNull)
-  phones    LeadPhone[]
-  school    School?        @relation(fields: [schoolId], references: [id])
-  schoolId  String?
+  owner        User?             @relation("leadOwner", fields: [ownerId], references: [id], onDelete: SetNull)
+  contacts     LeadContact[]
+  trials       TrialBooking[]
+  conversation LeadConversation?
+  branch       Branch            @relation(fields: [branchId], references: [id])
+  board        LeadBoard         @relation(fields: [boardId], references: [id], onDelete: Cascade)
+  column       LeadColumn        @relation(fields: [columnId], references: [id])
+  source       LeadSource?       @relation(fields: [sourceId], references: [id], onDelete: SetNull)
+  teacher      User?             @relation("leadTeacher", fields: [teacherId], references: [id], onDelete: SetNull)
+  student      Student?          @relation(fields: [studentId], references: [id], onDelete: SetNull)
+  form         LeadForm?         @relation(fields: [formId], references: [id], onDelete: SetNull)
+  createdBy    User?             @relation("leadCreator", fields: [createdById], references: [id], onDelete: SetNull)
+  referrer     Student?          @relation("leadReferrer", fields: [referrerId], references: [id], onDelete: SetNull)
+  phones       LeadPhone[]
+  school       School?           @relation(fields: [schoolId], references: [id])
+  schoolId     String?
 
   waitlist WaitlistEntry[]
 
@@ -2455,6 +2513,7 @@ enum NotificationKind {
   DEBT_PROMISE_BROKEN
   ABSENCES
   LEAD_FOLLOW_UP
+  LEAD_MESSAGE
 }
 
 model Notification {

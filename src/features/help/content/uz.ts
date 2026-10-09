@@ -253,6 +253,21 @@ export const uz: HelpContent = {
             "Shu kurs guruhi ochilganda yoki joy bo‘shaganda guruhni oching va menyusidan **Kutish ro‘yxatiga joy taklif qilish**ni tanlang. Kampus bo‘sh joylarni (jadvaldagi eng kichik xona sig‘imidan hozirgi a’zolar ayirilgani), navbatda kim turganini va Sozlamalar → Umumiy → Avto SMS da «Kutish ro‘yxati taklifi» SMS yoqilganini ko‘rsatadi; tasdiqlangach birinchilar guruhning kunlari, vaqti va boshlanish sanasi bilan xabar oladi (ulangan o‘quvchi bo‘lsa Telegramda ham) va **Taklif qilindi** deb belgilanadi. So‘ng yozuvdagi **Guruhga qo‘shish** odamni guruhga qo‘shadi (lid o‘quvchiga aylanadi, yangi odam o‘quvchi bo‘ladi); **Rad etdi** va **O‘chirish** yozuvni yopadi, **Yana kutishga** uni navbatga qaytaradi.",
           ],
         },
+        inbox: {
+          title: "Kirish xabarlari",
+          body: [
+            "Telegram botingizga yozgan va o‘quvchi bo‘lmagan odamlar lidga aylanadi. Lid doskasidagi **Xabarlar** ularning chatlarini, eng yangi xabar yuqorida, ko‘rsatadi; tugmadagi raqam o‘qilmagan xabari bor chatlar soni.",
+            {
+              steps: [
+                "Xabarlar tepasida ko‘rsatilgan havolani (markaz kodi bilan botingiz) Instagram va saytga qo‘ying; ochiq sahifa uni **Telegramda yozing** deb ko‘rsatadi.",
+                "Birinchi xabar filialning birinchi doskasidagi birinchi ustunda **Telegram** manbasi va odamning Telegramdagi ismi bilan lid yaratadi; chatda yozilgan telefon raqami lidga qo‘shiladi.",
+                "Chatni oching, o‘qing va javob yozing: u odamning Telegramiga boradi. **Lidni ochish** doskadagi kartochkaga o‘tkazadi.",
+                "**Chatni yopish** tugagan suhbatni yashiradi; odam yana yozsa, u o‘zi qayta ochiladi.",
+              ],
+            },
+            "Bot yangi chatni bir marta kutib oladi, keyin odamni kutadi. O‘z sahifasidan ulangan o‘quvchi va ota-onalarning chatlari hech qachon lid bo‘lmaydi.",
+          ],
+        },
         sources: {
           title: "Manbalar",
           body: [
