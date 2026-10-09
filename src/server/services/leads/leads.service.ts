@@ -1,5 +1,6 @@
 import type { Prisma } from "@/generated/prisma/client";
 import type {
+  BulkLeadsInput,
   LeadContactOutcome,
   LeadDays,
   LeadFilters,
@@ -599,6 +600,43 @@ export async function setLeadArchived(
     });
     return toDto(updated);
   });
+}
+
+/**
+ * Bulk actions on the board (A-132): the ticked leads move to a column, go to
+ * the archive or come back, each through the single-lead service so the audit
+ * log reads the same. Leads out of scope or already in the asked state are skipped.
+ */
+export async function bulkLeads(
+  actor: Actor,
+  input: BulkLeadsInput,
+  db: DbClient = prisma,
+): Promise<{ done: number; skipped: number }> {
+  authorize(actor, "leads.update");
+  const rows = await db.lead.findMany({
+    where: { id: { in: input.leadIds }, ...leadScope(actor) },
+    select: { id: true, isArchived: true, columnId: true },
+  });
+  let done = 0;
+  let skipped = input.leadIds.length - rows.length;
+  for (const row of rows) {
+    if (input.action === "move") {
+      if (row.columnId === input.columnId) {
+        skipped += 1;
+        continue;
+      }
+      await moveLead(actor, row.id, { columnId: input.columnId, beforeLeadId: null }, db);
+    } else {
+      const archived = input.action === "archive";
+      if (row.isArchived === archived) {
+        skipped += 1;
+        continue;
+      }
+      await setLeadArchived(actor, row.id, archived, db);
+    }
+    done += 1;
+  }
+  return { done, skipped };
 }
 
 export async function deleteLead(actor: Actor, id: string, db: DbClient = prisma): Promise<void> {

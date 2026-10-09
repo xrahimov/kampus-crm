@@ -1695,6 +1695,28 @@
         "smsNone": "Bu talabada ota-ona telefoni yo‘q.",
         "smsText": "Farzandlaringiz sahifasi: {url}"
       }
+    },
+    "bulk": {
+      "selected": "{count} tanlandi",
+      "clear": "Bekor qilish",
+      "selectAll": "Bu sahifadagi hammani tanlash",
+      "select": "{name} ni tanlash",
+      "addToGroup": "Guruhga qo‘shish",
+      "archive": "Arxivlash",
+      "restore": "Tiklash",
+      "sms": "SMS yuborish",
+      "discount": "Chegirma berish",
+      "excel": "Excel (tanlanganlar)",
+      "addTitle": "{count} o‘quvchini guruhga qo‘shish",
+      "addHint": "Har bir belgilangan o‘quvchi tanlangan guruhga a‘zo bo‘ladi; guruhda borlar o‘tkazib yuboriladi.",
+      "discountTitle": "{count} o‘quvchi uchun chegirma",
+      "discountHint": "Chegirma har bir belgilangan o‘quvchining tanlangan guruhdagi a‘zoligiga qo‘yiladi; bu guruhda bo‘lmaganlar yoki narxi allaqachon pastroqlar o‘tkazib yuboriladi.",
+      "archiveTitle": "{count} o‘quvchi arxivlansinmi?",
+      "archiveText": "Ular barcha guruhlardan chiqib arxivga o‘tadi.",
+      "restoreTitle": "{count} o‘quvchi tiklansinmi?",
+      "restoreText": "Ular arxivdan eski guruhlarisiz qaytadi.",
+      "smsTitle": "{count} o‘quvchiga SMS",
+      "done": "{done} bajarildi, {skipped} o‘tkazib yuborildi."
     }
   },
   "payments": {
@@ -2261,6 +2283,20 @@
         "CONVERTED": "O‘quvchiga aylandi",
         "CANCELLED": "Bekor qilindi"
       }
+    },
+    "bulk": {
+      "selected": "{count} tanlandi",
+      "clear": "Bekor qilish",
+      "move": "Ko‘chirish",
+      "archive": "Arxivlash",
+      "restore": "Tiklash",
+      "sms": "SMS yuborish",
+      "archiveTitle": "{count} lid arxivlansinmi?",
+      "archiveText": "Ular doskadan chiqadi; arxiv tugmasi ularni ko‘rsatadi.",
+      "restoreTitle": "{count} lid tiklansinmi?",
+      "restoreText": "Ular o‘z ustunlariga qaytadi.",
+      "smsTitle": "{count} lidga SMS",
+      "done": "{done} bajarildi, {skipped} o‘tkazib yuborildi."
     }
   },
   "exams": {

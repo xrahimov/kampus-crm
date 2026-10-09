@@ -376,6 +376,7 @@ export async function listStudents(
         }
       : {}),
     ...(filters.schoolId ? { schoolId: filters.schoolId } : {}),
+    ...(filters.ids ? { id: { in: filters.ids } } : {}),
   };
   const membershipFilter: Prisma.GroupMembershipWhereInput = {};
   const groupFilter: Prisma.GroupWhereInput = {};

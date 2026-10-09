@@ -93,6 +93,8 @@ export const smsTargetSchema = z.discriminatedUnion("kind", [
   z.object({ kind: z.literal("staff"), userIds: z.array(idSchema).min(1).max(500) }),
   z.object({ kind: z.literal("teachers"), archived: z.boolean().default(false) }),
   z.object({ kind: z.literal("leadColumn"), columnId: idSchema }),
+  /** The ticked leads on the board (A-132). */
+  z.object({ kind: z.literal("leads"), leadIds: z.array(idSchema).min(1).max(500) }),
 ]);
 export type SmsTarget = z.infer<typeof smsTargetSchema>;
 

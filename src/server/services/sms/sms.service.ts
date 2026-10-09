@@ -180,6 +180,32 @@ export async function resolveRecipients(
       }
       break;
     }
+    case "leads": {
+      authorize(actor, "leads.view");
+      const rows = await db.lead.findMany({
+        where: { id: { in: target.leadIds }, ...branchScope(actor) },
+        select: {
+          fullName: true,
+          branchId: true,
+          phones: { orderBy: { sortOrder: "asc" }, take: 1, select: { phone: true } },
+        },
+      });
+      for (const l of rows) {
+        const phone = l.phones[0]?.phone;
+        if (!phone) {
+          skipped += 1;
+          continue;
+        }
+        recipients.push({
+          type: "LEAD",
+          name: l.fullName,
+          phone,
+          studentId: null,
+          branchId: l.branchId,
+        });
+      }
+      break;
+    }
     case "leadColumn": {
       authorize(actor, "leads.view");
       const column = await mustFind(

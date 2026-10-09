@@ -138,6 +138,15 @@ export type TrialBookingInput = z.infer<typeof trialBookingSchema>;
 export const trialOutcomeSchema = z.object({ status: z.enum(TRIAL_OUTCOMES) });
 export type TrialOutcomeInput = z.infer<typeof trialOutcomeSchema>;
 
+/** Bulk actions on the board (A-132): the ticked leads move, archive or come back together. */
+const bulkLeadIds = z.array(idSchema).min(1, "validation.leadsMin").max(500, "validation.max");
+export const bulkLeadsSchema = z.discriminatedUnion("action", [
+  z.object({ action: z.literal("archive"), leadIds: bulkLeadIds }),
+  z.object({ action: z.literal("restore"), leadIds: bulkLeadIds }),
+  z.object({ action: z.literal("move"), leadIds: bulkLeadIds, columnId: idSchema }),
+]);
+export type BulkLeadsInput = z.infer<typeof bulkLeadsSchema>;
+
 /** "LIDLARNI GURUHGA QO'SHISH": the selected leads become students of one group. */
 export const leadsToGroupSchema = z.object({
   leadIds: z.array(idSchema).min(1, "validation.leadsMin").max(100, "validation.max"),

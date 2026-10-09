@@ -1695,6 +1695,28 @@
         "smsNone": "This student has no parent phone numbers.",
         "smsText": "Your children's page: {url}"
       }
+    },
+    "bulk": {
+      "selected": "{count} selected",
+      "clear": "Clear",
+      "selectAll": "Select everyone on this page",
+      "select": "Select {name}",
+      "addToGroup": "Add to group",
+      "archive": "Archive",
+      "restore": "Restore",
+      "sms": "Send SMS",
+      "discount": "Give a discount",
+      "excel": "Excel (selected)",
+      "addTitle": "Add {count} students to a group",
+      "addHint": "Each ticked student gets a membership in the chosen group; students already in it are skipped.",
+      "discountTitle": "Discount for {count} students",
+      "discountHint": "The discount goes on each ticked student's membership in the chosen group; students who are not in that group, or whose price is already lower, are skipped.",
+      "archiveTitle": "Archive {count} students?",
+      "archiveText": "They leave every group and move to the archive.",
+      "restoreTitle": "Restore {count} students?",
+      "restoreText": "They come back from the archive without their old groups.",
+      "smsTitle": "SMS to {count} students",
+      "done": "{done} done, {skipped} skipped."
     }
   },
   "payments": {
@@ -2261,6 +2283,20 @@
         "CONVERTED": "Became a student",
         "CANCELLED": "Cancelled"
       }
+    },
+    "bulk": {
+      "selected": "{count} selected",
+      "clear": "Clear",
+      "move": "Move to",
+      "archive": "Archive",
+      "restore": "Restore",
+      "sms": "Send SMS",
+      "archiveTitle": "Archive {count} leads?",
+      "archiveText": "They leave the board; the archive switch shows them.",
+      "restoreTitle": "Restore {count} leads?",
+      "restoreText": "They return to their columns.",
+      "smsTitle": "SMS to {count} leads",
+      "done": "{done} done, {skipped} skipped."
     }
   },
   "exams": {

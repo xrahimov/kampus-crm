@@ -470,6 +470,13 @@ export const uz: HelpContent = {
             "Yuqoridagi tugmalar: **Yangi qo‘shish**, ro‘yxat uchun **Excel**, **Excel orqali import**, saralangan o‘quvchilarga **SMS yuborish** va ro‘yxatdagi har bir o‘quvchi uchun QR kodli beyjik chop etadigan **Beyjiklar**.",
           ],
         },
+        bulk: {
+          title: "Bir vaqtda ko‘pchilik ustida amal",
+          body: [
+            "O‘quvchilar ro‘yxatidagi har bir qatorda belgilash katakchasi bor, sarlavhadagi katakcha butun sahifani belgilaydi. Nimadir belgilanishi bilan tanlanganlar ustidagi amallar paneli chiqadi: **Guruhga qo‘shish** (hammasi uchun bitta guruh, qo‘shilish sanasi va holat), **Chegirma berish** (har birining tanlangan guruhdagi a‘zoligiga chegirmali narx va oylar), **SMS yuborish**, faqat belgilanganlar bilan **Excel** va **Arxivlash**, arxiv ko‘rinishida esa **Tiklash**. Amal tegishli bo‘lmagan o‘quvchilar, masalan guruhda allaqachon borlar, o‘tkazib yuboriladi va natija qatorida sanaladi.",
+            "Lidlar doskasi ham shunday ishlaydi: kartochkalarni belgilang, so‘ng doska ustidagi panelda **Guruhga qo‘shish**, ustunga **Ko‘chirish**, **SMS yuborish**, **Arxivlash** yoki **Tiklash**.",
+          ],
+        },
         add: {
           title: "O‘quvchi qo‘shish",
           body: [
