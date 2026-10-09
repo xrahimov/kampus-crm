@@ -4,6 +4,7 @@ import {
   runWeeklyAbsenceSummary,
   weeklyAbsenceSummaryDue,
 } from "@/server/services/absences/absences.service";
+import { leadFollowUpDue, runDailyLeadFollowUp } from "@/server/services/leads/follow-up.service";
 import {
   getAmoCrmClient,
   getTelegramNotifier,
@@ -40,6 +41,7 @@ export const JOB_TYPES = [
   "telegram.reminders",
   "telegram.weeklyReport",
   "telegram.absenceSummary",
+  "leads.followUp",
   "amocrm.pushLead",
   "amocrm.importLead",
 ] as const;
@@ -102,6 +104,13 @@ export function registerJobHandlers(): void {
     await runWeeklyAbsenceSummary(db, date);
   });
 
+  // The morning "calls today" reminder for the people who own leads (A-126).
+  registerJobHandler("leads.followUp", async (payload, db) => {
+    const { date } = payloadOf<{ date?: string }>(payload);
+    if (!date) throw new Error("leads.followUp without date");
+    await runDailyLeadFollowUp(db, date);
+  });
+
   registerJobHandler("amocrm.pushLead", async (payload, db) => {
     const { organizationId, leadId, ...lead } = payloadOf<{
       organizationId?: string;
@@ -156,6 +165,15 @@ export async function ensureDailyJob(
       type: "telegram.absenceSummary",
       payload: { date: absences.date },
       uniqueKey: absences.key,
+    });
+  }
+  // Lead owners hear about today's calls once a day, from 09:00 Tashkent time (A-126).
+  const calls = leadFollowUpDue();
+  if (calls) {
+    await enqueue(db, {
+      type: "leads.followUp",
+      payload: { date: calls.date },
+      uniqueKey: calls.key,
     });
   }
 }

@@ -1,6 +1,7 @@
 import { z } from "zod";
 
 import { idSchema, phoneSchema } from "./common";
+import { DEBT_CHANNELS } from "./debts";
 import { MEMBERSHIP_STATUSES } from "./groups";
 import { dateOnlySchema, timeSchema } from "./settings";
 
@@ -12,6 +13,29 @@ export const LEAD_TEMPERATURES = ["HOT", "WARM", "COLD"] as const;
 export type LeadTemperature = (typeof LEAD_TEMPERATURES)[number];
 export const LEAD_DAYS = ["ODD", "EVEN", "OTHER"] as const;
 export type LeadDays = (typeof LEAD_DAYS)[number];
+
+/* Follow-up on a lead (A-126): how a contact happened, how it ended, what the call list shows. */
+export const LEAD_CONTACT_CHANNELS = DEBT_CHANNELS;
+export type LeadContactChannel = (typeof LEAD_CONTACT_CHANNELS)[number];
+export const LEAD_CONTACT_OUTCOMES = [
+  "NO_ANSWER",
+  "WILL_COME",
+  "THINKING",
+  "NOT_INTERESTED",
+  "WRONG_NUMBER",
+  "OTHER",
+] as const;
+export type LeadContactOutcome = (typeof LEAD_CONTACT_OUTCOMES)[number];
+/** "Calls today": which next-contact dates to list, relative to today. */
+export const LEAD_CALL_RANGES = ["DUE", "OVERDUE", "TODAY", "UPCOMING", "NONE"] as const;
+export type LeadCallRange = (typeof LEAD_CALL_RANGES)[number];
+export const LEAD_CALL_SORT_FIELDS = [
+  "nextContactAt",
+  "fullName",
+  "lastContactAt",
+  "createdAt",
+] as const;
+export type LeadCallSortField = (typeof LEAD_CALL_SORT_FIELDS)[number];
 
 const name = z.string().trim().min(1, "validation.required").max(120, "validation.tooLong");
 const text = (max: number) => z.string().trim().max(max, "validation.tooLong");
@@ -46,6 +70,9 @@ export const leadSchema = z.object({
   teacherId: optionalId,
   /** The student whose invite brought the lead (A-120). */
   referrerId: optionalId,
+  /** Who works the lead and when to contact them next (A-126). */
+  ownerId: optionalId,
+  nextContactAt: optionalDate,
   days: blankToNull(z.enum(LEAD_DAYS)),
   lessonTime: optionalTime,
   status: z.enum(LEAD_STATUSES).default("NEW"),
@@ -70,9 +97,28 @@ export const leadFilterSchema = z.object({
   lessonTime: timeSchema.optional(),
   teacherId: idSchema.optional(),
   days: z.enum(LEAD_DAYS).optional(),
+  /** A staff member's id, or "none" for leads nobody owns (A-126). */
+  ownerId: z.union([z.literal("none"), idSchema]).optional(),
   archived: z.coerce.boolean().optional(),
 });
 export type LeadFilters = z.infer<typeof leadFilterSchema>;
+
+/** "Log a contact" on a lead (A-126): how, the outcome, a note, the next date and, if changed by hand, the status. */
+export const leadContactSchema = z.object({
+  channel: z.enum(LEAD_CONTACT_CHANNELS),
+  outcome: blankToNull(z.enum(LEAD_CONTACT_OUTCOMES)),
+  note: blankToNull(text(1000)),
+  nextContactAt: optionalDate,
+  status: blankToNull(z.enum(LEAD_STATUSES)),
+});
+export type LeadContactInput = z.infer<typeof leadContactSchema>;
+
+/** The "Calls today" list: whose leads ("me", "none" or a staff id) and which dates. */
+export const leadCallsFilterSchema = z.object({
+  ownerId: z.union([z.literal("me"), z.literal("none"), idSchema]).optional(),
+  range: z.enum(LEAD_CALL_RANGES).optional(),
+});
+export type LeadCallsFilters = z.infer<typeof leadCallsFilterSchema>;
 
 /** "LIDLARNI GURUHGA QO'SHISH": the selected leads become students of one group. */
 export const leadsToGroupSchema = z.object({

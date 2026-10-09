@@ -81,6 +81,8 @@ export function LeadDialog({
     sourceId: "",
     referrerId: "",
     teacherId: "",
+    ownerId: "",
+    nextContactAt: "",
     days: "",
     lessonTime: "",
     status: "NEW",
@@ -125,6 +127,8 @@ export function LeadDialog({
             sourceId: lead.sourceId ?? "",
             referrerId: lead.referrerId ?? "",
             teacherId: lead.teacherId ?? "",
+            ownerId: lead.ownerId ?? "",
+            nextContactAt: lead.nextContactAt ?? "",
             days: lead.days ?? "",
             lessonTime: lead.lessonTime ?? "",
             status: lead.status,
@@ -179,7 +183,7 @@ export function LeadDialog({
   const phoneErrors = errors.phones as Array<{ message?: string } | undefined> | undefined;
 
   const selectField = (
-    name: "sourceId" | "teacherId" | "days" | "temperature",
+    name: "sourceId" | "teacherId" | "ownerId" | "days" | "temperature",
     label: string,
     items: Array<{ value: string; label: string }>,
     extra?: { onNew?: () => void; noneLabel?: string },
@@ -426,6 +430,24 @@ export function LeadDialog({
         tf("teacher"),
         options.teachers.map((x) => ({ value: x.id, label: x.fullName })),
       )}
+      <div className="grid gap-4 sm:grid-cols-2">
+        {selectField(
+          "ownerId",
+          tf("owner"),
+          options.owners.map((x) => ({ value: x.id, label: x.fullName })),
+          { noneLabel: lead ? tf("noOwner") : tf("ownerMe") },
+        )}
+        <div className="space-y-2">
+          <Label htmlFor="lead-nextContactAt">{tf("nextContact")}</Label>
+          <Input
+            id="lead-nextContactAt"
+            type="date"
+            aria-invalid={!!errors.nextContactAt}
+            {...form.register("nextContactAt")}
+          />
+          <FieldError id="lead-nextContactAt-error" message={errors.nextContactAt?.message} />
+        </div>
+      </div>
 
       <div className="grid gap-4 sm:grid-cols-2">
         {selectField(

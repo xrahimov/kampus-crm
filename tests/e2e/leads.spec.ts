@@ -172,3 +172,85 @@ test.describe("leads", () => {
     await expect(card.getByRole("link", { name: "Student profile" })).toBeVisible();
   });
 });
+
+test.describe("lead follow-up", () => {
+  test("a lead due today shows on the calls list, its call is logged and the status moves on", async ({
+    page,
+  }) => {
+    await signIn(page, CEO_PHONE);
+    const cookies = await page.context().cookies();
+    const headers = {
+      cookie: cookies.map((c) => `${c.name}=${c.value}`).join("; "),
+      "x-csrf-token": cookies.find((c) => c.name === "kampus_csrf")?.value ?? "",
+      "content-type": "application/json",
+    };
+    // The calendar day in Tashkent (UTC+5), which follow-up dates are judged against.
+    const today = new Date(Date.now() + 5 * 60 * 60 * 1000).toISOString().slice(0, 10);
+    const name = `E2E Call ${STAMP}`;
+    const board = (await (await page.request.get("/api/v1/leads", { headers })).json()) as {
+      columns: Array<{ id: string }>;
+    };
+    const created = await page.request.post("/api/v1/leads", {
+      headers,
+      data: {
+        columnId: board.columns[0]!.id,
+        fullName: name,
+        phones: [`+99895${String(STAMP).slice(-7)}`],
+        nextContactAt: today,
+      },
+    });
+    expect(created.status()).toBe(201);
+    const lead = (await created.json()) as { id: string; boardId: string; ownerName: string };
+    expect(lead.ownerName).toBe("Demo CEO");
+
+    // The card carries the "call today" badge and the owner.
+    await page.goto(`/en/leads?board=${lead.boardId}&q=${encodeURIComponent(name)}`);
+    const card = page.getByTestId("lead-card").filter({ hasText: name });
+    await expect(card).toBeVisible();
+    await expect(card.getByTestId("lead-due-today")).toHaveText("Call today");
+    await expect(card.getByTestId("lead-owner")).toHaveText("Demo CEO");
+
+    // "Calls today" lists it; the call is logged with an outcome and a next date.
+    await page.getByTestId("leads-calls").click();
+    await expect(page).toHaveURL(/\/en\/leads\/calls/);
+    await expect(page.getByRole("heading", { name: "Calls today" })).toBeVisible();
+    const row = page.getByTestId("call-row").filter({ hasText: name });
+    await expect(row).toBeVisible();
+    await expect(row.getByTestId("call-due-today")).toBeVisible();
+    await expect(row.getByTestId("call-status")).toHaveText("New");
+    await row.getByRole("button", { name: `Actions for ${name}` }).click();
+    await page.getByTestId("call-log-call").click();
+    const dialog = page.getByTestId("lead-contact-dialog");
+    await expect(dialog).toBeVisible();
+    await dialog.getByLabel("Outcome").click();
+    await page.getByRole("option", { name: "Will come" }).click();
+    // The outcome proposes the new status and a next date.
+    await expect(dialog.getByLabel("Lead status")).toContainText("Contacted");
+    await expect(dialog.getByLabel("Next contact")).toHaveValue(/^\d{4}-\d{2}-\d{2}$/);
+    await dialog.getByLabel("Note").fill("Trial lesson on Monday");
+    await dialog.getByRole("button", { name: "Save" }).click();
+    await expect(dialog).toBeHidden();
+    await expect(row).toHaveCount(0);
+
+    // Among the upcoming calls it is "Contacted" with its outcome and history.
+    await page.getByTestId("calls-range").click();
+    await page.getByRole("option", { name: "Upcoming" }).click();
+    await expect(page).toHaveURL(/range=UPCOMING/);
+    const upcoming = page.getByTestId("call-row").filter({ hasText: name });
+    await expect(upcoming).toBeVisible();
+    await expect(upcoming.getByTestId("call-status")).toHaveText("Contacted");
+    await expect(upcoming).toContainText("Will come");
+    await expect(upcoming).toContainText("by Demo CEO");
+    await upcoming.getByRole("button", { name: `Actions for ${name}` }).click();
+    await page.getByTestId("call-history").click();
+    const history = page.getByTestId("lead-history-dialog");
+    await expect(history).toBeVisible();
+    await expect(history.getByTestId("lead-contact")).toHaveCount(1);
+    await expect(history).toContainText("Trial lesson on Monday");
+    await page.keyboard.press("Escape");
+    await expect(history).toBeHidden();
+
+    const removed = await page.request.delete(`/api/v1/leads/${lead.id}`, { headers });
+    expect(removed.status()).toBe(204);
+  });
+});

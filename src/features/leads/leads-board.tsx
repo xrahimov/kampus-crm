@@ -1,6 +1,6 @@
 "use client";
 
-import { MoreHorizontal, Pencil, Plus, Trash2, UsersRound, X } from "lucide-react";
+import { MoreHorizontal, Pencil, PhoneCall, Plus, Trash2, UsersRound, X } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useSearchParams } from "next/navigation";
 import { useState, useTransition } from "react";
@@ -63,6 +63,7 @@ export function LeadsBoard({
   actorBranchIds,
   activeBranchId,
   allBranches,
+  userId,
   can,
 }: {
   view: BoardViewDto;
@@ -72,6 +73,8 @@ export function LeadsBoard({
   actorBranchIds: string[];
   activeBranchId: string | null;
   allBranches: boolean;
+  /** The signed-in person, shown as "Me" among the owners (A-126). */
+  userId: string;
   can: { create: boolean; update: boolean; delete: boolean; groups: boolean; sms: boolean };
 }) {
   /** Branches a new board may be created in, and the one preselected. */
@@ -178,7 +181,7 @@ export function LeadsBoard({
   }
 
   const filterSelect = (
-    key: "lessonTime" | "teacherId" | "days",
+    key: "lessonTime" | "teacherId" | "days" | "ownerId",
     label: string,
     items: Array<{ value: string; label: string }>,
   ) => (
@@ -275,6 +278,11 @@ export function LeadsBoard({
               <UsersRound /> {tl("addToGroup.button", { count: selected.size })}
             </Button>
           )}
+          <Button asChild variant={view.due > 0 ? "default" : "outline"} size="sm">
+            <Link href="/leads/calls" data-testid="leads-calls">
+              <PhoneCall /> {tl("calls.button", { count: view.due })}
+            </Link>
+          </Button>
           <ExcelLink path="/leads/export.xlsx" params={searchParams} testId="leads-excel" />
         </div>
       </div>
@@ -299,6 +307,13 @@ export function LeadsBoard({
           tl("filters.days"),
           LEAD_DAYS.map((d) => ({ value: d, label: t(`leads.days.${d}`) })),
         )}
+        {filterSelect("ownerId", tl("filters.owner"), [
+          { value: "none", label: tl("filters.unassigned") },
+          ...options.owners.map((o) => ({
+            value: o.id,
+            label: o.id === userId ? tl("filters.me") : o.fullName,
+          })),
+        ])}
         <label className="flex h-8 items-center gap-2 text-xs">
           <Switch
             checked={archived}
@@ -408,6 +423,7 @@ export function LeadsBoard({
                   <LeadCard
                     key={lead.id}
                     lead={lead}
+                    today={view.today}
                     columns={columns}
                     selected={selected.has(lead.id)}
                     onSelect={

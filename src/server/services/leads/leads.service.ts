@@ -1,5 +1,6 @@
 import type { Prisma } from "@/generated/prisma/client";
 import type {
+  LeadContactOutcome,
   LeadDays,
   LeadFilters,
   LeadInput,
@@ -10,6 +11,7 @@ import type {
   LeadUpdateInput,
   ToLeadInput,
 } from "@/lib/validation/leads";
+import { hasPermission } from "@/lib/rbac/permissions";
 import { recordAudit } from "@/server/audit/audit";
 import { applyFamilyDiscount } from "@/server/services/students/families.service";
 import { assertReferrer, creditReferral } from "@/server/services/students/referrals.service";
@@ -35,6 +37,7 @@ import {
   findBoardInScope,
   findColumnInScope,
   leadScope,
+  tashkentToday,
 } from "./shared";
 
 /* Leads on the Kanban board (EXP §2). */
@@ -60,6 +63,12 @@ export interface LeadDto {
   status: LeadStatus;
   temperature: LeadTemperature | null;
   comment: string | null;
+  /** Follow-up (A-126): who works the lead, the next date and how the last contact ended. */
+  ownerId: string | null;
+  ownerName: string | null;
+  nextContactAt: string | null;
+  lastContactAt: string | null;
+  lastOutcome: LeadContactOutcome | null;
   sortOrder: number;
   isArchived: boolean;
   studentId: string | null;
@@ -81,6 +90,10 @@ export interface BoardViewDto {
   boards: LeadBoardDto[];
   board: LeadBoardDto | null;
   columns: BoardColumnDto[];
+  /** Leads in scope, on any board, whose next contact is today or overdue (A-126). */
+  due: number;
+  /** The day the badges on the cards are judged against (Tashkent). */
+  today: string;
 }
 
 export interface LeadOptions {
@@ -88,6 +101,8 @@ export interface LeadOptions {
   sources: Array<{ id: string; name: string }>;
   /** Distinct "HH:mm" values from group schedules and existing leads. */
   lessonTimes: string[];
+  /** Staff who may work leads in the branches in scope: the owner choices (A-126). */
+  owners: Array<{ id: string; fullName: string }>;
   groups: Array<{ id: string; name: string; branchId: string }>;
   boards: Array<{
     id: string;
@@ -103,6 +118,7 @@ const include = {
   teacher: { select: { fullName: true } },
   form: { select: { name: true } },
   referrer: { select: { fullName: true } },
+  owner: { select: { fullName: true } },
 } satisfies Prisma.LeadInclude;
 type Row = Prisma.LeadGetPayload<{ include: typeof include }>;
 
@@ -127,6 +143,11 @@ function toDto(row: Row): LeadDto {
     status: row.status,
     temperature: row.temperature,
     comment: row.comment,
+    ownerId: row.ownerId,
+    ownerName: row.owner?.fullName ?? null,
+    nextContactAt: row.nextContactAt ? dateToIso(row.nextContactAt) : null,
+    lastContactAt: row.lastContactAt?.toISOString() ?? null,
+    lastOutcome: row.lastOutcome,
     sortOrder: row.sortOrder,
     isArchived: row.isArchived,
     studentId: row.studentId,
@@ -142,6 +163,7 @@ function filterWhere(filters: LeadFilters): Prisma.LeadWhereInput {
     ...(filters.teacherId ? { teacherId: filters.teacherId } : {}),
     ...(filters.lessonTime ? { lessonTime: filters.lessonTime } : {}),
     ...(filters.days ? { days: filters.days } : {}),
+    ...(filters.ownerId ? { ownerId: filters.ownerId === "none" ? null : filters.ownerId } : {}),
     ...(filters.q
       ? {
           OR: [
@@ -166,7 +188,11 @@ export async function getBoardView(
     ? (boards.find((b) => b.id === filters.boardId) ?? null)
     : (boards[0] ?? null);
   if (filters.boardId && !board) throw AppError.notFound("errors.boardNotFound");
-  if (!board) return { boards, board: null, columns: [] };
+  const today = tashkentToday();
+  const due = await db.lead.count({
+    where: { ...leadScope(actor), isArchived: false, nextContactAt: { lte: isoToDate(today) } },
+  });
+  if (!board) return { boards, board: null, columns: [], due, today };
   const columns = await db.leadColumn.findMany({
     where: { boardId: board.id },
     orderBy: { sortOrder: "asc" },
@@ -182,6 +208,8 @@ export async function getBoardView(
   return {
     boards,
     board,
+    due,
+    today,
     columns: columns.map((c) => ({
       id: c.id,
       name: c.name,
@@ -241,7 +269,44 @@ export async function getLeadOptions(actor: Actor, db: DbClient = prisma): Promi
   const times = new Set<string>();
   for (const s of slots) times.add(s.startTime);
   for (const l of leadTimes) if (l.lessonTime) times.add(l.lessonTime);
-  return { teachers, sources, lessonTimes: [...times].sort(), groups, boards };
+  const owners = await leadHandlers(db, actor);
+  return { teachers, sources, lessonTimes: [...times].sort(), owners, groups, boards };
+}
+
+/**
+ * Staff who may own a lead (A-126): active people of the centre who hold
+ * `leads.update` and work in one of the actor's branches (or in every branch).
+ */
+export async function leadHandlers(
+  db: DbClient,
+  actor: Actor,
+  branchIds: string[] = actor.activeBranchId ? [actor.activeBranchId] : actor.branchIds,
+): Promise<Array<{ id: string; fullName: string }>> {
+  const users = await db.user.findMany({
+    where: { organizationId: actor.organizationId, isArchived: false },
+    select: {
+      id: true,
+      fullName: true,
+      roles: { select: { role: { select: { permissions: true, isActive: true } } } },
+      branches: { select: { branchId: true } },
+    },
+    orderBy: { fullName: "asc" },
+  });
+  return users
+    .filter((u) => {
+      const grants = u.roles.filter((r) => r.role.isActive).flatMap((r) => r.role.permissions);
+      if (!hasPermission(grants, "leads.update")) return false;
+      const allBranches = grants.includes("*") || grants.includes("settings.org");
+      return allBranches || u.branches.some((b) => branchIds.includes(b.branchId));
+    })
+    .map((u) => ({ id: u.id, fullName: u.fullName }));
+}
+
+async function assertOwner(db: DbClient, actor: Actor, ownerId: string, branchId: string) {
+  const handlers = await leadHandlers(db, actor, [branchId]);
+  if (!handlers.some((h) => h.id === ownerId)) {
+    throw AppError.validation({ ownerId: ["validation.ownerUnknown"] });
+  }
 }
 
 async function findLeadInScope(db: DbClient, actor: Actor, id: string): Promise<Row> {
@@ -280,6 +345,12 @@ function leadData(input: LeadUpdateInput): Prisma.LeadUpdateInput {
           referrer: input.referrerId ? { connect: { id: input.referrerId } } : { disconnect: true },
         }
       : {}),
+    ...(input.ownerId !== undefined
+      ? { owner: input.ownerId ? { connect: { id: input.ownerId } } : { disconnect: true } }
+      : {}),
+    ...(input.nextContactAt !== undefined
+      ? { nextContactAt: input.nextContactAt ? isoToDate(input.nextContactAt) : null }
+      : {}),
     ...(input.days !== undefined ? { days: input.days } : {}),
     ...(input.lessonTime !== undefined ? { lessonTime: input.lessonTime } : {}),
     ...(input.status !== undefined ? { status: input.status } : {}),
@@ -302,6 +373,11 @@ export async function createLead(
   if (input.teacherId) await assertTeacherInBranch(db, input.teacherId, branchId);
   if (input.referrerId)
     await assertReferrer(db, actor.organizationId, input.referrerId, "referrerId");
+  if (input.ownerId) await assertOwner(db, actor, input.ownerId, branchId);
+  // A lead typed in by a staff member is theirs to follow up unless they say otherwise;
+  // leads from forms and amoCRM wait for an owner (A-126).
+  const ownerId =
+    input.ownerId ?? (options.createdById === undefined && actor.userId ? actor.userId : null);
   try {
     return await db.$transaction(async (tx) => {
       const last = await tx.lead.findFirst({
@@ -320,6 +396,8 @@ export async function createLead(
           sourceId: input.sourceId ?? null,
           teacherId: input.teacherId ?? null,
           referrerId: input.referrerId ?? null,
+          ownerId,
+          nextContactAt: input.nextContactAt ? isoToDate(input.nextContactAt) : null,
           days: input.days ?? null,
           lessonTime: input.lessonTime ?? null,
           status: input.status,
@@ -401,6 +479,7 @@ export async function updateLead(
   if (input.referrerId) {
     await assertReferrer(db, actor.organizationId, input.referrerId, "referrerId", row.studentId);
   }
+  if (input.ownerId) await assertOwner(db, actor, input.ownerId, row.branchId);
   try {
     return await db.$transaction(async (tx) => {
       if (input.phones !== undefined) {
@@ -736,3 +815,6 @@ export async function returnToLeads(
     return dto;
   });
 }
+
+/** The relations every lead DTO needs and the mapper, for the follow-up service (A-126). */
+export { include as leadInclude, toDto as toLeadDto };

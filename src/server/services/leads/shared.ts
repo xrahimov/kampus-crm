@@ -3,10 +3,14 @@ import type { DbClient } from "@/server/db/prisma";
 import { AppError } from "@/server/errors/app-error";
 import { branchScope, type Actor } from "@/server/rbac/authorize";
 import { mustFind } from "@/server/services/settings/shared";
+import { wallClock } from "@/server/services/telegram/student-telegram.service";
 
 /** Names used when a branch has no board yet (A-67); the UI lets staff rename them. */
 export const DEFAULT_BOARD_NAME = "Website";
 export const DEFAULT_COLUMN_NAME = "NEW LEADS";
+
+/** The calendar day in Tashkent, which follow-up dates on leads are compared with (A-126). */
+export const tashkentToday = (): string => wallClock(new Date()).date;
 
 export function leadScope(actor: Actor): Prisma.LeadWhereInput {
   return { ...branchScope(actor) };

@@ -1,6 +1,6 @@
 "use client";
 
-import { Clock, MoreHorizontal, Phone, UserRound } from "lucide-react";
+import { CalendarClock, Clock, MoreHorizontal, Phone, UserRound } from "lucide-react";
 import { useTranslations } from "next-intl";
 
 import { Badge } from "@/components/ui/badge";
@@ -15,6 +15,8 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Link } from "@/i18n/navigation";
+import { parseDateOnly } from "@/lib/dates";
+import { dayDiff } from "@/lib/lead-follow-up";
 import { cn } from "@/lib/utils";
 import { useDateFormat } from "@/lib/use-date-format";
 import type { LeadDto } from "@/server/services/leads/leads.service";
@@ -25,7 +27,10 @@ const TEMPERATURE_CLASS: Record<string, string> = {
   COLD: "border-transparent bg-sky-500/15 text-sky-700 dark:text-sky-300",
 };
 
-const STATUS_VARIANT: Record<LeadDto["status"], "outline" | "success" | "secondary" | "muted"> = {
+export const STATUS_VARIANT: Record<
+  LeadDto["status"],
+  "outline" | "success" | "secondary" | "muted"
+> = {
   NEW: "outline",
   CONTACTED: "success",
   UNREACHABLE: "secondary",
@@ -35,6 +40,7 @@ const STATUS_VARIANT: Record<LeadDto["status"], "outline" | "success" | "seconda
 /** One Kanban card. The lead card in the reference was not visible (EXP §2), so this is ours (A-66). */
 export function LeadCard({
   lead,
+  today,
   columns,
   selected,
   onSelect,
@@ -49,6 +55,8 @@ export function LeadCard({
   dragging,
 }: {
   lead: LeadDto;
+  /** The day the follow-up badge is judged against, "YYYY-MM-DD". */
+  today: string;
   columns: Array<{ id: string; name: string }>;
   selected: boolean;
   onSelect: ((checked: boolean) => void) | null;
@@ -70,6 +78,8 @@ export function LeadCard({
     lead.days ? t(`leads.days.${lead.days}`) : null,
     lead.lessonTime,
   ].filter(Boolean);
+  // Days past the planned next contact (A-126): positive = overdue, 0 = today, negative = ahead.
+  const followUp = lead.nextContactAt ? dayDiff(lead.nextContactAt, today) : null;
 
   return (
     <li
@@ -169,6 +179,19 @@ export function LeadCard({
             {t(`leads.temperatures.${lead.temperature}`)}
           </Badge>
         )}
+        {followUp !== null && followUp > 0 && (
+          <Badge variant="destructive" data-testid="lead-overdue">
+            {tl("followUp.overdue", { count: followUp })}
+          </Badge>
+        )}
+        {followUp === 0 && (
+          <Badge
+            className="border-transparent bg-amber-500/15 text-amber-700 dark:text-amber-300"
+            data-testid="lead-due-today"
+          >
+            {tl("followUp.today")}
+          </Badge>
+        )}
         {lead.sourceName && <Badge variant="secondary">{lead.sourceName}</Badge>}
         {lead.referrerName && (
           <Badge variant="outline" data-testid="lead-referrer">
@@ -189,15 +212,28 @@ export function LeadCard({
       {lead.comment && (
         <p className="mt-1 line-clamp-2 text-xs text-muted-foreground">{lead.comment}</p>
       )}
-      <p className="mt-2 flex items-center justify-between gap-1 text-[11px] text-muted-foreground">
+      <p className="mt-2 flex flex-wrap items-center justify-between gap-x-2 gap-y-1 text-[11px] text-muted-foreground">
         <span className="flex items-center gap-1">
           <Clock className="size-3" /> {fmt(new Date(lead.createdAt), { dateStyle: "medium" })}
+          {followUp !== null && followUp < 0 && lead.nextContactAt && (
+            <span className="ml-2 flex items-center gap-1" data-testid="lead-next">
+              <CalendarClock className="size-3" />{" "}
+              {fmt(parseDateOnly(lead.nextContactAt), { dateStyle: "medium" })}
+            </span>
+          )}
         </span>
-        {lead.studentId && (
-          <Link href={`/students/${lead.studentId}`} className="hover:underline">
-            {tl("student")}
-          </Link>
-        )}
+        <span className="flex min-w-0 items-center gap-2">
+          {lead.ownerName && (
+            <span className="truncate" title={tl("followUp.owner")} data-testid="lead-owner">
+              {lead.ownerName}
+            </span>
+          )}
+          {lead.studentId && (
+            <Link href={`/students/${lead.studentId}`} className="hover:underline">
+              {tl("student")}
+            </Link>
+          )}
+        </span>
       </p>
     </li>
   );

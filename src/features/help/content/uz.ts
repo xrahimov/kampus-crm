@@ -190,6 +190,20 @@ export const uz: HelpContent = {
             "**Excel** tugmasi doskani ko‘rib turganingizdek, filtrlar qo‘llangan holda yuklab oladi.",
           ],
         },
+        followUp: {
+          title: "Kuzatuv: mas‘ul, keyingi aloqa va qo‘ng‘iroqlar ro‘yxati",
+          body: [
+            "Har bir lidda **Mas‘ul** (uni olib boradigan xodim) va **Keyingi aloqa** sanasi bo‘lishi mumkin. O‘zingiz qo‘shgan lid, boshqa odam tanlanmasa, sizga biriktiriladi; veb-forma va amoCRM’dan kelgan lidlar mas‘ulni kutadi. Kartochkada qizil belgi rejalashtirilgan aloqa necha kun kechikkanini, sariq belgi esa u bugun ekanini ko‘rsatadi.",
+            {
+              steps: [
+                "Doska ustidagi **Bugungi qo‘ng‘iroqlar**ni oching. Unda keyingi aloqasi bugun yoki kechikkan lidlar mas‘uli, rejalashtirilgan sanasi va oxirgi natijasi bilan chiqadi. Mas‘ul bo‘yicha saralang (**Meniki**, **Mas‘ulsiz** yoki hamkasb) yoki kelgusi sanalar va sanasiz lidlarga o‘ting.",
+                "Qatorda **Qo‘ng‘iroq qilib yozish**ni, xabar yoki tashrif uchun **Aloqani yozish**ni tanlang. Natijani belgilang: keladi, o‘ylab ko‘radi, javob bermadi, qiziqmaydi, noto‘g‘ri raqam.",
+                "Natija lidning yangi holatini va keyingi sanani taklif qiladi (javob bermasa ertaga, o‘ylab ko‘rsa ikki-uch kundan keyin); saqlashdan oldin ikkalasini ham o‘zgartirish mumkin. Boshqa qo‘ng‘iroq rejalashtirilmasa, sanani bo‘sh qoldiring.",
+              ],
+            },
+            "Qator menyusidagi **Tarix** barcha aloqalarni va ularni kim yozganini ko‘rsatadi. Har kuni ertalab to‘qqizdan boshlab qo‘ng‘irog‘i bor mas‘ullar qo‘ng‘iroqchada xabarnoma oladi, chati Bot xabarnomalarida ko‘rsatilgan bo‘lsa, Telegram’da lidlar ro‘yxati bilan xabar ham keladi; mas‘ulsiz lidlar haqida filialda lidlar bilan ishlay oladigan hamma xabardor qilinadi.",
+          ],
+        },
         toGroup: {
           title: "Lidlarni o‘quvchiga aylantirish",
           body: [

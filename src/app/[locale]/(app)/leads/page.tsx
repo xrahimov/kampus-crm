@@ -36,6 +36,7 @@ export default async function Page({
     lessonTime: str(sp.lessonTime),
     teacherId: str(sp.teacherId),
     days: str(sp.days),
+    ownerId: str(sp.ownerId),
     archived: str(sp.archived),
   });
   const filters = parsed.success ? parsed.data : {};
@@ -58,6 +59,7 @@ export default async function Page({
       actorBranchIds={current.actor.branchIds}
       activeBranchId={current.actor.activeBranchId}
       allBranches={canAccessAllBranches(current.actor)}
+      userId={current.actor.userId}
       can={{
         create: can(current.actor, "leads.create"),
         update: can(current.actor, "leads.update"),
