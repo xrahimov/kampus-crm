@@ -478,6 +478,40 @@ export const uz: HelpContent = {
         },
       },
     },
+    debts: {
+      title: "Qarzdorlar",
+      summary:
+        "Qarz birinchi minusdan to‘lovgacha: ro‘yxat, qo‘ng‘iroqlar va va’dalar, avtomatik eslatmalar.",
+      sections: {
+        list: {
+          title: "Qarzdorlar ro‘yxati",
+          body: [
+            "**Qarzdorlar** filialdagi balansi minusga tushgan har bir o‘quvchini ko‘rsatadi: summa, qarz necha kundan beri turibdi (birinchi to‘lanmagan oydan hisoblanadi), berilgan va’da, oxirgi marta kim gaplashgani va natijasi. O‘quvchi balansi minusga tushishi bilan paydo bo‘ladi va to‘lagach ro‘yxatdan chiqadi; qo‘lda hech narsa ochish yoki yopish kerak emas.",
+            "Ro‘yxat ustidagi kartochkalar qarzdorlar sonini, umumiy qarzni, to‘lashga va’da berganlar va qo‘ng‘iroq kutayotganlar sonini ko‘rsatadi. **Ko‘rsatish** ro‘yxatni ochiq, va’da bergan, qo‘ng‘iroq kerak yoki yopilganlargacha qisqartiradi; qidiruv ism yoki telefonni topadi. **Excel** ro‘yxatni ekrandagidek yuklab beradi.",
+          ],
+        },
+        contact: {
+          title: "Qo‘ng‘iroqlar, va’dalar va eslatmalar",
+          body: [
+            {
+              steps: [
+                "Qator menyusini ochib **Qo‘ng‘iroq qilib natijani yozish** (telefon raqamlari havola) yoki tashrif, SMS yoki izoh uchun **Aloqani yozish**ni tanlang.",
+                "O‘quvchi bilan qanday bog‘langaningizni va natijani belgilang: javob bermadi, to‘lashga va’da berdi, rad etdi, noto‘g‘ri raqam yoki boshqa.",
+                "Va’da uchun sanani va kelishilgan bo‘lsa summani kiriting. Holatda **Va’da bergan** belgisi chiqadi, avtomatik eslatmalar shu kungacha to‘xtaydi.",
+                "**Telegramda eslatish** o‘quvchining Telegrami ulangan bo‘lsa, markaz boti orqali darhol xabar yuboradi.",
+              ],
+            },
+            "Qarz to‘langach holat **Va’da bajarildi** yoki **To‘landi** deb yopiladi. Va’da qilingan kun o‘tib qarz qolsa, holat yana ochiladi, va’da bajarilmagan deb belgilanadi, filial menejerlariga xabar boradi va qatorga **Qo‘ng‘iroq** belgisi qo‘yiladi. **Tarix** barcha aloqalar va avtomatik xabarlarni ko‘rsatadi.",
+          ],
+        },
+        cadence: {
+          title: "Avtomatik eslatmalar",
+          body: [
+            "Har bir markaz Sozlamalar → Markaz sozlamalari → **Qarz eslatmalari** bo‘limida o‘z tartibini belgilaydi: qarzdor necha kundan keyin Telegram xabari oladi, keyin SMS (Auto SMS sozlamalaridagi qarzdor matni, tugma yoqilgan bo‘lsa) va qo‘ng‘iroqsiz necha kundan keyin filial menejerlari qo‘ng‘iroqchada vazifa oladi. Bo‘sh qoldirilgan maydon bosqichni o‘chiradi. Va’da bergan o‘quvchiga va’da kunigacha eslatilmaydi.",
+          ],
+        },
+      },
+    },
     exams: {
       title: "Imtihonlar",
       summary:

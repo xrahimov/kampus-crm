@@ -6,6 +6,8 @@ export function notificationParams(
   money: (value: number) => string,
 ): Record<string, string | number> {
   const p = { ...n.params };
-  if (n.kind === "PAYMENT" && typeof p.amount === "number") p.amount = money(p.amount);
+  if ((n.kind === "PAYMENT" || n.kind === "DEBT_PROMISE_BROKEN") && typeof p.amount === "number") {
+    p.amount = money(p.amount);
+  }
   return p;
 }

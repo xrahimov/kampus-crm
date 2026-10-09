@@ -29,6 +29,15 @@ const money = z.coerce.number().min(0, "validation.min").max(9_999_999_999_999, 
 
 // --- Organisation settings (EXP §8 "Markaz sozlamalari") ---------------------
 
+/** Days until a debt-collection step runs (A-112); an empty field switches the step off. */
+const cadenceDays = z
+  .union([
+    z.literal("").transform(() => null),
+    z.null(),
+    z.coerce.number().int("validation.integer").min(0, "validation.min").max(90, "validation.max"),
+  ])
+  .optional();
+
 export const ORG_SWITCHES = [
   "spreadOverpayment",
   "adminActionsNeedApproval",
@@ -62,6 +71,9 @@ export const orgSettingsSchema = z
       .refine((v): v is (typeof SCHEDULE_STEPS)[number] => SCHEDULE_STEPS.includes(v as 15 | 30), {
         message: "validation.scheduleStep",
       }),
+    debtTelegramDays: cadenceDays,
+    debtSmsDays: cadenceDays,
+    debtTaskDays: cadenceDays,
   })
   .refine((v) => v.workStart < v.workEnd, {
     message: "validation.workHours",

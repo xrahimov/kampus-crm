@@ -87,7 +87,7 @@ export function DashboardPage({
       value: mask(money(kpis.remainingDebt)),
       href: "/students?paymentStatus=DEBTOR",
     },
-    { key: "debtors", value: num(kpis.debtors), href: "/students?paymentStatus=DEBTOR" },
+    { key: "debtors", value: num(kpis.debtors), href: "/debts" },
     { key: "dueSoon", value: num(kpis.dueSoon), href: "/students?paymentStatus=DUE_SOON" },
     {
       key: "activeStudents",

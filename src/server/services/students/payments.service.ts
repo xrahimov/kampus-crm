@@ -8,6 +8,7 @@ import type {
 } from "@/lib/validation/students";
 import { recordAudit } from "@/server/audit/audit";
 import { notifyUsers } from "@/server/services/dashboard/notifications.service";
+import { refreshStudentDebts } from "@/server/services/debts/debts.service";
 import { notifyStaff } from "@/server/services/integrations/bot-recipients.service";
 import { queueAutoSms } from "@/server/services/sms/auto-sms.service";
 import { prisma, type DbClient } from "@/server/db/prisma";
@@ -211,6 +212,8 @@ export async function createPayment(
       permission: "payments.create",
       excludeUserId: actor.userId,
     });
+    // A payment that clears the debt closes the student's collection case at once (A-112).
+    await refreshStudentDebts(tx, m.studentId);
     return dto;
   });
 }
@@ -375,6 +378,7 @@ export async function refundPayment(
       branchId: payment.branchId,
     });
     const row = await tx.payment.findUniqueOrThrow({ where: { id: paymentId }, include });
+    await refreshStudentDebts(tx, row.studentId);
     return toDto(row);
   });
 }

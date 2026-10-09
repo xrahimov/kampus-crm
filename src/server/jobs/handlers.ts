@@ -5,6 +5,7 @@ import {
   saveAmoCrmTokens,
 } from "@/server/services/integrations/integrations.service";
 import { runDailyNotifications } from "@/server/services/dashboard/notifications.service";
+import { runDailyDebtCollection } from "@/server/services/debts/debts.service";
 import { purgeOldRecordings } from "@/server/services/materials/materials.service";
 import { runDailyAutoSms } from "@/server/services/sms/auto-sms.service";
 import {
@@ -54,7 +55,10 @@ export function registerJobHandlers(): void {
   registerJobHandler("auto-sms.daily", async (payload, db) => {
     const { date } = payloadOf<{ date?: string }>(payload);
     await runDailyAutoSms(db, date);
-    await runDailyNotifications(db, date ?? new Date().toISOString().slice(0, 10));
+    const day = date ?? new Date().toISOString().slice(0, 10);
+    await runDailyNotifications(db, day);
+    // Debt collection (A-112): reconcile the cases, then Telegram → SMS → manager task.
+    await runDailyDebtCollection(db, day);
     // Old lesson recordings go once a day too (Settings → Integrations → Video lessons).
     const purged = await purgeOldRecordings(db);
     if (purged > 0) console.log(`[worker] deleted ${purged} old lesson recording(s)`);

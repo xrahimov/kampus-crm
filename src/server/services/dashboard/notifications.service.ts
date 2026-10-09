@@ -183,7 +183,7 @@ export async function runDailyNotifications(
     created += await notifyUsers(db, {
       kind: "DEBTORS",
       params: { count: students.size, day: todayIso, marker },
-      href: "/students?paymentStatus=DEBTOR",
+      href: "/debts",
       branchId,
       permission: "payments.create",
     });

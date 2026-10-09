@@ -4,7 +4,6 @@ import {
   type AutoSmsSettingsInput,
   type SmsVariable,
 } from "@/lib/validation/integrations";
-import { formatMoneyUz } from "@/lib/dates";
 import { recordAudit } from "@/server/audit/audit";
 import { prisma, type DbClient } from "@/server/db/prisma";
 import { enqueue } from "@/server/jobs/queue";
@@ -12,7 +11,6 @@ import { authorize, type Actor } from "@/server/rbac/authorize";
 import { awardAutoCoins } from "@/server/services/coins/coins.service";
 import { dateToIso, isoToDate } from "@/server/services/settings/shared";
 import { membershipBalances } from "@/server/services/students/balances";
-import { notifyStudents } from "@/server/services/telegram/student-telegram.service";
 
 /* "AUTO SMS SOZLAMALARI" (EXP §8 General settings): ten switches with templates. A-88. */
 
@@ -201,8 +199,9 @@ function addDaysIso(iso: string, days: number): string {
 
 /**
  * The daily scan (job `auto-sms.daily`): birthdays (SMS and the "Tug'ilgan kun"
- * coins, A-79), the day before a group's first lesson, payments due soon and
- * new debtors. Safe to run more than once a day thanks to the ref keys.
+ * coins, A-79), the day before a group's first lesson and payments due soon.
+ * Debtors are reminded by the debt-collection cadence (A-112). Safe to run more
+ * than once a day thanks to the ref keys.
  */
 export async function runDailyAutoSms(
   db: DbClient,
@@ -269,19 +268,14 @@ export async function runDailyAutoSms(
     }
   }
 
-  // Debtors and payments due soon, from the same balance engine the profile uses (A-59).
-  // Each centre has its own switches, so the scan runs once per centre (A-108).
+  // Payments due soon, from the same balance engine the profile uses (A-59). Each
+  // centre has its own switches, so the scan runs once per centre (A-108). The
+  // debtor SMS is sent by the debt-collection cadence (A-112), on its own day.
   const switches = await db.autoSmsSetting.findMany({
-    where: { event: { in: ["DEBTOR", "PAYMENT_DUE_SOON"] }, isActive: true },
+    where: { event: "PAYMENT_DUE_SOON", isActive: true },
   });
   const organizationIds = Array.from(new Set(switches.map((s) => s.organizationId)));
   for (const organizationId of organizationIds) {
-    const wantDebtor = switches.some(
-      (s) => s.organizationId === organizationId && s.event === "DEBTOR",
-    );
-    const wantDueSoon = switches.some(
-      (s) => s.organizationId === organizationId && s.event === "PAYMENT_DUE_SOON",
-    );
     const active = await db.groupMembership.findMany({
       where: { status: "ACTIVE", group: { status: "ACTIVE", branch: { organizationId } } },
       select: { id: true, studentId: true, group: { select: { name: true } } },
@@ -293,25 +287,8 @@ export async function runDailyAutoSms(
     for (const m of active) {
       const b = balances.get(m.id);
       if (!b) continue;
-      if (wantDebtor && b.balance < 0) {
-        const ok = await db.$transaction(async (tx) => {
-          // The same monthly debtor notice also goes to the student's Telegram (A-103).
-          await notifyStudents(tx, {
-            studentIds: [m.studentId],
-            kind: "debtor",
-            refKey: `debtor:${m.id}:${todayIso.slice(0, 7)}`,
-            values: { group: m.group.name, debt: formatMoneyUz(Math.abs(b.balance)) },
-          });
-          return queueAutoSms(tx, {
-            event: "DEBTOR",
-            studentId: m.studentId,
-            refKey: `debtor:${m.id}:${todayIso.slice(0, 7)}`,
-            vars: { groupName: m.group.name, debt: String(Math.abs(b.balance)) },
-          });
-        });
-        if (ok) queued += 1;
-      } else if (
-        wantDueSoon &&
+      if (
+        b.balance >= 0 &&
         b.nextPaymentDate &&
         b.nextPaymentDate > todayIso &&
         b.nextPaymentDate <= addDaysIso(todayIso, DUE_SOON_DAYS)

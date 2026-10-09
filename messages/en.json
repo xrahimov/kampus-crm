@@ -43,6 +43,7 @@
     "teachers": "Teachers",
     "groups": "Groups",
     "students": "Students",
+    "debts": "Debtors",
     "exams": "Exams",
     "settings": "Settings",
     "finance": "Finance",
@@ -196,7 +197,8 @@
     "importTimeInvalid": "Time not understood (use HH:MM)",
     "importNameExists": "Already exists with this name",
     "importUserExists": "A user with this phone already exists",
-    "importParentExists": "This parent is already on the student"
+    "importParentExists": "This parent is already on the student",
+    "debtCaseClosed": "This debt is already closed."
   },
   "validation": {
     "phone": "Enter a number like +998 90 123 45 67.",
@@ -339,6 +341,15 @@
       "tabs": {
         "center": "Center settings",
         "sms": "Auto SMS settings"
+      },
+      "debt": {
+        "title": "Debt reminders",
+        "hint": "Days after a debt appears. Leave a field empty to switch that step off.",
+        "telegram": "Telegram message to the student after",
+        "sms": "SMS after",
+        "task": "Task for the branch managers after",
+        "days": "days",
+        "off": "off"
       }
     },
     "switches": {
@@ -1391,6 +1402,100 @@
         "CORRECTION": "Correction"
       }
     }
+  },
+  "debts": {
+    "title": "Debtors",
+    "description": "Students who owe money: for how long, what they promised and who last spoke to them.",
+    "count": "{count, plural, =0 {No debtors} one {# debtor} other {# debtors}}",
+    "summary": {
+      "debtors": "Debtors",
+      "amount": "Owed in total",
+      "promised": "Promised to pay",
+      "needsCall": "Need a call"
+    },
+    "filters": {
+      "status": "Show",
+      "search": "Name or phone",
+      "ACTIVE": "Open and promised",
+      "OPEN": "Open",
+      "PROMISED": "Promised",
+      "NEEDS_CALL": "Need a call",
+      "CLOSED": "Closed",
+      "ALL": "All"
+    },
+    "columns": {
+      "student": "Student",
+      "groups": "Groups",
+      "amount": "Owed",
+      "overdue": "Overdue",
+      "promise": "Promise",
+      "lastContact": "Last contact"
+    },
+    "days": "{count, plural, one {# day} other {# days}}",
+    "since": "since {date}",
+    "missed": "missed",
+    "brokenPromises": "{count, plural, one {# promise missed} other {# promises missed}}",
+    "noContact": "Nobody has called yet",
+    "by": "by {name}",
+    "auto": "automatic",
+    "sentTelegram": "Telegram sent",
+    "sentSms": "SMS sent",
+    "needsCall": "Call",
+    "status": {
+      "OPEN": "Open",
+      "PROMISED": "Promised",
+      "CLOSED": "Closed"
+    },
+    "closed": {
+      "PAID": "Paid",
+      "PROMISE_KEPT": "Promise kept",
+      "LEFT": "Student left"
+    },
+    "channels": {
+      "CALL": "Call",
+      "TELEGRAM": "Telegram",
+      "SMS": "SMS",
+      "VISIT": "Came in",
+      "NOTE": "Note"
+    },
+    "outcomes": {
+      "NO_ANSWER": "No answer",
+      "PROMISED": "Promised to pay",
+      "REFUSED": "Refused",
+      "WRONG_NUMBER": "Wrong number",
+      "OTHER": "Other",
+      "PROMISE_KEPT": "Promised amount paid",
+      "PROMISE_BROKEN": "Promise missed"
+    },
+    "actions": {
+      "call": "Call and log the outcome",
+      "log": "Log a contact",
+      "remind": "Send a Telegram reminder",
+      "history": "History",
+      "profile": "Open the student"
+    },
+    "dialog": {
+      "title": "Contact: {name}",
+      "channel": "How",
+      "outcome": "Outcome",
+      "none": "Not set",
+      "promisedAt": "Promised to pay by",
+      "promisedAmount": "Promised amount (optional)",
+      "note": "Note",
+      "parentPhone": "parent"
+    },
+    "history": {
+      "title": "History: {name}",
+      "loading": "Loading…",
+      "empty": "No contacts recorded yet.",
+      "promise": "by {date}"
+    },
+    "remind": {
+      "sent": "Reminder sent to {count, plural, one {# Telegram chat} other {# Telegram chats}}.",
+      "none": "This student has no Telegram chat connected yet."
+    },
+    "empty": "No debtors here.",
+    "emptyHint": "A student appears as soon as their balance in the branch is short, and leaves the list once it is paid."
   },
   "discounts": {
     "title": "Discounts",
@@ -2833,6 +2938,10 @@
         "balance": {
           "adjust": "Balance adjusted",
           "adjustRemove": "Balance adjustment removed"
+        },
+        "debt": {
+          "contact": "Debtor contacted",
+          "remind": "Debt reminder sent"
         }
       }
     }
@@ -3038,7 +3147,8 @@
       "coursesTemplate": "courses-template",
       "staffTemplate": "staff-template",
       "groupsTemplate": "groups-template",
-      "parentsTemplate": "parents-template"
+      "parentsTemplate": "parents-template",
+      "debtors": "debtors"
     },
     "example": {
       "fullName": "<client name>",
@@ -3152,7 +3262,10 @@
       "parentPhone": "Parent's phone",
       "startTime": "Start time",
       "endTime": "End time",
-      "weekdays": "Days"
+      "weekdays": "Days",
+      "overdueDays": "Days overdue",
+      "promisedAt": "Promised date",
+      "lastContact": "Last contact"
     },
     "preview": "Preview: {count} rows would be imported and {skipped} skipped. Nothing has been written yet.",
     "previewButton": "Preview",
@@ -3200,7 +3313,9 @@
       "PAYMENT": "{name} paid {amount} for {group} (received by {by})",
       "LEAD": "New lead {name} in {column} ({source})",
       "DEBTORS": "{count} students owe money today",
-      "BIRTHDAY": "{name} has a birthday today"
+      "BIRTHDAY": "{name} has a birthday today",
+      "DEBT_TASK": "{count, plural, one {# debtor has} other {# debtors have}} waited {days} days without a call",
+      "DEBT_PROMISE_BROKEN": "{name} promised to pay {amount} by {date} and has not"
     }
   },
   "portal": {

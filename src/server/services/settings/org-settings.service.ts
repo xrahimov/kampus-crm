@@ -33,6 +33,9 @@ function toDto(
     workStart: settings.workStart,
     workEnd: settings.workEnd,
     scheduleStepMinutes: settings.scheduleStepMinutes as 15 | 30,
+    debtTelegramDays: settings.debtTelegramDays,
+    debtSmsDays: settings.debtSmsDays,
+    debtTaskDays: settings.debtTaskDays,
   };
 }
 
@@ -62,6 +65,10 @@ export async function updateOrgSettings(
     workStart: input.workStart,
     workEnd: input.workEnd,
     scheduleStepMinutes: input.scheduleStepMinutes,
+    // Debt reminder cadence (A-112): a field left out keeps its value, null switches the step off.
+    debtTelegramDays: input.debtTelegramDays,
+    debtSmsDays: input.debtSmsDays,
+    debtTaskDays: input.debtTaskDays,
   };
 
   return db.$transaction(async (tx) => {
