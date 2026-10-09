@@ -428,9 +428,9 @@ export const en: HelpContent = {
             "One homework per lesson. Students answer from their personal link; you accept or return each answer here.",
             {
               steps: [
-                "On the **Homework** tab press **Set homework**, choose the lesson and write the task. Add a link or a file and a due date if you want.",
+                "On the **Homework** tab press **Set homework**, choose the lesson and write the task. Add a link or a file and a due date if you want. Tick **Speaking task** for pronunciation and speaking practice: the student then records their answer with the microphone on their page.",
                 "Each homework card shows how many students answered and how many answers you accepted. Open a card to read the answers; each has the student's text and file.",
-                "Press **Accept** or **Return**, with a comment for the student if useful. A returned answer goes back to the student as “to do”.",
+                "Press **Accept** or **Return**, with a comment for the student if useful; on a speaking task you can listen to the recording right there and record a spoken reply of your own. A returned answer goes back to the student as “to do”.",
               ],
             },
             "Students connected to Telegram get a message when homework is set, changed, accepted or returned. When automatic coins for homework are on, an accepted answer gives the coins by itself.",
@@ -1186,7 +1186,7 @@ export const en: HelpContent = {
               steps: [
                 "Open the **Homework** tab. The number on the tab is how many tasks are waiting for you.",
                 "Each task shows the lesson, the text, a link or file from the teacher and the due date.",
-                "Press **Answer**, write your answer and attach a file if you need to, then press **Send**.",
+                "Press **Answer**, write your answer and attach a file if you need to, then press **Send**. On a **Speaking** task press **Record**, speak, press **Stop**, listen to it and send; the teacher may answer with a recording of their own.",
                 "The teacher accepts the answer or returns it with a comment. A returned task comes back as “to do”; press **Answer again**.",
               ],
             },

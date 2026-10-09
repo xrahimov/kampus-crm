@@ -197,6 +197,8 @@ export const homeworkSchema = z.object({
     .optional()
     .transform((v) => (v ? v : null)),
   attachmentUrl: z.string().max(500).nullable().optional(),
+  /** A speaking task: the student records their answer (A-141). */
+  speaking: z.boolean().optional(),
   dueDate: z
     .union([z.literal(""), z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "validation.date")])
     .nullable()
@@ -209,6 +211,8 @@ export const HOMEWORK_REVIEW_STATUSES = ["ACCEPTED", "RETURNED"] as const;
 export const homeworkReviewSchema = z.object({
   status: z.enum(HOMEWORK_REVIEW_STATUSES),
   teacherComment: z.string().trim().max(1000, "validation.tooLong").nullable().optional(),
+  /** A recorded reply, uploaded first; omitted keeps the earlier one, null clears it. */
+  teacherAudioUrl: z.string().max(500).nullable().optional(),
 });
 export type HomeworkReviewInput = z.output<typeof homeworkReviewSchema>;
 

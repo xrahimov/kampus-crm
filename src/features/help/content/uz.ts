@@ -431,9 +431,9 @@ export const uz: HelpContent = {
             "Har darsga bitta uy vazifasi. O‘quvchilar shaxsiy havolasidan javob beradi; siz har bir javobni shu yerda qabul qilasiz yoki qaytarasiz.",
             {
               steps: [
-                "**Uy vazifasi** yorlig‘ida **Vazifa berish** ni bosing, darsni tanlang va vazifani yozing. Xohlasangiz, havola yoki fayl va muddat qo‘shing.",
+                "**Uy vazifasi** yorlig‘ida **Vazifa berish** ni bosing, darsni tanlang va vazifani yozing. Nutq mashqi uchun **Og‘zaki vazifa** ni belgilang: o‘quvchi javobini o‘z sahifasida ovozli yozib oladi. Xohlasangiz, havola yoki fayl va muddat qo‘shing.",
                 "Har bir vazifa kartochkasi nechta o‘quvchi javob bergani va nechta javobni qabul qilganingizni ko‘rsatadi. Javoblarni o‘qish uchun kartochkani oching; har birida o‘quvchining matni va fayli bor.",
-                "**Qabul qilish** yoki **Qaytarish** ni bosing, kerak bo‘lsa, o‘quvchi uchun izoh bilan. Qaytarilgan javob o‘quvchiga “bajarish kerak” holatida qaytadi.",
+                "**Qabul qilish** yoki **Qaytarish** ni bosing, kerak bo‘lsa, o‘quvchi uchun izoh bilan; og‘zaki vazifada o‘quvchi yozuvi shu yerda eshitiladi va o‘z ovozli javobingizni yozib olishingiz mumkin. Qaytarilgan javob o‘quvchiga “bajarish kerak” holatida qaytadi.",
               ],
             },
             "Telegramga ulangan o‘quvchilar vazifa berilganda, o‘zgartirilganda, qabul qilinganda yoki qaytarilganda xabar oladi. Uy vazifasi uchun avtomatik coinlar yoqilgan bo‘lsa, qabul qilingan javob coinlarni o‘zi beradi.",
@@ -1190,7 +1190,7 @@ export const uz: HelpContent = {
               steps: [
                 "**Uy vazifasi** yorlig‘ini oching. Yorliqdagi raqam sizni nechta vazifa kutayotganini bildiradi.",
                 "Har bir vazifada dars, matn, o‘qituvchidan havola yoki fayl va muddat ko‘rsatiladi.",
-                "**Javob berish** ni bosing, javobingizni yozing va kerak bo‘lsa, fayl biriktiring, so‘ng **Yuborish** ni bosing.",
+                "**Javob berish** ni bosing, javobingizni yozing va kerak bo‘lsa, fayl biriktiring, so‘ng **Yuborish** ni bosing. **Og‘zaki** vazifada «Yozib olish» ni bosing, gapiring, «To‘xtatish» ni bosing, eshitib ko‘ring va yuboring; o‘qituvchi o‘z yozuvi bilan javob berishi mumkin.",
                 "O‘qituvchi javobni qabul qiladi yoki izoh bilan qaytaradi. Qaytarilgan vazifa “bajarish kerak” holatida qaytadi; **Qayta javob berish** ni bosing.",
               ],
             },

@@ -1,6 +1,6 @@
 "use client";
 
-import { Check, ExternalLink, Paperclip, Pencil, Plus, Trash2, Undo2 } from "lucide-react";
+import { Check, ExternalLink, Mic, Paperclip, Pencil, Plus, Trash2, Undo2 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useState, useTransition } from "react";
 
@@ -9,6 +9,7 @@ import { EmptyState } from "@/components/data/empty-state";
 import { FieldError } from "@/components/data/field-error";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
@@ -21,7 +22,7 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { FormDialog } from "@/features/settings/shared/form-dialog";
 import { useRouter } from "@/i18n/navigation";
-import { api, ApiError } from "@/lib/api-client";
+import { api, ApiError, uploadFile } from "@/lib/api-client";
 import { parseDateOnly } from "@/lib/dates";
 import { useDateFormat } from "@/lib/use-date-format";
 import type {
@@ -31,6 +32,8 @@ import type {
 } from "@/server/services/homework/homework.service";
 
 import { AttachmentField } from "./attachment-field";
+import { AudioPlayer, isAudioUrl } from "./audio-player";
+import { AudioRecorder } from "./audio-recorder";
 
 /** Group → homework tab: one card per homework with every student's answer (A-102). */
 export function GroupHomeworkTab({ data, canSet }: { data: GroupHomeworkDto; canSet: boolean }) {
@@ -144,9 +147,16 @@ function HomeworkCard({
               <span className="ml-2 font-normal text-muted-foreground">{homework.lessonTopic}</span>
             )}
           </div>
-          <div className="text-xs text-muted-foreground">
-            {homework.dueDate && <span>{t("due", { date: date(homework.dueDate) })} · </span>}
-            {t("progress", { answered, accepted, total: homework.submissions.length })}
+          <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
+            {homework.speaking && (
+              <Badge variant="outline" data-testid="hw-speaking-badge">
+                <Mic className="size-3" /> {t("speakingBadge")}
+              </Badge>
+            )}
+            <span>
+              {homework.dueDate && <span>{t("due", { date: date(homework.dueDate) })} · </span>}
+              {t("progress", { answered, accepted, total: homework.submissions.length })}
+            </span>
           </div>
         </div>
         {canSet && (
@@ -204,19 +214,23 @@ function HomeworkCard({
                   {s.note}
                 </span>
               )}
-              {s.attachmentUrl && (
-                <a
-                  href={s.attachmentUrl}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="inline-flex items-center gap-1 text-xs underline"
-                >
-                  <Paperclip className="size-3" /> {t("file")}
-                </a>
-              )}
+              {s.attachmentUrl &&
+                (isAudioUrl(s.attachmentUrl) ? (
+                  <AudioPlayer src={s.attachmentUrl} testId="hw-row-audio" />
+                ) : (
+                  <a
+                    href={s.attachmentUrl}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="inline-flex items-center gap-1 text-xs underline"
+                  >
+                    <Paperclip className="size-3" /> {t("file")}
+                  </a>
+                ))}
               {s.teacherComment && (
                 <span className="text-xs text-muted-foreground">“{s.teacherComment}”</span>
               )}
+              {s.teacherAudioUrl && <AudioPlayer src={s.teacherAudioUrl} label={t("voiceReply")} />}
               {canSet && (
                 <div className="ml-auto flex gap-1">
                   {s.status !== "ACCEPTED" && (
@@ -247,6 +261,7 @@ function HomeworkCard({
       )}
       <ReviewDialog
         homeworkId={homework.id}
+        speaking={homework.speaking}
         submission={reviewing}
         onOpenChange={(open) => !open && setReviewing(null)}
         onSaved={onChanged}
@@ -275,6 +290,7 @@ function HomeworkDialog({
   const [fields, setFields] = useState<Record<string, string[] | undefined>>({});
   const [lessonId, setLessonId] = useState<string>("");
   const [attachmentUrl, setAttachmentUrl] = useState<string | null>(null);
+  const [speaking, setSpeaking] = useState(false);
   const [formKey, setFormKey] = useState(0);
 
   // Reset the form each time the dialog opens for a different homework.
@@ -284,6 +300,7 @@ function HomeworkDialog({
     setSeen(current);
     setLessonId(homework?.lessonId ?? lessons.find((l) => !l.hasHomework)?.id ?? "");
     setAttachmentUrl(homework?.attachmentUrl ?? null);
+    setSpeaking(homework?.speaking ?? false);
     setFields({});
     setError(null);
     setFormKey((k) => k + 1);
@@ -309,6 +326,7 @@ function HomeworkDialog({
           text: String(data.get("text") ?? ""),
           linkUrl: String(data.get("linkUrl") ?? "").trim() || null,
           attachmentUrl,
+          speaking,
           dueDate: String(data.get("dueDate") ?? "") || null,
         },
       });
@@ -385,6 +403,18 @@ function HomeworkDialog({
           value={attachmentUrl}
           onChange={setAttachmentUrl}
         />
+        <label className="flex items-start gap-2 text-sm">
+          <Checkbox
+            checked={speaking}
+            onCheckedChange={(v) => setSpeaking(v === true)}
+            data-testid="hw-speaking"
+            className="mt-0.5"
+          />
+          <span>
+            <span className="font-medium">{t("speaking")}</span>
+            <span className="block text-xs text-muted-foreground">{t("speakingHint")}</span>
+          </span>
+        </label>
         <div className="space-y-2">
           <Label htmlFor="hw-due">{t("dueDate")}</Label>
           <Input id="hw-due" name="dueDate" type="date" defaultValue={homework?.dueDate ?? ""} />
@@ -397,11 +427,13 @@ function HomeworkDialog({
 
 function ReviewDialog({
   homeworkId,
+  speaking,
   submission,
   onOpenChange,
   onSaved,
 }: {
   homeworkId: string;
+  speaking: boolean;
   submission: HomeworkSubmissionDto | null;
   onOpenChange: (open: boolean) => void;
   onSaved: () => void;
@@ -409,6 +441,7 @@ function ReviewDialog({
   const t = useTranslations("groups.homework");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [reply, setReply] = useState<File | null>(null);
   const accepting = submission?.status !== "ACCEPTED";
 
   async function submit(event: React.FormEvent<HTMLFormElement>) {
@@ -418,13 +451,19 @@ function ReviewDialog({
     setBusy(true);
     setError(null);
     try {
+      // A new recording replaces the earlier spoken reply; none keeps it.
+      const teacherAudioUrl = reply
+        ? (await uploadFile(reply, "/uploads/documents")).url
+        : undefined;
       await api(`/homework/${homeworkId}/submissions/${submission.membershipId}`, {
         method: "PATCH",
         body: {
           status: accepting ? "ACCEPTED" : "RETURNED",
           teacherComment: String(data.get("teacherComment") ?? "").trim() || null,
+          ...(teacherAudioUrl ? { teacherAudioUrl } : {}),
         },
       });
+      setReply(null);
       onOpenChange(false);
       onSaved();
     } catch (e) {
@@ -449,15 +488,27 @@ function ReviewDialog({
       {submission?.note && (
         <p className="rounded-md bg-muted/40 p-3 text-sm whitespace-pre-wrap">{submission.note}</p>
       )}
-      {submission?.attachmentUrl && (
-        <a
-          href={submission.attachmentUrl}
-          target="_blank"
-          rel="noreferrer"
-          className="inline-flex items-center gap-1 text-sm underline"
-        >
-          <Paperclip className="size-3" /> {t("file")}
-        </a>
+      {submission?.attachmentUrl &&
+        (isAudioUrl(submission.attachmentUrl) ? (
+          <AudioPlayer src={submission.attachmentUrl} testId="review-audio" />
+        ) : (
+          <a
+            href={submission.attachmentUrl}
+            target="_blank"
+            rel="noreferrer"
+            className="inline-flex items-center gap-1 text-sm underline"
+          >
+            <Paperclip className="size-3" /> {t("file")}
+          </a>
+        ))}
+      {speaking && (
+        <div className="space-y-1">
+          <Label>{t("voiceReply")}</Label>
+          {submission?.teacherAudioUrl && !reply && (
+            <AudioPlayer src={submission.teacherAudioUrl} label={t("currentVoiceReply")} />
+          )}
+          <AudioRecorder value={reply} onChange={setReply} testId="reply-recorder" />
+        </div>
       )}
       <div className="space-y-2">
         <Label htmlFor="hw-comment">{t("teacherComment")}</Label>
