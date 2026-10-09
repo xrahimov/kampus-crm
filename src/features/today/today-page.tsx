@@ -7,6 +7,7 @@ import {
   ChevronRight,
   Clock,
   DoorOpen,
+  GraduationCap,
   HandCoins,
   Smartphone,
 } from "lucide-react";
@@ -24,6 +25,7 @@ import { api, ApiError } from "@/lib/api-client";
 import { parseDateOnly } from "@/lib/dates";
 import { cn } from "@/lib/utils";
 import type { AttendanceStatus } from "@/lib/validation/groups";
+import type { TrialStatus } from "@/lib/validation/leads";
 import { useDateFormat } from "@/lib/use-date-format";
 import { useMoneyFormat } from "@/lib/use-money-format";
 import type { TodayDto, TodayLessonDto } from "@/server/services/today/today.service";
@@ -230,6 +232,7 @@ function LessonCard({
 }) {
   const t = useTranslations("today");
   const tg = useTranslations("groups.attendance");
+  const tTrial = useTranslations("leads.trial");
   const tRoot = useTranslations();
   const money = useMoneyFormat();
   const fmt = useDateFormat();
@@ -238,10 +241,12 @@ function LessonCard({
   const [marks, setMarks] = useState<Record<string, AttendanceStatus>>(() =>
     Object.fromEntries(lesson.members.map((m) => [m.membershipId, m.attendance])),
   );
+  const [trialMarks, setTrialMarks] = useState<Record<string, TrialStatus>>({});
   const [lastLesson, setLastLesson] = useState(lesson);
   if (lesson !== lastLesson) {
     setLastLesson(lesson);
     setMarks(Object.fromEntries(lesson.members.map((m) => [m.membershipId, m.attendance])));
+    setTrialMarks({});
   }
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -265,6 +270,24 @@ function LessonCard({
       refresh();
     } catch (e) {
       setMarks(before);
+      setError(e instanceof ApiError ? e.message : "errors.internal");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  // "Came" / "Didn't come" on a trial visitor (A-131); pressing the chosen one again clears it.
+  async function markTrial(id: string, current: TrialStatus, chosen: "ATTENDED" | "NO_SHOW") {
+    const next: TrialStatus = current === chosen ? "BOOKED" : chosen;
+    const before = trialMarks;
+    setTrialMarks({ ...trialMarks, [id]: next });
+    setError(null);
+    setBusy(true);
+    try {
+      await api(`/leads/trials/${id}`, { method: "PATCH", body: { status: next } });
+      refresh();
+    } catch (e) {
+      setTrialMarks(before);
       setError(e instanceof ApiError ? e.message : "errors.internal");
     } finally {
       setBusy(false);
@@ -390,6 +413,65 @@ function LessonCard({
             })}
           </div>
         </div>
+
+        {lesson.trials.length > 0 && (
+          <div className="rounded-md border border-dashed p-3 text-sm" data-testid="today-trials">
+            <div className="flex items-center gap-2 font-medium">
+              <GraduationCap className="size-4 text-muted-foreground" /> {t("trials.title")}
+            </div>
+            <ul className="mt-2 space-y-2">
+              {lesson.trials.map((v) => {
+                const status = trialMarks[v.id] ?? v.status;
+                return (
+                  <li
+                    key={v.id}
+                    className="flex flex-wrap items-center justify-between gap-2"
+                    data-testid="today-trial"
+                    data-status={status}
+                  >
+                    <span className="min-w-0">
+                      <span className="block truncate font-medium">{v.fullName}</span>
+                      {(v.phone || v.note) && (
+                        <span className="block truncate text-xs text-muted-foreground">
+                          {[v.phone, v.note].filter(Boolean).join(" · ")}
+                        </span>
+                      )}
+                    </span>
+                    {status === "CONVERTED" ? (
+                      <Badge variant="success">{tTrial("statuses.CONVERTED")}</Badge>
+                    ) : canMark ? (
+                      <span className="flex gap-1">
+                        <Button
+                          size="sm"
+                          variant={status === "ATTENDED" ? "default" : "outline"}
+                          disabled={busy}
+                          onClick={() => void markTrial(v.id, status, "ATTENDED")}
+                          data-testid="today-trial-came"
+                        >
+                          {t("trials.came")}
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant={status === "NO_SHOW" ? "destructive" : "outline"}
+                          disabled={busy}
+                          onClick={() => void markTrial(v.id, status, "NO_SHOW")}
+                          data-testid="today-trial-no-show"
+                        >
+                          {t("trials.noShow")}
+                        </Button>
+                      </span>
+                    ) : (
+                      <Badge variant={status === "NO_SHOW" ? "destructive" : "outline"}>
+                        {tTrial(`statuses.${status}`)}
+                      </Badge>
+                    )}
+                  </li>
+                );
+              })}
+            </ul>
+            {canMark && <p className="mt-2 text-xs text-muted-foreground">{t("trials.hint")}</p>}
+          </div>
+        )}
 
         <div className="rounded-md bg-muted/40 p-3 text-sm" data-testid="today-homework">
           <div className="flex items-center gap-2 font-medium">

@@ -299,6 +299,12 @@
     "install": {
       "title": "Kampus on your phone",
       "text": "In Chrome choose “Install app” or “Add to Home screen” from the menu; on an iPhone tap Share in Safari, then “Add to Home Screen”. Kampus then opens full-screen like an app."
+    },
+    "trials": {
+      "title": "Trial visitors",
+      "came": "Came",
+      "noShow": "Didn't come",
+      "hint": "Mark whether the visitor came; the office adds them to the group from the leads board."
     }
   },
   "errors": {
@@ -399,7 +405,10 @@
     "signInCodeFailed": "The code could not be sent to Telegram. Ask an administrator to switch the sign-in code off for you.",
     "passwordChangeRequired": "Choose your own password first.",
     "absenceCaseClosed": "This case is already closed.",
-    "leadArchived": "The lead is archived."
+    "leadArchived": "The lead is archived.",
+    "trialExists": "This lead already has a trial in that group on that day.",
+    "trialNotFound": "Trial not found.",
+    "trialConverted": "The lead already joined the group; the trial is closed."
   },
   "validation": {
     "phone": "Enter a number like +998 90 123 45 67.",
@@ -502,7 +511,8 @@
     "passwordMatch": "The passwords do not match.",
     "signInCodeNeedsTelegram": "Link the Telegram chat first (Settings → Bot notifications).",
     "currentSession": "This is the device you are using; use Sign out instead.",
-    "ownerUnknown": "This person cannot own leads in the branch."
+    "ownerUnknown": "This person cannot own leads in the branch.",
+    "trialOtherBranch": "The group is in another branch than the lead."
   },
   "roles": {
     "CEO": "CEO",
@@ -2224,6 +2234,33 @@
       "loading": "Loading…",
       "empty": "No contacts recorded yet.",
       "next": "next contact {date}"
+    },
+    "trial": {
+      "book": "Book a trial",
+      "title": "Trial lesson: {name}",
+      "hint": "The visitor appears on the teacher's Today roster for that day; adding the lead to the group afterwards closes the trial as converted.",
+      "group": "Group",
+      "groupPlaceholder": "Choose a group",
+      "date": "Day",
+      "note": "Note for the teacher",
+      "booked": "Trial booked for {date}.",
+      "cancel": "Cancel trial",
+      "cancelled": "Trial cancelled.",
+      "list": "Trials",
+      "badge": {
+        "BOOKED": "Trial {date}",
+        "ATTENDED": "Came to trial",
+        "NO_SHOW": "Missed trial",
+        "CONVERTED": "Trial → student",
+        "CANCELLED": "Trial cancelled"
+      },
+      "statuses": {
+        "BOOKED": "Booked",
+        "ATTENDED": "Came",
+        "NO_SHOW": "Didn't come",
+        "CONVERTED": "Became a student",
+        "CANCELLED": "Cancelled"
+      }
     }
   },
   "exams": {
@@ -3060,7 +3097,9 @@
         "bestSource": "Top source",
         "bestSalesperson": "Top salesperson",
         "leadsCount": "{count} leads",
-        "conversionsCount": "{count} conversions"
+        "conversionsCount": "{count} conversions",
+        "trials": "Trials booked",
+        "trialsAttended": "Came to trial"
       },
       "funnelTitle": "Funnel",
       "byMonthTitle": "Leads in {year}",
@@ -3078,6 +3117,17 @@
         "UNREACHABLE": "Unreachable",
         "LOST": "Lost",
         "CONVERTED": "Became a student"
+      },
+      "trialsTitle": "Trials by source",
+      "trialsHint": "New leads of the month, their trial visits and who became a student.",
+      "trialsEmpty": "No trials this month.",
+      "trialsColumns": {
+        "source": "Source",
+        "leads": "New leads",
+        "trials": "Trials",
+        "attended": "Came",
+        "converted": "Became students",
+        "noSource": "No source"
       }
     },
     "students": {
@@ -3497,7 +3547,11 @@
           "restore": "Lead restored",
           "delete": "Lead deleted",
           "convert": "Lead added to a group",
-          "contact": "Lead contact logged"
+          "contact": "Lead contact logged",
+          "trial": {
+            "book": "Trial lesson booked",
+            "outcome": "Trial outcome set"
+          }
         },
         "leadBoard": {
           "create": "Lead board created",

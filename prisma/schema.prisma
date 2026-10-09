@@ -161,10 +161,11 @@ model User {
   discountsGiven     Discount[]
   studentComments    StudentComment[]
 
-  leadsAssigned Lead[]        @relation("leadTeacher")
-  leadsCreated  Lead[]        @relation("leadCreator")
-  leadsOwned    Lead[]        @relation("leadOwner")
-  leadContacts  LeadContact[] @relation("leadContactAuthor")
+  leadsAssigned Lead[]         @relation("leadTeacher")
+  leadsCreated  Lead[]         @relation("leadCreator")
+  leadsOwned    Lead[]         @relation("leadOwner")
+  leadContacts  LeadContact[]  @relation("leadContactAuthor")
+  trialBookings TrialBooking[] @relation("trialBookingAuthor")
 
   examsExamined   Exam[]         @relation("examiner")
   financeEntries  FinanceEntry[] @relation("financeStaff")
@@ -608,6 +609,7 @@ model Group {
   materials       LessonMaterial[]
   absenceCases    AbsenceCase[]
   announcements   Announcement[]
+  trials          TrialBooking[]
 
   @@index([branchId, status])
   @@index([courseId])
@@ -696,6 +698,7 @@ model Lesson {
   videoRooms  VideoRoom[]
   homework    Homework?
   materials   LessonMaterial[]
+  trials      TrialBooking[]
   /// The day off this extra lesson replaces, when it was moved here (A-117).
   movedFrom   GroupDayOff?
 
@@ -1479,19 +1482,20 @@ model Lead {
   createdAt     DateTime            @default(now())
   updatedAt     DateTime            @updatedAt
 
-  owner     User?         @relation("leadOwner", fields: [ownerId], references: [id], onDelete: SetNull)
+  owner     User?          @relation("leadOwner", fields: [ownerId], references: [id], onDelete: SetNull)
   contacts  LeadContact[]
-  branch    Branch        @relation(fields: [branchId], references: [id])
-  board     LeadBoard     @relation(fields: [boardId], references: [id], onDelete: Cascade)
-  column    LeadColumn    @relation(fields: [columnId], references: [id])
-  source    LeadSource?   @relation(fields: [sourceId], references: [id], onDelete: SetNull)
-  teacher   User?         @relation("leadTeacher", fields: [teacherId], references: [id], onDelete: SetNull)
-  student   Student?      @relation(fields: [studentId], references: [id], onDelete: SetNull)
-  form      LeadForm?     @relation(fields: [formId], references: [id], onDelete: SetNull)
-  createdBy User?         @relation("leadCreator", fields: [createdById], references: [id], onDelete: SetNull)
-  referrer  Student?      @relation("leadReferrer", fields: [referrerId], references: [id], onDelete: SetNull)
+  trials    TrialBooking[]
+  branch    Branch         @relation(fields: [branchId], references: [id])
+  board     LeadBoard      @relation(fields: [boardId], references: [id], onDelete: Cascade)
+  column    LeadColumn     @relation(fields: [columnId], references: [id])
+  source    LeadSource?    @relation(fields: [sourceId], references: [id], onDelete: SetNull)
+  teacher   User?          @relation("leadTeacher", fields: [teacherId], references: [id], onDelete: SetNull)
+  student   Student?       @relation(fields: [studentId], references: [id], onDelete: SetNull)
+  form      LeadForm?      @relation(fields: [formId], references: [id], onDelete: SetNull)
+  createdBy User?          @relation("leadCreator", fields: [createdById], references: [id], onDelete: SetNull)
+  referrer  Student?       @relation("leadReferrer", fields: [referrerId], references: [id], onDelete: SetNull)
   phones    LeadPhone[]
-  school    School?       @relation(fields: [schoolId], references: [id])
+  school    School?        @relation(fields: [schoolId], references: [id])
   schoolId  String?
 
   @@index([columnId, isArchived, sortOrder])
@@ -1520,6 +1524,40 @@ model LeadContact {
   createdBy User? @relation("leadContactAuthor", fields: [createdById], references: [id], onDelete: SetNull)
 
   @@index([leadId, createdAt])
+}
+
+/// How a trial lesson booked from a lead ended (A-131).
+enum TrialStatus {
+  BOOKED
+  ATTENDED
+  NO_SHOW
+  CONVERTED
+  CANCELLED
+}
+
+/// A lead's trial lesson (A-131): one visit to one group on one day. The teacher
+/// sees the visitor on the Today roster and marks whether they came; adding the
+/// lead to the group marks the booking converted.
+model TrialBooking {
+  id          String      @id @default(cuid())
+  leadId      String
+  groupId     String
+  /// The group's lesson on that day when one existed at booking time.
+  lessonId    String?
+  date        DateTime    @db.Date
+  status      TrialStatus @default(BOOKED)
+  note        String?
+  createdById String?
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+
+  lead      Lead    @relation(fields: [leadId], references: [id], onDelete: Cascade)
+  group     Group   @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  lesson    Lesson? @relation(fields: [lessonId], references: [id], onDelete: SetNull)
+  createdBy User?   @relation("trialBookingAuthor", fields: [createdById], references: [id], onDelete: SetNull)
+
+  @@index([groupId, date])
+  @@index([leadId, date])
 }
 
 model LeadPhone {

@@ -36,6 +36,8 @@ import {
 } from "@/features/settings/shared/branch-select";
 import { Link, usePathname, useRouter } from "@/i18n/navigation";
 import { api, ApiError } from "@/lib/api-client";
+import { parseDateOnly } from "@/lib/dates";
+import { useDateFormat } from "@/lib/use-date-format";
 import { cn } from "@/lib/utils";
 import { LEAD_DAYS, type LeadFilters } from "@/lib/validation/leads";
 import type { LeadBoardDto } from "@/server/services/leads/boards.service";
@@ -49,6 +51,7 @@ import type {
 
 import { AddToGroupDialog } from "./add-to-group-dialog";
 import { LeadCard } from "./lead-card";
+import { TrialDialog } from "./trial-dialog";
 import { LeadDialog } from "./lead-dialog";
 import { NameDialog } from "./name-dialog";
 
@@ -87,6 +90,7 @@ export function LeadsBoard({
   const defaultBranchId = view.board?.branchId ?? defaultId;
   const t = useTranslations();
   const tl = useTranslations("leads");
+  const fmt = useDateFormat();
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -105,6 +109,7 @@ export function LeadsBoard({
   const [inlineColumn, setInlineColumn] = useState<string | null>(null);
   const [inlineError, setInlineError] = useState<string | null>(null);
   const [deletingLead, setDeletingLead] = useState<LeadDto | null>(null);
+  const [trialLead, setTrialLead] = useState<LeadDto | null>(null);
   const [deletingColumn, setDeletingColumn] = useState<BoardColumnDto | null>(null);
   const [smsColumn, setSmsColumn] = useState<BoardColumnDto | null>(null);
   const [deletingBoard, setDeletingBoard] = useState(false);
@@ -146,6 +151,21 @@ export function LeadsBoard({
     setError(null);
     try {
       await api(`/leads/${lead.id}/${lead.isArchived ? "restore" : "archive"}`, { method: "POST" });
+      refresh();
+    } catch (e) {
+      fail(e);
+    }
+  }
+
+  async function cancelTrial(lead: LeadDto) {
+    if (!lead.trial) return;
+    setError(null);
+    try {
+      await api(`/leads/trials/${lead.trial.id}`, {
+        method: "PATCH",
+        body: { status: "CANCELLED" },
+      });
+      setNotice(tl("trial.cancelled"));
       refresh();
     } catch (e) {
       fail(e);
@@ -443,6 +463,8 @@ export function LeadsBoard({
                     onMove={(columnId) => void move(lead.id, columnId)}
                     onArchive={() => void toggleArchived(lead)}
                     onDelete={() => setDeletingLead(lead)}
+                    onTrial={lead.studentId || lead.isArchived ? null : () => setTrialLead(lead)}
+                    onCancelTrial={lead.trial ? () => void cancelTrial(lead) : null}
                     onDragStart={() => setDragging(lead.id)}
                     onDragEnd={() => {
                       setDragging(null);
@@ -624,6 +646,19 @@ export function LeadsBoard({
           }}
         />
       )}
+      <TrialDialog
+        lead={trialLead}
+        groups={options.groups}
+        onOpenChange={(open) => {
+          if (!open) setTrialLead(null);
+        }}
+        onSaved={(booking) => {
+          setNotice(
+            tl("trial.booked", { date: fmt(parseDateOnly(booking.date), { dateStyle: "medium" }) }),
+          );
+          refresh();
+        }}
+      />
       <SendSmsDialog
         open={smsColumn !== null}
         onOpenChange={(open) => {
