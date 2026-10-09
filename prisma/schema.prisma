@@ -361,6 +361,8 @@ model OrgSettings {
   groupSupportSessions       Boolean @default(false)
   /// "Avtomatik coin tizimi" (EXP §8 Coins); manual coins work regardless.
   autoCoins                  Boolean @default(false)
+  /// The setup checklist on the home page (A-128); hidden by its button or this switch.
+  showSetupChecklist         Boolean @default(true)
 
   workStart           String @default("08:00") // HH:mm, schedule grid start
   workEnd             String @default("20:00") // HH:mm, schedule grid end

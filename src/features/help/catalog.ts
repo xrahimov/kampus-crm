@@ -92,6 +92,7 @@ export const HELP_ARTICLES = [
     permission: "dashboard.view",
     path: "/dashboard",
     sections: [
+      { id: "setup" },
       { id: "kpis", screenshot: "dashboard-numbers" },
       { id: "schedule", screenshot: "dashboard-schedule" },
       { id: "finance" },

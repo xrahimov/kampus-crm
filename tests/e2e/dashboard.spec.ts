@@ -13,6 +13,57 @@ async function signIn(page: Page, phone: string) {
 }
 
 test.describe("dashboard, search and notifications", () => {
+  test("the setup checklist shows what the centre still lacks and can be hidden", async ({
+    page,
+  }) => {
+    await signIn(page, CEO_PHONE);
+    const cookies = await page.context().cookies();
+    const headers = {
+      cookie: cookies.map((c) => `${c.name}=${c.value}`).join("; "),
+      "x-csrf-token": cookies.find((c) => c.name === "kampus_csrf")?.value ?? "",
+      "content-type": "application/json",
+    };
+    const shown = await page.request.patch("/api/v1/dashboard/setup", {
+      headers,
+      data: { shown: true },
+    });
+    expect(shown.ok()).toBeTruthy();
+    const list = (await shown.json()) as {
+      done: number;
+      total: number;
+      steps: Array<{ key: string; done: boolean }>;
+    };
+    expect(list.total).toBe(9);
+    await page.goto("/en/dashboard");
+    const card = page.getByTestId("setup-checklist");
+    if (list.done === list.total) {
+      // Everything is set up: the card stays away on its own.
+      await expect(card).toHaveCount(0);
+      return;
+    }
+    await expect(card).toBeVisible();
+    await expect(card).toContainText(`${list.done} of ${list.total} done`);
+    const groups = list.steps.find((s) => s.key === "groups")!;
+    await expect(card.getByTestId("setup-step-groups")).toContainText("Groups");
+    await expect(card.getByTestId("setup-step-groups")).toHaveAttribute(
+      "data-done",
+      String(groups.done),
+    );
+    const open = list.steps.find((s) => !s.done)!;
+    await expect(card.getByTestId(`setup-step-${open.key}`).getByRole("link")).toBeVisible();
+    await card.getByTestId("setup-hide").click();
+    await expect(card).toHaveCount(0);
+    // The switch in Settings → General brings it back.
+    await page.goto("/en/settings/general");
+    const toggle = page.getByTestId("switch-showSetupChecklist");
+    await expect(toggle).toHaveAttribute("data-state", "unchecked");
+    await toggle.click();
+    await page.getByTestId("org-save").click();
+    await expect(toggle).toHaveAttribute("data-state", "checked");
+    await page.goto("/en/dashboard");
+    await expect(page.getByTestId("setup-checklist")).toBeVisible();
+  });
+
   test("KPIs stay masked until shown, cards link to lists, schedule and finance render", async ({
     page,
   }) => {

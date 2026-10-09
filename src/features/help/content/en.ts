@@ -135,6 +135,13 @@ export const en: HelpContent = {
       title: "Home page",
       summary: "The day's figures, the room schedule and the money, on one screen.",
       sections: {
+        setup: {
+          title: "Setting up a new centre",
+          body: [
+            "When a centre is new, the home page opens with **Set up your centre**: branches, courses, rooms, staff, groups, students, payment methods, the Telegram bot and online payments, each with a tick once it is there and an **Open** button that takes you to the right page. The card counts what is done and disappears by itself when every step is ticked.",
+            "Only people who may change the centre's settings see it. **Hide** puts it away; the switch *Show the setup checklist on the home page* in Settings → General brings it back.",
+          ],
+        },
         kpis: {
           title: "The twelve numbers",
           body: [

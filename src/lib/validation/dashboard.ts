@@ -43,3 +43,7 @@ export const markReadSchema = z
   })
   .refine((v) => v.all || (v.ids && v.ids.length > 0), { message: "validation.required" });
 export type MarkReadInput = z.infer<typeof markReadSchema>;
+
+/** The setup checklist on the home page (A-128): show it again or hide it. */
+export const setupChecklistSchema = z.object({ shown: z.boolean() });
+export type SetupChecklistInput = z.infer<typeof setupChecklistSchema>;
