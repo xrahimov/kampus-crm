@@ -331,6 +331,10 @@ model OrgSettings {
   debtSmsDays      Int? @default(3)
   debtTaskDays     Int? @default(7)
 
+  /// Referral programme (A-120): so'm credited to the referrer as a payment bonus
+  /// when a friend they brought joins a group. 0 = coins only (the REFERRAL coin rule).
+  referralBonus Int @default(0)
+
   updatedAt DateTime @updatedAt
 
   organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
@@ -636,29 +640,38 @@ model Lesson {
 /// Student (EXP §6 profile). Phase 5 created the minimal row; Phase 6 adds the
 /// profile fields, parents, custom fields, comments and payments.
 model Student {
-  id            String    @id @default(cuid())
-  branchId      String
-  fullName      String
-  phone         String?
-  gender        Gender    @default(MALE)
-  birthDate     DateTime? @db.Date
-  photoUrl      String?
+  id                 String    @id @default(cuid())
+  branchId           String
+  fullName           String
+  phone              String?
+  gender             Gender    @default(MALE)
+  birthDate          DateTime? @db.Date
+  photoUrl           String?
   /// Student app login (A-06): stored as observed, no app or portal in v1.
-  passwordHash  String?
+  passwordHash       String?
   /// One-time-use-many code behind the portal's "connect Telegram" link (A-103).
-  telegramCode  String?   @unique
+  telegramCode       String?   @unique
+  /// The code behind the student's "invite a friend" link (A-120); made when first shown.
+  referralCode       String?   @unique
+  /// The student who brought this one (A-120): from the lead's referrer, or set by staff.
+  referredById       String?
+  /// When the referrer was credited for this student; set once, on the first membership.
+  referralCreditedAt DateTime?
   /// "Manba": a lead source; the catalogue gets its own pages with leads (Phase 7).
-  sourceId      String?
-  schoolId      String?
-  note          String?
-  isBlacklisted Boolean   @default(false)
-  isArchived    Boolean   @default(false)
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
+  sourceId           String?
+  schoolId           String?
+  note               String?
+  isBlacklisted      Boolean   @default(false)
+  isArchived         Boolean   @default(false)
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
 
   branch         Branch                @relation(fields: [branchId], references: [id])
   school         School?               @relation(fields: [schoolId], references: [id], onDelete: SetNull)
   source         LeadSource?           @relation(fields: [sourceId], references: [id], onDelete: SetNull)
+  referredBy     Student?              @relation("referrals", fields: [referredById], references: [id], onDelete: SetNull)
+  referrals      Student[]             @relation("referrals")
+  referredLeads  Lead[]                @relation("leadReferrer")
   memberships    GroupMembership[]
   parents        Parent[]
   customFields   StudentCustomField[]
@@ -682,6 +695,7 @@ model Student {
   @@index([phone])
   @@index([schoolId])
   @@index([sourceId])
+  @@index([referredById])
 }
 
 /// A Telegram chat (the student's own, or a parent's) that hears about the
@@ -982,6 +996,9 @@ model Payment {
   paidAt          DateTime @db.Date
   comment         String?
   receivedById    String?
+  /// Set on the bonus-only payment the referral programme gives the referrer (A-120):
+  /// the friend whose joining it rewards.
+  referralOfId    String?
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
 
@@ -997,6 +1014,7 @@ model Payment {
   @@index([membershipId])
   @@index([branchId, paidAt])
   @@index([effectiveMonth])
+  @@index([referralOfId])
 }
 
 enum OnlinePaymentProvider {
@@ -1283,6 +1301,8 @@ model Lead {
   /// The deal in amoCRM this lead mirrors (A-115): set when amoCRM posted it or
   /// when Kampus pushed it there, so neither side imports it twice.
   amoCrmLeadId String?
+  /// The student whose invite brought this lead (A-120); credited when the lead joins a group.
+  referrerId   String?
   createdAt    DateTime         @default(now())
   updatedAt    DateTime         @updatedAt
 
@@ -1294,11 +1314,13 @@ model Lead {
   student   Student?    @relation(fields: [studentId], references: [id], onDelete: SetNull)
   form      LeadForm?   @relation(fields: [formId], references: [id], onDelete: SetNull)
   createdBy User?       @relation("leadCreator", fields: [createdById], references: [id], onDelete: SetNull)
+  referrer  Student?    @relation("leadReferrer", fields: [referrerId], references: [id], onDelete: SetNull)
   phones    LeadPhone[]
   school    School?     @relation(fields: [schoolId], references: [id])
   schoolId  String?
 
   @@index([columnId, isArchived, sortOrder])
+  @@index([referrerId])
   @@index([branchId, isArchived])
   @@index([sourceId, createdAt])
   @@index([studentId])
@@ -1552,6 +1574,8 @@ enum CoinEvent {
   HOMEWORK
   TEST_RESULT
   BIRTHDAY
+  /// A friend brought by the student joined a group (A-120).
+  REFERRAL
 }
 
 model CoinRule {

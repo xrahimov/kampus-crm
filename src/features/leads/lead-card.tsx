@@ -170,6 +170,11 @@ export function LeadCard({
           </Badge>
         )}
         {lead.sourceName && <Badge variant="secondary">{lead.sourceName}</Badge>}
+        {lead.referrerName && (
+          <Badge variant="outline" data-testid="lead-referrer">
+            {tl("referredBy", { name: lead.referrerName })}
+          </Badge>
+        )}
         {lead.formName && (
           <Badge variant="outline" title={tl("fromForm")}>
             {lead.formName}

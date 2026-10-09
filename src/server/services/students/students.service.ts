@@ -11,6 +11,11 @@ import type {
   StudentUpdateInput,
 } from "@/lib/validation/students";
 import { recordAudit } from "@/server/audit/audit";
+import {
+  assertReferrer,
+  creditReferral,
+  ensureReferralCode,
+} from "@/server/services/students/referrals.service";
 import { hashPassword } from "@/server/auth/password";
 import { prisma, type DbClient } from "@/server/db/prisma";
 import { AppError } from "@/server/errors/app-error";
@@ -82,6 +87,11 @@ export interface StudentDetailDto extends StudentRowDto {
   hasAppPassword: boolean;
   parents: ParentDto[];
   customFields: CustomFieldDto[];
+  /** Referral programme (A-120): the invite code, who brought the student, friends credited. */
+  referralCode: string | null;
+  referredById: string | null;
+  referredByName: string | null;
+  referrals: number;
 }
 
 export interface ParentDto {
@@ -164,6 +174,8 @@ const detailInclude = {
   source: { select: { name: true } },
   parents: { orderBy: { createdAt: "asc" } },
   customFields: { orderBy: { createdAt: "asc" } },
+  referredBy: { select: { fullName: true } },
+  _count: { select: { referrals: { where: { referralCreditedAt: { not: null } } } } },
 } satisfies Prisma.StudentInclude;
 type DetailRow = Prisma.StudentGetPayload<{ include: typeof detailInclude }>;
 
@@ -244,6 +256,10 @@ function toDetailDto(row: DetailRow, balances: Map<string, MembershipBalance>): 
     hasAppPassword: row.passwordHash !== null,
     parents: row.parents.map((p) => ({ id: p.id, fullName: p.fullName, phone: p.phone })),
     customFields: row.customFields.map((f) => ({ id: f.id, name: f.name, value: f.value })),
+    referralCode: row.referralCode,
+    referredById: row.referredById,
+    referredByName: row.referredBy?.fullName ?? null,
+    referrals: row._count.referrals,
   };
 }
 
@@ -454,6 +470,8 @@ export async function getStudent(
 ): Promise<StudentDetailDto> {
   authorize(actor, "students.view");
   const row = await findStudentInScope(db, actor, id, detailInclude);
+  // The invite code (A-120) is made the first time anyone needs it, so staff can read it out.
+  if (!row.referralCode) row.referralCode = await ensureReferralCode(db, row.id);
   const balances = await membershipBalances(
     db,
     row.memberships.map((m) => m.id),
@@ -558,6 +576,7 @@ async function studentData(input: StudentUpdateInput) {
     ...(input.photoUrl !== undefined ? { photoUrl: input.photoUrl } : {}),
     ...(input.sourceId !== undefined ? { sourceId: input.sourceId } : {}),
     ...(input.schoolId !== undefined ? { schoolId: input.schoolId } : {}),
+    ...(input.referredById !== undefined ? { referredById: input.referredById } : {}),
     ...(input.note !== undefined ? { note: input.note } : {}),
     ...(input.password ? { passwordHash: await hashPassword(input.password) } : {}),
   };
@@ -590,6 +609,9 @@ export async function createStudent(
     if (group.branchId !== input.branchId) {
       throw AppError.validation({ "membership.groupId": ["validation.groupBranch"] });
     }
+  }
+  if (input.referredById) {
+    await assertReferrer(db, actor.organizationId, input.referredById, "referredById");
   }
   try {
     const id = await db.$transaction(async (tx) => {
@@ -635,6 +657,8 @@ export async function createStudent(
           branchId: group.branchId,
         });
       }
+      // Brought by a friend and already in a group: the friend is credited now (A-120).
+      await creditReferral(tx, row.id, actor);
       return row.id;
     });
     return loadDetail(db, id);
@@ -651,6 +675,9 @@ export async function updateStudent(
 ): Promise<StudentDetailDto> {
   authorize(actor, "students.update");
   const row = await findStudentInScope(db, actor, id, {});
+  if (input.referredById) {
+    await assertReferrer(db, actor.organizationId, input.referredById, "referredById", id);
+  }
   try {
     await db.$transaction(async (tx) => {
       const data = await studentData(input);
@@ -663,6 +690,7 @@ export async function updateStudent(
         after: auditShape(updated),
         branchId: row.branchId,
       });
+      if (input.referredById) await creditReferral(tx, id, actor);
     });
   } catch (error) {
     rethrowAsAppError(error, "phone");

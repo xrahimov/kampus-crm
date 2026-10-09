@@ -223,6 +223,16 @@ export function StudentDetail({
   ];
   if (student.schoolName) profile.push([t("students.form.school"), student.schoolName]);
   if (student.sourceName) profile.push([t("students.form.source"), student.sourceName]);
+  if (student.referredByName) profile.push([td("referredBy"), student.referredByName]);
+  if (student.referralCode) {
+    profile.push([
+      td("referralCode"),
+      <span key="referralCode" className="font-mono" data-testid="student-referral-code">
+        {student.referralCode}
+      </span>,
+    ]);
+  }
+  if (student.referrals > 0) profile.push([td("referrals"), String(student.referrals)]);
 
   return (
     <div className="space-y-4">

@@ -338,7 +338,9 @@
     "botUsername": "Faqat harflar, raqamlar va pastki chiziq.",
     "recordingSize": "Yozuv hajmi 400 MB dan oshmasligi kerak.",
     "nonZero": "Nol bo'lishi mumkin emas",
-    "lessonExists": "Bu vaqtda dars allaqachon bor."
+    "lessonExists": "Bu vaqtda dars allaqachon bor.",
+    "referralSelf": "O‘quvchi o‘zini taklif qila olmaydi",
+    "referralUnknown": "O‘quvchi topilmadi"
   },
   "roles": {
     "CEO": "CEO",
@@ -406,6 +408,12 @@
         "task": "Filial menejerlariga vazifa",
         "days": "kundan keyin",
         "off": "o‘chiq"
+      },
+      "referral": {
+        "title": "Tavsiya dasturi",
+        "hint": "Do‘stini olib kelgan o‘quvchi coin oladi (Sozlamalar → Coinlar, «Tavsiya» hodisasi) va do‘sti guruhga qo‘shilganda balansiga shu bonus tushadi. 0 bo‘lsa faqat coin beriladi.",
+        "bonus": "Taklif qilgan o‘quvchiga bonus",
+        "currency": "so‘m"
       }
     },
     "switches": {
@@ -1215,7 +1223,9 @@
       "parentName": "Ota-ona ismi",
       "schoolSection": "Maktab qo‘shish",
       "school": "Maktab",
-      "schoolPlaceholder": "Maktabni tanlang"
+      "schoolPlaceholder": "Maktabni tanlang",
+      "referredBy": "Taklif qilgan o‘quvchi",
+      "referredByPlaceholder": "O‘quvchini ism yoki telefon bo‘yicha qidiring"
     },
     "genders": {
       "MALE": "Erkak",
@@ -1260,7 +1270,10 @@
       "hideArchivedGroups": "Arxivdagi guruhlarni yashirish",
       "paymentHistory": "To‘lov tarixi",
       "allGroups": "Barcha guruhlar",
-      "adjust": "Qoldiqni to'g'rilash"
+      "adjust": "Qoldiqni to'g'rilash",
+      "referredBy": "Taklif qilgan",
+      "referralCode": "Taklif kodi",
+      "referrals": "Olib kelgan do‘stlari"
     },
     "groupCard": {
       "grade": "Baho",
@@ -1337,6 +1350,9 @@
         "balance": {
           "adjust": "Qoldiq to'g'rilandi",
           "adjustRemove": "Qoldiq to'g'rilashi o'chirildi"
+        },
+        "referral": {
+          "credit": "Tavsiya hisobga olindi"
         }
       }
     },
@@ -1399,7 +1415,11 @@
     "importBalances": "Boshlang'ich qoldiqlarni import qilish",
     "importBalancesHint": "Har bir o'quvchi va guruh uchun bir qator: oldingi tizimdan kelgan qoldiq. Qarz manfiy son, o'quvchining ortiqcha puli musbat son bilan yoziladi. O'quvchi Kampus ID, telefon yoki aniq ism bo'yicha topiladi; yozishdan oldin mosliklar ko'rsatiladi.",
     "importMenu": "Import",
-    "importParents": "Ota-onalarni import qilish"
+    "importParents": "Ota-onalarni import qilish",
+    "picker": {
+      "noResults": "O‘quvchi topilmadi",
+      "clear": "Tozalash"
+    }
   },
   "payments": {
     "pay": "To‘lov",
@@ -1685,7 +1705,9 @@
       "comment": "Izoh",
       "createNew": "Yangi yaratish…",
       "newColumn": "Yangi bo‘lim nomi",
-      "newSource": "Yangi manba nomi"
+      "newSource": "Yangi manba nomi",
+      "referrer": "Taklif qilgan o‘quvchi",
+      "referrerPlaceholder": "O‘quvchini ism yoki telefon bo‘yicha qidiring"
     },
     "addToGroup": {
       "button": "Lidlarni guruhga qo‘shish ({count})",
@@ -1717,9 +1739,11 @@
       "comment": "Izoh",
       "submit": "Yuborish",
       "thanksTitle": "Rahmat!",
-      "thanksText": "So‘rovingizni qabul qildik va tez orada bog‘lanamiz."
+      "thanksText": "So‘rovingizni qabul qildik va tez orada bog‘lanamiz.",
+      "refHint": "Sizni markaz o‘quvchisi taklif qildi. Taklif so‘rovingiz bilan birga qayd etiladi."
     },
-    "amocrmHint": "AmoCRM sinxronizatsiyasi Sozlamalar → Integratsiyalar bo'limida"
+    "amocrmHint": "AmoCRM sinxronizatsiyasi Sozlamalar → Integratsiyalar bo'limida",
+    "referredBy": "Taklif qilgan: {name}"
   },
   "exams": {
     "title": "Imtihonlar",
@@ -1992,7 +2016,8 @@
         "ATTENDANCE": "Davomat",
         "HOMEWORK": "Uy vazifasi",
         "TEST_RESULT": "Test natijasi",
-        "BIRTHDAY": "Tug‘ilgan kun"
+        "BIRTHDAY": "Tug‘ilgan kun",
+        "REFERRAL": "Tavsiya"
       },
       "notWired": "Saqlandi, lekin hali hech narsa ishga tushirmaydi (uy vazifasi yozuvi keyinroq).",
       "reasonsTitle": "Qo‘lda beriladigan coin sabablari",
@@ -2080,7 +2105,8 @@
         "ATTENDANCE": "Davomat",
         "HOMEWORK": "Uy vazifasi",
         "TEST_RESULT": "Test natijasi",
-        "BIRTHDAY": "Tug‘ilgan kun"
+        "BIRTHDAY": "Tug‘ilgan kun",
+        "REFERRAL": "Tavsiya"
       }
     },
     "marketplace": {
@@ -2289,7 +2315,8 @@
       "coins": "Coinlar",
       "leads": "Lid hisobotlari",
       "students": "O‘quvchilar",
-      "statistics": "Markaz statistikasi"
+      "statistics": "Markaz statistikasi",
+      "referrals": "Tavsiya dasturi"
     },
     "filters": {
       "all": "Barchasi",
@@ -2565,6 +2592,39 @@
         "planSeatHours": "Reja joy-soat",
         "fik": "Bandlik"
       }
+    },
+    "referrals": {
+      "title": "Tavsiya dasturi",
+      "kpis": {
+        "leads": "Taklif orqali lidlar",
+        "joined": "Qo‘shilgan do‘stlar",
+        "referrers": "Taklif qilgan o‘quvchilar",
+        "coins": "Berilgan coinlar",
+        "bonus": "Berilgan bonuslar"
+      },
+      "byMonthTitle": "{year}-yildagi takliflar",
+      "series": {
+        "leads": "Lidlar",
+        "joined": "Qo‘shildi"
+      },
+      "referrersTitle": "Kim taklif qildi",
+      "referredTitle": "Kim taklif qilindi",
+      "columns": {
+        "student": "O‘quvchi",
+        "leads": "Lidlar",
+        "joined": "Qo‘shildi",
+        "coins": "Coinlar",
+        "bonus": "Bonus",
+        "who": "Kim",
+        "invitedBy": "Taklif qilgan",
+        "date": "Sana",
+        "state": "Holat"
+      },
+      "state": {
+        "joined": "{date} guruhga qo‘shildi",
+        "lead": "Lid"
+      },
+      "noData": "Bu oyda ma'lumot yo‘q"
     }
   },
   "sms": {
@@ -3043,6 +3103,9 @@
         "debt": {
           "contact": "Qarzdor bilan aloqa yozildi",
           "remind": "Qarz eslatmasi yuborildi"
+        },
+        "referral": {
+          "credit": "Tavsiya hisobga olindi"
         }
       }
     }
@@ -3255,7 +3318,8 @@
       "staffTemplate": "xodimlar-shablon",
       "groupsTemplate": "guruhlar-shablon",
       "parentsTemplate": "ota-onalar-shablon",
-      "debtors": "qarzdorlar"
+      "debtors": "qarzdorlar",
+      "referralsReport": "tavsiya-dasturi"
     },
     "example": {
       "fullName": "<mijoz ismi>",
@@ -3372,7 +3436,10 @@
       "weekdays": "Kunlar",
       "overdueDays": "Kechikish kunlari",
       "promisedAt": "Va’da sanasi",
-      "lastContact": "Oxirgi aloqa"
+      "lastContact": "Oxirgi aloqa",
+      "leads": "Lidlar",
+      "joined": "Qo‘shildi",
+      "coins": "Coinlar"
     },
     "preview": "Oldindan ko'rish: {count} qator import qilinadi, {skipped} qator o'tkazib yuboriladi. Hali hech narsa yozilmadi.",
     "previewButton": "Oldindan ko'rish",
@@ -3530,6 +3597,15 @@
       "cancelled": "To‘lov yakunlanmadi. Qayta urinib ko‘rishingiz mumkin.",
       "pending": "To‘lov hali tasdiqlanmoqda. Sahifa o‘zi yangilanadi.",
       "failed": "To‘lovni boshlab bo‘lmadi. Birozdan keyin qayta urinib ko‘ring."
+    },
+    "referral": {
+      "title": "Do‘stingizni taklif qiling",
+      "intro": "Kodingiz yoki havolangizni do‘stlaringizga ulashing. Do‘stingiz shu havola orqali yozilib guruhga qo‘shilsa, siz coin olasiz, markaz belgilagan bo‘lsa, bonus ham.",
+      "code": "Sizning kodingiz",
+      "copyLink": "Havolani nusxalash",
+      "copyCode": "Kodni nusxalash",
+      "copied": "Nusxalandi",
+      "joined": "{count, plural, =0 {Hali hech bir do‘stingiz qo‘shilmadi.} one {Siz orqali # do‘stingiz qo‘shildi.} other {Siz orqali # do‘stingiz qo‘shildi.}}"
     }
   },
   "telegramBot": {

@@ -7,6 +7,7 @@ import { listPortalHomework } from "@/server/services/homework/homework.service"
 import { listPortalMaterials } from "@/server/services/materials/materials.service";
 import { getPortalPayOptions } from "@/server/services/payments/online-payments.service";
 import { getPortal } from "@/server/services/portal/portal.service";
+import { getPortalReferral } from "@/server/services/students/referrals.service";
 import { getPortalTelegram } from "@/server/services/telegram/student-telegram.service";
 import { getClassPage } from "@/server/services/video/video.service";
 
@@ -30,13 +31,14 @@ export default async function Page({ params, searchParams }: Props) {
   // Back from Payme or Click: open the money tab, where the outcome is shown.
   const { paid } = await searchParams;
   setRequestLocale(locale);
-  const [page, portal, homework, telegram, materials, pay] = await Promise.all([
+  const [page, portal, homework, telegram, materials, pay, referral] = await Promise.all([
     getClassPage(token),
     getPortal(token),
     listPortalHomework(token),
     getPortalTelegram(token),
     listPortalMaterials(token),
     getPortalPayOptions(token),
+    getPortalReferral(token, locale),
   ]);
   if (!page || !portal || !homework || !telegram || !materials || !pay) notFound();
   return (
@@ -49,6 +51,7 @@ export default async function Page({ params, searchParams }: Props) {
         telegram={telegram}
         materials={materials}
         pay={pay}
+        referral={referral}
         initialTab={paid ? "money" : "lessons"}
       />
     </div>

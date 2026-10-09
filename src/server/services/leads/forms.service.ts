@@ -1,5 +1,9 @@
 import type { LeadFormInput, PublicLeadInput } from "@/lib/validation/leads";
 import { recordAudit } from "@/server/audit/audit";
+import {
+  referralSourceId,
+  studentByReferralCode,
+} from "@/server/services/students/referrals.service";
 import { prisma, type DbClient } from "@/server/db/prisma";
 import { AppError } from "@/server/errors/app-error";
 import { notifyUsers } from "@/server/services/dashboard/notifications.service";
@@ -220,6 +224,14 @@ export async function submitPublicForm(
     },
   });
   if (!form || !form.isActive) throw AppError.notFound("errors.formNotFound");
+  // An invite code in the link names the student who brought the lead (A-120); the
+  // centre's "friend" source, when it has one, replaces the form's source then.
+  const referrer = input.ref
+    ? await studentByReferralCode(db, form.organizationId, input.ref)
+    : null;
+  const sourceId = referrer
+    ? ((await referralSourceId(db, form.organizationId)) ?? form.sourceId)
+    : form.sourceId;
   const key = `form:ip:${ip ?? "unknown"}`;
   const since = new Date(Date.now() - FORM_SUBMIT_WINDOW_MS);
   const recent = await db.loginAttempt.count({ where: { key, createdAt: { gt: since } } });
@@ -239,7 +251,8 @@ export async function submitPublicForm(
         boardId: form.column.boardId,
         columnId: form.columnId,
         fullName: input.fullName,
-        sourceId: form.sourceId,
+        sourceId,
+        referrerId: referrer?.id ?? null,
         comment: input.comment ?? null,
         sortOrder: (last?.sortOrder ?? -1) + 1,
         formId: form.id,
@@ -250,7 +263,12 @@ export async function submitPublicForm(
       action: "lead.create",
       entity: "Lead",
       entityId: lead.id,
-      after: { fullName: lead.fullName, phone: input.phone, formId: form.id },
+      after: {
+        fullName: lead.fullName,
+        phone: input.phone,
+        formId: form.id,
+        referrerId: referrer?.id ?? null,
+      },
       branchId: form.column.board.branchId,
     });
     // The in-app bell for the branch's lead handlers (A-97), as for leads entered by staff.

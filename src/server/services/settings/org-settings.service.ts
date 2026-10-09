@@ -36,6 +36,7 @@ function toDto(
     debtTelegramDays: settings.debtTelegramDays,
     debtSmsDays: settings.debtSmsDays,
     debtTaskDays: settings.debtTaskDays,
+    referralBonus: settings.referralBonus,
   };
 }
 
@@ -69,6 +70,8 @@ export async function updateOrgSettings(
     debtTelegramDays: input.debtTelegramDays,
     debtSmsDays: input.debtSmsDays,
     debtTaskDays: input.debtTaskDays,
+    // Referral programme (A-120): the bonus a student earns when a friend they invited joins.
+    referralBonus: input.referralBonus,
   };
 
   return db.$transaction(async (tx) => {

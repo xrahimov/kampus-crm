@@ -19,6 +19,7 @@ export const REPORTS_NAV: ReportNavItem[] = [
   { key: "staffAttendance", href: "/reports/staff-attendance", permission: "reports.view" },
   { key: "coins", href: "/reports/coins", permission: "reports.view" },
   { key: "leads", href: "/reports/leads", permission: "reports.leads" },
+  { key: "referrals", href: "/reports/referrals", permission: "reports.leads" },
   { key: "students", href: "/reports/students", permission: "reports.view" },
   { key: "statistics", href: "/reports/statistics", permission: "reports.view" },
 ];

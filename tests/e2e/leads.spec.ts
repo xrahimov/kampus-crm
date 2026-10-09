@@ -114,11 +114,25 @@ test.describe("leads", () => {
     await expect(row).toBeVisible();
     await expect(row).toContainText(`/en/forms/${FORM_SLUG}`);
 
+    // A student's invite link (A-120): the code is on their profile. A seeded student,
+    // so the "Invited by" badge never carries a name another test looks for.
+    const list = (await (
+      await page.request.get("/api/v1/students?q=Demo%20Student&pageSize=1")
+    ).json()) as {
+      items: Array<{ id: string; fullName: string }>;
+    };
+    const referrer = list.items[0]!;
+    const detail = (await (await page.request.get(`/api/v1/students/${referrer.id}`)).json()) as {
+      referralCode: string;
+    };
+    expect(detail.referralCode).toMatch(/^[A-Z2-9]{6}$/);
+
     // A visitor without a session opens the link and sends their details.
     const visitor = await browser.newContext();
     const publicPage = await visitor.newPage();
-    await publicPage.goto(`/en/forms/${FORM_SLUG}`);
+    await publicPage.goto(`/en/forms/${FORM_SLUG}?ref=${detail.referralCode}`);
     await expect(publicPage.getByRole("heading", { name: `E2E Form ${STAMP}` })).toBeVisible();
+    await expect(publicPage.getByTestId("public-form-ref")).toContainText("You were invited");
     await publicPage.getByLabel("Your name").fill(`E2E Visitor ${STAMP}`);
     await publicPage.getByLabel("Phone number").fill(`+99895${String(STAMP).slice(-7)}`);
     await publicPage.getByLabel("Comment").fill("Saw the ad");
@@ -133,6 +147,7 @@ test.describe("leads", () => {
     await expect(card).toBeVisible();
     await expect(card).toContainText(`E2E Form ${STAMP}`);
     await expect(card).toContainText("Saw the ad");
+    await expect(card.getByTestId("lead-referrer")).toHaveText(`Invited by ${referrer.fullName}`);
   });
 
   test("a group member can be returned to leads", async ({ page }) => {

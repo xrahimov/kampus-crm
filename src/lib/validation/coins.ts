@@ -4,7 +4,13 @@ import { idSchema } from "./common";
 
 /* Coins and marketplace (EXP §5 COINLAR, §8 Coin sozlamalari, §10 Coins). Messages are i18n keys. */
 
-export const COIN_EVENTS = ["ATTENDANCE", "HOMEWORK", "TEST_RESULT", "BIRTHDAY"] as const;
+export const COIN_EVENTS = [
+  "ATTENDANCE",
+  "HOMEWORK",
+  "TEST_RESULT",
+  "BIRTHDAY",
+  "REFERRAL",
+] as const;
 export type CoinEvent = (typeof COIN_EVENTS)[number];
 
 export const PURCHASE_STATUSES = ["PENDING", "APPROVED", "REJECTED"] as const;

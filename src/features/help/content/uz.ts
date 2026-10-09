@@ -191,6 +191,7 @@ export const uz: HelpContent = {
           title: "Manbalar",
           body: [
             "**Manba** tugmasi lidlar keladigan joylar ro‘yxatini ochadi: Instagram, Telegram, tanish, banner. Har bir manba qancha lid olib kelgani va ulardan nechtasi o‘quvchiga aylanganini ko‘rsatadi, shunda qaysi reklama ishlayotganini ko‘rasiz. Manbalarni kartochkalarda ishlatishdan oldin shu yerda yarating; endi ishlatilmaydigan manbani tarixini yo‘qotmasdan o‘chirib qo‘yish mumkin.",
+            "**Tavsiya dasturi.** Har bir o‘quvchining taklif kodi bor: u shaxsiy sahifasida va Kampusdagi profilida ko‘rinadi. O‘quvchining havolasi orqali ommaviy formani to‘ldirgan do‘st, shuningdek ofis **Taklif qilgan o‘quvchi** ni tanlagan lid yoki o‘quvchi shu o‘quvchiga bog‘lanadi. Do‘sti guruhga qo‘shilganda o‘quvchiga bir marta **Tavsiya** qoidasi bo‘yicha coin beriladi va Sozlamalar → Umumiy bo‘limida bonus belgilangan bo‘lsa, shu summa bonus to‘lov sifatida balansiga tushadi. Taklif havolasi orqali kelgan lidlar markazda **Do‘st** manbasi bo‘lsa, shu manbani oladi. **Hisobotlar → Tavsiya dasturi** oy davomida kim kimni taklif qilgani va bu nima bergani ko‘rsatadi.",
           ],
         },
         forms: {
@@ -1015,6 +1016,7 @@ export const uz: HelpContent = {
           title: "To‘lovlar",
           body: [
             "**To‘lovlar** yorlig‘i balansingizni, oylik to‘lovni, keyingi to‘lov sanasini va qilgan har bir to‘lovingizni ko‘rsatadi. Qizil qator qarzdor ekaningizni bildiradi; markazda to‘lang yoki, **Onlayn to‘lash** taklif qilingan bo‘lsa, kartangiz bilan: oy va summani tanlang, **Payme orqali to‘lash** yoki **Click orqali to‘lash** ni bosing, provayder sahifasida yakunlang va qaytib keling. To‘lov tasdiqlanishi bilan shu yerda paydo bo‘ladi.",
+            "**Do‘stingizni taklif qiling** kartasida taklif kodingiz va ulashish uchun havola ko‘rinadi. Do‘stingiz shu havola orqali yozilib guruhga qo‘shilsa, siz coin olasiz, markaz belgilagan bo‘lsa, balansingizga bonus ham tushadi. Karta qo‘shilgan do‘stlaringizni sanaydi.",
           ],
         },
         results: {

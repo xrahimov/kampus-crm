@@ -27,11 +27,13 @@ import { useMoneyFormat } from "@/lib/use-money-format";
 import { PortalHomeworkTab } from "./homework-tab";
 import { PortalMaterialsTab } from "./materials-tab";
 import { PayCard } from "./pay-card";
+import { ReferralCard } from "./referral-card";
 import { TelegramCard } from "./telegram-card";
 import type { Weekday } from "@/lib/validation/groups";
 import type { PortalHomeworkDto } from "@/server/services/homework/homework.service";
 import type { MaterialDto } from "@/server/services/materials/materials.service";
 import type { PortalPayOptionsDto } from "@/server/services/payments/online-payments.service";
+import type { PortalReferralDto } from "@/server/services/students/referrals.service";
 import type { PortalDto } from "@/server/services/portal/portal.service";
 import type { PortalTelegramDto } from "@/server/services/telegram/student-telegram.service";
 import type { ClassPageDto, JoinDto } from "@/server/services/video/video.service";
@@ -66,6 +68,7 @@ export function PortalPage({
   telegram,
   materials,
   pay,
+  referral,
   initialTab = "lessons",
 }: {
   token: string;
@@ -75,6 +78,7 @@ export function PortalPage({
   telegram: PortalTelegramDto;
   materials: MaterialDto[];
   pay: PortalPayOptionsDto;
+  referral: PortalReferralDto | null;
   initialTab?: "lessons" | "money";
 }) {
   const t = useTranslations("portal");
@@ -160,6 +164,7 @@ export function PortalPage({
       </div>
 
       <TelegramCard token={token} initial={telegram} />
+      {referral && <ReferralCard referral={referral} />}
 
       <Card>
         <CardContent className="pt-6">

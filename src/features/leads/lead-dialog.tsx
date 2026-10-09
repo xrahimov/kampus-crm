@@ -20,6 +20,7 @@ import {
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { FormDialog } from "@/features/settings/shared/form-dialog";
+import { StudentPicker } from "@/features/students/student-picker";
 import { api } from "@/lib/api-client";
 import { applyApiError } from "@/lib/api-errors";
 import {
@@ -69,6 +70,7 @@ export function LeadDialog({
   const [customTime, setCustomTime] = useState(false);
   const [sources, setSources] = useState(options.sources);
   const [columnList, setColumnList] = useState(columns);
+  const [referrerName, setReferrerName] = useState<string | null>(null);
 
   const empty = (): Input => ({
     columnId: defaultColumnId,
@@ -77,6 +79,7 @@ export function LeadDialog({
     birthDate: "",
     age: "",
     sourceId: "",
+    referrerId: "",
     teacherId: "",
     days: "",
     lessonTime: "",
@@ -105,6 +108,7 @@ export function LeadDialog({
       setCustomTime(!!lead?.lessonTime && !options.lessonTimes.includes(lead.lessonTime));
       setSources(options.sources);
       setColumnList(columns);
+      setReferrerName(lead?.referrerName ?? null);
     }
   }
 
@@ -119,6 +123,7 @@ export function LeadDialog({
             birthDate: lead.birthDate ?? "",
             age: lead.age ?? "",
             sourceId: lead.sourceId ?? "",
+            referrerId: lead.referrerId ?? "",
             teacherId: lead.teacherId ?? "",
             days: lead.days ?? "",
             lessonTime: lead.lessonTime ?? "",
@@ -308,6 +313,32 @@ export function LeadDialog({
           <FieldError id="lead-sourceId-error" message={errors.sourceId?.message} />
         </div>
       )}
+
+      <div className="space-y-2">
+        <Label htmlFor="lead-referrerId">{tf("referrer")}</Label>
+        <Controller
+          control={form.control}
+          name="referrerId"
+          render={({ field }) => (
+            <StudentPicker
+              id="lead-referrerId"
+              value={field.value ? String(field.value) : null}
+              valueName={referrerName}
+              excludeId={lead?.studentId}
+              placeholder={tf("referrerPlaceholder")}
+              invalid={!!errors.referrerId}
+              onChange={(id, name) => {
+                field.onChange(id ?? "");
+                setReferrerName(name);
+              }}
+            />
+          )}
+        />
+        <FieldError
+          id="lead-referrerId-error"
+          message={errors.referrerId?.message as string | undefined}
+        />
+      </div>
 
       <div className="space-y-2">
         <Label htmlFor="lead-fullName">{tf("fullName")}</Label>
