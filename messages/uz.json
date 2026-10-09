@@ -3083,11 +3083,12 @@
     },
     "TELEGRAM": {
       "title": "Telegram bot",
-      "description": "Bot xabarnoma ro‘yxatidagi xodimlarni xabardor qiluvchi bot. Nomi ko‘rsatilsa, o‘quvchilar uni shaxsiy sahifasidan ulaydi: dars eslatmalari, uy vazifalari, to‘lov xabarlari.",
+      "description": "Bot xabarnoma ro‘yxatidagi xodimlarni xabardor qiluvchi bot. Nomi ko‘rsatilsa, o‘quvchilar uni shaxsiy sahifasidan ulaydi: dars eslatmalari, uy vazifalari, to‘lov xabarlari. Har yakshanba kechqurun bu chatlar davomat, baholar, uy vazifalari, coinlar va balans haqida haftalik hisobot ham olishi mumkin.",
       "fields": {
         "botToken": "Bot tokeni",
         "webhookSecret": "Webhook maxfiy kaliti",
-        "botUsername": "Bot nomi (@ belgisisiz)"
+        "botUsername": "Bot nomi (@ belgisisiz)",
+        "weeklyReport": "Yakshanba kuni kechqurun ota-onalarga haftalik hisobot"
       }
     },
     "TELEPHONY": {
@@ -3546,7 +3547,13 @@
     "paymentReceived": "{group}: {amount} so‘m to‘lovingiz qabul qilindi. Rahmat!",
     "lessonCancelled": "{group}: {date}{time, select, none {} other { soat {time}}} dagi dars bekor qilindi. {reason}",
     "lessonMoved": "{group}: {date}{time, select, none {} other { soat {time}}} dagi dars {newDate}, {newTime} ga ko'chirildi. {reason}",
-    "lessonRestored": "{group}: {date}{time, select, none {} other { soat {time}}} dagi dars o'z vaqtida o'tkaziladi."
+    "lessonRestored": "{group}: {date}{time, select, none {} other { soat {time}}} dagi dars o'z vaqtida o'tkaziladi.",
+    "weeklyTitle": "{from} – {to} haftalik hisobot: {student}",
+    "weeklyGroup": "{group}: {lessons} darsdan {attended} tasida qatnashdi{missed, select, none {} other {, {missed} tasini qoldirdi}}{excused, select, none {} other {, {excused} tasi sababli}}{grades, select, none {} other {; baholar: {grades}}}{homework, select, none {} other {; uy vazifasi: {homework}}}",
+    "weeklyNoLessons": "{group}: bu hafta dars bo‘lmadi",
+    "weeklyCoins": "Coinlar: bu hafta {earned}, jami {total}",
+    "weeklyBalance": "Balans: {balance}{next, select, none {} other {, keyingi to‘lov {next} gacha}}",
+    "weeklyDebt": "Qarz: {debt}. Iltimos, o‘quv markazida yoki o‘z sahifangizdan to‘lang."
   },
   "video": {
     "title": "Video dars",

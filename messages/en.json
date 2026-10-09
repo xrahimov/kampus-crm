@@ -3083,11 +3083,12 @@
     },
     "TELEGRAM": {
       "title": "Telegram bot",
-      "description": "The support bot that notifies staff listed under Bot notifications. With a username set, students connect to it from their personal page for lesson reminders, homework and payment notices.",
+      "description": "The support bot that notifies staff listed under Bot notifications. With a username set, students connect to it from their personal page for lesson reminders, homework and payment notices. Every Sunday evening those chats can also get a weekly report on attendance, grades, homework, coins and the balance.",
       "fields": {
         "botToken": "Bot token",
         "webhookSecret": "Webhook secret",
-        "botUsername": "Bot username (without @)"
+        "botUsername": "Bot username (without @)",
+        "weeklyReport": "Weekly report to parents on Sunday evening"
       }
     },
     "TELEPHONY": {
@@ -3546,7 +3547,13 @@
     "paymentReceived": "{group}: your payment of {amount} so'm was received. Thank you!",
     "lessonCancelled": "{group}: the lesson on {date}{time, select, none {} other { at {time}}} is cancelled. {reason}",
     "lessonMoved": "{group}: the lesson on {date}{time, select, none {} other { at {time}}} moves to {newDate}, {newTime}. {reason}",
-    "lessonRestored": "{group}: the lesson on {date}{time, select, none {} other { at {time}}} takes place after all."
+    "lessonRestored": "{group}: the lesson on {date}{time, select, none {} other { at {time}}} takes place after all.",
+    "weeklyTitle": "Weekly report {from} – {to}: {student}",
+    "weeklyGroup": "{group}: attended {attended} of {lessons} lessons{missed, select, none {} other {, missed {missed}}}{excused, select, none {} other {, excused {excused}}}{grades, select, none {} other {; grades: {grades}}}{homework, select, none {} other {; homework: {homework}}}",
+    "weeklyNoLessons": "{group}: no lessons this week",
+    "weeklyCoins": "Coins: {earned} this week, {total} in all",
+    "weeklyBalance": "Balance: {balance}{next, select, none {} other {, next payment by {next}}}",
+    "weeklyDebt": "Debt: {debt}. Please pay at the learning centre or from your page."
   },
   "video": {
     "title": "Video lesson",

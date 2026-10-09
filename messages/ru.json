@@ -3083,11 +3083,12 @@
     },
     "TELEGRAM": {
       "title": "Telegram-бот",
-      "description": "Бот, который уведомляет сотрудников из списка «Бот-уведомления». Если указать имя бота, ученики подключают его со своей личной страницы: напоминания об уроках, домашние задания, оплата.",
+      "description": "Бот, который уведомляет сотрудников из списка «Бот-уведомления». Если указать имя бота, ученики подключают его со своей личной страницы: напоминания об уроках, домашние задания, оплата. Каждое воскресенье вечером эти чаты могут также получать недельный отчёт о посещаемости, оценках, домашних заданиях, монетах и балансе.",
       "fields": {
         "botToken": "Токен бота",
         "webhookSecret": "Секрет вебхука",
-        "botUsername": "Имя бота (без @)"
+        "botUsername": "Имя бота (без @)",
+        "weeklyReport": "Еженедельный отчёт родителям в воскресенье вечером"
       }
     },
     "TELEPHONY": {
@@ -3546,7 +3547,13 @@
     "paymentReceived": "{group}: ваш платёж на {amount} сум получен. Спасибо!",
     "lessonCancelled": "{group}: занятие {date}{time, select, none {} other { в {time}}} отменено. {reason}",
     "lessonMoved": "{group}: занятие {date}{time, select, none {} other { в {time}}} перенесено на {newDate}, {newTime}. {reason}",
-    "lessonRestored": "{group}: занятие {date}{time, select, none {} other { в {time}}} всё же состоится."
+    "lessonRestored": "{group}: занятие {date}{time, select, none {} other { в {time}}} всё же состоится.",
+    "weeklyTitle": "Отчёт за неделю {from} – {to}: {student}",
+    "weeklyGroup": "{group}: посещено {attended} из {lessons} уроков{missed, select, none {} other {, пропущено {missed}}}{excused, select, none {} other {, по уважительной причине {excused}}}{grades, select, none {} other {; оценки: {grades}}}{homework, select, none {} other {; домашние задания: {homework}}}",
+    "weeklyNoLessons": "{group}: на этой неделе уроков не было",
+    "weeklyCoins": "Монеты: {earned} за неделю, всего {total}",
+    "weeklyBalance": "Баланс: {balance}{next, select, none {} other {, следующая оплата до {next}}}",
+    "weeklyDebt": "Долг: {debt}. Пожалуйста, оплатите в учебном центре или со своей страницы."
   },
   "video": {
     "title": "Видеоурок",

@@ -870,7 +870,7 @@ export const uz: HelpContent = {
         telegram: {
           title: "Telegram bot",
           body: [
-            "BotFather orqali bot yarating, uning tokeni va nomini qo‘ying, webhook maxfiy kalitini belgilang va uni yoqing. Shundan keyin ikki narsa ishlaydi. Sozlamalar → Bot xabarnoma ro‘yxatidagi xodimlar to‘lovlar va yangi o‘quvchilar haqida Telegram xabari oladi: har bir xodim botga **/id** yuboradi, siz esa u olgan ID ni u xabar olishi kerak bo‘lgan filiallar bilan kiritasiz. O‘quvchilar va ota-onalar o‘quvchining shaxsiy sahifasida **Telegramni ulash** ni bosadi va dars boshlanishiga taxminan o‘ttiz daqiqa qolganda eslatma, o‘qituvchi video darsni boshlaganda xabar, uy vazifasi xabarlari, yangi materiallar, qarz eslatmalari va to‘lov tasdiqlarini oladi.",
+            "BotFather orqali bot yarating, uning tokeni va nomini qo‘ying, webhook maxfiy kalitini belgilang va uni yoqing. Shundan keyin ikki narsa ishlaydi. Sozlamalar → Bot xabarnoma ro‘yxatidagi xodimlar to‘lovlar va yangi o‘quvchilar haqida Telegram xabari oladi: har bir xodim botga **/id** yuboradi, siz esa u olgan ID ni u xabar olishi kerak bo‘lgan filiallar bilan kiritasiz. O‘quvchilar va ota-onalar o‘quvchining shaxsiy sahifasida **Telegramni ulash** ni bosadi va dars boshlanishiga taxminan o‘ttiz daqiqa qolganda eslatma, o‘qituvchi video darsni boshlaganda xabar, uy vazifasi xabarlari, yangi materiallar, qarz eslatmalari va to‘lov tasdiqlarini oladi. Har yakshanba kechqurun shu chatlar haftalik hisobot oladi: qatnashilgan va qoldirilgan darslar, baholar, bajarilgan uy vazifalari, coinlar va keyingi to‘lov sanasi bilan balans (Telegram kartasidagi **Yakshanba kuni kechqurun ota-onalarga haftalik hisobot** tugmasi).",
           ],
         },
         amocrm: {
