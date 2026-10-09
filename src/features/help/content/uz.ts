@@ -1110,6 +1110,12 @@ export const uz: HelpContent = {
             "Kingston kabi markazlar lidlarning ko'pini Instagram'dan oladi. Integratsiya ulangach markazning Instagram professional akkauntiga yozilgan har bir xabar **Lidlar → Kirish qutisi**ga Telegram suhbatlari yoniga tushadi, yozgan odam Instagram manbali lid bo'ladi, xodimlar Kampus'dan javob beradi; javob Meta Graph API orqali ketadi. Ulash uchun Meta for Developers'da Instagram messaging bilan ilova kerak: unda forma ostidagi vebhuk manzilini (vebhuk siringiz bilan) va verify tokenni ko'rsating, so'ng ilova sirini va uzoq muddatli sahifa tokenini kartaga nusxalang. Meta ilovani boshqa akkauntlarning xabarlarini o'qishga ruxsat berishdan oldin tekshiradi, bu haftalar oladi; ungacha vebhukni qo'lda sinab ko'rish mumkin.",
           ],
         },
+        ai: {
+          title: "AI yordamchi",
+          body: [
+            "Yon menyudagi **Yordamchi** markaz haqidagi savollarga oddiy so'zlar bilan javob beradi: kim qarzdor, qancha faol o'quvchi bor, bu oy qancha tushum bo'ldi, bugun nima bor, yoki yuboriladigan SMS qoralamasi. Yordamchi faktlarni Kampus'dan ekranlardagi qoidalar bilan qidiradi: kassir qarzdorlarni ko'radi, o'qituvchi ko'rmaydi; ma'lumotlarni hech qachon o'zgartirmaydi. Sozlamalar → Integratsiyalar → AI yordamchi bo'limiga Anthropic API kaliti joylangach Claude orqali ishlaydi (kalitni kai yoki markaz egasi console.anthropic.com da yaratadi va foydalanish uchun Anthropic'ga to'laydi). Kalitsiz sahifa sinov rejimida ishlaydi: haqiqiy ma'lumotlaringiz bo'yicha tayyor iboralar, jarayonni sinab ko'rish uchun.",
+          ],
+        },
         jobs: {
           title: "Fon vazifalari",
           body: [

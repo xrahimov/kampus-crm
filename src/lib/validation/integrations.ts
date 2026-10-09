@@ -209,6 +209,7 @@ export const INTEGRATION_PROVIDERS = [
   "CLICK",
   "FISCAL",
   "INSTAGRAM",
+  "AI",
 ] as const;
 export type IntegrationProvider = (typeof INTEGRATION_PROVIDERS)[number];
 
@@ -380,6 +381,17 @@ export const instagramIntegrationSchema = z.object({
   welcomeReply: z.boolean().default(true),
 });
 
+/** The AI assistant (A-149): Claude through the centre's own Anthropic key. */
+export const aiIntegrationSchema = z.object({
+  isEnabled: z.boolean(),
+  apiKey: secret.default(""),
+  model: z
+    .string()
+    .trim()
+    .regex(/^[a-z0-9-]{0,64}$/, "validation.modelId")
+    .default("claude-opus-5-5"),
+});
+
 export const integrationSchemas = {
   SMS: smsIntegrationSchema,
   TELEGRAM: telegramIntegrationSchema,
@@ -391,6 +403,7 @@ export const integrationSchemas = {
   CLICK: clickIntegrationSchema,
   FISCAL: fiscalIntegrationSchema,
   INSTAGRAM: instagramIntegrationSchema,
+  AI: aiIntegrationSchema,
 } as const;
 export type IntegrationInput<P extends IntegrationProvider> = z.infer<
   (typeof integrationSchemas)[P]

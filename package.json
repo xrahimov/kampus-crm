@@ -23,6 +23,7 @@
     "help:screenshots": "tsx scripts/help-screenshots.ts"
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "^0.133.0",
     "@fontsource-variable/onest": "^5.3.1",
     "@hookform/resolvers": "^5.9.1",
     "@node-rs/argon2": "^2.0.2",

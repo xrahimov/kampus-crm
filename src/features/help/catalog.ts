@@ -331,6 +331,7 @@ export const HELP_ARTICLES = [
       { id: "onlinePayments" },
       { id: "fiscal" },
       { id: "instagram" },
+      { id: "ai" },
       { id: "jobs" },
     ],
   },

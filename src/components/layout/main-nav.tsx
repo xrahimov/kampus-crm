@@ -13,10 +13,11 @@ import {
   Landmark,
   Megaphone,
   Settings2,
+  Sparkles,
+  type LucideIcon,
   UserRoundX,
   Users,
   Wallet,
-  type LucideIcon,
 } from "lucide-react";
 import { useTranslations } from "next-intl";
 
@@ -31,6 +32,7 @@ import { cn } from "@/lib/utils";
 
 const MODULE_PATH: Record<ModuleKey, string> = {
   dashboard: "/dashboard",
+  assistant: "/assistant",
   today: "/today",
   leads: "/leads",
   teachers: "/teachers",
@@ -49,6 +51,7 @@ const MODULE_PATH: Record<ModuleKey, string> = {
 
 const MODULE_ICON: Record<ModuleKey, LucideIcon> = {
   dashboard: House,
+  assistant: Sparkles,
   today: CalendarCheck,
   leads: Funnel,
   teachers: GraduationCap,

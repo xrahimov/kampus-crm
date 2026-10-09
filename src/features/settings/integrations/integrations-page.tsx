@@ -168,6 +168,13 @@ export function IntegrationsPage({
         }
         testId="integration-instagram"
       />
+      <IntegrationForm
+        provider="AI"
+        dto={by("AI")}
+        fields={[{ key: "apiKey", secret: true }, { key: "model" }]}
+        extra={<p className="text-xs text-muted-foreground">{t("AI.hint")}</p>}
+        testId="integration-ai"
+      />
       <Card>
         <CardHeader>
           <CardTitle>{t("queue.title")}</CardTitle>

@@ -1106,6 +1106,12 @@ export const en: HelpContent = {
             "Kingston-style centres get most of their leads from Instagram. Once the integration is connected, every message to the centre's Instagram professional account lands in **Leads → Inbox** next to the Telegram chats, the sender becomes a lead with the source Instagram, and staff answer from Kampus; the answer goes out through Meta's Graph API. Connecting needs a Meta for Developers app with Instagram messaging: set the webhook address shown under the form (with your webhook secret) and the verify token in the app, then copy the app secret and a long-lived page access token into the card. Meta reviews the app before it may read messages of accounts other than the developer's own, which takes weeks; until then the webhook can be tried by hand.",
           ],
         },
+        ai: {
+          title: "AI assistant",
+          body: [
+            "**Assistant** in the sidebar answers questions about your centre in plain words: who owes money, how many active students there are, what came in this month, what is on today, or a draft SMS to send. The assistant looks the facts up in Kampus through the same rules as the screens, so a cashier sees debtors and a teacher does not; it never changes data. It runs through Claude once you paste an Anthropic API key into Settings → Integrations → AI assistant (kai or the centre owner creates the key at console.anthropic.com and pays Anthropic for use). Without a key the page works in test mode: set phrases over your real data, so the flow can be tried.",
+          ],
+        },
         jobs: {
           title: "Background jobs",
           body: [

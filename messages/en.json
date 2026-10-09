@@ -41,6 +41,7 @@
   },
   "nav": {
     "dashboard": "Home",
+    "assistant": "Assistant",
     "today": "Today",
     "leads": "Leads",
     "teachers": "Teachers",
@@ -479,7 +480,9 @@
     "certificateExists": "This graduate already has a certificate",
     "certificateRevoked": "This certificate is already revoked",
     "fiscalDisabled": "Fiscal receipts are switched off in Settings → Integrations.",
-    "fiscalIssued": "The fiscal receipt for this payment has already been issued."
+    "fiscalIssued": "The fiscal receipt for this payment has already been issued.",
+    "assistantFailed": "The assistant could not answer.",
+    "assistantRefused": "The assistant declined to answer this question."
   },
   "validation": {
     "phone": "Enter a number like +998 90 123 45 67.",
@@ -1641,6 +1644,27 @@
     "noTeachers": "No teachers in this branch yet.",
     "noRoom": "No room",
     "hours": "Working hours {start}–{end}"
+  },
+  "assistant": {
+    "title": "Assistant",
+    "hint": "Ask about your centre in plain words: debtors, students, payments, today's lessons, or ask for a draft SMS. Answers come from your data; the assistant reads only what your role may see.",
+    "placeholder": "Ask a question or describe what to draft…",
+    "send": "Send",
+    "thinking": "Thinking…",
+    "testMode": "Test mode: the assistant answers from your data with set phrases until an API key is entered in Settings → Integrations → AI assistant.",
+    "liveMode": "Answers by {model}",
+    "settings": "Open settings",
+    "suggestions": {
+      "debtors": "Who owes money right now?",
+      "students": "How many active students do we have?",
+      "payments": "How much came in this month?",
+      "today": "What lessons are on today?",
+      "sms": "Draft a short SMS reminding a parent about an unpaid month."
+    },
+    "usedTools": "Looked at: {tools}",
+    "empty": "Ask the first question or pick one below.",
+    "clear": "New conversation",
+    "error": "The assistant could not answer. Try again."
   },
   "students": {
     "title": "Students",
@@ -4189,7 +4213,8 @@
           "update": "Organisation renamed",
           "suspend": "Centre suspended",
           "resume": "Centre resumed",
-          "export": "Centre data exported"
+          "export": "Centre data exported",
+          "aiAsk": "Assistant asked"
         },
         "balance": {
           "adjust": "Balance adjusted",
@@ -4387,6 +4412,15 @@
         "welcomeReply": "Greet a new conversation automatically"
       },
       "hint": "In Meta for Developers, create an app with Instagram messaging, add the webhook address above with the verify token, copy the app secret and a long-lived page access token here. Until the app is approved the messages can be tried with the webhook alone."
+    },
+    "AI": {
+      "title": "AI assistant",
+      "description": "The Assistant page answers staff questions from the centre's data through Claude; each person sees only what their role allows.",
+      "fields": {
+        "apiKey": "Anthropic API key",
+        "model": "Model"
+      },
+      "hint": "Create an API key at console.anthropic.com and paste it here; the model id defaults to claude-opus-5-5. Without a key the Assistant page runs in test mode with set phrases."
     }
   },
   "staffAttendance": {

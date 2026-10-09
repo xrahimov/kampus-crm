@@ -14,6 +14,7 @@ import {
   type AmoCrmClient,
   type AmoCrmTokens,
 } from "@/server/integrations/amocrm/client";
+import { createAiClient, type AiClient } from "@/server/integrations/ai/client";
 import { createFiscalProvider, type FiscalProvider } from "@/server/integrations/fiscal/provider";
 import {
   createInstagramProvider,
@@ -44,6 +45,7 @@ const SECRET_FIELDS: Record<IntegrationProvider, readonly string[]> = {
   CLICK: ["secretKey"],
   FISCAL: ["apiKey"],
   INSTAGRAM: ["webhookSecret", "verifyToken", "appSecret", "pageAccessToken"],
+  AI: ["apiKey"],
 };
 
 /** Providers that work without any setup and are therefore on until switched off. */
@@ -272,6 +274,13 @@ export async function fiscalConfigFor(
 
 export function getFiscalProvider(config: FiscalConfig | null): FiscalProvider {
   return createFiscalProvider(config);
+}
+
+export type AiConfig = Config<"AI"> & { isEnabled: boolean };
+
+/** The centre's AI assistant client: Claude with the centre's key, else the built-in test client (A-149). */
+export async function getAiClient(db: DbClient, organizationId: string): Promise<AiClient> {
+  return createAiClient(await loadIntegrationConfig(db, "AI", organizationId));
 }
 
 export type InstagramConfig = Config<"INSTAGRAM"> & { isEnabled: boolean };
