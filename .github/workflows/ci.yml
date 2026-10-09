@@ -15,20 +15,6 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 25
 
-    services:
-      postgres:
-        image: postgres:16-alpine
-        env:
-          POSTGRES_USER: kampus
-          POSTGRES_PASSWORD: kampus
-          POSTGRES_DB: kampus
-        ports: ["5432:5432"]
-        options: >-
-          --health-cmd "pg_isready -U kampus -d kampus"
-          --health-interval 5s
-          --health-timeout 3s
-          --health-retries 20
-
     env:
       CI: "true"
       DATABASE_URL: postgresql://kampus:kampus@localhost:5432/kampus?schema=public
@@ -39,6 +25,17 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
+
+      # Docker Hub rate-limits anonymous image pulls from shared runners, so the
+      # database is the PostgreSQL 16 that ships preinstalled on ubuntu-latest.
+      - name: Start PostgreSQL
+        run: |
+          sudo systemctl start postgresql
+          for i in $(seq 1 30); do sudo -u postgres pg_isready -q && break; sleep 1; done
+          sudo -u postgres psql -v ON_ERROR_STOP=1 \
+            -c "CREATE USER kampus WITH PASSWORD 'kampus' SUPERUSER;" \
+            -c "CREATE DATABASE kampus OWNER kampus;"
+          pg_isready -h localhost -p 5432 -U kampus -d kampus
 
       - uses: actions/setup-node@v4
         with:
