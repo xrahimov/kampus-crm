@@ -39,6 +39,9 @@ export interface LeadsReportDto {
     lost: number;
     bestSource: { name: string; count: number } | null;
     bestSalesperson: { name: string; count: number } | null;
+    /** Trial lessons dated in the month (A-131), cancelled ones excluded, and how many visitors came. */
+    trials: number;
+    trialsAttended: number;
   };
   /** Leads created in the month by where they are now. */
   funnel: Array<{
@@ -48,6 +51,14 @@ export interface LeadsReportDto {
   byMonth: Array<{ month: string; created: number; lost: number; converted: number }>;
   byCourse: Array<{ name: string; count: number }>;
   bySource: Array<{ name: string; count: number }>;
+  /** Per source: the month's new leads, its trial visits, who came and who became a student (A-131). */
+  trialsBySource: Array<{
+    name: string | null;
+    leads: number;
+    trials: number;
+    attended: number;
+    converted: number;
+  }>;
   rows: LeadReportRowDto[];
   sources: Array<{ id: string; name: string }>;
 }
@@ -87,40 +98,52 @@ export async function getLeadsReport(
   };
   const yearFrom = new Date(Date.UTC(period.year, 0, 1));
   const yearTo = new Date(Date.UTC(period.year + 1, 0, 1));
-  const [created, convertedInMonth, lostInMonth, yearCreated, yearConverted, yearLost, sources] =
-    await Promise.all([
-      db.lead.findMany({
-        where: { ...base, createdAt: inRange(period) },
-        include,
-        orderBy: { createdAt: "desc" },
-      }),
-      db.lead.findMany({ where: { ...base, convertedAt: inRange(period) }, include }),
-      db.lead.count({
-        where: { ...base, status: "LOST", studentId: null, updatedAt: inRange(period) },
-      }),
-      db.lead.findMany({
-        where: { ...base, createdAt: { gte: yearFrom, lt: yearTo } },
-        select: { createdAt: true },
-      }),
-      db.lead.findMany({
-        where: { ...base, convertedAt: { gte: yearFrom, lt: yearTo } },
-        select: { convertedAt: true },
-      }),
-      db.lead.findMany({
-        where: {
-          ...base,
-          status: "LOST",
-          studentId: null,
-          updatedAt: { gte: yearFrom, lt: yearTo },
-        },
-        select: { updatedAt: true },
-      }),
-      db.leadSource.findMany({
-        where: { organizationId: actor.organizationId },
-        select: { id: true, name: true },
-        orderBy: { name: "asc" },
-      }),
-    ]);
+  const [
+    created,
+    convertedInMonth,
+    lostInMonth,
+    yearCreated,
+    yearConverted,
+    yearLost,
+    sources,
+    trials,
+  ] = await Promise.all([
+    db.lead.findMany({
+      where: { ...base, createdAt: inRange(period) },
+      include,
+      orderBy: { createdAt: "desc" },
+    }),
+    db.lead.findMany({ where: { ...base, convertedAt: inRange(period) }, include }),
+    db.lead.count({
+      where: { ...base, status: "LOST", studentId: null, updatedAt: inRange(period) },
+    }),
+    db.lead.findMany({
+      where: { ...base, createdAt: { gte: yearFrom, lt: yearTo } },
+      select: { createdAt: true },
+    }),
+    db.lead.findMany({
+      where: { ...base, convertedAt: { gte: yearFrom, lt: yearTo } },
+      select: { convertedAt: true },
+    }),
+    db.lead.findMany({
+      where: {
+        ...base,
+        status: "LOST",
+        studentId: null,
+        updatedAt: { gte: yearFrom, lt: yearTo },
+      },
+      select: { updatedAt: true },
+    }),
+    db.leadSource.findMany({
+      where: { organizationId: actor.organizationId },
+      select: { id: true, name: true },
+      orderBy: { name: "asc" },
+    }),
+    db.trialBooking.findMany({
+      where: { lead: base, date: inRange(period), status: { not: "CANCELLED" } },
+      select: { status: true, lead: { select: { source: { select: { name: true } } } } },
+    }),
+  ]);
 
   const toRow = (l: Row): LeadReportRowDto => ({
     id: l.id,
@@ -147,6 +170,28 @@ export async function getLeadsReport(
     })),
     { stage: "CONVERTED", count: created.filter((l) => l.studentId !== null).length },
   ];
+  // Trials by source: every source that had a new lead, a trial or a conversion this month.
+  const sourceNames = new Set<string | null>([
+    ...created.map((l) => l.source?.name ?? null),
+    ...convertedInMonth.map((l) => l.source?.name ?? null),
+    ...trials.map((t) => t.lead.source?.name ?? null),
+  ]);
+  const trialsBySource = [...sourceNames]
+    .map((name) => {
+      const own = trials.filter((t) => (t.lead.source?.name ?? null) === name);
+      return {
+        name,
+        leads: created.filter((l) => (l.source?.name ?? null) === name).length,
+        trials: own.length,
+        attended: own.filter((t) => t.status === "ATTENDED" || t.status === "CONVERTED").length,
+        converted: convertedInMonth.filter((l) => (l.source?.name ?? null) === name).length,
+      };
+    })
+    .filter((r) => r.leads + r.trials + r.converted > 0)
+    .sort(
+      (a, b) =>
+        b.leads - a.leads || b.trials - a.trials || (a.name ?? "").localeCompare(b.name ?? ""),
+    );
   const months = monthsOfYear(period.year);
   const byMonth = months.map((month) => ({
     month,
@@ -165,6 +210,9 @@ export async function getLeadsReport(
       lost: lostInMonth,
       bestSource: bySourceConv[0] ?? bySourceNew[0] ?? null,
       bestSalesperson: bySeller[0] ?? null,
+      trials: trials.length,
+      trialsAttended: trials.filter((t) => t.status === "ATTENDED" || t.status === "CONVERTED")
+        .length,
     },
     funnel,
     byMonth,
@@ -172,6 +220,7 @@ export async function getLeadsReport(
       (x) => x.name,
     ),
     bySource: bySourceNew,
+    trialsBySource,
     rows: created.map(toRow),
     sources,
   };

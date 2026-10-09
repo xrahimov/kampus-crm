@@ -215,6 +215,14 @@ export const en: HelpContent = {
             "**History** in the row's menu shows every contact and who recorded it. Each morning from nine, owners with calls due get a notice in the bell and, when their Telegram chat is listed under Bot notifications, a message naming the leads; leads without an owner are announced to everyone who may work leads in the branch.",
           ],
         },
+        trials: {
+          title: "Trial lessons",
+          body: [
+            "Many leads want to sit in on one lesson before paying. On the card's menu choose **Book a trial**, pick a group of the lead's branch and the day, and add a note for the teacher if there is one to add. The card then shows a **Trial** badge with the date; the menu offers **Cancel trial** while the visit is still ahead.",
+            'On that day the visitor appears on the teacher\'s **Today** page under the group\'s lesson, in a separate "Trial visitors" block with **Came** and **Didn\'t come** buttons. The teacher marks the visit; the office sees the outcome on the card (came, missed) and decides what to do next: a lead that came is added to the group as usual, which closes the trial as "became a student"; one that missed gets a call.',
+            "**Reports → Leads** counts the month's trials and shows, per source, how many new leads came in, how many trials they had, how many visitors came and how many became students, so you can see which advertising brings people who actually show up.",
+          ],
+        },
         toGroup: {
           title: "Turning leads into students",
           body: [

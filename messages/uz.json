@@ -299,6 +299,12 @@
     "install": {
       "title": "Kampus telefoningizda",
       "text": "Chrome menyusida «Ilovani o'rnatish» yoki «Bosh ekranga qo'shish»ni tanlang; iPhone'da Safari'dagi «Ulashish», so'ng «Bosh ekranga qo'shish»ni bosing. Kampus ilova kabi to'liq ekranda ochiladi."
+    },
+    "trials": {
+      "title": "Sinov darsi mehmonlari",
+      "came": "Keldi",
+      "noShow": "Kelmadi",
+      "hint": "Mehmon kelgan-kelmaganini belgilang; guruhga uni ofis lidlar doskasidan qo‘shadi."
     }
   },
   "errors": {
@@ -399,7 +405,10 @@
     "signInCodeFailed": "Kodni Telegramga yuborib bo‘lmadi. Administratordan kirish kodini o‘chirib qo‘yishni so‘rang.",
     "passwordChangeRequired": "Avval o‘z parolingizni tanlang.",
     "absenceCaseClosed": "Bu holat allaqachon yopilgan.",
-    "leadArchived": "Lid arxivda."
+    "leadArchived": "Lid arxivda.",
+    "trialExists": "Bu lidning o‘sha kuni shu guruhda sinov darsi allaqachon bor.",
+    "trialNotFound": "Sinov darsi topilmadi.",
+    "trialConverted": "Lid guruhga qo‘shilgan; sinov darsi yopilgan."
   },
   "validation": {
     "phone": "+998 90 123 45 67 ko‘rinishida raqam kiriting.",
@@ -502,7 +511,8 @@
     "passwordMatch": "Parollar mos kelmadi.",
     "signInCodeNeedsTelegram": "Avval Telegramni bog‘lang (Sozlamalar → Bot xabarnomalari).",
     "currentSession": "Bu siz ishlayotgan qurilma; «Chiqish»dan foydalaning.",
-    "ownerUnknown": "Bu xodim filialda lidlarga mas‘ul bo‘la olmaydi."
+    "ownerUnknown": "Bu xodim filialda lidlarga mas‘ul bo‘la olmaydi.",
+    "trialOtherBranch": "Guruh liddan boshqa filialda."
   },
   "roles": {
     "CEO": "CEO",
@@ -2224,6 +2234,33 @@
       "loading": "Yuklanmoqda…",
       "empty": "Hali aloqa yozilmagan.",
       "next": "keyingi aloqa {date}"
+    },
+    "trial": {
+      "book": "Sinov darsiga yozish",
+      "title": "Sinov darsi: {name}",
+      "hint": "Mehmon o‘sha kuni o‘qituvchining «Bugun» ro‘yxatida ko‘rinadi; keyin lid guruhga qo‘shilsa, sinov darsi o‘quvchiga aylangan deb yopiladi.",
+      "group": "Guruh",
+      "groupPlaceholder": "Guruhni tanlang",
+      "date": "Kun",
+      "note": "O‘qituvchi uchun izoh",
+      "booked": "Sinov darsi {date} kuniga yozildi.",
+      "cancel": "Sinov darsini bekor qilish",
+      "cancelled": "Sinov darsi bekor qilindi.",
+      "list": "Sinov darslari",
+      "badge": {
+        "BOOKED": "Sinov {date}",
+        "ATTENDED": "Sinovga keldi",
+        "NO_SHOW": "Sinovga kelmadi",
+        "CONVERTED": "Sinov → o‘quvchi",
+        "CANCELLED": "Sinov bekor qilindi"
+      },
+      "statuses": {
+        "BOOKED": "Yozilgan",
+        "ATTENDED": "Keldi",
+        "NO_SHOW": "Kelmadi",
+        "CONVERTED": "O‘quvchiga aylandi",
+        "CANCELLED": "Bekor qilindi"
+      }
     }
   },
   "exams": {
@@ -3060,7 +3097,9 @@
         "bestSource": "Eng yaxshi manba",
         "bestSalesperson": "Eng yaxshi sotuvchi",
         "leadsCount": "{count} lid",
-        "conversionsCount": "{count} konversiya"
+        "conversionsCount": "{count} konversiya",
+        "trials": "Sinovga yozilgan",
+        "trialsAttended": "Sinovga kelgan"
       },
       "funnelTitle": "Voronka",
       "byMonthTitle": "{year}-yil lidlari",
@@ -3078,6 +3117,17 @@
         "UNREACHABLE": "Aloqa yo'q",
         "LOST": "Yo'qotilgan",
         "CONVERTED": "O'quvchiga aylangan"
+      },
+      "trialsTitle": "Manbalar bo‘yicha sinov darslari",
+      "trialsHint": "Oyning yangi lidlari, ularning sinov darslari va kim o‘quvchiga aylangani.",
+      "trialsEmpty": "Bu oyda sinov darslari bo‘lmadi.",
+      "trialsColumns": {
+        "source": "Manba",
+        "leads": "Yangi lidlar",
+        "trials": "Sinovlar",
+        "attended": "Keldi",
+        "converted": "O‘quvchiga aylandi",
+        "noSource": "Manbasiz"
       }
     },
     "students": {
@@ -3497,7 +3547,11 @@
           "restore": "Lid tiklandi",
           "delete": "Lid o'chirildi",
           "convert": "Lid guruhga qo'shildi",
-          "contact": "Lid bilan aloqa yozildi"
+          "contact": "Lid bilan aloqa yozildi",
+          "trial": {
+            "book": "Sinov darsi yozildi",
+            "outcome": "Sinov darsi natijasi belgilandi"
+          }
         },
         "leadBoard": {
           "create": "Lidlar doskasi yaratildi",

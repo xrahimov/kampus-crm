@@ -218,6 +218,14 @@ export const uz: HelpContent = {
             "Qator menyusidagi **Tarix** barcha aloqalarni va ularni kim yozganini ko‘rsatadi. Har kuni ertalab to‘qqizdan boshlab qo‘ng‘irog‘i bor mas‘ullar qo‘ng‘iroqchada xabarnoma oladi, chati Bot xabarnomalarida ko‘rsatilgan bo‘lsa, Telegram’da lidlar ro‘yxati bilan xabar ham keladi; mas‘ulsiz lidlar haqida filialda lidlar bilan ishlay oladigan hamma xabardor qilinadi.",
           ],
         },
+        trials: {
+          title: "Sinov darslari",
+          body: [
+            "Ko‘p lidlar pul to‘lashdan oldin bir darsda o‘tirib ko‘rishni xohlaydi. Kartochka menyusida **Sinov darsiga yozish** ni tanlang, lid filialidagi guruhni va kunni ko‘rsating, kerak bo‘lsa o‘qituvchi uchun izoh qoldiring. Kartochkada sanasi bilan **Sinov** belgisi chiqadi; tashrif hali oldinda ekan, menyuda **Sinov darsini bekor qilish** bor.",
+            "O‘sha kuni mehmon o‘qituvchining **Bugun** sahifasida guruh darsi ostida, alohida «Sinov darsi mehmonlari» blokida **Keldi** va **Kelmadi** tugmalari bilan ko‘rinadi. O‘qituvchi tashrifni belgilaydi; ofis natijani kartochkada ko‘radi (keldi, kelmadi) va keyingi qadamni hal qiladi: kelgan lid odatdagidek guruhga qo‘shiladi va sinov darsi «o‘quvchiga aylandi» deb yopiladi; kelmaganiga qo‘ng‘iroq qilinadi.",
+            "**Hisobotlar → Lidlar** oyning sinov darslarini sanaydi va manbalar bo‘yicha qancha yangi lid kelgani, ularda qancha sinov darsi bo‘lgani, qancha mehmon kelgani va qanchasi o‘quvchiga aylanganini ko‘rsatadi — qaysi reklama haqiqatan keladigan odamlarni olib kelishi ko‘rinadi.",
+          ],
+        },
         toGroup: {
           title: "Lidlarni o‘quvchiga aylantirish",
           body: [

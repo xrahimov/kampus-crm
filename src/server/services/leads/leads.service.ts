@@ -10,6 +10,7 @@ import type {
   LeadTemperature,
   LeadUpdateInput,
   ToLeadInput,
+  TrialStatus,
 } from "@/lib/validation/leads";
 import { hasPermission } from "@/lib/rbac/permissions";
 import { recordAudit } from "@/server/audit/audit";
@@ -31,6 +32,7 @@ import {
 import { TEACHER_ROLE_CODES } from "@/server/services/staff/staff.service";
 
 import { listBoards, type LeadBoardDto } from "./boards.service";
+import { convertTrials } from "./trials.service";
 import {
   assertBranch,
   defaultColumnForBranch,
@@ -69,6 +71,8 @@ export interface LeadDto {
   nextContactAt: string | null;
   lastContactAt: string | null;
   lastOutcome: LeadContactOutcome | null;
+  /** The lead's latest trial lesson (A-131): the next booked one, else the last outcome. */
+  trial: { id: string; date: string; groupName: string; status: TrialStatus } | null;
   sortOrder: number;
   isArchived: boolean;
   studentId: string | null;
@@ -119,8 +123,22 @@ const include = {
   form: { select: { name: true } },
   referrer: { select: { fullName: true } },
   owner: { select: { fullName: true } },
+  trials: {
+    where: { status: { not: "CANCELLED" } },
+    orderBy: [{ date: "desc" }, { createdAt: "desc" }],
+    select: { id: true, date: true, status: true, group: { select: { name: true } } },
+  },
 } satisfies Prisma.LeadInclude;
 type Row = Prisma.LeadGetPayload<{ include: typeof include }>;
+
+/** The booking the card shows: the earliest still-booked visit, else the most recent outcome. */
+function trialOf(trials: Row["trials"]): LeadDto["trial"] {
+  const booked = [...trials].reverse().find((t) => t.status === "BOOKED");
+  const pick = booked ?? trials[0];
+  return pick
+    ? { id: pick.id, date: dateToIso(pick.date), groupName: pick.group.name, status: pick.status }
+    : null;
+}
 
 function toDto(row: Row): LeadDto {
   return {
@@ -148,6 +166,7 @@ function toDto(row: Row): LeadDto {
     nextContactAt: row.nextContactAt ? dateToIso(row.nextContactAt) : null,
     lastContactAt: row.lastContactAt?.toISOString() ?? null,
     lastOutcome: row.lastOutcome,
+    trial: trialOf(row.trials),
     sortOrder: row.sortOrder,
     isArchived: row.isArchived,
     studentId: row.studentId,
@@ -710,6 +729,7 @@ export async function addLeadsToGroup(
       }
       await creditReferral(tx, studentId, actor);
       await applyFamilyDiscount(tx, studentId);
+      await convertTrials(tx, lead.id, group.id);
       await recordAudit(tx, actor, {
         action: "lead.convert",
         entity: "Lead",

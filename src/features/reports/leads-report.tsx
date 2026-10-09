@@ -3,6 +3,14 @@
 import { useTranslations } from "next-intl";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { ExcelLink } from "@/features/shared/excel-link";
 import { parseDateOnly } from "@/lib/dates";
 import { useDateFormat } from "@/lib/use-date-format";
@@ -38,6 +46,8 @@ export function LeadsReport({
       value: k.bestSource?.name ?? "—",
       hint: k.bestSource ? t("kpis.leadsCount", { count: k.bestSource.count }) : null,
     },
+    { key: "trials", label: t("kpis.trials"), value: String(k.trials) },
+    { key: "trialsAttended", label: t("kpis.trialsAttended"), value: String(k.trialsAttended) },
     {
       key: "bestSalesperson",
       label: t("kpis.bestSalesperson"),
@@ -71,7 +81,7 @@ export function LeadsReport({
           testId="filter-source"
         />
       </PeriodFilters>
-      <KpiCards items={kpis} columns={6} />
+      <KpiCards items={kpis} columns={4} />
       <div className="grid gap-4 lg:grid-cols-2">
         <Card>
           <CardHeader>
@@ -116,6 +126,42 @@ export function LeadsReport({
           </CardContent>
         </Card>
       </div>
+      <Card data-testid="report-trials">
+        <CardHeader>
+          <CardTitle className="text-base">{t("trialsTitle")}</CardTitle>
+          <p className="text-sm text-muted-foreground">{t("trialsHint")}</p>
+        </CardHeader>
+        <CardContent>
+          {report.trialsBySource.length === 0 ? (
+            <p className="text-sm text-muted-foreground">{t("trialsEmpty")}</p>
+          ) : (
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>{t("trialsColumns.source")}</TableHead>
+                  <TableHead className="text-right">{t("trialsColumns.leads")}</TableHead>
+                  <TableHead className="text-right">{t("trialsColumns.trials")}</TableHead>
+                  <TableHead className="text-right">{t("trialsColumns.attended")}</TableHead>
+                  <TableHead className="text-right">{t("trialsColumns.converted")}</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {report.trialsBySource.map((r) => (
+                  <TableRow key={r.name ?? ""} data-testid="report-trials-row">
+                    <TableCell className="font-medium">
+                      {r.name ?? t("trialsColumns.noSource")}
+                    </TableCell>
+                    <TableCell className="text-right tabular-nums">{r.leads}</TableCell>
+                    <TableCell className="text-right tabular-nums">{r.trials}</TableCell>
+                    <TableCell className="text-right tabular-nums">{r.attended}</TableCell>
+                    <TableCell className="text-right tabular-nums">{r.converted}</TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          )}
+        </CardContent>
+      </Card>
     </div>
   );
 }

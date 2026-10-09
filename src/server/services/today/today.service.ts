@@ -4,6 +4,7 @@ import { prisma, type DbClient } from "@/server/db/prisma";
 import { AppError } from "@/server/errors/app-error";
 import { authorize, can, type Actor } from "@/server/rbac/authorize";
 import { groupScope } from "@/server/services/groups/shared";
+import { trialsOfDay, type TodayTrialDto } from "@/server/services/leads/trials.service";
 import { dateToIso, isoToDate } from "@/server/services/settings/shared";
 import { membershipBalances } from "@/server/services/students/balances";
 
@@ -61,6 +62,8 @@ export interface TodayLessonDto {
   isExtra: boolean;
   teacherNames: string[];
   members: TodayMemberDto[];
+  /** Leads coming for a trial lesson this day (A-131). */
+  trials: TodayTrialDto[];
   present: number;
   marked: number;
   homework: TodayHomeworkDto | null;
@@ -186,6 +189,12 @@ export async function getToday(
   ]);
 
   const live = memberships.filter((m) => !m.student.isArchived);
+  const trialsByGroup = await trialsOfDay(
+    db,
+    actor,
+    [...new Set(lessons.map((l) => l.groupId))],
+    date,
+  );
   const balances = canSeeBalances
     ? await membershipBalances(
         db,
@@ -212,6 +221,14 @@ export async function getToday(
         comment: marks.get(m.id)?.comment ?? null,
         balance: canSeeBalances ? (balances.get(m.id)?.balance ?? null) : null,
       }));
+    // A booking made for this very lesson stays with it; one without a lesson
+    // (or whose lesson was deleted) shows under the group's first lesson of the day.
+    const groupLessons = lessons.filter((x) => x.groupId === l.groupId);
+    const trials = (trialsByGroup.get(l.groupId) ?? []).filter((t) =>
+      t.lessonId && groupLessons.some((x) => x.id === t.lessonId)
+        ? t.lessonId === l.id
+        : groupLessons[0]?.id === l.id,
+    );
     const homework = l.homework
       ? {
           id: l.homework.id,
@@ -235,6 +252,7 @@ export async function getToday(
       isExtra: l.isExtra,
       teacherNames: l.group.teachers.map((t) => t.user.fullName),
       members,
+      trials,
       present: members.filter((m) => m.attendance === "PRESENT").length,
       marked: members.filter((m) => m.attendance !== "NOT_MARKED").length,
       homework,

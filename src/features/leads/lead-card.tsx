@@ -1,6 +1,13 @@
 "use client";
 
-import { CalendarClock, Clock, MoreHorizontal, Phone, UserRound } from "lucide-react";
+import {
+  CalendarClock,
+  Clock,
+  GraduationCap,
+  MoreHorizontal,
+  Phone,
+  UserRound,
+} from "lucide-react";
 import { useTranslations } from "next-intl";
 
 import { Badge } from "@/components/ui/badge";
@@ -50,6 +57,8 @@ export function LeadCard({
   onMove,
   onArchive,
   onDelete,
+  onTrial,
+  onCancelTrial,
   onDragStart,
   onDragEnd,
   dragging,
@@ -66,6 +75,10 @@ export function LeadCard({
   onMove: (columnId: string) => void;
   onArchive: () => void;
   onDelete: () => void;
+  /** "Book a trial" (A-131); null for leads that already became students. */
+  onTrial: (() => void) | null;
+  /** Cancels the booked trial the card shows. */
+  onCancelTrial: (() => void) | null;
   onDragStart: () => void;
   onDragEnd: () => void;
   dragging: boolean;
@@ -139,6 +152,16 @@ export function LeadCard({
               {canUpdate && (
                 <DropdownMenuItem onSelect={onEdit}>{t("common.edit")}</DropdownMenuItem>
               )}
+              {canUpdate && onTrial && (
+                <DropdownMenuItem onSelect={onTrial} data-testid="lead-book-trial">
+                  {tl("trial.book")}
+                </DropdownMenuItem>
+              )}
+              {canUpdate && onCancelTrial && lead.trial?.status === "BOOKED" && (
+                <DropdownMenuItem onSelect={onCancelTrial} data-testid="lead-cancel-trial">
+                  {tl("trial.cancel")}
+                </DropdownMenuItem>
+              )}
               {canUpdate && columns.length > 1 && (
                 <>
                   <DropdownMenuSeparator />
@@ -190,6 +213,25 @@ export function LeadCard({
             data-testid="lead-due-today"
           >
             {tl("followUp.today")}
+          </Badge>
+        )}
+        {lead.trial && (
+          <Badge
+            variant={
+              lead.trial.status === "BOOKED"
+                ? "outline"
+                : lead.trial.status === "NO_SHOW"
+                  ? "destructive"
+                  : "success"
+            }
+            title={`${lead.trial.groupName} · ${fmt(parseDateOnly(lead.trial.date), { dateStyle: "medium" })}`}
+            data-testid="lead-trial"
+            data-trial-status={lead.trial.status}
+          >
+            <GraduationCap className="size-3" />
+            {tl(`trial.badge.${lead.trial.status}`, {
+              date: fmt(parseDateOnly(lead.trial.date), { day: "numeric", month: "short" }),
+            })}
           </Badge>
         )}
         {lead.sourceName && <Badge variant="secondary">{lead.sourceName}</Badge>}

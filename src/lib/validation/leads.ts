@@ -120,6 +120,24 @@ export const leadCallsFilterSchema = z.object({
 });
 export type LeadCallsFilters = z.infer<typeof leadCallsFilterSchema>;
 
+/** A lead's trial lesson (A-131): booked from the card, marked on the Today roster. */
+export const TRIAL_STATUSES = ["BOOKED", "ATTENDED", "NO_SHOW", "CONVERTED", "CANCELLED"] as const;
+export type TrialStatus = (typeof TRIAL_STATUSES)[number];
+/** The outcomes staff set by hand; CONVERTED comes from adding the lead to the group. */
+export const TRIAL_OUTCOMES = ["BOOKED", "ATTENDED", "NO_SHOW", "CANCELLED"] as const;
+export type TrialOutcome = (typeof TRIAL_OUTCOMES)[number];
+
+/** "Book a trial": the group, the day and a note for the teacher. */
+export const trialBookingSchema = z.object({
+  groupId: idSchema,
+  date: dateOnlySchema,
+  note: blankToNull(text(500)),
+});
+export type TrialBookingInput = z.infer<typeof trialBookingSchema>;
+
+export const trialOutcomeSchema = z.object({ status: z.enum(TRIAL_OUTCOMES) });
+export type TrialOutcomeInput = z.infer<typeof trialOutcomeSchema>;
+
 /** "LIDLARNI GURUHGA QO'SHISH": the selected leads become students of one group. */
 export const leadsToGroupSchema = z.object({
   leadIds: z.array(idSchema).min(1, "validation.leadsMin").max(100, "validation.max"),
