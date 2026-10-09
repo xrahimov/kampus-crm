@@ -259,6 +259,53 @@ export const en: HelpContent = {
         },
       },
     },
+    today: {
+      title: "Your day on a phone",
+      summary:
+        "Today shows the lessons of the day with one-tap attendance, the homework, the next lesson and the debtors of your groups; Kampus installs on a phone like an app.",
+      sections: {
+        day: {
+          title: "What Today shows",
+          body: [
+            "Teachers land on **Today** after signing in. It lists the lessons of the day for the groups you teach or support, in order of time, with the course, the room and the topic. The arrows at the top move a day back or forward; the office sees every group of the branch here.",
+            "Below the lessons sit the **next lesson** after now and the **debtors in your groups** with what they owe. A friendly word after the lesson helps; payments are taken by the office.",
+          ],
+        },
+        attendance: {
+          title: "One-tap attendance",
+          body: [
+            {
+              steps: [
+                "On the lesson's card tap a student's name once for present, again for absent, a third time for excused and once more to clear it.",
+                "**All present** marks everyone who is not marked yet in one tap; then tap the ones who are missing.",
+                "Marks are saved at once and count like marks made in the group's attendance grid: coins, auto-SMS and the attendance percentage follow them.",
+              ],
+            },
+            {
+              note: "If the centre has switched on “attendance only during the lesson”, marks are accepted only on the lesson's day.",
+            },
+          ],
+        },
+        homework: {
+          title: "Homework from the card",
+          body: [
+            "Each lesson card shows its homework: the text, the due date, how many answers came in and how many wait for a check. **Set homework** writes one in two fields; to check answers or attach a file, open the group's Homework tab.",
+          ],
+        },
+        install: {
+          title: "Kampus on your phone",
+          body: [
+            {
+              steps: [
+                "Open Kampus in Chrome on Android, open the menu and choose **Install app** (or **Add to Home screen**).",
+                "On an iPhone open it in Safari, tap **Share**, then **Add to Home Screen**.",
+                "Kampus then opens from its own icon, full-screen, with Today as the first page for teachers.",
+              ],
+            },
+          ],
+        },
+      },
+    },
     teaching: {
       title: "Teaching a group",
       summary:
@@ -267,7 +314,7 @@ export const en: HelpContent = {
         day: {
           title: "Your groups",
           body: [
-            "After signing in you land on Groups, which lists only the groups you teach or support. Open a group to find everything about today's lesson on one page. The sidebar shows you Groups, Students and Exams; the rest of Kampus is for the office.",
+            "After signing in you land on **Today**, the day's lessons with one-tap attendance; Groups lists only the groups you teach or support. Open a group to find everything about today's lesson on one page. The sidebar shows you Groups, Students and Exams; the rest of Kampus is for the office.",
             "The exam schedule is visible only if the administrator switched it on for teachers. Payments and student balances are not yours to see unless the administrator set that up.",
           ],
         },

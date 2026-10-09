@@ -39,6 +39,7 @@
   },
   "nav": {
     "dashboard": "Bosh sahifa",
+    "today": "Bugun",
     "leads": "Lidlar",
     "teachers": "O‘qituvchilar",
     "groups": "Guruhlar",
@@ -107,6 +108,56 @@
       "month": "Oy",
       "wholeYear": "Butun yil",
       "method": "To'lov turi"
+    }
+  },
+  "today": {
+    "title": "Bugun",
+    "todayWord": "bugun",
+    "subtitle": "{date}. Darslaringiz, davomat va uy vazifalari bir joyda, {name}.",
+    "prevDay": "Oldingi kun",
+    "nextDay": "Keyingi kun",
+    "backToToday": "Bugunga qaytish",
+    "lessons": {
+      "empty": "Bu kunda dars yo'q.",
+      "emptyHint": "Strelkalar bilan boshqa kunni tanlang yoki to'liq jadval uchun Guruhlarni oching."
+    },
+    "lesson": {
+      "extra": "Qo'shimcha dars",
+      "noRoom": "Xona belgilanmagan"
+    },
+    "attendance": {
+      "summary": "{total} dan {marked} belgilandi · {present} keldi",
+      "allPresent": "Hamma keldi",
+      "noStudents": "Bu guruhda hali o'quvchi yo'q.",
+      "tap": "Ismga bosing: keldi, kelmadi, sababli, tozalash."
+    },
+    "homework": {
+      "title": "Uy vazifasi",
+      "none": "Bu darsga hali vazifa berilmagan.",
+      "set": "Uy vazifasi berish",
+      "text": "Nima qilish kerak",
+      "due": "Muddat",
+      "save": "Saqlash",
+      "cancel": "Bekor qilish",
+      "submitted": "{count, plural, =0 {hali javob yo'q} one {# javob} other {# javob}}",
+      "toCheck": "{count} tekshirish kerak",
+      "open": "Guruhda ochish"
+    },
+    "next": {
+      "title": "Keyingi dars",
+      "none": "Jadvalda boshqa dars yo'q.",
+      "at": "{date}, {time}"
+    },
+    "debtors": {
+      "title": "Guruhlaringizdagi qarzdorlar",
+      "none": "Guruhlaringizda qarzdor yo'q.",
+      "summary": "{count, plural, one {# o'quvchi} other {# o'quvchi}} jami {amount} qarzdor.",
+      "more": "va yana {count}",
+      "hint": "Darsdan keyin bir og'iz eslatish yordam beradi; to'lovni administrator qabul qiladi."
+    },
+    "install": {
+      "title": "Kampus telefoningizda",
+      "text": "Chrome menyusida «Ilovani o'rnatish» yoki «Bosh ekranga qo'shish»ni tanlang; iPhone'da Safari'dagi «Ulashish», so'ng «Bosh ekranga qo'shish»ni bosing. Kampus ilova kabi to'liq ekranda ochiladi."
     }
   },
   "errors": {

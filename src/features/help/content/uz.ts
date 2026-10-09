@@ -262,6 +262,53 @@ export const uz: HelpContent = {
         },
       },
     },
+    today: {
+      title: "Kuningiz telefonda",
+      summary:
+        "«Bugun» kun darslarini bir bosishda davomat bilan, uy vazifalarini, keyingi darsni va guruhlaringizdagi qarzdorlarni ko‘rsatadi; Kampus telefonga ilova kabi o‘rnatiladi.",
+      sections: {
+        day: {
+          title: "«Bugun» nimani ko‘rsatadi",
+          body: [
+            "O‘qituvchilar tizimga kirganidan so‘ng **Bugun** sahifasiga tushadi. Unda siz dars beradigan yoki support qiladigan guruhlarning kun darslari vaqt tartibida, kurs, xona va mavzu bilan ko‘rsatiladi. Yuqoridagi strelkalar kunni oldinga yoki orqaga suradi; ofis bu yerda filialning barcha guruhlarini ko‘radi.",
+            "Darslar ostida hozirgi vaqtdan keyingi **keyingi dars** va qarz summasi bilan **guruhlaringizdagi qarzdorlar** turadi. Darsdan keyin bir og‘iz eslatish yordam beradi; to‘lovni administrator qabul qiladi.",
+          ],
+        },
+        attendance: {
+          title: "Bir bosishda davomat",
+          body: [
+            {
+              steps: [
+                "Dars kartasida o‘quvchi ismiga bir marta bosing — keldi, ikkinchi marta — kelmadi, uchinchi marta — sababli, yana bir marta — tozalash.",
+                "**Hamma keldi** hali belgilanmaganlarning hammasini bir bosishda belgilaydi; so‘ng kelmaganlarga bosing.",
+                "Belgilar darhol saqlanadi va guruhning davomat jadvalidagi belgilar kabi hisoblanadi: ularga tangalar, avto-SMS va davomat foizi ergashadi.",
+              ],
+            },
+            {
+              note: "Agar markazda «davomat faqat dars vaqtida» yoqilgan bo‘lsa, belgilar faqat dars kunida qabul qilinadi.",
+            },
+          ],
+        },
+        homework: {
+          title: "Kartadan uy vazifasi",
+          body: [
+            "Har bir dars kartasida uning vazifasi ko‘rinadi: matn, muddat, nechta javob kelgani va nechtasi tekshirishni kutayotgani. **Uy vazifasi berish** uni ikki maydonda yozadi; javoblarni tekshirish yoki fayl biriktirish uchun guruhning «Uy vazifalari» bo‘limini oching.",
+          ],
+        },
+        install: {
+          title: "Kampus telefoningizda",
+          body: [
+            {
+              steps: [
+                "Android’da Kampusni Chrome’da oching, menyuni ochib **Ilovani o‘rnatish** (yoki **Bosh ekranga qo‘shish**)ni tanlang.",
+                "iPhone’da uni Safari’da oching, **Ulashish**, so‘ng **Bosh ekranga qo‘shish**ni bosing.",
+                "Shundan so‘ng Kampus o‘z belgisidan to‘liq ekranda ochiladi va o‘qituvchilar uchun birinchi sahifa «Bugun» bo‘ladi.",
+              ],
+            },
+          ],
+        },
+      },
+    },
     teaching: {
       title: "Guruhga dars berish",
       summary:
@@ -270,7 +317,7 @@ export const uz: HelpContent = {
         day: {
           title: "Sizning guruhlaringiz",
           body: [
-            "Tizimga kirganingizdan so‘ng Guruhlar sahifasiga tushasiz, unda faqat siz dars beradigan yoki support qiladigan guruhlar ko‘rinadi. Bugungi dars haqida hamma narsani bitta sahifada topish uchun guruhni oching. Yon panelda sizga Guruhlar, O‘quvchilar va Imtihonlar ko‘rinadi; Kampusning qolgan qismi ofis uchun.",
+            "Tizimga kirganingizdan so‘ng **Bugun** sahifasiga tushasiz — kun darslari bir bosishda davomat bilan; Guruhlar sahifasida faqat siz dars beradigan yoki support qiladigan guruhlar ko‘rinadi. Bugungi dars haqida hamma narsani bitta sahifada topish uchun guruhni oching. Yon panelda sizga Guruhlar, O‘quvchilar va Imtihonlar ko‘rinadi; Kampusning qolgan qismi ofis uchun.",
             "Imtihon jadvali faqat administrator uni o‘qituvchilar uchun yoqqan bo‘lsa ko‘rinadi. To‘lovlar va o‘quvchi balanslari, administrator buni sozlamagan bo‘lsa, sizga ko‘rinmaydi.",
           ],
         },

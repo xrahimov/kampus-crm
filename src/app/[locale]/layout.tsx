@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { hasLocale, NextIntlClientProvider } from "next-intl";
 import { setRequestLocale } from "next-intl/server";
 import { notFound } from "next/navigation";
@@ -10,6 +10,22 @@ import "../globals.css";
 export const metadata: Metadata = {
   title: { default: "Kampus", template: "%s · Kampus" },
   description: "Learning center CRM",
+  // Installable on phones (A-113): manifest, icons and the iOS home-screen hints.
+  manifest: "/manifest.webmanifest",
+  appleWebApp: { capable: true, title: "Kampus", statusBarStyle: "default" },
+  icons: {
+    icon: [
+      { url: "/icons/icon-192.png", sizes: "192x192", type: "image/png" },
+      { url: "/icons/icon-512.png", sizes: "512x512", type: "image/png" },
+    ],
+    apple: [{ url: "/icons/apple-touch-icon.png", sizes: "180x180", type: "image/png" }],
+  },
+};
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  themeColor: "#17234b",
 };
 
 export default async function LocaleLayout({

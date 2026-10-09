@@ -11,7 +11,7 @@ async function signIn(page: Page, phone: string) {
   await page.getByLabel("Phone number").fill(phone);
   await page.getByLabel("Password").fill(PASSWORD);
   await page.getByRole("button", { name: "Sign in" }).click();
-  await expect(page).toHaveURL(/\/en\/dashboard/);
+  await expect(page).toHaveURL(/\/en\/(dashboard|today)/);
 }
 
 const column = (page: Page, name: RegExp) =>
