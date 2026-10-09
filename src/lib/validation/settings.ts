@@ -163,6 +163,8 @@ export type OrganizationUpdateInput = z.infer<typeof organizationUpdateSchema>;
 export const paymentMethodSchema = z.object({
   name,
   isActive: z.boolean().default(true),
+  /** Counted at the cashier's day close (A-122). */
+  isCash: z.boolean().default(false),
   sortOrder: z.coerce.number().int().min(0).max(1000).default(0),
 });
 export type PaymentMethodInput = z.infer<typeof paymentMethodSchema>;

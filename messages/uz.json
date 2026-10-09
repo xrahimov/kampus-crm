@@ -47,6 +47,7 @@
     "timetable": "Dars jadvali",
     "students": "O‘quvchilar",
     "debts": "Qarzdorlar",
+    "cashdesk": "Kassa",
     "exams": "Imtihonlar",
     "settings": "Sozlamalar",
     "finance": "Moliya",
@@ -206,6 +207,7 @@
     "notMockExam": "Arizalar faqat mock imtihonlar uchun.",
     "examFull": "Imtihonda bo'sh joy yo'q.",
     "categoryNotFound": "Bo'lim topilmadi.",
+    "cashCloseAccepted": "Bu kun allaqachon yopilgan va qabul qilingan; uni o‘zgartirib bo‘lmaydi.",
     "categoryHasEntries": "Bu bo'limda yozuvlar bor. Avval ularni o'chiring yoki ko'chiring.",
     "entryNotFound": "Yozuv topilmadi.",
     "payrollNotFound": "Bu oy uchun ish haqi hali hisoblanmagan.",
@@ -341,7 +343,8 @@
     "lessonExists": "Bu vaqtda dars allaqachon bor.",
     "referralSelf": "O‘quvchi o‘zini taklif qila olmaydi",
     "referralUnknown": "O‘quvchi topilmadi",
-    "formUnknown": "Forma topilmadi"
+    "formUnknown": "Forma topilmadi",
+    "futureDate": "Kelajakdagi kunni yopib bo‘lmaydi."
   },
   "roles": {
     "CEO": "CEO",
@@ -468,6 +471,8 @@
       "edit": "Usulni tahrirlash",
       "name": "Nomi",
       "sortOrder": "Tartib",
+      "isCash": "Naqd — kun yopilishida sanaladi",
+      "cash": "Naqd",
       "deleteTitle": "To‘lov usuli o‘chirilsinmi?",
       "deleteText": "“{name}” o‘chiriladi. To‘lovlarda ishlatilgan usullarni o‘chirib bo‘lmaydi."
     },
@@ -1894,9 +1899,12 @@
       "penalty": "Jarimalar",
       "investment": "Investitsiyalar",
       "expense": "Chiqimlar",
-      "income": "Kirimlar"
+      "income": "Kirimlar",
+      "cashdesk": "Kassa"
     },
     "staffMoney": "Xodimlarga bonus va jarimalar",
+    "cashdeskCount": "{count, plural, =0 {Kun yopilishi yo‘q} other {# ta kun yopilishi}}",
+    "cashdeskPending": "{count} ta topshirish kutilmoqda",
     "kpis": {
       "income": "Tushumlar",
       "expenses": "Chiqimlar",
@@ -2015,6 +2023,87 @@
       "saveDraft": "Vaqtincha saqlash",
       "savedDraft": "Qoralama saqlandi.",
       "saved": "Ish haqi saqlandi."
+    }
+  },
+  "cashdesk": {
+    "title": "Kassa",
+    "subtitle": "Kun yopilishi: har bir kassir to‘lov turlari bo‘yicha qancha qabul qilgani va topshirgan naqd puli.",
+    "closeDay": "Kunni yopish",
+    "empty": "Bu davrda kun yopilishi yo‘q.",
+    "emptyHint": "Naqd pul sanalgach “Kunni yopish” tugmasini bosing.",
+    "filters": {
+      "year": "Yil",
+      "month": "Oy",
+      "wholeYear": "Butun yil"
+    },
+    "columns": {
+      "date": "Sana",
+      "branch": "Filial",
+      "cashier": "Kassir",
+      "payments": "To‘lovlar",
+      "expectedCash": "Kutilgan naqd",
+      "countedCash": "Sanalgan naqd",
+      "difference": "Farq",
+      "status": "Holat"
+    },
+    "paymentsCount": "{count} ta to‘lov",
+    "pendingCount": "{count} ta topshirish kutilmoqda",
+    "status": {
+      "pending": "Topshirish kutilmoqda",
+      "accepted": "Qabul qilindi"
+    },
+    "acceptedBy": "{name} qabul qildi",
+    "accept": "Qabul qilish",
+    "print": "Chop etish",
+    "totals": "Jami",
+    "noMethod": "To‘lov turi yo‘q",
+    "cash": "naqd",
+    "dialog": {
+      "title": "Kunni yopish",
+      "hint": "Raqamlar — shu kuni shu filialda siz kiritganlar: to‘lov turlari bo‘yicha to‘lovlar, qaytarishlar va kassadan to‘langan chiqimlar. Naqd pulni sanab, kiriting.",
+      "branch": "Filial",
+      "date": "Kun",
+      "loading": "Hisoblanmoqda…",
+      "noCashMethod": "Hech bir to‘lov turi naqd deb belgilanmagan, shu sababli kutilgan naqd nolda qoladi. Sozlamalar → Umumiy → To‘lov turlari bo‘limida belgilang.",
+      "method": "To‘lov turi",
+      "payments": "To‘lovlar",
+      "refunds": "Qaytarishlar",
+      "expenses": "Chiqimlar / boshqa kirimlar",
+      "net": "Sof",
+      "expectedCash": "Kutilgan naqd",
+      "countedCash": "Sanalgan naqd",
+      "difference": "Farq",
+      "note": "Izoh",
+      "notePlaceholder": "Farq sababi, nima topshirildi…",
+      "save": "Kunni yopish",
+      "reclose": "Bu kun allaqachon yopilgan, lekin hali qabul qilinmagan; saqlash oldingi yopilishni almashtiradi."
+    },
+    "sheet": {
+      "title": "Kassa kunining yopilishi",
+      "print": "Chop etish",
+      "date": "Kun",
+      "branch": "Filial",
+      "cashier": "Kassir",
+      "method": "To‘lov turi",
+      "payments": "To‘lovlar",
+      "income": "Boshqa kirimlar",
+      "refunds": "Qaytarishlar",
+      "expenses": "Chiqimlar",
+      "net": "Sof",
+      "paymentsCount": "Kiritilgan to‘lovlar",
+      "received": "Jami qabul qilingan",
+      "expectedCash": "Kutilgan naqd",
+      "countedCash": "Sanalgan naqd",
+      "difference": "Farq",
+      "note": "Izoh",
+      "signatureCashier": "Kassir",
+      "signatureAccepted": "Qabul qildi",
+      "signature": "imzo",
+      "notAccepted": "hali qabul qilinmagan",
+      "printedAt": "Chop etildi: {date}"
+    },
+    "errors": {
+      "cashCloseAccepted": "Bu kun allaqachon yopilgan va qabul qilingan; uni o‘zgartirib bo‘lmaydi."
     }
   },
   "coins": {
@@ -3122,6 +3211,11 @@
         },
         "referral": {
           "credit": "Tavsiya hisobga olindi"
+        },
+        "cashClose": {
+          "create": "Kassada kun yopildi",
+          "update": "Kun yopilishi o‘zgartirildi",
+          "accept": "Kun yopilishi qabul qilindi"
         }
       }
     }

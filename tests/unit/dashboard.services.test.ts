@@ -139,8 +139,14 @@ beforeAll(async () => {
     });
   groupA = (await group(`${TAG} GE-A`, roomA, teacher.userId)).id;
   groupB = (await group(`${TAG} GE-B`, null, teacher.userId)).id;
-  methodId = (await createPaymentMethod(ceo, { name: `${TAG} Cash`, isActive: true, sortOrder: 0 }))
-    .id;
+  methodId = (
+    await createPaymentMethod(ceo, {
+      name: `${TAG} Cash`,
+      isActive: true,
+      isCash: true,
+      sortOrder: 0,
+    })
+  ).id;
   alice = await addMember(ceo, groupA, {
     newStudent: { fullName: `${TAG} Alice`, phone: phone(11) },
     joinedAt: daysAgo(45),

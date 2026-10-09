@@ -153,8 +153,14 @@ beforeAll(async () => {
     });
   groupA = (await group(`${TAG} GE-A`, teacher.userId)).id;
   groupB = (await group(`${TAG} GE-B`, outsider.userId)).id;
-  methodId = (await createPaymentMethod(ceo, { name: `${TAG} Cash`, isActive: true, sortOrder: 0 }))
-    .id;
+  methodId = (
+    await createPaymentMethod(ceo, {
+      name: `${TAG} Cash`,
+      isActive: true,
+      isCash: true,
+      sortOrder: 0,
+    })
+  ).id;
 });
 
 afterAll(async () => {

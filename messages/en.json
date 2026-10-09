@@ -47,6 +47,7 @@
     "timetable": "Timetable",
     "students": "Students",
     "debts": "Debtors",
+    "cashdesk": "Cash desk",
     "exams": "Exams",
     "settings": "Settings",
     "finance": "Finance",
@@ -206,6 +207,7 @@
     "notMockExam": "Only mock exams take registrations.",
     "examFull": "The exam has no free places.",
     "categoryNotFound": "Category not found.",
+    "cashCloseAccepted": "This day was already closed and accepted; it cannot be changed.",
     "categoryHasEntries": "This category has entries. Delete or move them first.",
     "entryNotFound": "Entry not found.",
     "payrollNotFound": "Payroll for this month is not computed yet.",
@@ -341,7 +343,8 @@
     "lessonExists": "There is already a lesson at this time.",
     "referralSelf": "A student cannot invite themselves",
     "referralUnknown": "Student not found",
-    "formUnknown": "Form not found"
+    "formUnknown": "Form not found",
+    "futureDate": "A day in the future cannot be closed."
   },
   "roles": {
     "CEO": "CEO",
@@ -468,6 +471,8 @@
       "edit": "Edit method",
       "name": "Name",
       "sortOrder": "Order",
+      "isCash": "Cash — counted at the day close",
+      "cash": "Cash",
       "deleteTitle": "Delete payment method?",
       "deleteText": "“{name}” will be removed. Methods already used by payments cannot be deleted."
     },
@@ -1894,9 +1899,12 @@
       "penalty": "Fines",
       "investment": "Investments",
       "expense": "Expenses",
-      "income": "Income"
+      "income": "Income",
+      "cashdesk": "Cash desk"
     },
     "staffMoney": "Staff bonuses and fines",
+    "cashdeskCount": "{count, plural, =0 {No day closes} one {# day close} other {# day closes}}",
+    "cashdeskPending": "{count} awaiting hand-over",
     "kpis": {
       "income": "Income",
       "expenses": "Expenses",
@@ -2015,6 +2023,87 @@
       "saveDraft": "Save draft",
       "savedDraft": "Draft saved.",
       "saved": "Payroll saved."
+    }
+  },
+  "cashdesk": {
+    "title": "Cash desk",
+    "subtitle": "Day closes: what each cashier took, by payment type, and the cash handed over.",
+    "closeDay": "Close the day",
+    "empty": "No day closes in this period.",
+    "emptyHint": "Press “Close the day” when the money is counted.",
+    "filters": {
+      "year": "Year",
+      "month": "Month",
+      "wholeYear": "Whole year"
+    },
+    "columns": {
+      "date": "Date",
+      "branch": "Branch",
+      "cashier": "Cashier",
+      "payments": "Payments",
+      "expectedCash": "Expected cash",
+      "countedCash": "Counted cash",
+      "difference": "Difference",
+      "status": "Status"
+    },
+    "paymentsCount": "{count, plural, one {# payment} other {# payments}}",
+    "pendingCount": "{count, plural, one {# awaiting hand-over} other {# awaiting hand-over}}",
+    "status": {
+      "pending": "Awaiting hand-over",
+      "accepted": "Accepted"
+    },
+    "acceptedBy": "Accepted by {name}",
+    "accept": "Accept",
+    "print": "Print",
+    "totals": "Total",
+    "noMethod": "No payment type",
+    "cash": "cash",
+    "dialog": {
+      "title": "Close the day",
+      "hint": "The figures are what you recorded that day in this branch: payments by type, refunds and expenses paid from the drawer. Count the cash and enter it.",
+      "branch": "Branch",
+      "date": "Day",
+      "loading": "Counting…",
+      "noCashMethod": "No payment type is marked as cash, so the expected cash stays at zero. Mark one in Settings → General → Payment methods.",
+      "method": "Payment type",
+      "payments": "Payments",
+      "refunds": "Refunds",
+      "expenses": "Expenses / other income",
+      "net": "Net",
+      "expectedCash": "Expected cash",
+      "countedCash": "Counted cash",
+      "difference": "Difference",
+      "note": "Note",
+      "notePlaceholder": "Why the figures differ, what was handed over…",
+      "save": "Close the day",
+      "reclose": "This day was already closed and not yet accepted; saving replaces the earlier close."
+    },
+    "sheet": {
+      "title": "Cashier day close",
+      "print": "Print",
+      "date": "Day",
+      "branch": "Branch",
+      "cashier": "Cashier",
+      "method": "Payment type",
+      "payments": "Payments",
+      "income": "Other income",
+      "refunds": "Refunds",
+      "expenses": "Expenses",
+      "net": "Net",
+      "paymentsCount": "Payments recorded",
+      "received": "Received in total",
+      "expectedCash": "Expected cash",
+      "countedCash": "Counted cash",
+      "difference": "Difference",
+      "note": "Note",
+      "signatureCashier": "Cashier",
+      "signatureAccepted": "Accepted by",
+      "signature": "signature",
+      "notAccepted": "not yet accepted",
+      "printedAt": "Printed {date}"
+    },
+    "errors": {
+      "cashCloseAccepted": "This day was already closed and accepted; it cannot be changed."
     }
   },
   "coins": {
@@ -3122,6 +3211,11 @@
         },
         "referral": {
           "credit": "Referral credited"
+        },
+        "cashClose": {
+          "create": "Day closed at the cash desk",
+          "update": "Day close changed",
+          "accept": "Day close accepted"
         }
       }
     }

@@ -50,7 +50,7 @@ export function PaymentMethodsCard({
   const [error, setError] = useState<string | null>(null);
   const form = useForm<Input, unknown, Output>({
     resolver: zodResolver(paymentMethodSchema),
-    defaultValues: { name: "", isActive: true, sortOrder: 0 },
+    defaultValues: { name: "", isActive: true, isCash: false, sortOrder: 0 },
   });
 
   useEffect(() => {
@@ -58,6 +58,7 @@ export function PaymentMethodsCard({
     form.reset({
       name: dialog.method?.name ?? "",
       isActive: dialog.method?.isActive ?? true,
+      isCash: dialog.method?.isCash ?? false,
       sortOrder: dialog.method?.sortOrder ?? methods.length,
     });
   }, [dialog, form, methods.length]);
@@ -107,10 +108,15 @@ export function PaymentMethodsCard({
             {methods.map((method) => (
               <TableRow key={method.id} data-testid="payment-method-row">
                 <TableCell className="pl-6 font-medium">{method.name}</TableCell>
-                <TableCell>
+                <TableCell className="space-x-1">
                   <Badge variant={method.isActive ? "success" : "muted"}>
                     {method.isActive ? t("common.active") : t("common.inactive")}
                   </Badge>
+                  {method.isCash && (
+                    <Badge variant="outline" data-testid="payment-method-cash">
+                      {t("settings.paymentMethods.cash")}
+                    </Badge>
+                  )}
                 </TableCell>
                 <TableCell>
                   <RowActions
@@ -157,6 +163,23 @@ export function PaymentMethodsCard({
                 id="pm-active"
                 checked={field.value ?? true}
                 onCheckedChange={field.onChange}
+              />
+            )}
+          />
+        </div>
+        <div className="flex items-center justify-between gap-4">
+          <Label htmlFor="pm-cash" className="font-normal">
+            {t("settings.paymentMethods.isCash")}
+          </Label>
+          <Controller
+            control={form.control}
+            name="isCash"
+            render={({ field }) => (
+              <Switch
+                id="pm-cash"
+                checked={field.value ?? false}
+                onCheckedChange={field.onChange}
+                data-testid="pm-cash"
               />
             )}
           />

@@ -145,8 +145,14 @@ beforeAll(async () => {
     });
   groupA = (await group(`${TAG} GE-A`, MONTH_START)).id;
   groupB = (await group(`${TAG} GE-B`, MONTH_START)).id;
-  methodId = (await createPaymentMethod(ceo, { name: `${TAG} Cash`, isActive: true, sortOrder: 0 }))
-    .id;
+  methodId = (
+    await createPaymentMethod(ceo, {
+      name: `${TAG} Cash`,
+      isActive: true,
+      isCash: true,
+      sortOrder: 0,
+    })
+  ).id;
   const member = (fullName: string, n: number) =>
     addMember(ceo, groupA, {
       newStudent: { fullName, phone: phone(n) },

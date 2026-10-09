@@ -78,8 +78,9 @@ export async function provisionOrganization(
       },
     });
   }
+  // The first method is the cash drawer, counted at the day close (A-122).
   await tx.paymentMethod.create({
-    data: { organizationId: org.id, name: input.cashMethodName?.trim() || "Naqd" },
+    data: { organizationId: org.id, name: input.cashMethodName?.trim() || "Naqd", isCash: true },
   });
   const ceoRole = await tx.role.findUniqueOrThrow({ where: { code: "CEO" } });
   const user = await tx.user.create({

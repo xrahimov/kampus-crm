@@ -105,8 +105,8 @@ async function seedSettings(organizationId: string, branches: Map<string, string
   for (const [i, name] of paymentMethods.entries()) {
     await prisma.paymentMethod.upsert({
       where: { organizationId_name: { organizationId, name } },
-      update: { sortOrder: i },
-      create: { organizationId, name, sortOrder: i },
+      update: { sortOrder: i, isCash: name === "Cash" },
+      create: { organizationId, name, sortOrder: i, isCash: name === "Cash" },
     });
   }
 

@@ -713,6 +713,21 @@ export const en: HelpContent = {
             "Whether a teacher is paid for a group's day off, or only for lessons they attended, and whether teachers see their own salary, are switches in Settings → General.",
           ],
         },
+        cashClose: {
+          title: "Cashier day close",
+          body: [
+            "**Cash desk** in the sidebar (everyone who takes payments has it) closes a cashier's day. The close lists what you recorded that day in one branch by payment type: payments, refunds, other income and the expenses paid from the drawer. The cash it expects comes from the payment types marked as cash in Settings → General → Payment methods; the difference is what you counted minus that.",
+            {
+              steps: [
+                "Press **Close the day**, check the branch and the day.",
+                "Compare the figures with your receipts, count the cash and enter it under **Counted cash**. Add a note if the figures differ.",
+                "Press **Close the day** in the dialog. The close appears in the list with its difference; **Print** opens a sheet with the figures and two signature lines for the hand-over.",
+                "The manager presses **Accept** when they take the money. An accepted day cannot be closed again; a day not yet accepted can, and the new figures replace the old.",
+              ],
+            },
+            "Managers see every cashier's closes and the Finance page counts them; a cashier sees only their own. Every close goes to the staff Telegram feed and into the action log with who closed and who accepted.",
+          ],
+        },
       },
     },
     reports: {

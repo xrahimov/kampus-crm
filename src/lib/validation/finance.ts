@@ -106,3 +106,30 @@ export const payrollMonthSchema = z
   .string()
   .regex(/^\d{4}-(0[1-9]|1[0-2])(-01)?$/, "validation.date")
   .transform((v) => v.slice(0, 7));
+
+// --- Cashier day close (A-122) -----------------------------------------------
+
+const countedMoney = z.coerce
+  .number()
+  .min(0, "validation.min")
+  .max(9_999_999_999_999, "validation.max");
+
+/** "Close the day": the branch, the Tashkent calendar day and the cash counted in the drawer. */
+export const cashCloseSchema = z.object({
+  branchId: idSchema,
+  date: dateOnlySchema,
+  countedCash: countedMoney,
+  note: blankToNull(text(500)),
+});
+export type CashCloseInput = z.infer<typeof cashCloseSchema>;
+
+export const cashDaySchema = z.object({ branchId: idSchema, date: dateOnlySchema });
+export type CashDayInput = z.infer<typeof cashDaySchema>;
+
+export const cashCloseFilterSchema = z.object({
+  branchId: idSchema.optional(),
+  year: yearSchema.optional(),
+  month: monthSchema.optional(),
+  cashierId: idSchema.optional(),
+});
+export type CashCloseFilters = z.infer<typeof cashCloseFilterSchema>;

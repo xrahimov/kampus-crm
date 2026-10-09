@@ -232,6 +232,7 @@ export const HELP_ARTICLES = [
       { id: "categories", screenshot: "finance-category" },
       { id: "staffMoney" },
       { id: "payroll", screenshot: "payroll" },
+      { id: "cashClose" },
     ],
   },
   {
