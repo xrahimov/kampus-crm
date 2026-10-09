@@ -16,10 +16,22 @@ dump_database() {
     mv "/backups/kampus-$stamp.sql.gz.part" "/backups/kampus-$stamp.sql.gz"
     echo "backup written: kampus-$stamp.sql.gz"
     find /backups -maxdepth 1 -name 'kampus-*.sql.gz' -mtime "+$BACKUP_KEEP_DAYS" -delete
+    size=$(stat -c %s "/backups/kampus-$stamp.sql.gz")
+    free_kb=$(df -Pk /backups | awk 'NR==2 {print $4}')
+    report_status backup "{\"file\":\"kampus-$stamp.sql.gz\",\"sizeBytes\":$size,\"freeBytes\":$((free_kb * 1024))}"
+    psql -q -c "DELETE FROM \"SystemState\" WHERE \"key\" = 'backup.error'" >/dev/null 2>&1 || true
   else
     rm -f "/backups/kampus-$stamp.sql.gz.part"
     echo "backup failed" >&2
+    report_status backup.error '{"message":"pg_dump failed"}'
   fi
+}
+
+# Tells Kampus when the backup last ran (Settings → Organisations → Server status,
+# A-134). Older versions have no SystemState table; then the row is simply not written.
+report_status() {
+  psql -q -c "INSERT INTO \"SystemState\" (\"key\", \"at\", \"meta\") VALUES ('$1', now(), '$2') ON CONFLICT (\"key\") DO UPDATE SET \"at\" = EXCLUDED.\"at\", \"meta\" = EXCLUDED.\"meta\"" >/dev/null 2>&1 \
+    || echo "status row not written (older Kampus?)" >&2
 }
 
 mirror_uploads() {

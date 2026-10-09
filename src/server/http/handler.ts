@@ -7,6 +7,7 @@ import { resolveCurrentUser, type CurrentUser } from "@/server/auth/current-user
 import { assertCsrf, MUTATING_METHODS } from "@/server/auth/csrf";
 import { AppError, isAppError } from "@/server/errors/app-error";
 import { authorize } from "@/server/rbac/authorize";
+import { recordServerError } from "@/server/services/system/monitoring.service";
 
 import { fieldErrors } from "./list-query";
 
@@ -54,7 +55,7 @@ export function json<T>(data: T, init?: ResponseInit): Response {
   return Response.json(data, init);
 }
 
-export function errorResponse(error: unknown): Response {
+export function errorResponse(error: unknown, path?: string | null): Response {
   if (isAppError(error)) {
     const headers: Record<string, string> = {};
     const retry = error.meta?.retryAfterSeconds;
@@ -62,6 +63,8 @@ export function errorResponse(error: unknown): Response {
     return Response.json(error.toJSON(), { status: error.status, headers });
   }
   console.error(error);
+  // Remembered for the site owner's status card and the error-burst alert (A-134).
+  recordServerError(error, path);
   return Response.json(new AppError("INTERNAL", "errors.internal").toJSON(), { status: 500 });
 }
 
@@ -126,7 +129,7 @@ export function route(
       const params = await context.params;
       return await handler({ request, params, body, current, ip });
     } catch (error) {
-      return errorResponse(error);
+      return errorResponse(error, request.nextUrl.pathname);
     }
   };
 }

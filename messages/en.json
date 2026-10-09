@@ -432,7 +432,8 @@
     "leadArchived": "The lead is archived.",
     "trialExists": "This lead already has a trial in that group on that day.",
     "trialNotFound": "Trial not found.",
-    "trialConverted": "The lead already joined the group; the trial is closed."
+    "trialConverted": "The lead already joined the group; the trial is closed.",
+    "telegramNotConfigured": "This centre's Telegram bot is not set up (Settings → Integrations → Telegram)."
   },
   "validation": {
     "phone": "Enter a number like +998 90 123 45 67.",
@@ -835,6 +836,74 @@
       "staffCount": "Staff",
       "studentsCount": "Students",
       "yours": "yours"
+    },
+    "system": {
+      "title": "Server status",
+      "description": "What the server's owner should know: the worker, the job queue, the nightly backup, disk space and server errors. Alerts go to Telegram.",
+      "checkNow": "Check now",
+      "checkedAt": "Checked {time}",
+      "levels": {
+        "ok": "OK",
+        "warning": "Attention",
+        "down": "Down",
+        "unknown": "No data yet"
+      },
+      "rows": {
+        "app": "Application",
+        "database": "Database",
+        "worker": "Worker",
+        "jobs": "Job queue",
+        "backup": "Backup",
+        "disk": "Disk",
+        "errors": "Server errors"
+      },
+      "app": {
+        "detail": "Running for {duration}, Node {node}"
+      },
+      "database": {
+        "detail": "Answers in {ms} ms",
+        "down": "Not answering"
+      },
+      "worker": {
+        "never": "Has not reported yet; is the worker container running?",
+        "detail": "Last run {ago}",
+        "stale": "Silent, last run {ago}. SMS, Telegram and scheduled jobs are not being sent."
+      },
+      "jobs": {
+        "detail": "{pending} waiting, {overdue} overdue, {failed} failed in the last 24 hours",
+        "lastError": "Last failure: {type} — {message}"
+      },
+      "backup": {
+        "never": "No backup reported yet. The backup container reports after its first run on this version.",
+        "detail": "{file} ({size}) {ago}; {free} free on the backup disk",
+        "stale": "Last backup {ago}",
+        "error": "Last attempt failed {ago}: {message}"
+      },
+      "disk": {
+        "detail": "{free} of {total} free",
+        "unknown": "Not measured"
+      },
+      "errors": {
+        "none": "None in the last 24 hours",
+        "detail": "{count, plural, one {# error} other {# errors}} in the last 24 hours",
+        "recent": "Most recent"
+      },
+      "alerts": {
+        "title": "Alerts to Telegram",
+        "hint": "Alerts are sent by your centre's Telegram bot (Settings → Integrations → Telegram) to the chat below: when the worker falls silent, jobs fail, the backup is more than a day old, the disk runs low or errors pile up. A message follows when the problem is gone; an open problem is repeated every six hours.",
+        "chatId": "Chat ID",
+        "chatIdHint": "Write to the bot first, then take the chat ID from Settings → Integrations → Telegram or from @userinfobot. Empty switches alerts off.",
+        "save": "Save",
+        "saved": "Saved",
+        "test": "Send test message",
+        "testSent": "Test message sent",
+        "botMissing": "Your centre's Telegram bot is not set up, so alerts cannot be sent.",
+        "open": "Open alerts",
+        "none": "No open alerts",
+        "since": "since {time}",
+        "lastSent": "Last message sent {time}",
+        "never": "No message sent yet"
+      }
     }
   },
   "teachers": {

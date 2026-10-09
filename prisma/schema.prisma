@@ -2283,6 +2283,25 @@ model Job {
   @@index([status, runAt])
 }
 
+/// Round 2 F5 (A-134): what the server knows about itself, one row per key:
+/// the worker's and the backup's last heartbeat, the alert recipient, open alerts.
+model SystemState {
+  key  String   @id
+  at   DateTime @default(now())
+  meta Json?
+}
+
+/// Round 2 F5 (A-134): server errors (HTTP 500) and alerts sent; rows older than seven days are pruned.
+model SystemEvent {
+  id        String   @id @default(cuid())
+  kind      String
+  message   String
+  path      String?
+  createdAt DateTime @default(now())
+
+  @@index([kind, createdAt])
+}
+
 /// Phase 12: reasons offered when a student leaves or changes group ("SABABLARNI SOZLASH").
 enum LeaveReasonKind {
   LEAVE
