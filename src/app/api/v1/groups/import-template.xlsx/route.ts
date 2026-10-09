@@ -11,5 +11,6 @@ export const GET = route({ permission: "groups.update" }, async ({ request }) =>
     joinedAt: new Date().toISOString().slice(0, 10),
     customPrice: "",
     note: "",
+    billingFrom: "",
   });
 });

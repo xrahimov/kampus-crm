@@ -34,6 +34,7 @@ export const GENDERS = ["MALE", "FEMALE"] as const;
 export const membershipDraftSchema = z.object({
   groupId: idSchema,
   joinedAt: dateOnlySchema,
+  billingFrom: optionalDate,
   customPrice: optionalMoney,
   note: text(500).nullable().optional(),
   status: z.enum(MEMBERSHIP_STATUSES).default("ACTIVE"),

@@ -101,6 +101,9 @@ export function GroupCard({
     [tg("time"), group.time ?? "—"],
     [tg("days"), group.weekdays.map((w) => weekdayLabel(fmt, w as Weekday)).join(", ") || "—"],
     [tg("joined"), date(group.joinedAt)],
+    ...(group.billingFrom && group.billingFrom !== group.joinedAt
+      ? [[tg("billingFrom"), date(group.billingFrom)] as [string, React.ReactNode]]
+      : []),
     [left ? tg("left") : tg("ends"), date(group.leftAt ?? group.groupEndDate)],
     [tg("nextPayment"), group.nextPaymentDate ? date(group.nextPaymentDate) : "—"],
     [

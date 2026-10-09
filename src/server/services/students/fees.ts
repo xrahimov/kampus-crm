@@ -18,6 +18,8 @@ export interface ChargeWindow {
   joinedAt: string;
   leftAt: string | null;
   frozenAt: string | null;
+  /** A chosen "charged from" day that overrides the activation date (A-110). */
+  billingFrom?: string | null;
 }
 
 /** "YYYY-MM-DD" → the first day of its month. */
@@ -50,7 +52,7 @@ export const CHARGED_STATUSES: readonly MembershipStatus[] = [
 /** The day charging starts, or null while the student is NEW or TRIAL. */
 export function chargedFrom(window: ChargeWindow): string | null {
   if (!CHARGED_STATUSES.includes(window.status)) return null;
-  return window.activatedAt ?? window.joinedAt;
+  return window.billingFrom ?? window.activatedAt ?? window.joinedAt;
 }
 
 /** Lessons of one month, and how many of them the student is charged for. */

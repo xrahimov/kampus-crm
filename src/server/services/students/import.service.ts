@@ -3,6 +3,7 @@ import { z } from "zod";
 import { phoneSchema } from "@/lib/validation/common";
 import { prisma, type DbClient } from "@/server/db/prisma";
 import { AppError, isAppError } from "@/server/errors/app-error";
+import { mapColumns, pick, type ColumnSpec } from "@/server/excel/import-columns";
 import { authorize, authorizeBranch, type Actor } from "@/server/rbac/authorize";
 import { addMember } from "@/server/services/groups/memberships.service";
 import { findGroupInScope } from "@/server/services/groups/shared";
@@ -23,7 +24,20 @@ export const MEMBER_IMPORT_COLUMNS = [
   "joinedAt",
   "customPrice",
   "note",
+  "billingFrom",
 ] as const;
+/** Headers a member file may carry besides the template's labels (A-109, A-110). */
+const MEMBER_IMPORT_SPECS: ColumnSpec[] = [
+  { key: "fullName", aliases: ["name", "student", "ism", "fio", "f.i.o.", "имя", "фио", "ученик"] },
+  { key: "phone", aliases: ["tel", "telefon", "телефон", "mobile"] },
+  { key: "joinedAt", aliases: ["joined", "join date", "qo'shilgan", "дата добавления", "start"] },
+  { key: "customPrice", aliases: ["price", "narx", "цена"] },
+  { key: "note", aliases: ["izoh", "comment", "примечание", "комментарий"] },
+  {
+    key: "billingFrom",
+    aliases: ["charged from", "billing from", "hisob boshlanishi", "начислять с", "оплата с"],
+  },
+];
 export const IMPORT_MAX_ROWS = 1000;
 
 export interface ImportResult {
@@ -77,6 +91,7 @@ const memberRowSchema = z.object({
   fullName: z.string().trim().max(120, "validation.tooLong"),
   phone: phoneSchema.nullable(),
   joinedAt: date.nullable(),
+  billingFrom: date.nullable(),
   customPrice: z.coerce.number().min(0).max(9_999_999_999).nullable(),
   note: z.string().trim().max(500, "validation.tooLong").nullable(),
 });
@@ -175,15 +190,19 @@ export async function importMembers(
   if (group.status === "ARCHIVED") throw AppError.conflict("errors.groupArchived");
   const result: ImportResult = { imported: 0, skipped: [] };
   const today = new Date().toISOString().slice(0, 10);
+  // Columns by header when the file has one Kampus understands, else the template's order.
+  const map = mapColumns(rows[0] ?? [], MEMBER_IMPORT_SPECS);
   let line = 1;
   for (const raw of dataRows(rows)) {
     line += 1;
+    const get = (key: (typeof MEMBER_IMPORT_COLUMNS)[number]) => pick(map, raw, key);
     const parsed = memberRowSchema.safeParse({
-      fullName: cell(raw, 0) ?? "",
-      phone: cell(raw, 1) ? normalizePhone(cell(raw, 1)!) : null,
-      joinedAt: normalizeDate(cell(raw, 2) ?? ""),
-      customPrice: cell(raw, 3) ? cell(raw, 3)!.replace(/[^\d.]/g, "") : null,
-      note: cell(raw, 4),
+      fullName: get("fullName") ?? "",
+      phone: get("phone") ? normalizePhone(get("phone")!) : null,
+      joinedAt: normalizeDate(get("joinedAt") ?? ""),
+      billingFrom: normalizeDate(get("billingFrom") ?? ""),
+      customPrice: get("customPrice") ? get("customPrice")!.replace(/[^\d.]/g, "") : null,
+      note: get("note"),
     });
     if (!parsed.success) {
       result.skipped.push({ row: line, reason: firstIssue(parsed.error) });
@@ -220,6 +239,7 @@ export async function importMembers(
             ? { studentId: existing.id }
             : { newStudent: { fullName: m.fullName, phone: m.phone } }),
           joinedAt: m.joinedAt ?? today,
+          billingFrom: m.billingFrom,
           customPrice: m.customPrice,
           note: m.note,
           status: "NEW",

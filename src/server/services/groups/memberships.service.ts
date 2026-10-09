@@ -18,7 +18,8 @@ import {
   rethrowAsAppError,
 } from "@/server/services/settings/shared";
 
-import { membershipBalances } from "@/server/services/students/balances";
+import { membershipBalances, syncCharges } from "@/server/services/students/balances";
+import { chargedFrom, monthStart } from "@/server/services/students/fees";
 
 import { findGroupInScope, today } from "./shared";
 
@@ -36,6 +37,8 @@ export interface MembershipDto {
   customPrice: number | null;
   note: string | null;
   activatedAt: string | null;
+  /** Charged from this day when set (A-110); else from the activation or join date. */
+  billingFrom: string | null;
   frozenAt: string | null;
   leaveReason: string | null;
   /** Filled by `listMembers` only (Phase 6); null elsewhere. */
@@ -76,6 +79,7 @@ function toDto(row: Row, balance: number | null = null): MembershipDto {
     customPrice: row.customPrice ? decimalToNumber(row.customPrice) : null,
     note: row.note,
     activatedAt: row.activatedAt ? dateToIso(row.activatedAt) : null,
+    billingFrom: row.billingFrom ? dateToIso(row.billingFrom) : null,
     frozenAt: row.frozenAt ? dateToIso(row.frozenAt) : null,
     leaveReason: row.leaveReason,
   };
@@ -192,6 +196,7 @@ export async function addMember(
           status: input.status,
           joinedAt: isoToDate(input.joinedAt),
           activatedAt: input.status === "ACTIVE" ? isoToDate(input.joinedAt) : null,
+          billingFrom: input.billingFrom ? isoToDate(input.billingFrom) : null,
           customPrice: input.customPrice ?? null,
           note: input.note ?? null,
         },
@@ -223,6 +228,29 @@ async function findMembershipInScope(db: DbClient, actor: Actor, id: string) {
   const row = await mustFind(db.groupMembership.findUnique({ where: { id }, include }));
   const group = await findGroupInScope(db, actor, row.groupId, {});
   return { row, group };
+}
+
+/**
+ * After the "charged from" day moves (A-110): the months before the new start no
+ * longer carry a charge and the start month is pro-rated again. Later months
+ * keep the price and discount they were charged at.
+ */
+async function rebaseCharges(tx: DbClient, row: Row) {
+  const from = chargedFrom({
+    status: row.status,
+    activatedAt: row.activatedAt ? dateToIso(row.activatedAt) : null,
+    joinedAt: dateToIso(row.joinedAt),
+    leftAt: row.leftAt ? dateToIso(row.leftAt) : null,
+    frozenAt: row.frozenAt ? dateToIso(row.frozenAt) : null,
+    billingFrom: row.billingFrom ? dateToIso(row.billingFrom) : null,
+  });
+  await tx.charge.deleteMany({
+    where: {
+      membershipId: row.id,
+      ...(from ? { month: { lte: isoToDate(monthStart(from)) } } : {}),
+    },
+  });
+  await syncCharges(tx, [row.id]);
 }
 
 /** Charging side effects of a status move (A-10, A-59). */
@@ -271,10 +299,14 @@ export async function updateMembership(
         ...(input.leaveReason !== undefined ? { leaveReason: input.leaveReason } : {}),
         ...(input.customPrice !== undefined ? { customPrice: input.customPrice } : {}),
         ...(input.note !== undefined ? { note: input.note } : {}),
+        ...(input.billingFrom !== undefined
+          ? { billingFrom: input.billingFrom ? isoToDate(input.billingFrom) : null }
+          : {}),
       },
       include,
     });
     const after = toDto(updated);
+    if (after.billingFrom !== before.billingFrom) await rebaseCharges(tx, updated);
     await recordAudit(tx, actor, {
       action: "membership.update",
       entity: "GroupMembership",

@@ -687,6 +687,9 @@ model GroupMembership {
   note        String?
   /// First day the student is charged: when the membership became ACTIVE (A-10).
   activatedAt DateTime?        @db.Date
+  /// Charged from this day instead when set (A-110): a member carried over from
+  /// another system keeps the real join date while charging starts later.
+  billingFrom DateTime?        @db.Date
   /// Set while FROZEN: lessons from this day on are not charged (A-59).
   frozenAt    DateTime?        @db.Date
   /// Why the student left (EXP §10 churn report reasons); picked from LeaveReason or typed.

@@ -140,6 +140,11 @@ export const groupNoteSchema = z.object({
 
 // --- Members (EXP §5 "Guruhga o'quvchi qo'shish", manual mode) --------------
 
+/** "Charged from" (A-110): "" and null both mean "from the activation or join date". */
+const optionalDate = z
+  .union([z.literal("").transform(() => null), z.null(), dateOnlySchema])
+  .optional();
+
 export const addMemberSchema = z
   .object({
     /** An existing student, or a new minimal one (Phase 6 brings the full profile). */
@@ -151,6 +156,7 @@ export const addMemberSchema = z
       })
       .optional(),
     joinedAt: dateOnlySchema,
+    billingFrom: optionalDate,
     customPrice: z.union([z.literal("").transform(() => null), z.null(), money]).optional(),
     note: z.string().trim().max(500, "validation.tooLong").nullable().optional(),
     status: z.enum(MEMBERSHIP_STATUSES).default("ACTIVE"),
@@ -163,6 +169,7 @@ export type AddMemberInput = z.infer<typeof addMemberSchema>;
 
 export const membershipUpdateSchema = z.object({
   status: z.enum(MEMBERSHIP_STATUSES).optional(),
+  billingFrom: optionalDate,
   customPrice: z.union([z.literal("").transform(() => null), z.null(), money]).optional(),
   note: z.string().trim().max(500, "validation.tooLong").nullable().optional(),
 });
