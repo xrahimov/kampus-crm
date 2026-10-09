@@ -136,17 +136,21 @@ async function measureDatabase(db: DbClient): Promise<SystemStatusDto["database"
 }
 
 async function measureDisk(): Promise<SystemStatusDto["disk"]> {
-  const path = process.env.UPLOAD_DIR ?? "uploads";
-  try {
-    const s = await statfs(path);
-    const freeBytes = Number(s.bavail) * Number(s.bsize);
-    const totalBytes = Number(s.blocks) * Number(s.bsize);
-    const level: StatusLevel =
-      freeBytes < DISK_CRITICAL_BYTES ? "down" : freeBytes < DISK_LOW_BYTES ? "warning" : "ok";
-    return { level, path, freeBytes, totalBytes };
-  } catch {
-    return null;
+  // The uploads volume, where recordings pile up; before the first upload the
+  // directory may not exist yet, and then the working directory's disk is measured.
+  for (const path of [process.env.UPLOAD_DIR ?? "uploads", process.cwd()]) {
+    try {
+      const s = await statfs(path);
+      const freeBytes = Number(s.bavail) * Number(s.bsize);
+      const totalBytes = Number(s.blocks) * Number(s.bsize);
+      const level: StatusLevel =
+        freeBytes < DISK_CRITICAL_BYTES ? "down" : freeBytes < DISK_LOW_BYTES ? "warning" : "ok";
+      return { level, path, freeBytes, totalBytes };
+    } catch {
+      // try the next path
+    }
   }
+  return null;
 }
 
 function worst(levels: StatusLevel[]): StatusLevel {
