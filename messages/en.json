@@ -3053,18 +3053,23 @@
     },
     "AMOCRM": {
       "title": "AmoCRM",
-      "description": "New leads are pushed to amoCRM when enabled.",
+      "description": "Leads go both ways: new Kampus leads are pushed to amoCRM, and leads added in amoCRM, for example from Instagram, land on the board here.",
       "fields": {
         "secretKey": "Secret Key",
         "integrationId": "Integration ID",
         "authorizationCode": "Authorization Code",
-        "subDomain": "Sub Domain"
+        "subDomain": "Sub Domain",
+        "webhookSecret": "Webhook secret",
+        "leadSourceName": "Source for leads from amoCRM",
+        "leadColumnId": "Column for leads from amoCRM"
       },
       "test": "Test connection",
       "testOk": "Connected: {account}",
       "testFake": "No credentials yet; the fake client answered.",
       "connected": "Tokens are stored; the connection works.",
-      "notConnected": "Not connected yet."
+      "notConnected": "Not connected yet.",
+      "firstColumn": "First column of the first board",
+      "inboundHint": "In amoCRM open Settings → Integrations → Webhooks, add the address above with your webhook secret in place of the dots and tick “Lead added”. Each such lead lands in the column chosen here under the source named here and is not pushed back to amoCRM."
     },
     "FACE_ID": {
       "title": "FaceID",

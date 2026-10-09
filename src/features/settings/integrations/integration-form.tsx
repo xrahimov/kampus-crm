@@ -8,6 +8,13 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { useRouter } from "@/i18n/navigation";
 import { api, ApiError } from "@/lib/api-client";
@@ -18,7 +25,12 @@ export interface IntegrationField {
   key: string;
   secret?: boolean;
   type?: "text" | "number";
+  /** A fixed choice instead of free text; an option with value "" means "not set". */
+  options?: Array<{ value: string; label: string }>;
 }
+
+/* Radix Select cannot hold an empty value, so "" travels as this token. */
+const NONE = "__none";
 
 /**
  * One provider's card: enabled switch plus its fields. Secrets come back masked
@@ -92,13 +104,33 @@ export function IntegrationForm({
           {fields.map((f) => (
             <div key={f.key} className="space-y-2">
               <Label htmlFor={`${path}-${f.key}`}>{t(`fields.${f.key}`)}</Label>
-              <Input
-                id={`${path}-${f.key}`}
-                type={f.secret ? "password" : (f.type ?? "text")}
-                autoComplete="off"
-                value={values[f.key] ?? ""}
-                onChange={(e) => setValues((v) => ({ ...v, [f.key]: e.target.value }))}
-              />
+              {f.options ? (
+                <Select
+                  value={values[f.key] || NONE}
+                  onValueChange={(next) =>
+                    setValues((v) => ({ ...v, [f.key]: next === NONE ? "" : next }))
+                  }
+                >
+                  <SelectTrigger id={`${path}-${f.key}`} data-testid={`${path}-${f.key}`}>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {f.options.map((o) => (
+                      <SelectItem key={o.value || NONE} value={o.value || NONE}>
+                        {o.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              ) : (
+                <Input
+                  id={`${path}-${f.key}`}
+                  type={f.secret ? "password" : (f.type ?? "text")}
+                  autoComplete="off"
+                  value={values[f.key] ?? ""}
+                  onChange={(e) => setValues((v) => ({ ...v, [f.key]: e.target.value }))}
+                />
+              )}
             </div>
           ))}
         </div>

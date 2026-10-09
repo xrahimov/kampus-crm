@@ -44,6 +44,28 @@ export async function listBoards(actor: Actor, db: DbClient = prisma): Promise<L
   }));
 }
 
+/** Every column in the actor's branches as "Branch · Board · Column", for settings that pick one (A-115). */
+export async function listColumnOptions(
+  actor: Actor,
+  db: DbClient = prisma,
+): Promise<Array<{ id: string; label: string }>> {
+  authorize(actor, "settings.integrations");
+  const rows = await db.leadColumn.findMany({
+    where: { board: boardScope(actor) },
+    include: { board: { select: { name: true, branch: { select: { name: true } } } } },
+    orderBy: [
+      { board: { branch: { name: "asc" } } },
+      { board: { sortOrder: "asc" } },
+      { board: { createdAt: "asc" } },
+      { sortOrder: "asc" },
+    ],
+  });
+  return rows.map((c) => ({
+    id: c.id,
+    label: `${c.board.branch.name} · ${c.board.name} · ${c.name}`,
+  }));
+}
+
 export async function createBoard(
   actor: Actor,
   input: LeadBoardInput & { branchId: string },

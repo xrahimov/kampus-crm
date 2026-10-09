@@ -6,6 +6,7 @@ import { AmoCrmPage } from "@/features/settings/integrations/amocrm-page";
 import { requireCurrentUser } from "@/server/auth/current-user";
 import { can } from "@/server/rbac/authorize";
 import { getIntegration } from "@/server/services/integrations/integrations.service";
+import { listColumnOptions } from "@/server/services/leads/boards.service";
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations("settings.nav");
@@ -17,5 +18,9 @@ export default async function Page({ params }: { params: Promise<{ locale: strin
   setRequestLocale(locale);
   const current = await requireCurrentUser();
   if (!can(current.actor, "settings.integrations")) return <Forbidden />;
-  return <AmoCrmPage dto={await getIntegration(current.actor, "AMOCRM")} />;
+  const [dto, columns] = await Promise.all([
+    getIntegration(current.actor, "AMOCRM"),
+    listColumnOptions(current.actor),
+  ]);
+  return <AmoCrmPage dto={dto} columns={columns} />;
 }

@@ -341,6 +341,7 @@ export async function createLead(
           type: "amocrm.pushLead",
           payload: {
             organizationId: actor.organizationId,
+            leadId: row.id,
             name: dto.fullName,
             phone: dto.phones[0] ?? null,
             source: dto.sourceName ?? null,
