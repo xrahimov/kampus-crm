@@ -107,6 +107,7 @@ export function MembersPanel({
   const [transferring, setTransferring] = useState<MembershipDto | null>(null);
   const [returning, setReturning] = useState<MembershipDto | null>(null);
   const [messaging, setMessaging] = useState<MembershipDto | null>(null);
+  const [billing, setBilling] = useState<MembershipDto | null>(null);
   const [activating, setActivating] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const refresh = () => startTransition(() => router.refresh());
@@ -225,6 +226,9 @@ export function MembersPanel({
                   {m.phone ?? "—"}
                   {showJoined &&
                     ` · ${tm("joined")} ${fmt(parseDateOnly(m.joinedAt), { dateStyle: "medium" })}`}
+                  {showJoined &&
+                    m.billingFrom &&
+                    ` · ${tm("chargedFrom")} ${fmt(parseDateOnly(m.billingFrom), { dateStyle: "medium" })}`}
                 </p>
               </div>
               {showBalance && m.balance !== null && (
@@ -290,6 +294,9 @@ export function MembersPanel({
                     <DropdownMenuItem onSelect={() => setTransferring(m)}>
                       {tm("transfer")}
                     </DropdownMenuItem>
+                    <DropdownMenuItem onSelect={() => setBilling(m)} data-testid="member-billing">
+                      {tm("editBilling")}
+                    </DropdownMenuItem>
                     {canLeads && (
                       <DropdownMenuItem onSelect={() => setReturning(m)} data-testid="to-lead">
                         {tm("toLead")}
@@ -328,6 +335,13 @@ export function MembersPanel({
         open={adding}
         onOpenChange={setAdding}
         canCreateStudent={canCreateStudent}
+        onSaved={refresh}
+      />
+      <BillingFromDialog
+        member={billing}
+        onOpenChange={(open) => {
+          if (!open) setBilling(null);
+        }}
         onSaved={refresh}
       />
       <ImportDialog
@@ -484,6 +498,7 @@ function AddMemberDialog({
               }
             : { studentId: picked?.id }),
           joinedAt: data.get("joinedAt"),
+          billingFrom: String(data.get("billingFrom") ?? "").trim() || null,
           customPrice: customPrice ? data.get("customPrice") : null,
           note: String(data.get("note") ?? "").trim() || null,
         },
@@ -584,11 +599,30 @@ function AddMemberDialog({
           <FieldError id="member-student-error" message={fields.studentId?.[0]} />
         </div>
       )}
-      <div className="space-y-2">
-        <Label htmlFor="member-joined">{tm("joinDate")}</Label>
-        <Input id="member-joined" name="joinedAt" type="date" defaultValue={todayIso()} required />
-        <FieldError id="member-joined-error" message={fields.joinedAt?.[0]} />
+      <div className="grid gap-3 sm:grid-cols-2">
+        <div className="space-y-2">
+          <Label htmlFor="member-joined">{tm("joinDate")}</Label>
+          <Input
+            id="member-joined"
+            name="joinedAt"
+            type="date"
+            defaultValue={todayIso()}
+            required
+          />
+          <FieldError id="member-joined-error" message={fields.joinedAt?.[0]} />
+        </div>
+        <div className="space-y-2">
+          <Label htmlFor="member-billing">{tm("billingFrom")}</Label>
+          <Input
+            id="member-billing"
+            name="billingFrom"
+            type="date"
+            data-testid="member-billing-from"
+          />
+          <FieldError id="member-billing-error" message={fields.billingFrom?.[0]} />
+        </div>
       </div>
+      <p className="text-xs text-muted-foreground">{tm("billingFromHint")}</p>
       <div className="space-y-2">
         <div className="flex items-center gap-2">
           <Switch id="member-custom" checked={customPrice} onCheckedChange={setCustomPrice} />
@@ -614,6 +648,70 @@ function AddMemberDialog({
       <div className="space-y-2">
         <Label htmlFor="member-note">{tm("note")}</Label>
         <Textarea id="member-note" name="note" rows={2} />
+      </div>
+    </FormDialog>
+  );
+}
+
+/** "Charged from" of an existing membership (A-110); empty means the activation or join date. */
+function BillingFromDialog({
+  member,
+  onOpenChange,
+  onSaved,
+}: {
+  member: MembershipDto | null;
+  onOpenChange: (open: boolean) => void;
+  onSaved: () => void;
+}) {
+  const tm = useTranslations("groups.members");
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [fields, setFields] = useState<Record<string, string[]>>({});
+
+  async function submit(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    if (!member) return;
+    const data = new FormData(event.currentTarget);
+    setBusy(true);
+    setError(null);
+    setFields({});
+    try {
+      await api(`/memberships/${member.id}`, {
+        method: "PATCH",
+        body: { billingFrom: String(data.get("billingFrom") ?? "").trim() || null },
+      });
+      onOpenChange(false);
+      onSaved();
+    } catch (e) {
+      if (e instanceof ApiError && e.fields) setFields(e.fields);
+      setError(e instanceof ApiError && !e.fields ? e.message : null);
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return (
+    <FormDialog
+      open={member !== null}
+      onOpenChange={onOpenChange}
+      title={tm("editBilling")}
+      description={tm("billingFromHint")}
+      onSubmit={submit}
+      submitting={busy}
+      error={error}
+      testId="billing-from-dialog"
+    >
+      <div className="space-y-2">
+        <Label htmlFor="billing-from">{tm("billingFrom")}</Label>
+        <Input
+          key={member?.id ?? "none"}
+          id="billing-from"
+          name="billingFrom"
+          type="date"
+          defaultValue={member?.billingFrom ?? ""}
+          data-testid="billing-from-input"
+        />
+        <FieldError id="billing-from-error" message={fields.billingFrom?.[0]} />
       </div>
     </FormDialog>
   );

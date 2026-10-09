@@ -4,6 +4,7 @@ import {
   addMonthsIso,
   chargeAmount,
   chargeableMonths,
+  chargedFrom,
   countLessons,
   discountFor,
   firstUnpaidMonth,
@@ -98,5 +99,17 @@ describe("fee engine (A-10)", () => {
     expect(firstUnpaidMonth(charges, 1_350_000)).toBeNull();
     expect(firstUnpaidMonth(charges, 900_000)).toBe("2026-11-01");
     expect(firstUnpaidMonth(charges, 0)).toBe("2026-09-01");
+  });
+  it("charges from the chosen billing day when one is set (A-110)", () => {
+    expect(chargedFrom({ ...active, billingFrom: "2026-10-01" })).toBe("2026-10-01");
+    expect(chargedFrom({ ...active, billingFrom: null })).toBe("2026-09-01");
+    expect(chargedFrom({ ...active, status: "NEW", billingFrom: "2026-10-01" })).toBeNull();
+    expect(
+      chargeableMonths({ ...active, billingFrom: "2026-10-01" }, "2027-03-01", "2026-11-15"),
+    ).toEqual(["2026-10-01", "2026-11-01"]);
+    expect(countLessons(lessons, { ...active, billingFrom: "2026-09-08" }, "2026-09-01")).toEqual({
+      total: 4,
+      counted: 2,
+    });
   });
 });

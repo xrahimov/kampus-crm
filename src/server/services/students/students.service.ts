@@ -37,6 +37,8 @@ export interface StudentGroupDto {
   courseName: string;
   status: MembershipStatus;
   joinedAt: string;
+  /** Charged from this day when set (A-110). */
+  billingFrom: string | null;
   leftAt: string | null;
   groupStartDate: string;
   groupEndDate: string;
@@ -186,6 +188,7 @@ function toGroupDto(
     courseName: m.group.course.name,
     status: m.status,
     joinedAt: dateToIso(m.joinedAt),
+    billingFrom: m.billingFrom ? dateToIso(m.billingFrom) : null,
     leftAt: m.leftAt ? dateToIso(m.leftAt) : null,
     groupStartDate: dateToIso(m.group.startDate),
     groupEndDate: dateToIso(m.group.endDate),
@@ -613,6 +616,7 @@ export async function createStudent(
             status: m.status,
             joinedAt: isoToDate(m.joinedAt),
             activatedAt: m.status === "ACTIVE" ? isoToDate(m.joinedAt) : null,
+            billingFrom: m.billingFrom ? isoToDate(m.billingFrom) : null,
             customPrice: m.customPrice ?? null,
             note: m.note ?? null,
           },
@@ -621,7 +625,13 @@ export async function createStudent(
           action: "membership.create",
           entity: "GroupMembership",
           entityId: membership.id,
-          after: { studentId: row.id, groupId: group.id, status: m.status, joinedAt: m.joinedAt },
+          after: {
+            studentId: row.id,
+            groupId: group.id,
+            status: m.status,
+            joinedAt: m.joinedAt,
+            billingFrom: m.billingFrom ?? null,
+          },
           branchId: group.branchId,
         });
       }
@@ -976,6 +986,7 @@ export async function listStudentHistory(
 
 const DETAIL_KEYS = [
   "status",
+  "billingFrom",
   "amount",
   "bonus",
   "effectiveMonth",

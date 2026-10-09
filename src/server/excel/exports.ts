@@ -374,17 +374,87 @@ export async function templateResponse(
 
 export const IMPORT_MAX_BYTES = 5 * 1024 * 1024;
 
-/** The uploaded spreadsheet of an import form, as rows of strings. */
+const CSV_TYPES = ["text/csv", "application/csv", "text/plain"];
+
+function countOutsideQuotes(line: string, delimiter: string): number {
+  let count = 0;
+  let quoted = false;
+  for (const ch of line) {
+    if (ch === '"') quoted = !quoted;
+    else if (!quoted && ch === delimiter) count += 1;
+  }
+  return count;
+}
+
+/**
+ * A CSV export as rows of strings (A-110): comma, semicolon or tab separated,
+ * whichever the first line uses most; quotes and doubled quotes honoured; a BOM
+ * dropped. Other systems export CSV, and nobody should have to open it in Excel
+ * first just to save it again.
+ */
+export function parseCsv(text: string): string[][] {
+  const src = text.replace(/^\uFEFF/, "");
+  const firstLine = src.split(/\r?\n/, 1)[0] ?? "";
+  const [best] = [",", ";", "\t"]
+    .map((d) => [d, countOutsideQuotes(firstLine, d)] as const)
+    .sort((a, b) => b[1] - a[1]);
+  const delimiter = best && best[1] > 0 ? best[0] : ",";
+  const rows: string[][] = [];
+  let row: string[] = [];
+  let cell = "";
+  let quoted = false;
+  for (let i = 0; i < src.length; i += 1) {
+    const ch = src[i]!;
+    if (quoted) {
+      if (ch !== '"') cell += ch;
+      else if (src[i + 1] === '"') {
+        cell += '"';
+        i += 1;
+      } else quoted = false;
+    } else if (ch === '"') quoted = true;
+    else if (ch === delimiter) {
+      row.push(cell);
+      cell = "";
+    } else if (ch === "\n" || ch === "\r") {
+      if (ch === "\r" && src[i + 1] === "\n") i += 1;
+      row.push(cell);
+      rows.push(row);
+      row = [];
+      cell = "";
+    } else cell += ch;
+  }
+  if (cell !== "" || row.length > 0) {
+    row.push(cell);
+    rows.push(row);
+  }
+  return rows;
+}
+
+/** UTF-8 when it is valid UTF-8, else the Windows-1251 of older Russian-locale exports. */
+function decodeText(bytes: ArrayBuffer): string {
+  try {
+    return new TextDecoder("utf-8", { fatal: true }).decode(bytes);
+  } catch {
+    return new TextDecoder("windows-1251").decode(bytes);
+  }
+}
+
+/** The uploaded spreadsheet (.xlsx) or CSV of an import form, as rows of strings. */
 export async function sheetFromForm(form: FormData | null): Promise<string[][]> {
   const file = form?.get("file");
   if (!(file instanceof File)) throw AppError.validation({ file: ["validation.fileRequired"] });
-  if (file.size > IMPORT_MAX_BYTES) throw AppError.validation({ file: ["validation.fileSize"] });
-  if (!/\.xlsx$/i.test(file.name) && file.type !== XLSX_TYPE) {
-    throw AppError.validation({ file: ["validation.fileType"] });
+  if (file.size > IMPORT_MAX_BYTES) {
+    throw AppError.validation({ file: ["validation.importFileSize"] });
+  }
+  const isCsv =
+    /\.csv$/i.test(file.name) || (!/\.xlsx$/i.test(file.name) && CSV_TYPES.includes(file.type));
+  if (!isCsv && !/\.xlsx$/i.test(file.name) && file.type !== XLSX_TYPE) {
+    throw AppError.validation({ file: ["validation.importFileType"] });
   }
   try {
-    return await readFirstSheet(await file.arrayBuffer());
+    const bytes = await file.arrayBuffer();
+    return isCsv ? parseCsv(decodeText(bytes)) : await readFirstSheet(bytes);
   } catch {
-    throw AppError.validation({ file: ["validation.fileType"] });
+    throw AppError.validation({ file: ["validation.importFileType"] });
   }
 }

@@ -237,7 +237,7 @@ export const en: HelpContent = {
         members: {
           title: "Students in the group",
           body: [
-            "Press **Add student** to add one: find an existing student by name or phone, or create a new one on the spot. Set the join date, and a custom monthly price if this student pays a different amount. **Add from Excel** takes many at once; download the template first.",
+            "Press **Add student** to add one: find an existing student by name or phone, or create a new one on the spot. Set the join date, and a custom monthly price if this student pays a different amount. **Charged from** is optional: leave it empty to charge from the join date, or set a later day for a student who comes over from another system where the earlier months are already settled; it can be changed later from the row menu. **Add from Excel** takes many at once; download the template first.",
             "Each student's row has a status: New, Trial, Active, Frozen, Removed or Graduated. New and trial students are not charged yet. **Activate students** turns every new and trial student active in one go; from then on their monthly fee is charged.",
             "The row menu holds the day-to-day actions: **Payment** opens the payment dialog for this group; **Change status**; **Graduate**; **Move to another group**, which closes the membership here and opens one there; **Remove from group**, which asks for the reason; **Return to leads**; **Message (SMS)**. Removed students stay in the history and can be shown with the **Removed** switch; balances appear with the **Balances** switch.",
           ],

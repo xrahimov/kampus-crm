@@ -156,7 +156,7 @@ export function ImportDialog({
             <Input
               id="import-file"
               type="file"
-              accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+              accept=".xlsx,.csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,text/csv"
               onChange={(e) => {
                 setFile(e.target.files?.[0] ?? null);
                 setResult(null);

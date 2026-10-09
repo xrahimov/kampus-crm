@@ -140,7 +140,14 @@ export function StudentDialog({
       form.setValue(
         "membership",
         next
-          ? { groupId: "", joinedAt: todayIso(), customPrice: "", note: "", status: "ACTIVE" }
+          ? {
+              groupId: "",
+              joinedAt: todayIso(),
+              billingFrom: "",
+              customPrice: "",
+              note: "",
+              status: "ACTIVE",
+            }
           : null,
       );
     }
@@ -478,15 +485,30 @@ export function StudentDialog({
                   </div>
                 </div>
                 {membership && (
-                  <div className="space-y-2">
-                    <Label htmlFor="student-customPrice">{t("groups.members.customPrice")}</Label>
-                    <Input
-                      id="student-customPrice"
-                      type="number"
-                      min={0}
-                      step="1000"
-                      {...form.register("membership.customPrice")}
-                    />
+                  <div className="grid gap-3 sm:grid-cols-2">
+                    <div className="space-y-2">
+                      <Label htmlFor="student-customPrice">{t("groups.members.customPrice")}</Label>
+                      <Input
+                        id="student-customPrice"
+                        type="number"
+                        min={0}
+                        step="1000"
+                        {...form.register("membership.customPrice")}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="student-billingFrom">{tf("billingFrom")}</Label>
+                      <Input
+                        id="student-billingFrom"
+                        type="date"
+                        {...form.register("membership.billingFrom")}
+                        aria-invalid={!!errors.membership?.billingFrom}
+                      />
+                      <FieldError
+                        id="student-billingFrom-error"
+                        message={err(errors.membership?.billingFrom?.message)}
+                      />
+                    </div>
                   </div>
                 )}
               </>

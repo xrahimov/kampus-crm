@@ -62,9 +62,15 @@ test.describe("groups", () => {
     await member.getByLabel("New student").click();
     await member.getByLabel("Full name").fill("E2E Student");
     await member.getByLabel("Joined on").fill("2026-09-07");
+    // Charged from October: September is settled elsewhere (A-110).
+    await member.getByLabel("Charged from").fill("2026-10-01");
     await member.getByRole("button", { name: "Save" }).click();
     await expect(member).toBeHidden();
-    await expect(page.getByTestId("member-row").filter({ hasText: "E2E Student" })).toBeVisible();
+    const memberRow = page.getByTestId("member-row").filter({ hasText: "E2E Student" });
+    await expect(memberRow).toBeVisible();
+    await page.getByLabel("Join dates").click();
+    await expect(memberRow).toContainText("joined Sep 7, 2026");
+    await expect(memberRow).toContainText("charged from Oct 1, 2026");
 
     // Attendance for September: the first cell cycles to "Present".
     await page.getByTestId("month-2026-09").click();

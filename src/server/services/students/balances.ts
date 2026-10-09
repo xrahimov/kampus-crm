@@ -57,6 +57,7 @@ const membershipSelect = {
   joinedAt: true,
   leftAt: true,
   activatedAt: true,
+  billingFrom: true,
   frozenAt: true,
   customPrice: true,
   group: {
@@ -88,6 +89,7 @@ function windowOf(m: MembershipRow): ChargeWindow {
     joinedAt: dateToIso(m.joinedAt),
     leftAt: m.leftAt ? dateToIso(m.leftAt) : null,
     frozenAt: m.frozenAt ? dateToIso(m.frozenAt) : null,
+    billingFrom: m.billingFrom ? dateToIso(m.billingFrom) : null,
   };
 }
 
