@@ -47,6 +47,7 @@ import { LeaveReasonField } from "@/features/groups/leave-reason-field";
 import { TransferDialog } from "@/features/groups/transfer-dialog";
 import { AdjustmentDialog } from "@/features/payments/adjustment-dialog";
 import { AdjustmentsTable } from "@/features/payments/adjustments-table";
+import { LegacyPaymentsTable } from "@/features/payments/legacy-payments-table";
 import { PaymentDialog, type PayableMembership } from "@/features/payments/payment-dialog";
 import { PaymentsTable } from "@/features/payments/payments-table";
 import { RefundDialog } from "@/features/payments/refund-dialog";
@@ -62,6 +63,7 @@ import { useMoneyFormat } from "@/lib/use-money-format";
 import type { Page } from "@/lib/validation/common";
 import type { MembershipStatus } from "@/lib/validation/groups";
 import type { AdjustmentDto } from "@/server/services/students/adjustments.service";
+import type { LegacyPaymentDto } from "@/server/services/students/history-import.service";
 import type { FamilyDto } from "@/server/services/students/families.service";
 import type { PaymentDto, PaymentOptionsDto } from "@/server/services/students/payments.service";
 import type {
@@ -109,6 +111,7 @@ export function StudentDetail({
   history,
   payments,
   adjustments,
+  legacyPayments,
   paymentGroupId,
   progress,
   testResults,
@@ -126,6 +129,7 @@ export function StudentDetail({
   history: Page<StudentHistoryDto>;
   payments: Page<PaymentDto> & { totalAmount: number };
   adjustments: AdjustmentDto[];
+  legacyPayments: LegacyPaymentDto[];
   paymentGroupId: string | null;
   progress: StudentProgressDto;
   testResults: StudentTestResultsDto;
@@ -586,6 +590,11 @@ export function StudentDetail({
               />
               <AdjustmentsTable
                 adjustments={adjustments}
+                canRemove={can.refund}
+                onChanged={refresh}
+              />
+              <LegacyPaymentsTable
+                rows={legacyPayments}
                 canRemove={can.refund}
                 onChanged={refresh}
               />

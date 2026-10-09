@@ -132,6 +132,8 @@ export function StudentsPage({
   const [importing, setImporting] = useState(false);
   const [importingBalances, setImportingBalances] = useState(false);
   const [importingParents, setImportingParents] = useState(false);
+  const [importingArchived, setImportingArchived] = useState(false);
+  const [importingHistory, setImportingHistory] = useState(false);
   const [notice, setNotice] = useState<string | null>(null);
   // Bulk actions (A-132): the ticked rows of this page.
   const [selected, setSelected] = useState<Set<string>>(new Set());
@@ -284,6 +286,22 @@ export function StudentsPage({
                     data-testid="students-import-parents"
                   >
                     {ts("importParents")}
+                  </DropdownMenuItem>
+                )}
+                {can.create && (
+                  <DropdownMenuItem
+                    onSelect={() => setImportingArchived(true)}
+                    data-testid="students-import-archived"
+                  >
+                    {ts("importArchived")}
+                  </DropdownMenuItem>
+                )}
+                {can.pay && (
+                  <DropdownMenuItem
+                    onSelect={() => setImportingHistory(true)}
+                    data-testid="students-import-history"
+                  >
+                    {ts("importHistory")}
                   </DropdownMenuItem>
                 )}
               </DropdownMenuContent>
@@ -688,6 +706,30 @@ export function StudentsPage({
         fields={{ branchId: defaultId }}
         onDone={refresh}
         testId="students-import-parents-dialog"
+      />
+      <ImportDialog
+        open={importingArchived}
+        onOpenChange={setImportingArchived}
+        title={ts("importArchived")}
+        description={ts("importArchivedHint")}
+        templatePath="/students/import-archived-template.xlsx"
+        importPath="/students/import-archived"
+        fields={{ branchId: defaultId }}
+        preview
+        onDone={refresh}
+        testId="students-import-archived-dialog"
+      />
+      <ImportDialog
+        open={importingHistory}
+        onOpenChange={setImportingHistory}
+        title={ts("importHistory")}
+        description={ts("importHistoryHint")}
+        templatePath="/students/import-history-template.xlsx"
+        importPath="/students/import-history"
+        fields={{ branchId: defaultId }}
+        preview
+        onDone={refresh}
+        testId="students-import-history-dialog"
       />
       <SendSmsDialog
         open={smsOpen}

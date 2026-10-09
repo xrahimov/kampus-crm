@@ -449,6 +449,9 @@
     "importNameExists": "Bu nom bilan allaqachon mavjud",
     "importUserExists": "Bu telefonli foydalanuvchi allaqachon bor",
     "importParentExists": "Bu ota-ona o‘quvchiga allaqachon qo‘shilgan",
+    "importArchivedExists": "Bu o‘quvchi allaqachon arxivda",
+    "importGroupMissing": "Bu filialda shunday nomli guruh yo‘q",
+    "importPaymentExists": "Bu to‘lov o‘quvchi tarixida allaqachon bor",
     "debtCaseClosed": "Bu qarz allaqachon yopilgan.",
     "scheduleClash": "Bu vaqtda xona yoki o‘qituvchi band.",
     "familyOther": "Bu o‘quvchi allaqachon boshqa oilada.",
@@ -1809,6 +1812,10 @@
     "importBalancesHint": "Har bir o'quvchi va guruh uchun bir qator: oldingi tizimdan kelgan qoldiq. Qarz manfiy son, o'quvchining ortiqcha puli musbat son bilan yoziladi. O'quvchi Kampus ID, telefon yoki aniq ism bo'yicha topiladi; yozishdan oldin mosliklar ko'rsatiladi.",
     "importMenu": "Import",
     "importParents": "Ota-onalarni import qilish",
+    "importArchived": "Arxivdagi o‘quvchilarni import qilish",
+    "importArchivedHint": "Oldingi tizimda allaqachon ketgan har bir o‘quvchi uchun bir qator: ism, telefon, guruh, kelgan va ketgan sanalar hamda sabab. Har biri yopilgan a‘zolikka ega arxivdagi o‘quvchi bo‘ladi, shunda ketganlar hisoboti va arxiv to‘liq bo‘ladi. Ko‘rib chiqishni tasdiqlamaguningizcha hech narsa yozilmaydi.",
+    "importHistory": "To‘lovlar tarixini import qilish",
+    "importHistoryHint": "Oldingi tizimda qilingan har bir to‘lov uchun bir qator: o‘quvchi, guruh, summa, sana va usul. Qatorlar o‘quvchining to‘lovlari ostida faqat ma‘lumot uchun ko‘rinadi; balans, qarz yoki hisobotlar o‘zgarmaydi. O‘quvchi Kampus ID, telefon yoki aniq ism bo‘yicha topiladi, arxivdagilar ham.",
     "picker": {
       "noResults": "O‘quvchi topilmadi",
       "clear": "Tozalash"
@@ -1983,6 +1990,19 @@
         "OPENING": "Boshlang'ich qoldiq",
         "CORRECTION": "To'g'rilash"
       }
+    },
+    "legacy": {
+      "title": "Oldingi tizimdagi to‘lovlar",
+      "hint": "Ma‘lumot uchun import qilingan: bu qatorlar balans va hisobotlarga kirmaydi.",
+      "total": "Jami {amount}",
+      "date": "Sana",
+      "group": "Guruh",
+      "amount": "Summa",
+      "method": "Usul",
+      "comment": "Izoh",
+      "remove": "O‘chirish",
+      "removeTitle": "Bu tarix qatori o‘chirilsinmi?",
+      "removeText": "Qator yo‘qoladi; balanslar hech qanday o‘zgarmaydi."
     }
   },
   "debts": {
@@ -3870,7 +3890,9 @@
         },
         "payment": {
           "create": "To'lov qabul qilindi",
-          "refund": "Pul qaytarildi"
+          "refund": "Pul qaytarildi",
+          "importHistory": "To‘lov tarixi qatori import qilindi",
+          "importHistoryRemove": "To‘lov tarixi qatori o‘chirildi"
         },
         "paymentMethod": {
           "create": "To'lov usuli yaratildi",
@@ -3962,7 +3984,8 @@
           "fieldSet": "Qo'shimcha ma'lumot saqlandi",
           "fieldRemove": "Qo'shimcha ma'lumot o'chirildi",
           "parentAdd": "Ota-ona qo'shildi",
-          "parentRemove": "Ota-ona o'chirildi"
+          "parentRemove": "Ota-ona o'chirildi",
+          "importArchived": "Arxivdagi o‘quvchi import qilindi"
         },
         "teacher": {
           "create": "O'qituvchi yaratildi",
@@ -4262,6 +4285,8 @@
       "staffTemplate": "xodimlar-shablon",
       "groupsTemplate": "guruhlar-shablon",
       "parentsTemplate": "ota-onalar-shablon",
+      "archivedTemplate": "arxiv-oquvchilar-shablon",
+      "historyTemplate": "tolovlar-tarixi-shablon",
       "debtors": "qarzdorlar",
       "referralsReport": "tavsiya-dasturi",
       "absences": "absences"
@@ -4275,7 +4300,9 @@
       "room": "<xona nomi>",
       "roles": "O‘qituvchi",
       "days": "Du, Chor, Ju",
-      "parentName": "<ota-ona ismi>"
+      "parentName": "<ota-ona ismi>",
+      "leaveReason": "Ko‘chib ketdi",
+      "method": "Naqd"
     },
     "marks": {
       "present": "+",
