@@ -1440,7 +1440,12 @@
         "SUBMITTED": "Javob berildi",
         "ACCEPTED": "Qabul qilindi",
         "RETURNED": "Qaytarildi"
-      }
+      },
+      "speaking": "Og‘zaki vazifa",
+      "speakingHint": "O‘quvchilar javobini o‘z sahifasida ovozli yozib oladi; siz eshitasiz va ovoz bilan javob bera olasiz.",
+      "speakingBadge": "Og‘zaki",
+      "voiceReply": "Ovozli javob",
+      "currentVoiceReply": "Joriy javobingiz"
     },
     "materials": {
       "intro": "Fayllar, havolalar va dars yozuvlari. O‘quvchilar ularni shaxsiy havolasi orqali ochadi.",
@@ -4518,7 +4523,12 @@
         "SUBMITTED": "Yuborildi",
         "ACCEPTED": "Qabul qilindi",
         "RETURNED": "Qaytarildi"
-      }
+      },
+      "speaking": "Og‘zaki",
+      "recordAnswer": "Javobingizni yozib oling",
+      "yourRecording": "Sizning yozuvingiz",
+      "teacherVoice": "O‘qituvchi javobi",
+      "audioFileOptional": "Yoki audio fayl biriktiring (ixtiyoriy)"
     },
     "telegram": {
       "title": "Telegram",
@@ -4817,5 +4827,16 @@
       "issuedOn": "Berilgan sana",
       "number": "Raqami"
     }
+  },
+  "recorder": {
+    "start": "Yozib olish",
+    "again": "Qayta yozish",
+    "stop": "To‘xtatish",
+    "recording": "Yozilmoqda {time}",
+    "ready": "Yozildi, {time}. Yuboring yoki qayta yozing.",
+    "discard": "O‘chirish",
+    "hint": "«Yozib olish» ni bosing, gapiring, so‘ng «To‘xtatish». 5 daqiqagacha.",
+    "unsupported": "Bu brauzer yozib ololmaydi. Telefondan audio fayl biriktiring.",
+    "denied": "Mikrofonga ruxsat berilmadi. Brauzerda ruxsat bering va «Yozib olish» ni qayta bosing."
   }
 }

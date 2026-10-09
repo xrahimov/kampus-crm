@@ -1440,7 +1440,12 @@
         "SUBMITTED": "Answered",
         "ACCEPTED": "Accepted",
         "RETURNED": "Returned"
-      }
+      },
+      "speaking": "Speaking task",
+      "speakingHint": "Students record their answer on their page; you listen and can reply with your voice.",
+      "speakingBadge": "Speaking",
+      "voiceReply": "Voice reply",
+      "currentVoiceReply": "Your current reply"
     },
     "materials": {
       "intro": "Files, links and lesson recordings. Students open them from their personal link.",
@@ -4518,7 +4523,12 @@
         "SUBMITTED": "Sent",
         "ACCEPTED": "Accepted",
         "RETURNED": "Returned"
-      }
+      },
+      "speaking": "Speaking",
+      "recordAnswer": "Record your answer",
+      "yourRecording": "Your recording",
+      "teacherVoice": "Teacher's reply",
+      "audioFileOptional": "Or attach an audio file (optional)"
     },
     "telegram": {
       "title": "Telegram",
@@ -4817,5 +4827,16 @@
       "issuedOn": "Issued on",
       "number": "Number"
     }
+  },
+  "recorder": {
+    "start": "Record",
+    "again": "Record again",
+    "stop": "Stop",
+    "recording": "Recording {time}",
+    "ready": "Recorded, {time}. Send it, or record again.",
+    "discard": "Discard",
+    "hint": "Press Record, speak, then Stop. Up to 5 minutes.",
+    "unsupported": "This browser cannot record. Attach an audio file from your phone instead.",
+    "denied": "The microphone was not allowed. Allow it in the browser and press Record again."
   }
 }

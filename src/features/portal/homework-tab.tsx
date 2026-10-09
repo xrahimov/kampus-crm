@@ -1,6 +1,6 @@
 "use client";
 
-import { ExternalLink, Paperclip, Send } from "lucide-react";
+import { ExternalLink, Mic, Paperclip, Send } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useRef, useState } from "react";
 
@@ -9,6 +9,8 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { ATTACHMENT_ACCEPT } from "@/features/homework/attachment-field";
+import { AudioPlayer, isAudioUrl } from "@/features/homework/audio-player";
+import { AudioRecorder } from "@/features/homework/audio-recorder";
 import type { ApiErrorBody } from "@/lib/api-client";
 import { parseDateOnly } from "@/lib/dates";
 import { useDateFormat } from "@/lib/use-date-format";
@@ -64,6 +66,7 @@ function HomeworkItem({
   const [open, setOpen] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [recording, setRecording] = useState<File | null>(null);
   const date = (iso: string) => fmt(parseDateOnly(iso), { day: "numeric", month: "short" });
   const s = homework.submission;
   const canAnswer = !s || s.status !== "ACCEPTED";
@@ -74,6 +77,11 @@ function HomeworkItem({
     const body = new FormData(form);
     const file = fileRef.current?.files?.[0];
     if (!file) body.delete("file");
+    // A recording made on the page goes instead of a picked file.
+    if (recording) {
+      body.delete("file");
+      body.append("file", recording, recording.name);
+    }
     setBusy(true);
     setError(null);
     try {
@@ -90,6 +98,7 @@ function HomeworkItem({
         return;
       }
       form.reset();
+      setRecording(null);
       setOpen(false);
       await onChanged();
     } catch {
@@ -109,6 +118,11 @@ function HomeworkItem({
           )}
         </div>
         <div className="flex items-center gap-2 text-xs">
+          {homework.speaking && (
+            <Badge variant="outline" data-testid="portal-hw-speaking">
+              <Mic className="size-3" /> {t("speaking")}
+            </Badge>
+          )}
           {homework.dueDate && (
             <span className="text-muted-foreground">
               {t("due", { date: date(homework.dueDate) })}
@@ -151,20 +165,36 @@ function HomeworkItem({
               {t("yourAnswer", { date: fmt(new Date(s.submittedAt), { dateStyle: "medium" }) })}
             </div>
             {s.note && <p className="whitespace-pre-wrap">{s.note}</p>}
-            {s.attachmentUrl && (
-              <a
-                href={s.attachmentUrl}
-                target="_blank"
-                rel="noreferrer"
-                className="inline-flex items-center gap-1 text-xs underline"
-              >
-                <Paperclip className="size-3" /> {t("yourFile")}
-              </a>
-            )}
+            {s.attachmentUrl &&
+              (isAudioUrl(s.attachmentUrl) ? (
+                <AudioPlayer
+                  src={s.attachmentUrl}
+                  label={t("yourRecording")}
+                  testId="portal-hw-audio"
+                />
+              ) : (
+                <a
+                  href={s.attachmentUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="inline-flex items-center gap-1 text-xs underline"
+                >
+                  <Paperclip className="size-3" /> {t("yourFile")}
+                </a>
+              ))}
             {s.teacherComment && (
               <p className="mt-2 border-t pt-2 text-xs">
                 {t("teacherSaid")}: {s.teacherComment}
               </p>
+            )}
+            {s.teacherAudioUrl && (
+              <div className="mt-2 border-t pt-2">
+                <AudioPlayer
+                  src={s.teacherAudioUrl}
+                  label={t("teacherVoice")}
+                  testId="portal-hw-teacher-audio"
+                />
+              </div>
             )}
           </div>
         )}
@@ -175,6 +205,12 @@ function HomeworkItem({
         )}
         {canAnswer && open && (
           <form onSubmit={submit} className="space-y-3" noValidate>
+            {homework.speaking && (
+              <div className="space-y-1">
+                <Label>{t("recordAnswer")}</Label>
+                <AudioRecorder value={recording} onChange={setRecording} testId="hw-recorder" />
+              </div>
+            )}
             <div className="space-y-2">
               <Label htmlFor={`note-${homework.id}`}>{t("note")}</Label>
               <Textarea
@@ -186,7 +222,9 @@ function HomeworkItem({
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor={`file-${homework.id}`}>{t("fileOptional")}</Label>
+              <Label htmlFor={`file-${homework.id}`}>
+                {homework.speaking ? t("audioFileOptional") : t("fileOptional")}
+              </Label>
               <input
                 ref={fileRef}
                 id={`file-${homework.id}`}

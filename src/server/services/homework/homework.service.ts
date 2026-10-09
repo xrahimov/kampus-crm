@@ -40,6 +40,7 @@ export interface HomeworkSubmissionDto {
   attachmentUrl: string | null;
   submittedAt: string | null;
   teacherComment: string | null;
+  teacherAudioUrl: string | null;
   checkedByName: string | null;
 }
 
@@ -52,6 +53,8 @@ export interface HomeworkDto {
   linkUrl: string | null;
   attachmentUrl: string | null;
   dueDate: string | null;
+  /** A speaking task: answered with a recording (A-141). */
+  speaking: boolean;
   createdByName: string | null;
   createdAt: string;
   /** One row per current member of the group. */
@@ -73,12 +76,14 @@ export interface PortalHomeworkDto {
   linkUrl: string | null;
   attachmentUrl: string | null;
   dueDate: string | null;
+  speaking: boolean;
   submission: {
     status: HomeworkStatus;
     note: string | null;
     attachmentUrl: string | null;
     submittedAt: string;
     teacherComment: string | null;
+    teacherAudioUrl: string | null;
   } | null;
 }
 
@@ -106,6 +111,7 @@ function toDto(
     linkUrl: row.linkUrl,
     attachmentUrl: row.attachmentUrl,
     dueDate: row.dueDate ? dateToIso(row.dueDate) : null,
+    speaking: row.speaking,
     createdByName: row.createdBy?.fullName ?? null,
     createdAt: row.createdAt.toISOString(),
     submissions: members.map((m) => {
@@ -119,6 +125,7 @@ function toDto(
         attachmentUrl: s?.attachmentUrl ?? null,
         submittedAt: s?.submittedAt.toISOString() ?? null,
         teacherComment: s?.teacherComment ?? null,
+        teacherAudioUrl: s?.teacherAudioUrl ?? null,
         checkedByName: s?.checkedBy?.fullName ?? null,
       };
     }),
@@ -198,6 +205,7 @@ export async function setHomework(
     text: input.text,
     linkUrl: input.linkUrl ?? null,
     attachmentUrl: input.attachmentUrl ?? null,
+    speaking: input.speaking ?? false,
     dueDate: input.dueDate ? isoToDate(input.dueDate) : null,
   };
   const row = await db.$transaction(async (tx) => {
@@ -292,6 +300,7 @@ export async function reviewSubmission(
         membershipId,
         status: input.status,
         teacherComment: input.teacherComment ?? null,
+        teacherAudioUrl: input.teacherAudioUrl ?? null,
         checkedById: actor.userId,
         checkedAt: new Date(),
       },
@@ -299,6 +308,7 @@ export async function reviewSubmission(
         status: input.status,
         // An omitted comment keeps the earlier one; null clears it.
         ...(input.teacherComment !== undefined ? { teacherComment: input.teacherComment } : {}),
+        ...(input.teacherAudioUrl !== undefined ? { teacherAudioUrl: input.teacherAudioUrl } : {}),
         checkedById: actor.userId,
         checkedAt: new Date(),
       },
@@ -365,6 +375,7 @@ export async function listPortalHomework(
       linkUrl: r.linkUrl,
       attachmentUrl: portalFileUrl(token, r.attachmentUrl),
       dueDate: r.dueDate ? dateToIso(r.dueDate) : null,
+      speaking: r.speaking,
       submission: s
         ? {
             status: s.status,
@@ -372,6 +383,7 @@ export async function listPortalHomework(
             attachmentUrl: portalFileUrl(token, s.attachmentUrl),
             submittedAt: s.submittedAt.toISOString(),
             teacherComment: s.teacherComment,
+            teacherAudioUrl: portalFileUrl(token, s.teacherAudioUrl),
           }
         : null,
     };
@@ -413,6 +425,7 @@ export async function submitHomework(
       attachmentUrl: input.attachmentUrl ?? null,
       submittedAt: new Date(),
       teacherComment: null,
+      teacherAudioUrl: null,
       checkedById: null,
       checkedAt: null,
     },
@@ -434,7 +447,12 @@ export async function portalFileAllowed(
   const url = `/api/v1/files/${key}`;
   const [homework, own, lesson, material] = await Promise.all([
     db.homework.count({ where: { groupId: membership.groupId, attachmentUrl: url } }),
-    db.homeworkSubmission.count({ where: { membershipId: membership.id, attachmentUrl: url } }),
+    db.homeworkSubmission.count({
+      where: {
+        membershipId: membership.id,
+        OR: [{ attachmentUrl: url }, { teacherAudioUrl: url }],
+      },
+    }),
     db.lesson.count({ where: { groupId: membership.groupId, attachmentUrl: url } }),
     db.lessonMaterial.count({ where: { groupId: membership.groupId, url } }),
   ]);

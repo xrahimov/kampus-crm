@@ -936,6 +936,8 @@ model Homework {
   linkUrl       String?
   attachmentUrl String?
   dueDate       DateTime? @db.Date
+  /// Speaking task (round 2 G3, A-141): the student answers with a recording made on their page.
+  speaking      Boolean   @default(false)
   createdById   String?
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
@@ -955,16 +957,18 @@ enum HomeworkStatus {
 }
 
 model HomeworkSubmission {
-  id             String         @id @default(cuid())
-  homeworkId     String
-  membershipId   String
-  status         HomeworkStatus @default(SUBMITTED)
-  note           String?
-  attachmentUrl  String?
-  submittedAt    DateTime       @default(now())
-  checkedById    String?
-  checkedAt      DateTime?
-  teacherComment String?
+  id              String         @id @default(cuid())
+  homeworkId      String
+  membershipId    String
+  status          HomeworkStatus @default(SUBMITTED)
+  note            String?
+  attachmentUrl   String?
+  submittedAt     DateTime       @default(now())
+  checkedById     String?
+  checkedAt       DateTime?
+  teacherComment  String?
+  /// The teacher's spoken reply to a speaking task (A-141).
+  teacherAudioUrl String?
 
   homework   Homework        @relation(fields: [homeworkId], references: [id], onDelete: Cascade)
   membership GroupMembership @relation(fields: [membershipId], references: [id], onDelete: Cascade)

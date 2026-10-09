@@ -280,6 +280,40 @@ describe("homework", () => {
     });
   });
 
+  it("marks a speaking task and carries the recording and the teacher's spoken reply", async () => {
+    const audio = `/api/v1/files/homework/${"d".repeat(32)}.weba`;
+    const reply = `/api/v1/files/documents/${"e".repeat(32)}.weba`;
+    const spoken = await setHomework(teacher, lessonId, {
+      text: "Introduce yourself in five sentences",
+      linkUrl: null,
+      attachmentUrl: null,
+      speaking: true,
+      dueDate: null,
+    });
+    expect(spoken.speaking).toBe(true);
+    expect((await listPortalHomework(tokenOne))![0]!.speaking).toBe(true);
+
+    await submitHomework(tokenOne, homeworkId, { note: null, attachmentUrl: audio });
+    await reviewSubmission(teacher, homeworkId, membershipOne, {
+      status: "RETURNED",
+      teacherComment: "Mind the th sound",
+      teacherAudioUrl: reply,
+    });
+    const portal = (await listPortalHomework(tokenOne))![0]!.submission!;
+    expect(portal.attachmentUrl).toMatch(/^\/api\/v1\/public\/class\/.+\/files\/homework\//);
+    expect(portal.teacherAudioUrl).toMatch(/^\/api\/v1\/public\/class\/.+\/files\/documents\//);
+    expect(await portalFileAllowed(tokenOne, `documents/${"e".repeat(32)}.weba`)).toBe(true);
+    const staff = await listGroupHomework(teacher, groupId);
+    expect(staff.items[0]!.submissions.find((x) => x.membershipId === membershipOne)).toMatchObject(
+      { attachmentUrl: audio, teacherAudioUrl: reply, status: "RETURNED" },
+    );
+    // Accepting without a new recording keeps the spoken reply; a new answer clears it.
+    await reviewSubmission(teacher, homeworkId, membershipOne, { status: "RETURNED" });
+    expect((await listPortalHomework(tokenOne))![0]!.submission!.teacherAudioUrl).not.toBeNull();
+    await submitHomework(tokenOne, homeworkId, { note: "Take two", attachmentUrl: audio });
+    expect((await listPortalHomework(tokenOne))![0]!.submission!.teacherAudioUrl).toBeNull();
+  });
+
   it("deletes the task with its answers and coins", async () => {
     await reviewSubmission(teacher, homeworkId, membershipOne, { status: "ACCEPTED" });
     await expect(deleteHomework(otherTeacher, homeworkId)).rejects.toMatchObject({
