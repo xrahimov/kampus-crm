@@ -187,7 +187,16 @@
     "importNoMembership": "The student is not in any group",
     "importBalanceExists": "This student already has an opening balance in this group",
     "importBranchUnknown": "No branch with this name",
-    "importZero": "The balance is zero, nothing to import"
+    "importZero": "The balance is zero, nothing to import",
+    "importRoleUnknown": "Unknown role",
+    "importCourseUnknown": "Course not found in this branch",
+    "importTeacherUnknown": "Teacher not found",
+    "importRoomUnknown": "Room not found in this branch",
+    "importDaysInvalid": "Days not understood",
+    "importTimeInvalid": "Time not understood (use HH:MM)",
+    "importNameExists": "Already exists with this name",
+    "importUserExists": "A user with this phone already exists",
+    "importParentExists": "This parent is already on the student"
   },
   "validation": {
     "phone": "Enter a number like +998 90 123 45 67.",
@@ -1284,7 +1293,9 @@
       "status": "Status"
     },
     "importBalances": "Import opening balances",
-    "importBalancesHint": "One row per student and group with the balance they bring from the previous system: a debt is a negative number, money the student has is positive. Students are found by Kampus ID, phone or exact name; a preview shows the matches before anything is written."
+    "importBalancesHint": "One row per student and group with the balance they bring from the previous system: a debt is a negative number, money the student has is positive. Students are found by Kampus ID, phone or exact name; a preview shows the matches before anything is written.",
+    "importMenu": "Import",
+    "importParents": "Import parents"
   },
   "payments": {
     "pay": "Payment",
@@ -3022,12 +3033,23 @@
       "leadsReport": "leads-report",
       "studentsReport": "students-report",
       "statistics": "center-statistics",
-      "balancesTemplate": "opening-balances-template"
+      "balancesTemplate": "opening-balances-template",
+      "roomsTemplate": "rooms-template",
+      "coursesTemplate": "courses-template",
+      "staffTemplate": "staff-template",
+      "groupsTemplate": "groups-template",
+      "parentsTemplate": "parents-template"
     },
     "example": {
       "fullName": "<client name>",
       "gender": "MALE",
-      "group": "<group name>"
+      "group": "<group name>",
+      "course": "<course name>",
+      "teacher": "<teacher name or phone>",
+      "room": "<room name>",
+      "roles": "Teacher",
+      "days": "Mon, Wed, Fri",
+      "parentName": "<parent name>"
     },
     "marks": {
       "present": "+",
@@ -3121,13 +3143,39 @@
       "gender": "Gender",
       "birthDate": "Birth date",
       "studentId": "Kampus ID",
-      "date": "Date"
+      "date": "Date",
+      "durationMonths": "Months",
+      "description": "Description",
+      "branches": "Branches",
+      "password": "Password",
+      "parentName": "Parent's name",
+      "parentPhone": "Parent's phone",
+      "startTime": "Start time",
+      "endTime": "End time",
+      "weekdays": "Days"
     },
     "preview": "Preview: {count} rows would be imported and {skipped} skipped. Nothing has been written yet.",
     "previewButton": "Preview",
     "confirmImport": "Import {count} rows",
     "matchedRows": "Rows that will be imported",
-    "noHeader": "The header row was not recognised, so the template's column order was assumed."
+    "noHeader": "The header row was not recognised, so the template's column order was assumed.",
+    "importButton": "Import from Excel",
+    "importTitles": {
+      "rooms": "Import rooms",
+      "courses": "Import courses",
+      "staff": "Import staff",
+      "groups": "Import groups",
+      "parents": "Import parents"
+    },
+    "hints": {
+      "rooms": "One row per room: name, seats (10 when empty) and, if needed, the branch. Rooms that already exist are skipped.",
+      "courses": "One row per course: name, monthly price, length in months (1 when empty), description and, if needed, the branch. Existing names are skipped.",
+      "staff": "One row per person: full name, phone, roles (Teacher, Cashier, Admin…, comma-separated), branches, gender, dates and a password. Leave the password empty and Kampus makes a temporary one and shows it once after the import.",
+      "groups": "One row per group: name, course, teacher (name or phone), days (Mon, Wed, Fri or odd/even), start and end time, room, start date, end date and status. Course, teacher and room must already exist.",
+      "parents": "One row per parent: the student (Kampus ID, phone or exact name), the parent's name and phone."
+    },
+    "logins": "Temporary passwords, shown once. Write them down:",
+    "loginsHint": "Hand each one to its owner; they can change it after signing in."
   },
   "search": {
     "placeholder": "Search students, leads, groups…",

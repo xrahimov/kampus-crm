@@ -7,6 +7,7 @@ import { ConfirmDialog } from "@/components/data/confirm-dialog";
 import { EmptyState } from "@/components/data/empty-state";
 import { Pagination } from "@/components/data/pagination";
 import { SortHeader } from "@/components/data/sort-header";
+import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import {
   Table,
@@ -16,6 +17,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { ImportDialog } from "@/features/shared/import-dialog";
 import { useRouter } from "@/i18n/navigation";
 import { api } from "@/lib/api-client";
 import type { Page } from "@/lib/validation/common";
@@ -47,6 +49,7 @@ export function RoomsPage({
     room: null,
   });
   const [deleting, setDeleting] = useState<RoomDto | null>(null);
+  const [importing, setImporting] = useState(false);
   const { options, defaultId } = creatableBranches(
     branches,
     actorBranchIds,
@@ -62,7 +65,22 @@ export function RoomsPage({
         description={t("settings.rooms.description")}
         addLabel={t("settings.rooms.add")}
         onAdd={() => setDialog({ open: true, room: null })}
-      />
+      >
+        <Button variant="outline" onClick={() => setImporting(true)} data-testid="rooms-import">
+          {t("excel.importButton")}
+        </Button>
+        <ImportDialog
+          open={importing}
+          onOpenChange={setImporting}
+          title={t("excel.importTitles.rooms")}
+          description={t("excel.hints.rooms")}
+          templatePath="/rooms/import-template.xlsx"
+          importPath="/rooms/import"
+          fields={{ branchId: defaultId }}
+          onDone={refresh}
+          testId="rooms-import-dialog"
+        />
+      </ListHeader>
       <Card>
         {page.items.length === 0 ? (
           <EmptyState title={t("common.nothingFound")} />

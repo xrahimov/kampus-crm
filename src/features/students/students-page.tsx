@@ -1,6 +1,6 @@
 "use client";
 
-import { Plus } from "lucide-react";
+import { FileUp, Plus } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useSearchParams } from "next/navigation";
 import { useState, useTransition } from "react";
@@ -126,6 +126,7 @@ export function StudentsPage({
   const [smsOpen, setSmsOpen] = useState(false);
   const [importing, setImporting] = useState(false);
   const [importingBalances, setImportingBalances] = useState(false);
+  const [importingParents, setImportingParents] = useState(false);
   const [notice, setNotice] = useState<string | null>(null);
   const { options: branchOptions, defaultId } = creatableBranches(
     branches,
@@ -222,25 +223,40 @@ export function StudentsPage({
               {ts("activate")}
             </Button>
           )}
-          {can.create && (
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setImporting(true)}
-              data-testid="students-import"
-            >
-              {ts("importExcel")}
-            </Button>
-          )}
-          {can.pay && !archived && (
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setImportingBalances(true)}
-              data-testid="students-import-balances"
-            >
-              {ts("importBalances")}
-            </Button>
+          {(can.create || can.update || (can.pay && !archived)) && (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" size="sm" data-testid="students-import-menu">
+                  <FileUp /> {ts("importMenu")}
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                {can.create && (
+                  <DropdownMenuItem
+                    onSelect={() => setImporting(true)}
+                    data-testid="students-import"
+                  >
+                    {ts("importExcel")}
+                  </DropdownMenuItem>
+                )}
+                {can.pay && !archived && (
+                  <DropdownMenuItem
+                    onSelect={() => setImportingBalances(true)}
+                    data-testid="students-import-balances"
+                  >
+                    {ts("importBalances")}
+                  </DropdownMenuItem>
+                )}
+                {can.update && (
+                  <DropdownMenuItem
+                    onSelect={() => setImportingParents(true)}
+                    data-testid="students-import-parents"
+                  >
+                    {ts("importParents")}
+                  </DropdownMenuItem>
+                )}
+              </DropdownMenuContent>
+            </DropdownMenu>
           )}
           {can.create && (
             <Button
@@ -535,6 +551,17 @@ export function StudentsPage({
         preview
         onDone={refresh}
         testId="students-import-balances-dialog"
+      />
+      <ImportDialog
+        open={importingParents}
+        onOpenChange={setImportingParents}
+        title={ts("importParents")}
+        description={t("excel.hints.parents")}
+        templatePath="/students/import-parents-template.xlsx"
+        importPath="/students/import-parents"
+        fields={{ branchId: defaultId }}
+        onDone={refresh}
+        testId="students-import-parents-dialog"
       />
       <SendSmsDialog
         open={smsOpen}

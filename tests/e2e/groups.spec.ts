@@ -1,4 +1,5 @@
 import { expect, test, type Page } from "@playwright/test";
+import ExcelJS from "exceljs";
 
 const CEO_PHONE = process.env.SEED_ADMIN_PHONE ?? "+998900000001";
 const TEACHER_PHONE = "+998900000004";
@@ -163,5 +164,77 @@ test.describe("groups", () => {
     expect(mine.status()).toBe(200);
     const body = (await mine.json()) as { items: Array<{ name: string }> };
     expect(body.items.map((g) => g.name).sort()).toEqual(["GE-Morning A1", "IELTS Evening"]);
+  });
+});
+
+test.describe("groups import", () => {
+  test("a filled template creates groups with their course, teacher, room and days", async ({
+    page,
+    request,
+  }) => {
+    await signIn(page, CEO_PHONE);
+    await page.goto("/en/groups");
+    await page.getByTestId("groups-import").click();
+    const dialog = page.getByTestId("groups-import-dialog");
+    await expect(dialog).toBeVisible();
+    const templateHref = await dialog.getByTestId("import-template").getAttribute("href");
+    expect(templateHref).toContain("/api/v1/groups/import-groups-template.xlsx");
+    const cookies = (await page.context().cookies()).map((c) => `${c.name}=${c.value}`).join("; ");
+    const template = await request.get(templateHref!, { headers: { cookie: cookies } });
+    expect(template.status()).toBe(200);
+    const workbook = new ExcelJS.Workbook();
+    await workbook.xlsx.load(Buffer.from(await template.body()) as unknown as ExcelJS.Buffer);
+    const sheet = workbook.worksheets[0]!;
+    expect(sheet.getRow(1).getCell(1).value).toBe("Name");
+    expect(sheet.getRow(1).getCell(4).value).toBe("Days");
+    sheet.spliceRows(2, 1);
+    const stamp = String(Date.now()).slice(-6);
+    sheet.addRow([
+      `E2E Imported ${stamp}`,
+      "General English",
+      "Demo Teacher Three",
+      "Mon, Wed, Fri",
+      "14:00",
+      "15:30",
+      "Lab",
+      "2026-10-01",
+      "",
+      "active",
+      "",
+    ]);
+    sheet.addRow([
+      `E2E Broken ${stamp}`,
+      "No such course",
+      "",
+      "Mon",
+      "14:00",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+    ]);
+    const buffer = Buffer.from(await workbook.xlsx.writeBuffer());
+    await dialog.getByTestId("import-file").setInputFiles({
+      name: "groups.xlsx",
+      mimeType: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+      buffer,
+    });
+    await dialog.getByTestId("import-submit").click();
+    const result = dialog.getByTestId("import-result");
+    await expect(result).toContainText("1 imported, 1 skipped");
+    await expect(result).toContainText("Course not found in this branch");
+    await dialog.getByText("Close", { exact: true }).click();
+
+    await page.goto(`/en/groups?q=${encodeURIComponent(`E2E Imported ${stamp}`)}`);
+    await page
+      .getByRole("link", { name: `E2E Imported ${stamp}` })
+      .first()
+      .click();
+    await expect(page.getByTestId("group-title")).toHaveText(`E2E Imported ${stamp}`);
+    await expect(page.getByTestId("group-schedule")).toContainText("Monday");
+    await expect(page.getByTestId("group-schedule")).toContainText("14:00");
+    await expect(page.getByTestId("group-teachers")).toContainText("Demo Teacher Three");
   });
 });

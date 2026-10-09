@@ -147,6 +147,7 @@ test.describe("opening balances", () => {
   test("the opening-balance import previews before writing", async ({ page, request }) => {
     await signIn(page, CEO_PHONE);
     await page.goto("/en/students");
+    await page.getByTestId("students-import-menu").click();
     await page.getByTestId("students-import-balances").click();
     const dialog = page.getByTestId("students-import-balances-dialog");
     await expect(dialog).toBeVisible();

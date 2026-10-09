@@ -402,6 +402,7 @@ export const uz: HelpContent = {
           body: [
             "**Excel orqali import** bir vaqtda ko‘p o‘quvchi qo‘shadi: shablonni yuklab oling, ustun sarlavhalarini saqlagan holda har bir o‘quvchi uchun bir qator to‘ldiring, faylni yuklang va natijani o‘qing, u nechta qator import qilingani va qaysilari nima sababdan o‘tkazib yuborilganini aytadi. Guruh sahifasidan bitta guruhga ko‘p o‘quvchi qo‘shish ham xuddi shunday ishlaydi.",
             "Istalgan ro‘yxatdagi **Excel** ko‘rib turganingizni joriy filtrlar bilan, interfeys tilida yuklab oladi.",
+            "Xonalar, kurslar va xodimlar uchun ham Sozlamalar sahifalarida shunday **Excel orqali import** bor, guruhlar uchun Guruhlar sahifasida, ota-onalar uchun O‘quvchilar sahifasidagi **Import** menyusida; shunda Kampus’ga o‘tayotgan markaz bir nechta fayldan yuklanadi. Har bir oynaning o‘z shabloni bor va CSV ham qabul qilinadi. Paroli bo‘lmagan xodimlarga vaqtinchalik parol yaratilib, importdan keyin bir marta ko‘rsatiladi.",
           ],
         },
         leaving: {

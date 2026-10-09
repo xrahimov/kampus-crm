@@ -187,7 +187,16 @@
     "importNoMembership": "O'quvchi hech qanday guruhda yo'q",
     "importBalanceExists": "Bu o'quvchining shu guruhda boshlang'ich qoldig'i allaqachon bor",
     "importBranchUnknown": "Shu nomli filial yo'q",
-    "importZero": "Qoldiq nolga teng, import qilinadigan narsa yo'q"
+    "importZero": "Qoldiq nolga teng, import qilinadigan narsa yo'q",
+    "importRoleUnknown": "Noma‘lum rol",
+    "importCourseUnknown": "Kurs bu filialda topilmadi",
+    "importTeacherUnknown": "O‘qituvchi topilmadi",
+    "importRoomUnknown": "Xona bu filialda topilmadi",
+    "importDaysInvalid": "Kunlar tushunilmadi",
+    "importTimeInvalid": "Vaqt tushunilmadi (SS:DD kerak)",
+    "importNameExists": "Bu nom bilan allaqachon mavjud",
+    "importUserExists": "Bu telefonli foydalanuvchi allaqachon bor",
+    "importParentExists": "Bu ota-ona o‘quvchiga allaqachon qo‘shilgan"
   },
   "validation": {
     "phone": "+998 90 123 45 67 ko‘rinishida raqam kiriting.",
@@ -1284,7 +1293,9 @@
       "status": "Holat"
     },
     "importBalances": "Boshlang'ich qoldiqlarni import qilish",
-    "importBalancesHint": "Har bir o'quvchi va guruh uchun bir qator: oldingi tizimdan kelgan qoldiq. Qarz manfiy son, o'quvchining ortiqcha puli musbat son bilan yoziladi. O'quvchi Kampus ID, telefon yoki aniq ism bo'yicha topiladi; yozishdan oldin mosliklar ko'rsatiladi."
+    "importBalancesHint": "Har bir o'quvchi va guruh uchun bir qator: oldingi tizimdan kelgan qoldiq. Qarz manfiy son, o'quvchining ortiqcha puli musbat son bilan yoziladi. O'quvchi Kampus ID, telefon yoki aniq ism bo'yicha topiladi; yozishdan oldin mosliklar ko'rsatiladi.",
+    "importMenu": "Import",
+    "importParents": "Ota-onalarni import qilish"
   },
   "payments": {
     "pay": "To‘lov",
@@ -3022,12 +3033,23 @@
       "leadsReport": "lidlar-hisoboti",
       "studentsReport": "oquvchilar-hisoboti",
       "statistics": "markaz-statistikasi",
-      "balancesTemplate": "boshlangich-qoldiqlar-shablon"
+      "balancesTemplate": "boshlangich-qoldiqlar-shablon",
+      "roomsTemplate": "xonalar-shablon",
+      "coursesTemplate": "kurslar-shablon",
+      "staffTemplate": "xodimlar-shablon",
+      "groupsTemplate": "guruhlar-shablon",
+      "parentsTemplate": "ota-onalar-shablon"
     },
     "example": {
       "fullName": "<mijoz ismi>",
       "gender": "MALE",
-      "group": "<guruh nomi>"
+      "group": "<guruh nomi>",
+      "course": "<kurs nomi>",
+      "teacher": "<o‘qituvchi ismi yoki telefoni>",
+      "room": "<xona nomi>",
+      "roles": "O‘qituvchi",
+      "days": "Du, Chor, Ju",
+      "parentName": "<ota-ona ismi>"
     },
     "marks": {
       "present": "+",
@@ -3121,13 +3143,39 @@
       "gender": "Jinsi",
       "birthDate": "Tug'ilgan sana",
       "studentId": "Kampus ID",
-      "date": "Sana"
+      "date": "Sana",
+      "durationMonths": "Oylar",
+      "description": "Tavsif",
+      "branches": "Filiallar",
+      "password": "Parol",
+      "parentName": "Ota-ona ismi",
+      "parentPhone": "Ota-ona telefoni",
+      "startTime": "Boshlanish vaqti",
+      "endTime": "Tugash vaqti",
+      "weekdays": "Kunlar"
     },
     "preview": "Oldindan ko'rish: {count} qator import qilinadi, {skipped} qator o'tkazib yuboriladi. Hali hech narsa yozilmadi.",
     "previewButton": "Oldindan ko'rish",
     "confirmImport": "{count} qatorni import qilish",
     "matchedRows": "Import qilinadigan qatorlar",
-    "noHeader": "Sarlavha qatori tanilmadi, shuning uchun shablondagi ustunlar tartibi olindi."
+    "noHeader": "Sarlavha qatori tanilmadi, shuning uchun shablondagi ustunlar tartibi olindi.",
+    "importButton": "Excel orqali import",
+    "importTitles": {
+      "rooms": "Xonalarni import qilish",
+      "courses": "Kurslarni import qilish",
+      "staff": "Xodimlarni import qilish",
+      "groups": "Guruhlarni import qilish",
+      "parents": "Ota-onalarni import qilish"
+    },
+    "hints": {
+      "rooms": "Har bir xona uchun bir qator: nomi, o‘rinlar soni (bo‘sh bo‘lsa 10) va kerak bo‘lsa filial. Mavjud xonalar o‘tkazib yuboriladi.",
+      "courses": "Har bir kurs uchun bir qator: nomi, oylik narxi, davomiyligi oylarda (bo‘sh bo‘lsa 1), tavsif va kerak bo‘lsa filial. Mavjud nomlar o‘tkazib yuboriladi.",
+      "staff": "Har bir odam uchun bir qator: F.I.O., telefon, rollar (O‘qituvchi, Kassir, Admin… vergul bilan), filiallar, jins, sanalar va parol. Parolni bo‘sh qoldirsangiz, Kampus vaqtinchalik parol yaratadi va importdan keyin bir marta ko‘rsatadi.",
+      "groups": "Har bir guruh uchun bir qator: nomi, kurs, o‘qituvchi (ism yoki telefon), kunlar (Du, Chor, Ju yoki toq/juft), boshlanish va tugash vaqti, xona, boshlanish va tugash sanasi, holat. Kurs, o‘qituvchi va xona oldindan mavjud bo‘lishi kerak.",
+      "parents": "Har bir ota-ona uchun bir qator: o‘quvchi (Kampus ID, telefon yoki aniq ism), ota-onaning ismi va telefoni."
+    },
+    "logins": "Vaqtinchalik parollar, bir marta ko‘rsatiladi. Yozib oling:",
+    "loginsHint": "Har birini egasiga bering; kirgandan keyin parolni o‘zgartirish mumkin."
   },
   "search": {
     "placeholder": "O'quvchi, lid, guruh qidirish…",

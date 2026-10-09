@@ -28,6 +28,8 @@ export interface ImportResult {
   matched?: Array<{ row: number; label: string }>;
   /** False when the file's header row was not recognised and the template order was assumed. */
   byHeader?: boolean;
+  /** Staff import: the temporary passwords it made, shown once (A-111). */
+  logins?: Array<{ row: number; label: string; secret: string }>;
 }
 
 function readCookie(name: string): string | null {
@@ -210,6 +212,19 @@ export function ImportDialog({
                     </li>
                   ))}
                 </ul>
+              )}
+              {(result.logins?.length ?? 0) > 0 && (
+                <div className="space-y-1" data-testid="import-logins">
+                  <p className="text-xs font-medium">{te("logins")}</p>
+                  <ul className="max-h-48 space-y-1 overflow-auto rounded-md border p-2 font-mono text-xs">
+                    {result.logins!.map((l) => (
+                      <li key={l.row}>
+                        {l.label}: <span className="select-all">{l.secret}</span>
+                      </li>
+                    ))}
+                  </ul>
+                  <p className="text-xs text-muted-foreground">{te("loginsHint")}</p>
+                </div>
               )}
             </div>
           )}
