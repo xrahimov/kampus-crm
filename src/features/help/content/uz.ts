@@ -1106,6 +1106,15 @@ export const uz: HelpContent = {
             },
           ],
         },
+        family: {
+          title: "Butun oila uchun bir sahifa",
+          body: [
+            "Markazda ikki-uch farzandi bo‘lgan ota-onalar **ota-onalar sahifasi**ni so‘rashi mumkin: hamma farzand, ularning guruhlari, keyingi dars, balans va o‘qilmagan e‘lonlar bir havolada, har bir farzandning o‘z sahifasiga **Sahifani ochish** tugmasi bilan. Markaz havolani farzandlardan istalganining kartasidan yasaydi va SMS orqali yuboradi yoki qo‘lda beradi.",
+            {
+              note: "Oila havolasi farzandlaringizning baholari va to‘lovlarini ko‘rsatadi, shuning uchun uni boshqalarga bermang. Tarqalsa markaz yangisini beradi, eskisi ishlamay qoladi.",
+            },
+          ],
+        },
         lesson: {
           title: "Video darsga qo‘shilish",
           body: [

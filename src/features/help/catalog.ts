@@ -338,6 +338,7 @@ export const HELP_ARTICLES = [
     isPublic: true,
     sections: [
       { id: "link", screenshot: "portal" },
+      { id: "family" },
       { id: "lesson", screenshot: "portal-lesson" },
       { id: "lessons" },
       { id: "homework", screenshot: "portal-homework" },
