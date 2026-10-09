@@ -187,6 +187,20 @@ export const en: HelpContent = {
             "The **Excel** button downloads the board as you see it, with the filters applied.",
           ],
         },
+        followUp: {
+          title: "Following up: owner, next contact and the call list",
+          body: [
+            "Every lead can have an **Owner**, the person who works it, and a **Next contact** date. A lead you add yourself is yours unless you pick someone else; leads from web forms and amoCRM wait for an owner. On the card a red badge shows how many days a planned contact is overdue and an amber one says it is due today.",
+            {
+              steps: [
+                "Open **Calls today** above the board. It lists the leads whose next contact is today or overdue, with the owner, the planned date and the last outcome. Filter by owner (**Mine**, **Unassigned** or a colleague) or switch to upcoming dates and leads without a date.",
+                "From a row choose **Call and log**, or **Log a contact** for a message or a visit. Pick how it went: Will come, Thinking it over, No answer, Not interested, Wrong number.",
+                "The outcome proposes the lead's new status and a next date (tomorrow after no answer, two or three days later while they think it over); change either before saving. Leave the date empty when no further call is planned.",
+              ],
+            },
+            "**History** in the row's menu shows every contact and who recorded it. Each morning from nine, owners with calls due get a notice in the bell and, when their Telegram chat is listed under Bot notifications, a message naming the leads; leads without an owner are announced to everyone who may work leads in the branch.",
+          ],
+        },
         toGroup: {
           title: "Turning leads into students",
           body: [

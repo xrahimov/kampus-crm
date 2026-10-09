@@ -303,7 +303,8 @@
     "signInCodeExpired": "Kod muddati tugadi yoki juda ko‘p marta noto‘g‘ri kiritildi. Qaytadan kiring.",
     "signInCodeFailed": "Kodni Telegramga yuborib bo‘lmadi. Administratordan kirish kodini o‘chirib qo‘yishni so‘rang.",
     "passwordChangeRequired": "Avval o‘z parolingizni tanlang.",
-    "absenceCaseClosed": "Bu holat allaqachon yopilgan."
+    "absenceCaseClosed": "Bu holat allaqachon yopilgan.",
+    "leadArchived": "Lid arxivda."
   },
   "validation": {
     "phone": "+998 90 123 45 67 ko‘rinishida raqam kiriting.",
@@ -405,7 +406,8 @@
     "passwordSame": "Yangi parol joriy paroldan farq qilishi kerak.",
     "passwordMatch": "Parollar mos kelmadi.",
     "signInCodeNeedsTelegram": "Avval Telegramni bog‘lang (Sozlamalar → Bot xabarnomalari).",
-    "currentSession": "Bu siz ishlayotgan qurilma; «Chiqish»dan foydalaning."
+    "currentSession": "Bu siz ishlayotgan qurilma; «Chiqish»dan foydalaning.",
+    "ownerUnknown": "Bu xodim filialda lidlarga mas‘ul bo‘la olmaydi."
   },
   "roles": {
     "CEO": "CEO",
@@ -1909,7 +1911,10 @@
       "lessonTime": "Dars vaqti",
       "teacher": "O‘qituvchi",
       "days": "Kunlar",
-      "archive": "Arxiv"
+      "archive": "Arxiv",
+      "owner": "Mas‘ul",
+      "me": "Men",
+      "unassigned": "Mas‘ulsiz"
     },
     "statuses": {
       "NEW": "Yangi",
@@ -1947,7 +1952,11 @@
       "newColumn": "Yangi bo‘lim nomi",
       "newSource": "Yangi manba nomi",
       "referrer": "Taklif qilgan o‘quvchi",
-      "referrerPlaceholder": "O‘quvchini ism yoki telefon bo‘yicha qidiring"
+      "referrerPlaceholder": "O‘quvchini ism yoki telefon bo‘yicha qidiring",
+      "owner": "Mas‘ul",
+      "nextContact": "Keyingi aloqa",
+      "noOwner": "Hech kim",
+      "ownerMe": "Men (odatiy)"
     },
     "addToGroup": {
       "button": "Lidlarni guruhga qo‘shish ({count})",
@@ -1983,7 +1992,86 @@
       "refHint": "Sizni markaz o‘quvchisi taklif qildi. Taklif so‘rovingiz bilan birga qayd etiladi."
     },
     "amocrmHint": "AmoCRM sinxronizatsiyasi Sozlamalar → Integratsiyalar bo'limida",
-    "referredBy": "Taklif qilgan: {name}"
+    "referredBy": "Taklif qilgan: {name}",
+    "followUp": {
+      "overdue": "{count} kun kechikdi",
+      "today": "Bugun qo‘ng‘iroq",
+      "owner": "Mas‘ul"
+    },
+    "calls": {
+      "title": "Bugungi qo‘ng‘iroqlar",
+      "button": "Bugungi qo‘ng‘iroqlar ({count})",
+      "count": "{count} lid",
+      "summary": {
+        "overdue": "Kechikkan",
+        "today": "Bugun",
+        "upcoming": "Kelgusi",
+        "none": "Sanasiz"
+      },
+      "filters": {
+        "range": "Ko‘rsatish",
+        "DUE": "Qo‘ng‘iroq vaqti (kechikkan va bugun)",
+        "OVERDUE": "Kechikkan",
+        "TODAY": "Bugun",
+        "UPCOMING": "Kelgusi",
+        "NONE": "Sanasi yo‘q",
+        "owner": "Mas‘ul",
+        "allOwners": "Barcha mas‘ullar",
+        "me": "Meniki",
+        "unassigned": "Mas‘ulsiz",
+        "search": "Ism yoki telefon"
+      },
+      "columns": {
+        "lead": "Lid",
+        "owner": "Mas‘ul",
+        "next": "Keyingi aloqa",
+        "last": "Oxirgi aloqa",
+        "status": "Holat"
+      },
+      "noDate": "Sana yo‘q",
+      "noOwner": "Mas‘ulsiz",
+      "noContact": "Hali aloqa bo‘lmagan",
+      "by": "{name}",
+      "actions": {
+        "call": "Qo‘ng‘iroq qilib yozish",
+        "log": "Aloqani yozish",
+        "history": "Tarix",
+        "board": "Doskada ochish"
+      },
+      "empty": "Hozir qo‘ng‘iroq qiladigan lid yo‘q.",
+      "emptyHint": "Lidga keyingi aloqa sanasini qo‘ying, o‘sha kuni u shu yerda chiqadi."
+    },
+    "contact": {
+      "title": "Aloqa: {name}",
+      "channel": "Qanday",
+      "outcome": "Natija",
+      "none": "Belgilanmagan",
+      "note": "Izoh",
+      "nextContact": "Keyingi aloqa",
+      "nextContactHint": "Boshqa qo‘ng‘iroq rejalashtirilmasa, bo‘sh qoldiring.",
+      "status": "Lid holati"
+    },
+    "channels": {
+      "CALL": "Qo‘ng‘iroq",
+      "TELEGRAM": "Telegram",
+      "SMS": "SMS",
+      "VISIT": "O‘zi keldi",
+      "NOTE": "Izoh"
+    },
+    "outcomes": {
+      "NO_ANSWER": "Javob bermadi",
+      "WILL_COME": "Keladi",
+      "THINKING": "O‘ylab ko‘radi",
+      "NOT_INTERESTED": "Qiziqmaydi",
+      "WRONG_NUMBER": "Noto‘g‘ri raqam",
+      "OTHER": "Boshqa"
+    },
+    "history": {
+      "title": "Tarix: {name}",
+      "loading": "Yuklanmoqda…",
+      "empty": "Hali aloqa yozilmagan.",
+      "next": "keyingi aloqa {date}"
+    }
   },
   "exams": {
     "title": "Imtihonlar",
@@ -3255,7 +3343,8 @@
           "archive": "Lid arxivlandi",
           "restore": "Lid tiklandi",
           "delete": "Lid o'chirildi",
-          "convert": "Lid guruhga qo'shildi"
+          "convert": "Lid guruhga qo'shildi",
+          "contact": "Lid bilan aloqa yozildi"
         },
         "leadBoard": {
           "create": "Lidlar doskasi yaratildi",
@@ -3793,7 +3882,9 @@
       "coins": "Coinlar",
       "missedLessons": "Qoldirilgan darslar",
       "absentSince": "Kelmagan sana",
-      "lastPresent": "Oxirgi kelgan kuni"
+      "lastPresent": "Oxirgi kelgan kuni",
+      "owner": "Mas‘ul",
+      "nextContact": "Keyingi aloqa"
     },
     "preview": "Oldindan ko'rish: {count} qator import qilinadi, {skipped} qator o'tkazib yuboriladi. Hali hech narsa yozilmadi.",
     "previewButton": "Oldindan ko'rish",
@@ -3844,7 +3935,8 @@
       "BIRTHDAY": "Bugun {name} tug'ilgan kuni",
       "DEBT_TASK": "{count} qarzdor {days} kundan beri qo‘ng‘iroq kutmoqda",
       "DEBT_PROMISE_BROKEN": "{name} {date} gacha {amount} to‘lashga va’da bergan edi, to‘lamadi",
-      "ABSENCES": "{count} o‘quvchi darsga kelmay qo‘ydi: qo‘ng‘iroq qiling"
+      "ABSENCES": "{count} o‘quvchi darsga kelmay qo‘ydi: qo‘ng‘iroq qiling",
+      "LEAD_FOLLOW_UP": "Bugun {count} lidga qo‘ng‘iroq qilish kerak ({overdue} tasi kechikkan)"
     }
   },
   "portal": {
@@ -4006,7 +4098,10 @@
     "signInAlert": "Kampus: {name} hisobiga {when} da {device} orqali yangi kirish, IP {ip}. Agar bu siz bo‘lmasangiz, parolni o‘zgartiring va hisob sahifasida barcha qurilmalardan chiqing.",
     "absenceWeeklyTitle": "Davomat, {branch}, {from} – {to}: ro‘yxatda {open} o‘quvchi, {noContact} tasiga hali qo‘ng‘iroq qilinmagan. Shu hafta: yangi {opened}, qaytgan {returned}, ketgan {left}.",
     "absenceWeeklyLine": "• {student}, {group}: {days} kundan beri kelmaydi",
-    "absenceWeeklyMore": "… va yana {count} o‘quvchi"
+    "absenceWeeklyMore": "… va yana {count} o‘quvchi",
+    "leadCallsTitle": "📞 {name}, bugungi qo‘ng‘iroqlar: {count} lid, {overdue} tasi kechikkan",
+    "leadCallsLine": "• {name} — {phone} ({when})",
+    "leadCallsMore": "… va yana {count} ta"
   },
   "video": {
     "title": "Video dars",

@@ -15,7 +15,7 @@ import { getBoardView } from "@/server/services/leads/leads.service";
 export const GET = route({ permission: "leads.view" }, async ({ current, request }) => {
   const params = request.nextUrl.searchParams;
   const raw: Record<string, string | undefined> = {};
-  for (const key of ["boardId", "q", "lessonTime", "teacherId", "days", "archived"]) {
+  for (const key of ["boardId", "q", "lessonTime", "teacherId", "days", "ownerId", "archived"]) {
     raw[key] = params.get(key) ?? undefined;
   }
   const filters = leadFilterSchema.safeParse(raw);

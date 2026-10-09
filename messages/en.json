@@ -303,7 +303,8 @@
     "signInCodeExpired": "The code has expired or was entered wrongly too often. Sign in again.",
     "signInCodeFailed": "The code could not be sent to Telegram. Ask an administrator to switch the sign-in code off for you.",
     "passwordChangeRequired": "Choose your own password first.",
-    "absenceCaseClosed": "This case is already closed."
+    "absenceCaseClosed": "This case is already closed.",
+    "leadArchived": "The lead is archived."
   },
   "validation": {
     "phone": "Enter a number like +998 90 123 45 67.",
@@ -405,7 +406,8 @@
     "passwordSame": "The new password must differ from the current one.",
     "passwordMatch": "The passwords do not match.",
     "signInCodeNeedsTelegram": "Link the Telegram chat first (Settings → Bot notifications).",
-    "currentSession": "This is the device you are using; use Sign out instead."
+    "currentSession": "This is the device you are using; use Sign out instead.",
+    "ownerUnknown": "This person cannot own leads in the branch."
   },
   "roles": {
     "CEO": "CEO",
@@ -1909,7 +1911,10 @@
       "lessonTime": "Lesson time",
       "teacher": "Teacher",
       "days": "Days",
-      "archive": "Archive"
+      "archive": "Archive",
+      "owner": "Owner",
+      "me": "Me",
+      "unassigned": "Unassigned"
     },
     "statuses": {
       "NEW": "New",
@@ -1947,7 +1952,11 @@
       "newColumn": "New column name",
       "newSource": "New source name",
       "referrer": "Invited by",
-      "referrerPlaceholder": "Search a student by name or phone"
+      "referrerPlaceholder": "Search a student by name or phone",
+      "owner": "Owner",
+      "nextContact": "Next contact",
+      "noOwner": "Nobody",
+      "ownerMe": "Me (default)"
     },
     "addToGroup": {
       "button": "Add leads to group ({count})",
@@ -1983,7 +1992,86 @@
       "refHint": "You were invited by a student of the centre. The invite will be noted with your request."
     },
     "amocrmHint": "AmoCRM sync is set up under Settings → Integrations",
-    "referredBy": "Invited by {name}"
+    "referredBy": "Invited by {name}",
+    "followUp": {
+      "overdue": "{count, plural, one {# day overdue} other {# days overdue}}",
+      "today": "Call today",
+      "owner": "Owner"
+    },
+    "calls": {
+      "title": "Calls today",
+      "button": "Calls today ({count})",
+      "count": "{count, plural, one {# lead} other {# leads}}",
+      "summary": {
+        "overdue": "Overdue",
+        "today": "Today",
+        "upcoming": "Upcoming",
+        "none": "No date"
+      },
+      "filters": {
+        "range": "Show",
+        "DUE": "Due now (overdue and today)",
+        "OVERDUE": "Overdue",
+        "TODAY": "Today",
+        "UPCOMING": "Upcoming",
+        "NONE": "Without a date",
+        "owner": "Owner",
+        "allOwners": "All owners",
+        "me": "Mine",
+        "unassigned": "Unassigned",
+        "search": "Name or phone"
+      },
+      "columns": {
+        "lead": "Lead",
+        "owner": "Owner",
+        "next": "Next contact",
+        "last": "Last contact",
+        "status": "Status"
+      },
+      "noDate": "No date",
+      "noOwner": "Unassigned",
+      "noContact": "Not contacted yet",
+      "by": "by {name}",
+      "actions": {
+        "call": "Call and log",
+        "log": "Log a contact",
+        "history": "History",
+        "board": "Open on the board"
+      },
+      "empty": "Nothing to call right now.",
+      "emptyHint": "Set a next-contact date on a lead and it shows up here on that day."
+    },
+    "contact": {
+      "title": "Contact: {name}",
+      "channel": "How",
+      "outcome": "Outcome",
+      "none": "Not set",
+      "note": "Note",
+      "nextContact": "Next contact",
+      "nextContactHint": "Leave empty when no further call is planned.",
+      "status": "Lead status"
+    },
+    "channels": {
+      "CALL": "Call",
+      "TELEGRAM": "Telegram",
+      "SMS": "SMS",
+      "VISIT": "Came in",
+      "NOTE": "Note"
+    },
+    "outcomes": {
+      "NO_ANSWER": "No answer",
+      "WILL_COME": "Will come",
+      "THINKING": "Thinking it over",
+      "NOT_INTERESTED": "Not interested",
+      "WRONG_NUMBER": "Wrong number",
+      "OTHER": "Other"
+    },
+    "history": {
+      "title": "History: {name}",
+      "loading": "Loading…",
+      "empty": "No contacts recorded yet.",
+      "next": "next contact {date}"
+    }
   },
   "exams": {
     "title": "Exams",
@@ -3255,7 +3343,8 @@
           "archive": "Lead archived",
           "restore": "Lead restored",
           "delete": "Lead deleted",
-          "convert": "Lead added to a group"
+          "convert": "Lead added to a group",
+          "contact": "Lead contact logged"
         },
         "leadBoard": {
           "create": "Lead board created",
@@ -3793,7 +3882,9 @@
       "coins": "Coins",
       "missedLessons": "Lessons missed",
       "absentSince": "Away since",
-      "lastPresent": "Last present"
+      "lastPresent": "Last present",
+      "owner": "Owner",
+      "nextContact": "Next contact"
     },
     "preview": "Preview: {count} rows would be imported and {skipped} skipped. Nothing has been written yet.",
     "previewButton": "Preview",
@@ -3844,7 +3935,8 @@
       "BIRTHDAY": "{name} has a birthday today",
       "DEBT_TASK": "{count, plural, one {# debtor has} other {# debtors have}} waited {days} days without a call",
       "DEBT_PROMISE_BROKEN": "{name} promised to pay {amount} by {date} and has not",
-      "ABSENCES": "{count, plural, one {# student stopped} other {# students stopped}} coming to lessons: call them"
+      "ABSENCES": "{count, plural, one {# student stopped} other {# students stopped}} coming to lessons: call them",
+      "LEAD_FOLLOW_UP": "{count, plural, one {# lead is} other {# leads are}} due for a call today ({overdue} overdue)"
     }
   },
   "portal": {
@@ -4006,7 +4098,10 @@
     "signInAlert": "Kampus: new sign-in for {name} at {when} from {device}, IP {ip}. If this was not you, change your password and sign out everywhere on your account page.",
     "absenceWeeklyTitle": "Absences, {branch}, {from} – {to}: {open} on the list, {noContact} without a call yet. This week: {opened} new, {returned} came back, {left} left.",
     "absenceWeeklyLine": "• {student}, {group}: away for {days} days",
-    "absenceWeeklyMore": "… and {count} more"
+    "absenceWeeklyMore": "… and {count} more",
+    "leadCallsTitle": "📞 {name}, calls today: {count} leads, {overdue} overdue",
+    "leadCallsLine": "• {name} — {phone} ({when})",
+    "leadCallsMore": "… and {count} more"
   },
   "video": {
     "title": "Video lesson",

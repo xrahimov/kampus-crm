@@ -106,6 +106,7 @@ export const HELP_ARTICLES = [
       { id: "board", screenshot: "leads" },
       { id: "addLead", screenshot: "lead-form" },
       { id: "workLeads" },
+      { id: "followUp" },
       { id: "toGroup", screenshot: "leads-to-group" },
       { id: "sources", screenshot: "lead-sources" },
       { id: "forms" },
