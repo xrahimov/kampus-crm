@@ -56,18 +56,24 @@ test.describe("cash desk", () => {
     await expect(dialog).toBeVisible();
     const cashRow = dialog.getByTestId("close-method").filter({ hasText: "Cash" });
     await expect(cashRow).toContainText("(cash)");
+    // The expected cash is whatever the CEO moved today (a fresh seed books its
+    // expenses by the CEO on seed day, so it may be negative); the cashier counts
+    // 5,000 less than that, or nothing when nothing is expected.
     const expectedText = await dialog.getByTestId("close-expected").textContent();
     const expected = parseMoney(expectedText ?? "");
-    expect(expected).toBeGreaterThanOrEqual(150_000);
-    await dialog.getByTestId("close-counted").fill(String(expected - 5_000));
-    await expect(dialog.getByTestId("close-difference")).toContainText("5,000");
+    expect(Number.isFinite(expected)).toBe(true);
+    const counted = Math.max(0, expected - 5_000);
+    const difference = counted - expected;
+    const differenceText = `${difference < 0 ? "-" : "+"}UZS ${Math.abs(difference).toLocaleString("en-US")}`;
+    await dialog.getByTestId("close-counted").fill(String(counted));
+    await expect(dialog.getByTestId("close-difference")).toContainText(differenceText);
     await dialog.getByLabel("Note").fill("E2E hand-over");
     await dialog.getByRole("button", { name: "Close the day" }).click();
     await expect(dialog).toBeHidden();
 
     const row = page.getByTestId("cash-close-row").filter({ hasText: "Demo CEO" }).first();
     await expect(row).toBeVisible();
-    await expect(row.getByTestId("row-difference")).toContainText("-UZS 5,000");
+    await expect(row.getByTestId("row-difference")).toContainText(differenceText);
     await expect(row).toContainText("Awaiting hand-over");
 
     // The hand-over.
@@ -82,7 +88,7 @@ test.describe("cash desk", () => {
     await expect(sheet.getByTestId("cash-close-sheet")).toBeVisible();
     await expect(sheet.getByTestId("cash-close-sheet")).toContainText("Cashier day close");
     await expect(sheet.getByTestId("cash-close-sheet")).toContainText("E2E hand-over");
-    await expect(sheet.getByTestId("sheet-difference")).toContainText("-UZS 5,000");
+    await expect(sheet.getByTestId("sheet-difference")).toContainText(differenceText);
     await expect(sheet.getByTestId("sheet-signatures")).toContainText("Cashier: Demo CEO");
     await expect(sheet.getByTestId("sheet-signatures")).toContainText("Accepted by: Demo CEO");
     await sheet.close();
