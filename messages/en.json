@@ -63,7 +63,49 @@
     "signingIn": "Signing in…",
     "signOut": "Sign out",
     "signedInAs": "Signed in as",
-    "role": "Role"
+    "role": "Role",
+    "codeTitle": "Enter the code",
+    "codeSubtitle": "A six-digit code went to your Telegram. It is valid for five minutes.",
+    "code": "Code from Telegram",
+    "confirmCode": "Confirm",
+    "startOver": "Start over",
+    "changePasswordTitle": "Choose your own password",
+    "changePasswordSubtitle": "The password you signed in with was set by an administrator. Pick a new one that only you know.",
+    "currentPassword": "Current password",
+    "newPassword": "New password",
+    "confirmPassword": "Repeat the new password",
+    "savePassword": "Save the password",
+    "passwordSaved": "Password changed. Your other devices were signed out.",
+    "passwordHint": "At least 8 characters; not one you use anywhere else."
+  },
+  "account": {
+    "title": "My account",
+    "description": "Your password, the sign-in code and the devices you are signed in on.",
+    "password": {
+      "title": "Password",
+      "changed": "Last changed {date}",
+      "never": "Not changed since the account was created"
+    },
+    "signInCode": {
+      "title": "Sign-in code by Telegram",
+      "label": "Ask for a code by Telegram",
+      "hint": "After the password, a six-digit code is sent to your Telegram chat. Switch it on if you take payments or run the centre.",
+      "on": "The code is asked for at every sign-in.",
+      "off": "Only the password is asked for.",
+      "needsTelegram": "Your Telegram chat is not linked yet. Ask an administrator to add you under Settings → Bot notifications."
+    },
+    "sessions": {
+      "title": "Devices",
+      "hint": "Where you are signed in now. A sign-in from a new device or address is reported to your Telegram.",
+      "device": "Device",
+      "address": "Address",
+      "lastSeen": "Last active",
+      "signedIn": "Signed in",
+      "current": "This device",
+      "signOut": "Sign out",
+      "signOutOthers": "Sign out everywhere else",
+      "signedOutOthers": "{count, plural, =0 {No other devices were signed in.} one {One other device was signed out.} other {# other devices were signed out.}}"
+    }
   },
   "branch": {
     "select": "Branch",
@@ -255,7 +297,11 @@
     "importParentExists": "This parent is already on the student",
     "debtCaseClosed": "This debt is already closed.",
     "scheduleClash": "The room or the teacher is already busy at this time.",
-    "familyOther": "This student already belongs to another family."
+    "familyOther": "This student already belongs to another family.",
+    "signInCodeWrong": "Wrong code. Try again.",
+    "signInCodeExpired": "The code has expired or was entered wrongly too often. Sign in again.",
+    "signInCodeFailed": "The code could not be sent to Telegram. Ask an administrator to switch the sign-in code off for you.",
+    "passwordChangeRequired": "Choose your own password first."
   },
   "validation": {
     "phone": "Enter a number like +998 90 123 45 67.",
@@ -351,7 +397,13 @@
     "instalmentsMax": "At most three parts.",
     "instalmentsSum": "The parts must add up to the month's fee.",
     "instalmentsDays": "Each part needs its own day.",
-    "percent": "Enter a whole number from 0 to 100."
+    "percent": "Enter a whole number from 0 to 100.",
+    "code": "Enter the six-digit code.",
+    "wrongPassword": "The current password is wrong.",
+    "passwordSame": "The new password must differ from the current one.",
+    "passwordMatch": "The passwords do not match.",
+    "signInCodeNeedsTelegram": "Link the Telegram chat first (Settings → Bot notifications).",
+    "currentSession": "This is the device you are using; use Sign out instead."
   },
   "roles": {
     "CEO": "CEO",
@@ -722,8 +774,14 @@
       "password": "Password",
       "newPassword": "New password",
       "keepPassword": "Leave empty to keep the current one",
-      "generate": "Generate"
-    }
+      "generate": "Generate",
+      "safety": "Account safety",
+      "signInCode": "Ask for a Telegram code at sign-in",
+      "signInCodeHint": "Needs the person's Telegram chat under Settings → Bot notifications.",
+      "signOutAll": "Sign out of all devices",
+      "signedOutAll": "Signed out everywhere."
+    },
+    "temporaryPassword": "Temporary password"
   },
   "permissions": {
     "modules": {
@@ -3210,7 +3268,8 @@
         "staff": {
           "create": "Staff member created",
           "update": "Staff member updated",
-          "archive": "Staff member archived"
+          "archive": "Staff member archived",
+          "signOutAll": "Signed out of all devices"
         },
         "staffAttendance": {
           "set": "Staff attendance set"
@@ -3231,7 +3290,8 @@
         "teacher": {
           "create": "Teacher created",
           "update": "Teacher updated",
-          "archive": "Teacher archived"
+          "archive": "Teacher archived",
+          "signOutAll": "Signed out of all devices"
         },
         "test": {
           "create": "Test created",
@@ -3287,6 +3347,11 @@
           "link": "Linked to a family",
           "unlink": "Removed from the family",
           "update": "Family changed"
+        },
+        "auth": {
+          "passwordChange": "Password changed",
+          "signOutAll": "Signed out everywhere",
+          "signInCode": "Sign-in code switched"
         }
       }
     }
@@ -3827,7 +3892,9 @@
     "absentPresent": "{group}, today {time}: the teacher has already marked present, nothing changed.",
     "absentNoLesson": "No lesson today.{next, select, none {} other { Next lesson: {next}.}}",
     "absentComment": "Via Telegram{reason, select, none {} other {: {reason}}}",
-    "instalment": "{group}: a part of the fee, {amount}, is due by {date}. Please pay at the learning centre or from your page."
+    "instalment": "{group}: a part of the fee, {amount}, is due by {date}. Please pay at the learning centre or from your page.",
+    "signInCode": "Kampus: your sign-in code is {code}. It is valid for 5 minutes. If you did not try to sign in, change your password.",
+    "signInAlert": "Kampus: new sign-in for {name} at {when} from {device}, IP {ip}. If this was not you, change your password and sign out everywhere on your account page."
   },
   "video": {
     "title": "Video lesson",

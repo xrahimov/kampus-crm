@@ -12,42 +12,72 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useRouter } from "@/i18n/navigation";
 import { api, ApiError } from "@/lib/api-client";
-import { loginSchema, type LoginInput } from "@/lib/validation/auth";
+import { loginSchema, verifyCodeSchema, type LoginInput } from "@/lib/validation/auth";
+
+type LoginResponse = { ok: true } | { ok: false; challenge: { id: string; expiresAt: string } };
+
+const codeSchema = verifyCodeSchema.pick({ code: true });
+type CodeInput = { code: string };
+
+function useAfterSignIn() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  return () => {
+    const next = searchParams.get("next");
+    const target = next && next.startsWith("/") && !next.startsWith("//") ? next : "/dashboard";
+    router.replace(target);
+    router.refresh();
+  };
+}
+
+function messageFor(t: ReturnType<typeof useTranslations>, error: unknown): string {
+  if (error instanceof ApiError) {
+    const seconds = error.meta?.retryAfterSeconds;
+    return t.has(error.message)
+      ? t(error.message, { seconds: Number(seconds ?? 0) })
+      : t("errors.internal");
+  }
+  return t("errors.internal");
+}
 
 export function LoginForm() {
   const t = useTranslations();
-  const router = useRouter();
-  const searchParams = useSearchParams();
+  const afterSignIn = useAfterSignIn();
   const [serverError, setServerError] = useState<string | null>(null);
+  // Set once the password was right and a Telegram code is expected (A-124).
+  const [challengeId, setChallengeId] = useState<string | null>(null);
 
-  const form = useForm<LoginInput>({
-    resolver: zodResolver(loginSchema),
-    defaultValues: { phone: "+998", password: "" },
-  });
+  // No defaultValues on purpose: the fields take what the browser already holds
+  // when the form attaches, so typing that started before hydration survives.
+  const form = useForm<LoginInput>({ resolver: zodResolver(loginSchema) });
 
   async function onSubmit(values: LoginInput) {
     setServerError(null);
     try {
-      await api("/auth/login", { method: "POST", body: values });
-      const next = searchParams.get("next");
-      const target = next && next.startsWith("/") && !next.startsWith("//") ? next : "/dashboard";
-      router.replace(target);
-      router.refresh();
-    } catch (error) {
-      if (error instanceof ApiError) {
-        const seconds = error.meta?.retryAfterSeconds;
-        setServerError(
-          t.has(error.message)
-            ? t(error.message, { seconds: Number(seconds ?? 0) })
-            : t("errors.internal"),
-        );
-      } else {
-        setServerError(t("errors.internal"));
+      const result = await api<LoginResponse>("/auth/login", { method: "POST", body: values });
+      if (!result.ok) {
+        setChallengeId(result.challenge.id);
+        return;
       }
+      afterSignIn();
+    } catch (error) {
+      setServerError(messageFor(t, error));
     }
   }
 
   const { errors, isSubmitting } = form.formState;
+
+  if (challengeId) {
+    return (
+      <CodeStep
+        challengeId={challengeId}
+        onStartOver={() => {
+          setChallengeId(null);
+          form.setValue("password", "");
+        }}
+      />
+    );
+  }
 
   return (
     <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4" noValidate>
@@ -62,6 +92,7 @@ export function LoginForm() {
         <Input
           id="phone"
           type="tel"
+          defaultValue="+998"
           autoComplete="username"
           inputMode="tel"
           placeholder={t("auth.phonePlaceholder")}
@@ -95,6 +126,74 @@ export function LoginForm() {
 
       <Button type="submit" className="w-full" disabled={isSubmitting}>
         {isSubmitting ? t("auth.signingIn") : t("auth.signIn")}
+      </Button>
+    </form>
+  );
+}
+
+/** The second step: the six-digit code from the person's Telegram chat. */
+function CodeStep({ challengeId, onStartOver }: { challengeId: string; onStartOver: () => void }) {
+  const t = useTranslations();
+  const afterSignIn = useAfterSignIn();
+  const [serverError, setServerError] = useState<string | null>(null);
+  const form = useForm<CodeInput>({
+    resolver: zodResolver(codeSchema),
+    defaultValues: { code: "" },
+  });
+  const { errors, isSubmitting } = form.formState;
+
+  async function onSubmit(values: CodeInput) {
+    setServerError(null);
+    try {
+      await api("/auth/verify-code", {
+        method: "POST",
+        body: { challengeId, code: values.code },
+      });
+      afterSignIn();
+    } catch (error) {
+      setServerError(messageFor(t, error));
+    }
+  }
+
+  return (
+    <form
+      onSubmit={form.handleSubmit(onSubmit)}
+      className="space-y-4"
+      noValidate
+      data-testid="code-step"
+    >
+      <div>
+        <h2 className="text-lg font-semibold tracking-tight">{t("auth.codeTitle")}</h2>
+        <p className="mt-1 text-sm text-muted-foreground">{t("auth.codeSubtitle")}</p>
+      </div>
+      {serverError && (
+        <Alert variant="destructive" data-testid="code-error">
+          {serverError}
+        </Alert>
+      )}
+      <div className="space-y-2">
+        <Label htmlFor="code">{t("auth.code")}</Label>
+        <Input
+          id="code"
+          inputMode="numeric"
+          autoComplete="one-time-code"
+          maxLength={6}
+          autoFocus
+          aria-invalid={!!errors.code}
+          aria-describedby={errors.code ? "code-error-text" : undefined}
+          {...form.register("code")}
+        />
+        {errors.code && (
+          <p id="code-error-text" className="text-sm text-destructive">
+            {t(errors.code.message ?? "validation.required")}
+          </p>
+        )}
+      </div>
+      <Button type="submit" className="w-full" disabled={isSubmitting}>
+        {isSubmitting ? t("auth.signingIn") : t("auth.confirmCode")}
+      </Button>
+      <Button type="button" variant="ghost" className="w-full" onClick={onStartOver}>
+        {t("auth.startOver")}
       </Button>
     </form>
   );

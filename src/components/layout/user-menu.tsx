@@ -60,6 +60,12 @@ export function UserMenu({
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
         <DropdownMenuItem asChild>
+          <Link href="/account" data-testid="menu-account">
+            <UserRound />
+            {t("account.title")}
+          </Link>
+        </DropdownMenuItem>
+        <DropdownMenuItem asChild>
           <Link href="/notifications" data-testid="menu-notifications">
             <Bell />
             {t("notifications.title")}

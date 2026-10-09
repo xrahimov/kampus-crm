@@ -79,6 +79,7 @@ export const HELP_ARTICLES = [
       { id: "branchAndLanguage" },
       { id: "notifications", screenshot: "notifications" },
       { id: "roles" },
+      { id: "account" },
       { id: "help", screenshot: "help" },
     ],
   },

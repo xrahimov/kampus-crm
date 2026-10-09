@@ -25,6 +25,13 @@ import { handleStudentCommand } from "@/server/services/telegram/student-telegra
 
 import { DEMO_ORG_ID, demoBranchIds } from "./support/tenant";
 
+/** The tests here sign in without a Telegram code: the outcome is always a session. */
+async function signIn(input: Parameters<typeof login>[0], ctx: Parameters<typeof login>[1]) {
+  const outcome = await login(input, ctx);
+  if (outcome.kind !== "session") throw new Error("expected a session, got a challenge");
+  return outcome.issued;
+}
+
 const RUN = String(Date.now() % 100_000).padStart(5, "0");
 const TAG = `o${RUN}`;
 const phone = (n: number) => `+99893${RUN}${String(n).padStart(2, "0")}`;
@@ -103,7 +110,7 @@ describe("organisations (site owner)", () => {
     expect(listed.map((o) => o.id)).toContain(DEMO_ORG_ID);
 
     // The new CEO signs in like anyone else and lands inside their own centre only.
-    const issued = await login({ phone: phone(2), password: PASSWORD }, { ip: "10.0.0.90" });
+    const issued = await signIn({ phone: phone(2), password: PASSWORD }, { ip: "10.0.0.90" });
     const current = await resolveCurrentUser(issued.token);
     expect(current).not.toBeNull();
     const ceo = current!.actor;
@@ -134,7 +141,7 @@ describe("organisations (site owner)", () => {
   });
 
   it("routes a webhook to the centre whose secret it presents", async () => {
-    const issued = await login({ phone: phone(2), password: PASSWORD }, { ip: "10.0.0.90" });
+    const issued = await signIn({ phone: phone(2), password: PASSWORD }, { ip: "10.0.0.90" });
     const ceo = (await resolveCurrentUser(issued.token))!.actor;
     await updateIntegration(ceo, "TELEGRAM", {
       isEnabled: true,

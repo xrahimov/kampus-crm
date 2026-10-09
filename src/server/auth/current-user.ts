@@ -14,6 +14,9 @@ export interface CurrentUser {
     fullName: string;
     phone: string;
     photoUrl: string | null;
+    /** Someone else chose the password: the app shows only the change-password page (A-124). */
+    mustChangePassword: boolean;
+    signInCode: "OFF" | "TELEGRAM";
   };
   roles: Array<{ code: string; name: string }>;
   branches: Array<{ id: string; name: string }>;
@@ -67,7 +70,14 @@ export async function resolveCurrentUser(
 
   return {
     session,
-    user: { id: user.id, fullName: user.fullName, phone: user.phone, photoUrl: user.photoUrl },
+    user: {
+      id: user.id,
+      fullName: user.fullName,
+      phone: user.phone,
+      photoUrl: user.photoUrl,
+      mustChangePassword: user.mustChangePassword,
+      signInCode: user.signInCode,
+    },
     roles: roles.map((r) => ({ code: r.code, name: r.name })),
     branches: visibleBranches,
     activeBranch,

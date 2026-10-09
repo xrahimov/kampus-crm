@@ -12,6 +12,7 @@ import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
 import {
   RadioGroup,
   RadioGroupItem,
@@ -40,7 +41,7 @@ import { generatePassword, todayIso } from "./password";
 import { PhotoField } from "./photo-field";
 import { roleLabel } from "./role-label";
 
-type Input = z.input<typeof staffCreateSchema>;
+type Input = z.input<typeof staffCreateSchema> & { signInCode?: "OFF" | "TELEGRAM" };
 type Output = StaffCreateInput | StaffUpdateInput;
 
 /**
@@ -74,7 +75,9 @@ export function StaffDialog({
   const tf = useTranslations("staff.form");
   const [error, setError] = useState<string | null>(null);
   const [showPassword, setShowPassword] = useState(false);
+  const [signedOut, setSignedOut] = useState<"idle" | "busy" | "done">("idle");
   const isSelf = person?.id === selfId;
+  const base = scope === "teachers" ? "/teachers" : "/staff";
   const fixedRole = scope === "teachers" ? TEACHER_KIND_ROLE[kind] : null;
 
   const empty = (): Input => ({
@@ -122,15 +125,27 @@ export function StaffDialog({
             perLessonFee: person.perLessonFee ?? "",
             perStudentFee: person.perStudentFee ?? "",
             password: "",
+            signInCode: person.signInCode,
           }
         : empty(),
     );
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open, person, defaultBranchId, kind]);
 
+  async function signOutEverywhere() {
+    if (!person) return;
+    setSignedOut("busy");
+    try {
+      await api(`${base}/${person.id}/sign-out-all`, { method: "POST" });
+      setSignedOut("done");
+    } catch (e) {
+      setSignedOut("idle");
+      setError(applyApiError(e, form.setError));
+    }
+  }
+
   async function onSubmit(values: Output) {
     setError(null);
-    const base = scope === "teachers" ? "/teachers" : "/staff";
     try {
       if (person) {
         // Roles stay as they are for teachers (fixed by tab) and for yourself.
@@ -158,7 +173,10 @@ export function StaffDialog({
     <FormDialog
       open={open}
       onOpenChange={(next) => {
-        if (!next) setError(null);
+        if (!next) {
+          setError(null);
+          setSignedOut("idle");
+        }
         onOpenChange(next);
       }}
       title={
@@ -370,6 +388,47 @@ export function StaffDialog({
         </div>
         <FieldError id="staff-password-error" message={errors.password?.message} />
       </div>
+
+      {person && (
+        <fieldset className="space-y-3 rounded-md border p-3" data-testid="staff-safety">
+          <legend className="px-1 text-sm font-medium">{tf("safety")}</legend>
+          <Controller
+            control={form.control}
+            name="signInCode"
+            render={({ field }) => (
+              <div className="flex items-start gap-3">
+                <Switch
+                  id="staff-signInCode"
+                  checked={field.value === "TELEGRAM"}
+                  disabled={!person.telegramLinked}
+                  onCheckedChange={(on) => field.onChange(on ? "TELEGRAM" : "OFF")}
+                  data-testid="staff-sign-in-code"
+                />
+                <div className="space-y-1">
+                  <Label htmlFor="staff-signInCode">{tf("signInCode")}</Label>
+                  <p className="text-xs text-muted-foreground">{tf("signInCodeHint")}</p>
+                  <FieldError id="staff-signInCode-error" message={errors.signInCode?.message} />
+                </div>
+              </div>
+            )}
+          />
+          <div className="flex flex-wrap items-center gap-3">
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={signOutEverywhere}
+              disabled={signedOut !== "idle"}
+              data-testid="staff-sign-out-all"
+            >
+              {tf("signOutAll")}
+            </Button>
+            {signedOut === "done" && (
+              <span className="text-xs text-muted-foreground">{tf("signedOutAll")}</span>
+            )}
+          </div>
+        </fieldset>
+      )}
     </FormDialog>
   );
 }

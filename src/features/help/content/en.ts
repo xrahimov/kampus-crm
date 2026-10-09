@@ -100,6 +100,22 @@ export const en: HelpContent = {
             "If you open a page your role may not use, it says **No access**. Ask your administrator if you need the right; roles are set under Settings → Roles.",
           ],
         },
+        account: {
+          title: "Your account and its safety",
+          body: [
+            "Open your name in the top right corner and choose **My account**. The page holds your password, the Telegram sign-in code and the devices you are signed in on.",
+            {
+              steps: [
+                "**Password.** When an administrator creates your account or resets your password, that password is temporary: your first sign-in takes you to a page where you choose your own. You can change it here at any time, and every other device is signed out when you do.",
+                "**Sign-in code by Telegram.** With the switch on, every sign-in asks for a six-digit code sent to your Telegram chat after the password. It needs your chat to be added under Settings → Bot notifications. Recommended for the CEO, cashiers and administrators.",
+                "**Devices.** The list shows where you are signed in. **Sign out everywhere else** ends every session but this one; use it when a phone or computer is lost. A sign-in from a new device or address is reported to your Telegram.",
+              ],
+            },
+            {
+              note: "Administrators can switch the Telegram code on for a colleague and sign them out of all devices from the staff form under Settings → Staff.",
+            },
+          ],
+        },
         help: {
           title: "Using this help",
           body: [

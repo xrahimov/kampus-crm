@@ -1304,6 +1304,8 @@ async function main() {
         isArchived: false,
         organizationId: org.id,
         isSiteOwner: demo.roles.includes("CEO"),
+        // Demo accounts keep their well-known password (A-124).
+        mustChangePassword: false,
       },
       create: {
         organizationId: org.id,
