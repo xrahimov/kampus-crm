@@ -41,6 +41,7 @@
   },
   "nav": {
     "dashboard": "Bosh sahifa",
+    "assistant": "Yordamchi",
     "today": "Bugun",
     "leads": "Lidlar",
     "teachers": "O‘qituvchilar",
@@ -479,7 +480,9 @@
     "certificateExists": "Bu bitiruvchida sertifikat bor",
     "certificateRevoked": "Bu sertifikat allaqachon bekor qilingan",
     "fiscalDisabled": "Fiskal cheklar Sozlamalar → Integratsiyalar bo'limida o'chirilgan.",
-    "fiscalIssued": "Bu to'lov uchun fiskal chek allaqachon berilgan."
+    "fiscalIssued": "Bu to'lov uchun fiskal chek allaqachon berilgan.",
+    "assistantFailed": "Yordamchi javob bera olmadi.",
+    "assistantRefused": "Yordamchi bu savolga javob berishdan bosh tortdi."
   },
   "validation": {
     "phone": "+998 90 123 45 67 ko‘rinishida raqam kiriting.",
@@ -1641,6 +1644,27 @@
     "noTeachers": "Bu filialda hali o‘qituvchilar yo‘q.",
     "noRoom": "Xonasiz",
     "hours": "Ish vaqti {start}–{end}"
+  },
+  "assistant": {
+    "title": "Yordamchi",
+    "hint": "Markaz haqida oddiy so'zlar bilan so'rang: qarzdorlar, o'quvchilar, to'lovlar, bugungi darslar, yoki SMS qoralamasini so'rang. Javoblar sizning ma'lumotlaringizdan olinadi; yordamchi faqat rolingizga ruxsat etilganini ko'radi.",
+    "placeholder": "Savol bering yoki nima tuzish kerakligini yozing…",
+    "send": "Yuborish",
+    "thinking": "O'ylayapman…",
+    "testMode": "Sinov rejimi: Sozlamalar → Integratsiyalar → AI yordamchi bo'limiga API kaliti kiritilmaguncha yordamchi ma'lumotlaringiz bo'yicha tayyor iboralar bilan javob beradi.",
+    "liveMode": "{model} javob beradi",
+    "settings": "Sozlamalarni ochish",
+    "suggestions": {
+      "debtors": "Hozir kim qarzdor?",
+      "students": "Bizda qancha faol o'quvchi bor?",
+      "payments": "Bu oy qancha tushum bo'ldi?",
+      "today": "Bugun qanday darslar bor?",
+      "sms": "Ota-onaga to'lanmagan oy haqida qisqa SMS eslatma tuz."
+    },
+    "usedTools": "Ko'rildi: {tools}",
+    "empty": "Birinchi savolni bering yoki quyidan tanlang.",
+    "clear": "Yangi suhbat",
+    "error": "Yordamchi javob bera olmadi. Qayta urinib ko'ring."
   },
   "students": {
     "title": "O‘quvchilar",
@@ -4189,7 +4213,8 @@
           "update": "Tashkilot nomi o‘zgartirildi",
           "suspend": "Markaz to‘xtatildi",
           "resume": "Markaz davom ettirildi",
-          "export": "Markaz ma‘lumotlari eksport qilindi"
+          "export": "Markaz ma‘lumotlari eksport qilindi",
+          "aiAsk": "Yordamchiga savol"
         },
         "balance": {
           "adjust": "Qoldiq to'g'rilandi",
@@ -4387,6 +4412,15 @@
         "welcomeReply": "Yangi suhbatni avtomatik kutib olish"
       },
       "hint": "Meta for Developers'da Instagram messaging bilan ilova yarating, yuqoridagi vebhuk manzilini verify token bilan qo'shing, ilova sirini va uzoq muddatli sahifa tokenini bu yerga nusxalang. Ilova tasdiqlanmaguncha xabarlarni vebhukning o'zi bilan sinab ko'rish mumkin."
+    },
+    "AI": {
+      "title": "AI yordamchi",
+      "description": "Yordamchi sahifasi xodimlarning savollariga markaz ma'lumotlari asosida Claude orqali javob beradi; har kim faqat roliga ruxsat etilganini ko'radi.",
+      "fields": {
+        "apiKey": "Anthropic API kaliti",
+        "model": "Model"
+      },
+      "hint": "console.anthropic.com da API kaliti yarating va bu yerga joylang; model sukut bo'yicha claude-opus-5-5. Kalitsiz Yordamchi sahifasi tayyor iboralar bilan sinov rejimida ishlaydi."
     }
   },
   "staffAttendance": {
