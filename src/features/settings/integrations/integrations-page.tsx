@@ -149,6 +149,25 @@ export function IntegrationsPage({
         extra={<p className="text-xs text-muted-foreground">{t("FISCAL.hint")}</p>}
         testId="integration-fiscal"
       />
+      <IntegrationForm
+        provider="INSTAGRAM"
+        dto={by("INSTAGRAM")}
+        fields={[
+          { key: "webhookSecret", secret: true },
+          { key: "verifyToken", secret: true },
+          { key: "appSecret", secret: true },
+          { key: "pageAccessToken", secret: true },
+          { key: "instagramAccountId" },
+          { key: "welcomeReply", type: "boolean" },
+        ]}
+        extra={
+          <>
+            <WebhookHint path="instagram?secret=…" />
+            <p className="text-xs text-muted-foreground">{t("INSTAGRAM.hint")}</p>
+          </>
+        }
+        testId="integration-instagram"
+      />
       <Card>
         <CardHeader>
           <CardTitle>{t("queue.title")}</CardTitle>

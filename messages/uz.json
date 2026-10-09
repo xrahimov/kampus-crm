@@ -588,7 +588,8 @@
     "courseBranch": "Kurs boshqa filialga tegishli",
     "waitlistCourse": "Yozuvdagi kurs guruhini tanlang",
     "inn": "9 raqamli STIR kiriting.",
-    "ikpu": "17 raqamli MXIK kodini kiriting."
+    "ikpu": "17 raqamli MXIK kodini kiriting.",
+    "digits": "Faqat raqamlar."
   },
   "roles": {
     "CEO": "CEO",
@@ -2645,7 +2646,8 @@
       "close": "Chatni yopish",
       "reopen": "Qayta ochish",
       "replyPlaceholder": "Javob yozing… (Ctrl+Enter — yuborish)",
-      "send": "Yuborish"
+      "send": "Yuborish",
+      "instagramHint": "Instagram integratsiyasi ulangach Instagram xabarlari ham shu yerga tushadi."
     },
     "waitlist": {
       "title": "Kutish ro‘yxati",
@@ -4372,6 +4374,19 @@
         "autoIssue": "Har bir to'lovga chekni avtomatik berish"
       },
       "hint": "Buxgalter OFD provayderini aytadi va API manzili va kaliti, kassa ID va MXIK kodini beradi. Manzilsiz yoqilsa, cheklarni Kampus sinov provayderi beradi — jarayonni shunday sinab ko'rish mumkin."
+    },
+    "INSTAGRAM": {
+      "title": "Instagram xabarlari",
+      "description": "Markazning Instagram akkauntiga yozilgan xabarlar Meta vebhuki orqali Lidlar → Kirish qutisiga tushadi; xodimlar Kampus'dan javob beradi, yozgan odam lid bo'ladi.",
+      "fields": {
+        "webhookSecret": "Vebhuk siri",
+        "verifyToken": "Verify token",
+        "appSecret": "Ilova siri (app secret)",
+        "pageAccessToken": "Sahifa kirish tokeni",
+        "instagramAccountId": "Instagram akkaunt ID",
+        "welcomeReply": "Yangi suhbatni avtomatik kutib olish"
+      },
+      "hint": "Meta for Developers'da Instagram messaging bilan ilova yarating, yuqoridagi vebhuk manzilini verify token bilan qo'shing, ilova sirini va uzoq muddatli sahifa tokenini bu yerga nusxalang. Ilova tasdiqlanmaguncha xabarlarni vebhukning o'zi bilan sinab ko'rish mumkin."
     }
   },
   "staffAttendance": {

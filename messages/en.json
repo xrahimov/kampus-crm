@@ -588,7 +588,8 @@
     "courseBranch": "The course belongs to another branch",
     "waitlistCourse": "Choose a group of the entry's course",
     "inn": "Enter the 9-digit taxpayer number.",
-    "ikpu": "Enter the 17-digit MXIK code."
+    "ikpu": "Enter the 17-digit MXIK code.",
+    "digits": "Digits only."
   },
   "roles": {
     "CEO": "CEO",
@@ -2645,7 +2646,8 @@
       "close": "Close chat",
       "reopen": "Reopen",
       "replyPlaceholder": "Write a reply… (Ctrl+Enter to send)",
-      "send": "Send"
+      "send": "Send",
+      "instagramHint": "Instagram messages arrive here too once the Instagram integration is connected."
     },
     "waitlist": {
       "title": "Waiting list",
@@ -4372,6 +4374,19 @@
         "autoIssue": "Issue a receipt for every payment automatically"
       },
       "hint": "Your accountant names the OFD provider and gives the API address and key, the cash register ID and the MXIK code. Switched on without an address, receipts are issued by Kampus' test provider so you can try the flow."
+    },
+    "INSTAGRAM": {
+      "title": "Instagram direct messages",
+      "description": "Messages to the centre's Instagram account arrive in Leads → Inbox through Meta's webhook; staff answer from Kampus and the sender becomes a lead.",
+      "fields": {
+        "webhookSecret": "Webhook secret",
+        "verifyToken": "Verify token",
+        "appSecret": "App secret",
+        "pageAccessToken": "Page access token",
+        "instagramAccountId": "Instagram account ID",
+        "welcomeReply": "Greet a new conversation automatically"
+      },
+      "hint": "In Meta for Developers, create an app with Instagram messaging, add the webhook address above with the verify token, copy the app secret and a long-lived page access token here. Until the app is approved the messages can be tried with the webhook alone."
     }
   },
   "staffAttendance": {

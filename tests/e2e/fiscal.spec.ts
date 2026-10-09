@@ -17,6 +17,9 @@ test.describe("fiscal receipts", () => {
     page,
   }) => {
     await signIn(page, CEO_PHONE);
+    // An amount of its own, so a payment left by an earlier run is not mistaken for this one.
+    const amount = 60_000 + (Date.now() % 97) * 1_000;
+    const shown = amount.toLocaleString("en-US");
 
     // Settings → Integrations → Fiscal receipts: on, without an address (the fake provider).
     await page.goto("/en/settings/integrations");
@@ -39,7 +42,7 @@ test.describe("fiscal receipts", () => {
     const pay = page.getByTestId("payment-dialog");
     await expect(pay).toBeVisible();
     await pay.getByRole("button", { name: "Cash" }).click();
-    await pay.getByLabel("Amount").fill("70000");
+    await pay.getByLabel("Amount").fill(String(amount));
     const receiptPromise = page.context().waitForEvent("page");
     await pay.getByRole("button", { name: "Save" }).click();
     await expect(pay).toBeHidden();
@@ -47,7 +50,7 @@ test.describe("fiscal receipts", () => {
     await firstReceipt.close();
 
     // The history shows the receipt as pending until the queue runs.
-    const row = page.getByTestId("payment-row").filter({ hasText: "70,000" }).first();
+    const row = page.getByTestId("payment-row").filter({ hasText: shown }).first();
     await expect(row.getByTestId("payment-fiscal")).toHaveAttribute("data-status", "PENDING");
 
     const cookies = await page.context().cookies();
@@ -61,7 +64,7 @@ test.describe("fiscal receipts", () => {
       if (!((await run.json()) as { pending: number }).pending) break;
     }
     await page.reload();
-    const issuedRow = page.getByTestId("payment-row").filter({ hasText: "70,000" }).first();
+    const issuedRow = page.getByTestId("payment-row").filter({ hasText: shown }).first();
     await expect(issuedRow.getByTestId("payment-fiscal")).toHaveAttribute("data-status", "ISSUED");
 
     // The printed receipt carries the fiscal number and sign.

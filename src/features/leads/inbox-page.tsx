@@ -176,7 +176,7 @@ export function InboxPage({
             </>
           ) : (
             <span className="text-muted-foreground" data-testid="inbox-no-bot">
-              {t("noBot")}
+              {t("noBot")} {t("instagramHint")}
             </span>
           )}
         </CardContent>
@@ -233,12 +233,17 @@ export function InboxPage({
                             ? `${c.lastMessage.direction === "OUT" ? t("you") + ": " : ""}${c.lastMessage.text}`
                             : t("noMessages")}
                         </span>
-                        {c.unreadCount > 0 && (
-                          <Badge variant="default" data-testid="inbox-unread">
-                            {c.unreadCount}
+                        <span className="flex shrink-0 items-center gap-1">
+                          <Badge variant="outline" data-testid="inbox-channel">
+                            {c.channel === "TELEGRAM" ? "Telegram" : "Instagram"}
                           </Badge>
-                        )}
-                        {c.isClosed && <Badge variant="muted">{t("closed")}</Badge>}
+                          {c.unreadCount > 0 && (
+                            <Badge variant="default" data-testid="inbox-unread">
+                              {c.unreadCount}
+                            </Badge>
+                          )}
+                          {c.isClosed && <Badge variant="muted">{t("closed")}</Badge>}
+                        </span>
                       </div>
                     </button>
                   </li>

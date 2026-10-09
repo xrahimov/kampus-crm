@@ -1100,6 +1100,12 @@ export const en: HelpContent = {
             "Uzbekistan's online cash registers are reached through an OFD provider. Ask your accountant which provider the centre uses and enter its API address and key, the taxpayer number (STIR), the cash register ID, the VAT rate and the MXIK code of educational services. With **Issue a receipt for every payment automatically** on, each cash-desk payment and refund gets a fiscal receipt in the background; its number and fiscal sign appear on the printed receipt, and the **Fiscal receipt** column in payment lists shows Pending, Issued or Failed with a retry button. Switched on without an API address, Kampus' test provider issues receipts so you can try the flow before the contract is signed. Online payments through Payme and Click are fiscalised by those providers themselves.",
           ],
         },
+        instagram: {
+          title: "Instagram direct messages",
+          body: [
+            "Kingston-style centres get most of their leads from Instagram. Once the integration is connected, every message to the centre's Instagram professional account lands in **Leads → Inbox** next to the Telegram chats, the sender becomes a lead with the source Instagram, and staff answer from Kampus; the answer goes out through Meta's Graph API. Connecting needs a Meta for Developers app with Instagram messaging: set the webhook address shown under the form (with your webhook secret) and the verify token in the app, then copy the app secret and a long-lived page access token into the card. Meta reviews the app before it may read messages of accounts other than the developer's own, which takes weeks; until then the webhook can be tried by hand.",
+          ],
+        },
         jobs: {
           title: "Background jobs",
           body: [
