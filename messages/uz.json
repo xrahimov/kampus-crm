@@ -452,6 +452,7 @@
     "importArchivedExists": "Bu o‘quvchi allaqachon arxivda",
     "importGroupMissing": "Bu filialda shunday nomli guruh yo‘q",
     "importPaymentExists": "Bu to‘lov o‘quvchi tarixida allaqachon bor",
+    "soffKindMismatch": "Fayl bu import kutgan eksport emas",
     "debtCaseClosed": "Bu qarz allaqachon yopilgan.",
     "scheduleClash": "Bu vaqtda xona yoki o‘qituvchi band.",
     "familyOther": "Bu o‘quvchi allaqachon boshqa oilada.",
@@ -611,6 +612,7 @@
       "daysOff": "Dam olish kunlari",
       "schools": "Maktablar",
       "staff": "Xodimlar",
+      "migration": "SOFF CRM’dan import",
       "roles": "Rollar",
       "sms": "SMS shablonlari",
       "receipt": "Chek sozlamalari",
@@ -626,6 +628,101 @@
       "amocrm": "AmoCRM",
       "faceId": "FaceID",
       "integrations": "Integratsiyalar"
+    },
+    "migration": {
+      "title": "SOFF CRM’dan import",
+      "description": "SOFF CRM’dan ko‘chish: uning ro‘yxatlari eksport qiladigan Excel fayllarini yuklang (har bir sahifadagi EXCEL tugmasi). Kampus har bir faylni sarlavhalari bo‘yicha taniydi, ustunlar qayerga tushishini ko‘rsatadi, ko‘rib chiqishni beradi va keyin oddiy importlardagi tekshiruvlar orqali import qiladi.",
+      "stepsTitle": "To‘rt fayl, shu tartibda",
+      "stepsHint": "Har bir keyingi fayl oldingilariga tayanadi: guruhlarga kurslar va o‘qituvchilar, o‘quvchilarga guruhlar, to‘lovlarga o‘quvchilar kerak. Kurslar va xonalar Sozlamalar → Kurslar va Xonalardan keladi yoki qo‘lda yaratiladi.",
+      "step": "{n}-qadam",
+      "kinds": {
+        "staff": "Xodimlar",
+        "groups": "Guruhlar",
+        "students": "O‘quvchilar",
+        "payments": "O‘quvchi to‘lovlari"
+      },
+      "kindHints": {
+        "staff": "Sozlamalar → Xodimlar → EXCEL. Har bir xodim bir marta ko‘rsatiladigan vaqtinchalik parol oladi.",
+        "groups": "Guruhlar → EXCEL. Kurs va o‘qituvchi nomi bo‘yicha topiladi.",
+        "students": "O‘quvchilar → EXCEL. Guruhlar va balans ham kiradi: a‘zoliklar shu oydan, balans boshlang‘ich qoldiq sifatida.",
+        "payments": "Hisobotlar → O‘quvchi to‘lovlari → EXCEL. Har bir o‘quvchi ostida tarix sifatida saqlanadi, balansni o‘zgartirmaydi."
+      },
+      "file": "SOFF CRM eksporti (.xlsx yoki .csv)",
+      "rows": "{count} qator",
+      "notRecognised": "Bu fayl Kampus biladigan SOFF CRM eksportlaridan emas. Birinchi qatorda sarlavhalar turganini tekshiring.",
+      "fileColumn": "Fayldagi ustun",
+      "kampusField": "Qayerga tushadi",
+      "sampleValue": "Misol",
+      "unknown": "Kampus ishlatmaydigan ustunlar: {columns}",
+      "preview": "Ko‘rib chiqish: {count} qator import qilinadi, {skipped} qator o‘tkazib yuboriladi. Hali hech narsa yozilmadi.",
+      "imported": "{count} import qilindi, {skipped} o‘tkazib yuborildi.",
+      "extra": {
+        "members": "Guruh a‘zoliklari: {count} qo‘shildi, {skipped} o‘tkazib yuborildi",
+        "balances": "Boshlang‘ich qoldiqlar: {count} yozildi, {skipped} o‘tkazib yuborildi"
+      },
+      "previewButton": "Ko‘rib chiqish",
+      "importButton": "Import qilish",
+      "fields": {
+        "staff": {
+          "fullName": "Ism familiya",
+          "phone": "Telefon",
+          "roles": "Rollar",
+          "fixedSalary": "Doimiy oylik (import qilinmaydi)",
+          "percent": "Foiz ulush (import qilinmaydi)",
+          "lessonFee": "Dars haqi (import qilinmaydi)",
+          "birthDate": "Tug‘ilgan sana",
+          "hireDate": "Ishga olingan sana",
+          "branch": "Filial"
+        },
+        "groups": {
+          "name": "Guruh nomi",
+          "course": "Kurs",
+          "teacher": "O‘qituvchi",
+          "support": "Support ustoz (import qilinmaydi)",
+          "days": "Dars kunlari",
+          "time": "Dars vaqti",
+          "startTime": "Boshlanish vaqti",
+          "endTime": "Tugash vaqti",
+          "room": "Xona",
+          "studentCount": "O‘quvchilar soni (import qilinmaydi)",
+          "startDate": "Boshlanish sanasi",
+          "endDate": "Tugash sanasi",
+          "status": "Holat",
+          "branch": "Filial"
+        },
+        "students": {
+          "id": "Eski ID (import qilinmaydi)",
+          "fullName": "Ism familiya",
+          "phone": "Telefon",
+          "parentPhone": "Ota-ona telefoni (import qilinmaydi)",
+          "gender": "Jinsi",
+          "birthDate": "Tug‘ilgan sana",
+          "note": "Izoh",
+          "groups": "Guruhlar (a‘zoliklar)",
+          "balance": "Balans (boshlang‘ich qoldiq)",
+          "nextPayment": "Keyingi to‘lov (import qilinmaydi)",
+          "grade": "Baho (import qilinmaydi)",
+          "status": "Holat (import qilinmaydi)",
+          "joinedAt": "Qo‘shilgan sana (import qilinmaydi)",
+          "branch": "Filial (import qilinmaydi)"
+        },
+        "payments": {
+          "id": "Eski ID (import qilinmaydi)",
+          "student": "O‘quvchi",
+          "phone": "Telefon",
+          "date": "Sana",
+          "forMonth": "Qaysi oy uchun (izohga)",
+          "type": "Turi (import qilinmaydi)",
+          "amount": "Summa",
+          "refunded": "Qaytarilgan summa (manfiy qator)",
+          "bonus": "Bonus (import qilinmaydi)",
+          "group": "Guruh",
+          "comment": "Izoh",
+          "createdAt": "Yaratilgan vaqt (import qilinmaydi)",
+          "method": "To‘lov usuli",
+          "receivedBy": "Qabul qildi (import qilinmaydi)"
+        }
+      }
     },
     "general": {
       "centerTitle": "Markaz sozlamalari",

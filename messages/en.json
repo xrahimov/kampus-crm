@@ -452,6 +452,7 @@
     "importArchivedExists": "This student is already in the archive",
     "importGroupMissing": "No group with this name in this branch",
     "importPaymentExists": "This payment is already in the student's history",
+    "soffKindMismatch": "The file is not the export this import expects",
     "debtCaseClosed": "This debt is already closed.",
     "scheduleClash": "The room or the teacher is already busy at this time.",
     "familyOther": "This student already belongs to another family.",
@@ -611,6 +612,7 @@
       "daysOff": "Days off",
       "schools": "Schools",
       "staff": "Staff",
+      "migration": "Import from SOFF CRM",
       "roles": "Roles",
       "sms": "SMS templates",
       "receipt": "Receipt settings",
@@ -626,6 +628,101 @@
       "amocrm": "AmoCRM",
       "faceId": "FaceID",
       "integrations": "Integrations"
+    },
+    "migration": {
+      "title": "Import from SOFF CRM",
+      "description": "Moving from the SOFF CRM: upload the Excel files its lists export (the EXCEL button on each page). Kampus recognises each file by its headers, shows how the columns map, previews, and then imports through the same checks as the ordinary imports.",
+      "stepsTitle": "Four files, in this order",
+      "stepsHint": "Each later file refers to the earlier ones: groups need courses and teachers, students need groups, payments need students. Courses and rooms come from Settings → Courses and Rooms, or are created by hand.",
+      "step": "Step {n}",
+      "kinds": {
+        "staff": "Staff",
+        "groups": "Groups",
+        "students": "Students",
+        "payments": "Student payments"
+      },
+      "kindHints": {
+        "staff": "Settings → Staff → EXCEL. Every person gets a temporary password, shown once.",
+        "groups": "Groups → EXCEL. Course and teacher are matched by name.",
+        "students": "Students → EXCEL. Groups and the balance go in too: memberships from this month, the balance as an opening balance.",
+        "payments": "Reports → Student payments → EXCEL. Kept as history under each student, changing no balance."
+      },
+      "file": "SOFF CRM export (.xlsx or .csv)",
+      "rows": "{count} rows",
+      "notRecognised": "This file is not one of the SOFF CRM exports Kampus knows. Check that the first row holds the headers.",
+      "fileColumn": "Column in the file",
+      "kampusField": "Goes into",
+      "sampleValue": "Example",
+      "unknown": "Columns Kampus does not use: {columns}",
+      "preview": "Preview: {count} rows would be imported and {skipped} skipped. Nothing has been written yet.",
+      "imported": "{count} imported, {skipped} skipped.",
+      "extra": {
+        "members": "Group memberships: {count} added, {skipped} skipped",
+        "balances": "Opening balances: {count} written, {skipped} skipped"
+      },
+      "previewButton": "Preview",
+      "importButton": "Import",
+      "fields": {
+        "staff": {
+          "fullName": "Full name",
+          "phone": "Phone",
+          "roles": "Roles",
+          "fixedSalary": "Fixed salary (not imported)",
+          "percent": "Percentage share (not imported)",
+          "lessonFee": "Per-lesson fee (not imported)",
+          "birthDate": "Birth date",
+          "hireDate": "Hire date",
+          "branch": "Branch"
+        },
+        "groups": {
+          "name": "Group name",
+          "course": "Course",
+          "teacher": "Teacher",
+          "support": "Support teacher (not imported)",
+          "days": "Lesson days",
+          "time": "Lesson time",
+          "startTime": "Start time",
+          "endTime": "End time",
+          "room": "Room",
+          "studentCount": "Student count (not imported)",
+          "startDate": "Start date",
+          "endDate": "End date",
+          "status": "Status",
+          "branch": "Branch"
+        },
+        "students": {
+          "id": "Old ID (not imported)",
+          "fullName": "Full name",
+          "phone": "Phone",
+          "parentPhone": "Parent phone (not imported)",
+          "gender": "Gender",
+          "birthDate": "Birth date",
+          "note": "Note",
+          "groups": "Groups (memberships)",
+          "balance": "Balance (opening balance)",
+          "nextPayment": "Next payment (not imported)",
+          "grade": "Grade (not imported)",
+          "status": "Status (not imported)",
+          "joinedAt": "Joined on (not imported)",
+          "branch": "Branch (not imported)"
+        },
+        "payments": {
+          "id": "Old ID (not imported)",
+          "student": "Student",
+          "phone": "Phone",
+          "date": "Date",
+          "forMonth": "For which month (into the comment)",
+          "type": "Type (not imported)",
+          "amount": "Amount",
+          "refunded": "Refunded amount (a negative row)",
+          "bonus": "Bonus (not imported)",
+          "group": "Group",
+          "comment": "Comment",
+          "createdAt": "Created at (not imported)",
+          "method": "Payment method",
+          "receivedBy": "Received by (not imported)"
+        }
+      }
     },
     "general": {
       "centerTitle": "Center settings",

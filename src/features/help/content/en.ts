@@ -1016,6 +1016,12 @@ export const en: HelpContent = {
             "**Login log**: who signed in, from which address, and failed attempts. **Action log**: every change staff made, newest first, with the type of record and the person; filter by type, person and dates. **Sent SMS**: every message with its status. **Calls**: the call log from the telephony integration. **Payments**: the payments log. Logs cannot be edited.",
           ],
         },
+        migration: {
+          title: "Import from SOFF CRM",
+          body: [
+            "Most Uzbek centres run the SOFF CRM, and each of its lists has an EXCEL button. Settings → **Import from SOFF CRM** takes those files one at a time: drop a file and Kampus says which list it is (staff, groups, students or student payments), shows which column goes where and which columns it ignores, and previews before anything is written. Upload in this order: staff (every person gets a temporary password, shown once), groups (course and teacher are matched by name, so create the courses first), students (their groups become memberships from the first of this month and the balance becomes an opening balance, so nobody is charged for the past) and student payments (kept under each student as **Payments in the previous system**, changing no balance). Rows the file already brought in are skipped, so a file can be uploaded again after fixing it.",
+          ],
+        },
       },
     },
     integrations: {

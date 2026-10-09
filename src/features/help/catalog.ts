@@ -310,6 +310,7 @@ export const HELP_ARTICLES = [
       { id: "receipt" },
       { id: "forms" },
       { id: "logs", screenshot: "settings-logs" },
+      { id: "migration" },
     ],
   },
   {
