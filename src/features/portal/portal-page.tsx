@@ -26,6 +26,7 @@ import { useMoneyFormat } from "@/lib/use-money-format";
 
 import { PortalAnnouncementsTab } from "./announcements-tab";
 import { PortalHomeworkTab } from "./homework-tab";
+import { PortalTestsTab } from "./tests-tab";
 import { PortalMaterialsTab } from "./materials-tab";
 import { PayCard } from "./pay-card";
 import { ReferralCard } from "./referral-card";
@@ -34,6 +35,7 @@ import type { Weekday } from "@/lib/validation/groups";
 import type { PortalAnnouncementDto } from "@/server/services/announcements/announcements.service";
 import type { PortalHomeworkDto } from "@/server/services/homework/homework.service";
 import type { PortalCertificateDto } from "@/server/services/students/certificates.service";
+import type { PortalTestDto } from "@/server/services/tests/portal-tests.service";
 import type { MaterialDto } from "@/server/services/materials/materials.service";
 import type { PortalPayOptionsDto } from "@/server/services/payments/online-payments.service";
 import type { PortalReferralDto } from "@/server/services/students/referrals.service";
@@ -74,6 +76,7 @@ export function PortalPage({
   referral,
   announcements,
   certificates = [],
+  tests = [],
   initialTab = "lessons",
 }: {
   token: string;
@@ -87,6 +90,8 @@ export function PortalPage({
   announcements: PortalAnnouncementDto[];
   /** The student's certificates of graduation (A-140), with their public links. */
   certificates?: PortalCertificateDto[];
+  /** The group's tests the student can take or has taken (A-145). */
+  tests?: PortalTestDto[];
   initialTab?: "lessons" | "money";
 }) {
   const t = useTranslations("portal");
@@ -118,6 +123,7 @@ export function PortalPage({
     (h) => !h.submission || h.submission.status === "RETURNED",
   ).length;
   const unreadNews = announcements.filter((a) => !a.read).length;
+  const openTests = tests.filter((x) => x.available).length;
   const canPay = pay.providers.length > 0 && portal.money.monthlyPrice > 0;
   const showMoney =
     canPay ||
@@ -196,6 +202,14 @@ export function PortalPage({
                 {unreadNews > 0 && (
                   <span className="rounded-full bg-primary px-1.5 text-[10px] text-primary-foreground">
                     {unreadNews}
+                  </span>
+                )}
+              </TabsTrigger>
+              <TabsTrigger value="tests" data-testid="portal-tab-tests">
+                {t("tabs.tests")}
+                {openTests > 0 && (
+                  <span className="rounded-full bg-primary px-1.5 text-[10px] text-primary-foreground">
+                    {openTests}
                   </span>
                 )}
               </TabsTrigger>
@@ -314,6 +328,9 @@ export function PortalPage({
               </TabsContent>
             )}
 
+            <TabsContent value="tests">
+              <PortalTestsTab token={token} initial={tests} />
+            </TabsContent>
             <TabsContent value="results" className="space-y-6">
               {certificates.length > 0 && (
                 <section data-testid="portal-certificates">

@@ -99,6 +99,19 @@ export const testAttemptSchema = z.object({
 });
 export type TestAttemptInput = z.output<typeof testAttemptSchema>;
 
+/** A student handing in a test from their personal page (A-145): answers only. */
+export const portalTestAttemptSchema = z.object({
+  answers: z.record(
+    z.string(),
+    z.coerce
+      .number()
+      .int()
+      .min(0)
+      .max(MAX_OPTIONS - 1),
+  ),
+});
+export type PortalTestAttemptInput = z.output<typeof portalTestAttemptSchema>;
+
 /** Filters shared by the group "Bilim tahlili" tab and the student "Test natijalari" tab. */
 export const knowledgeFilterSchema = z.object({
   subject: z.string().trim().max(80).optional(),

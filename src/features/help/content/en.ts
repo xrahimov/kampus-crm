@@ -1218,6 +1218,20 @@ export const en: HelpContent = {
             "**Invite a friend** shows your invite code and a link to share. When a friend signs up with it and joins a group, you get coins, and a bonus on your balance if your centre offers one. The card counts the friends who have joined.",
           ],
         },
+        tests: {
+          title: "Tests",
+          body: [
+            "The **Tests** tab lists the tests your teacher gave the group: the number of questions, the time limit, the deadline and the pass mark. The number on the tab is how many you can take now.",
+            {
+              steps: [
+                "Press **Start**. If the test has a time limit, the clock starts at that moment and keeps running even if you close the page, so start when you have the time.",
+                "Choose one option per question. **Continue** brings you back to the same clock if the page was closed.",
+                "Press **Hand in**. The score, the percentage and whether you passed appear at once; a pass earns the coins your centre gives for test results.",
+              ],
+            },
+            "Each test can be taken once. The result also appears under **Results**, and the teacher sees it like any test result.",
+          ],
+        },
         results: {
           title: "Results",
           body: [

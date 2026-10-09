@@ -1222,6 +1222,20 @@ export const uz: HelpContent = {
             "**Do‘stingizni taklif qiling** kartasida taklif kodingiz va ulashish uchun havola ko‘rinadi. Do‘stingiz shu havola orqali yozilib guruhga qo‘shilsa, siz coin olasiz, markaz belgilagan bo‘lsa, balansingizga bonus ham tushadi. Karta qo‘shilgan do‘stlaringizni sanaydi.",
           ],
         },
+        tests: {
+          title: "Testlar",
+          body: [
+            "**Testlar** yorlig‘i o‘qituvchi guruhga bergan testlarni ko‘rsatadi: savollar soni, vaqt chegarasi, muddat va o‘tish bali. Yorliqdagi raqam hozir topshirish mumkin bo‘lgan testlar soni.",
+            {
+              steps: [
+                "**Boshlash** tugmasini bosing. Testda vaqt chegarasi bo‘lsa, soat shu zahoti ishga tushadi va sahifani yopsangiz ham ketaveradi, shuning uchun vaqtingiz bo‘lganda boshlang.",
+                "Har bir savolda bitta variantni tanlang. Sahifa yopilgan bo‘lsa, **Davom etish** sizni o‘sha soatga qaytaradi.",
+                "**Topshirish** tugmasini bosing. Ball, foiz va o‘tgan-o‘tmaganingiz darhol ko‘rinadi; o‘tsangiz, markazingiz test natijalari uchun beradigan coinlarni olasiz.",
+              ],
+            },
+            "Har bir testni bir marta topshirish mumkin. Natija **Natijalar** yorlig‘ida ham ko‘rinadi, o‘qituvchi esa uni har qanday test natijasi kabi ko‘radi.",
+          ],
+        },
         results: {
           title: "Natijalar",
           body: [

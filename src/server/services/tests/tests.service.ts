@@ -11,6 +11,7 @@ import { prisma, type DbClient } from "@/server/db/prisma";
 import { AppError } from "@/server/errors/app-error";
 import { authorize, type Actor } from "@/server/rbac/authorize";
 import { awardAutoCoins } from "@/server/services/coins/coins.service";
+import { scoreAnswers } from "@/server/services/tests/portal-tests.service";
 import { findGroupInScope, groupScope, ownGroupsOnly } from "@/server/services/groups/shared";
 import { dateToIso, decimalToNumber, isoToDate, mustFind } from "@/server/services/settings/shared";
 import { studentScope } from "@/server/services/students/students.service";
@@ -503,13 +504,7 @@ export async function recordAttempt(
   if (!membership || (input.groupId && !groupIds.includes(input.groupId))) {
     throw AppError.validation({ studentId: ["validation.notMember"] });
   }
-  let score = 0;
-  let maxScore = 0;
-  for (const q of test.questions) {
-    maxScore += q.points;
-    if (input.answers[q.questionId] === q.question.correctIndex) score += q.points;
-  }
-  const percent = maxScore === 0 ? 0 : Math.round((score / maxScore) * 10000) / 100;
+  const { score, maxScore, percent } = scoreAnswers(test.questions, input.answers);
   return db.$transaction(async (tx) => {
     const row = await tx.testAttempt.create({
       data: {

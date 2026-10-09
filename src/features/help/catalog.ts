@@ -362,6 +362,7 @@ export const HELP_ARTICLES = [
       { id: "homework", screenshot: "portal-homework" },
       { id: "materials" },
       { id: "money", screenshot: "portal-money" },
+      { id: "tests" },
       { id: "results" },
       { id: "telegram" },
     ],
