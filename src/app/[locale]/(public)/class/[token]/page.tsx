@@ -10,6 +10,7 @@ import { getPortalPayOptions } from "@/server/services/payments/online-payments.
 import { getPortal } from "@/server/services/portal/portal.service";
 import { listPortalCertificates } from "@/server/services/students/certificates.service";
 import { getPortalReferral } from "@/server/services/students/referrals.service";
+import { listPortalTests } from "@/server/services/tests/portal-tests.service";
 import { getPortalTelegram } from "@/server/services/telegram/student-telegram.service";
 import { getClassPage } from "@/server/services/video/video.service";
 
@@ -33,18 +34,29 @@ export default async function Page({ params, searchParams }: Props) {
   // Back from Payme or Click: open the money tab, where the outcome is shown.
   const { paid } = await searchParams;
   setRequestLocale(locale);
-  const [page, portal, homework, telegram, materials, pay, referral, announcements, certificates] =
-    await Promise.all([
-      getClassPage(token),
-      getPortal(token),
-      listPortalHomework(token),
-      getPortalTelegram(token),
-      listPortalMaterials(token),
-      getPortalPayOptions(token),
-      getPortalReferral(token, locale),
-      listPortalAnnouncements(token),
-      listPortalCertificates(token),
-    ]);
+  const [
+    page,
+    portal,
+    homework,
+    telegram,
+    materials,
+    pay,
+    referral,
+    announcements,
+    certificates,
+    tests,
+  ] = await Promise.all([
+    getClassPage(token),
+    getPortal(token),
+    listPortalHomework(token),
+    getPortalTelegram(token),
+    listPortalMaterials(token),
+    getPortalPayOptions(token),
+    getPortalReferral(token, locale),
+    listPortalAnnouncements(token),
+    listPortalCertificates(token),
+    listPortalTests(token),
+  ]);
   if (!page || !portal || !homework || !telegram || !materials || !pay || !announcements) {
     notFound();
   }
@@ -61,6 +73,7 @@ export default async function Page({ params, searchParams }: Props) {
         referral={referral}
         announcements={announcements}
         certificates={certificates ?? []}
+        tests={tests ?? []}
         initialTab={paid ? "money" : "lessons"}
       />
     </div>

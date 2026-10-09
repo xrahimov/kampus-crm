@@ -420,6 +420,10 @@
     "testNotFound": "Test topilmadi.",
     "testHasAttempts": "Test bo‘yicha natijalar kiritilgan; savollarni o‘zgartirib va testni o‘chirib bo‘lmaydi.",
     "testNotActive": "Natijalarni faqat faol testga kiritish mumkin.",
+    "testNotAvailable": "Bu testni hozir topshirib bo‘lmaydi.",
+    "testAttempted": "Siz bu testni allaqachon topshirgansiz.",
+    "testTimeUp": "Bu test uchun vaqt tugadi.",
+    "testNotStarted": "Topshirishdan oldin testni oching.",
     "categoryHasTemplates": "Bu kategoriyada hali shablonlar bor.",
     "webhookRejected": "Webhook maxfiy kaliti yo'q yoki noto'g'ri, yoki integratsiya o'chirilgan.",
     "staffNotFound": "Xodim topilmadi.",
@@ -4112,7 +4116,8 @@
           "update": "Test yangilandi",
           "delete": "Test o'chirildi",
           "status": "Test holati o'zgartirildi",
-          "attempt": "Test natijasi kiritildi"
+          "attempt": "Test natijasi kiritildi",
+          "portalAttempt": "Test o‘quvchi sahifasidan topshirildi"
         },
         "workSchedule": {
           "set": "Ish jadvali belgilandi"
@@ -4604,7 +4609,40 @@
       "schedule": "Jadval",
       "homework": "Uy vazifasi",
       "materials": "Materiallar",
-      "announcements": "Yangiliklar"
+      "announcements": "Yangiliklar",
+      "tests": "Testlar"
+    },
+    "tests": {
+      "empty": "Guruhingiz uchun hali testlar yo‘q.",
+      "questions": "{count} ta savol",
+      "points": "{count} ball",
+      "timeLimit": "{minutes} daqiqa",
+      "noTimeLimit": "Vaqt cheklanmagan",
+      "deadline": "{date} gacha",
+      "passMark": "O‘tish bali {percent}%",
+      "start": "Boshlash",
+      "continue": "Davom etish",
+      "open": "Ochish",
+      "taken": "Topshirilgan",
+      "timeUp": "Vaqt tugadi",
+      "closed": "Yopilgan",
+      "passed": "O‘tdi",
+      "failed": "O‘tmadi",
+      "scoreLine": "{score} / {maxScore} ball · {percent}%",
+      "takenOn": "{date} topshirilgan",
+      "timeLeft": "Qolgan vaqt",
+      "untimed": "Shoshilmang: bu testda vaqt chegarasi yo‘q.",
+      "questionOf": "{total} savoldan {n}-si",
+      "answered": "{total} savoldan {answered} tasiga javob berildi",
+      "handIn": "Topshirish",
+      "handingIn": "Yuborilmoqda…",
+      "confirmHandIn": "{missing, plural, =0 {Javoblar topshirilsinmi? Keyin ularni o‘zgartirib bo‘lmaydi.} other {# savolga javob berilmagan. Baribir topshirilsinmi?}}",
+      "autoSubmitted": "Vaqt tugadi, shuning uchun javoblar bor holicha topshirildi.",
+      "resultTitle": "Natijangiz",
+      "resultScore": "{maxScore} balldan {score}",
+      "coinsEarned": "Siz {count} coin oldingiz.",
+      "back": "Testlarga qaytish",
+      "startHint": "Boshlagach, sahifani yopsangiz ham vaqt ketaveradi. {minutes} daqiqa vaqtingiz bo‘lishiga ishonch hosil qiling."
     },
     "lessons": {
       "empty": "Hali darslar yo‘q.",

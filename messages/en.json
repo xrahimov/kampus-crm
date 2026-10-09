@@ -420,6 +420,10 @@
     "testNotFound": "Test not found.",
     "testHasAttempts": "Results have been submitted for this test; its questions cannot change and it cannot be deleted.",
     "testNotActive": "Results can be entered only for an active test.",
+    "testNotAvailable": "This test cannot be taken now.",
+    "testAttempted": "You have already taken this test.",
+    "testTimeUp": "The time for this test has run out.",
+    "testNotStarted": "Open the test before handing it in.",
     "categoryHasTemplates": "This category still has templates.",
     "webhookRejected": "The webhook secret is missing or wrong, or the integration is off.",
     "staffNotFound": "Staff member not found.",
@@ -4112,7 +4116,8 @@
           "update": "Test updated",
           "delete": "Test deleted",
           "status": "Test status changed",
-          "attempt": "Test result entered"
+          "attempt": "Test result entered",
+          "portalAttempt": "Test taken from the student's page"
         },
         "workSchedule": {
           "set": "Work schedule set"
@@ -4604,7 +4609,40 @@
       "schedule": "Schedule",
       "homework": "Homework",
       "materials": "Materials",
-      "announcements": "News"
+      "announcements": "News",
+      "tests": "Tests"
+    },
+    "tests": {
+      "empty": "No tests for your group yet.",
+      "questions": "{count, plural, one {# question} other {# questions}}",
+      "points": "{count, plural, one {# point} other {# points}}",
+      "timeLimit": "{minutes} min",
+      "noTimeLimit": "No time limit",
+      "deadline": "Until {date}",
+      "passMark": "Pass mark {percent}%",
+      "start": "Start",
+      "continue": "Continue",
+      "open": "Open",
+      "taken": "Taken",
+      "timeUp": "Time is up",
+      "closed": "Closed",
+      "passed": "Passed",
+      "failed": "Not passed",
+      "scoreLine": "{score} / {maxScore} points · {percent}%",
+      "takenOn": "Handed in {date}",
+      "timeLeft": "Time left",
+      "untimed": "Take your time: this test has no limit.",
+      "questionOf": "Question {n} of {total}",
+      "answered": "{answered} of {total} answered",
+      "handIn": "Hand in",
+      "handingIn": "Handing in…",
+      "confirmHandIn": "{missing, plural, =0 {Hand in your answers? You cannot change them afterwards.} one {One question has no answer. Hand in anyway?} other {# questions have no answer. Hand in anyway?}}",
+      "autoSubmitted": "Time ran out, so your answers were handed in as they were.",
+      "resultTitle": "Your result",
+      "resultScore": "{score} of {maxScore} points",
+      "coinsEarned": "{count, plural, one {You earned # coin.} other {You earned # coins.}}",
+      "back": "Back to tests",
+      "startHint": "Once you start, the clock runs even if you close the page. Make sure you have {minutes} minutes."
     },
     "lessons": {
       "empty": "No lessons yet.",

@@ -856,18 +856,19 @@ model GroupMembership {
   createdAt   DateTime         @default(now())
   updatedAt   DateTime         @updatedAt
 
-  group          Group                @relation(fields: [groupId], references: [id], onDelete: Cascade)
-  student        Student              @relation(fields: [studentId], references: [id])
-  attendances    Attendance[]
-  grades         Grade[]
-  discounts      Discount[]
-  charges        Charge[]
-  payments       Payment[]
-  onlinePayments OnlinePayment[]
-  homework       HomeworkSubmission[]
-  adjustments    BalanceAdjustment[]
-  instalments    Instalment[]
-  absenceCases   AbsenceCase[]
+  group            Group                @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  student          Student              @relation(fields: [studentId], references: [id])
+  attendances      Attendance[]
+  grades           Grade[]
+  discounts        Discount[]
+  charges          Charge[]
+  payments         Payment[]
+  onlinePayments   OnlinePayment[]
+  homework         HomeworkSubmission[]
+  adjustments      BalanceAdjustment[]
+  instalments      Instalment[]
+  absenceCases     AbsenceCase[]
+  portalTestStarts PortalTestStart[]
 
   @@unique([groupId, studentId])
   @@index([studentId])
@@ -2040,11 +2041,12 @@ model Test {
   createdAt        DateTime   @default(now())
   updatedAt        DateTime   @updatedAt
 
-  organization Organization   @relation(fields: [organizationId], references: [id], onDelete: Cascade)
-  createdBy    User?          @relation("testAuthor", fields: [createdById], references: [id], onDelete: SetNull)
+  organization Organization      @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  createdBy    User?             @relation("testAuthor", fields: [createdById], references: [id], onDelete: SetNull)
   questions    TestQuestion[]
   groups       TestGroup[]
   attempts     TestAttempt[]
+  portalStarts PortalTestStart[]
 
   @@index([organizationId, status])
 }
@@ -2075,6 +2077,20 @@ model TestGroup {
 }
 
 /// One submitted test by one student; answers are entered by staff in v1 (A-82).
+/// When a student opened a test from their personal page (round 2 item G1):
+/// the countdown of a timed test runs from here, whatever the browser does.
+model PortalTestStart {
+  id           String   @id @default(cuid())
+  testId       String
+  membershipId String
+  startedAt    DateTime @default(now())
+
+  test       Test            @relation(fields: [testId], references: [id], onDelete: Cascade)
+  membership GroupMembership @relation(fields: [membershipId], references: [id], onDelete: Cascade)
+
+  @@unique([testId, membershipId])
+}
+
 model TestAttempt {
   id              String   @id @default(cuid())
   testId          String
