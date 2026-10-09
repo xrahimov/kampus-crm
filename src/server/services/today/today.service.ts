@@ -33,6 +33,8 @@ export interface TodayMemberDto {
   fullName: string;
   status: MembershipStatus;
   attendance: AttendanceStatus;
+  /** The mark's note, e.g. the reason a parent sent through the bot (A-119). */
+  comment: string | null;
   /** Positive = credit, negative = debt, as on the group page. */
   balance: number | null;
 }
@@ -105,7 +107,7 @@ const lessonInclude = {
       teachers: { select: { user: { select: { fullName: true } } }, orderBy: { since: "asc" } },
     },
   },
-  attendances: { select: { membershipId: true, status: true } },
+  attendances: { select: { membershipId: true, status: true, comment: true } },
   homework: {
     select: {
       id: true,
@@ -198,7 +200,7 @@ export async function getToday(
   }
 
   const lessonDtos: TodayLessonDto[] = lessons.map((l) => {
-    const marks = new Map(l.attendances.map((a) => [a.membershipId, a.status]));
+    const marks = new Map(l.attendances.map((a) => [a.membershipId, a]));
     const members: TodayMemberDto[] = (byGroup.get(l.groupId) ?? [])
       .filter((m) => (ATTENDING as string[]).includes(m.status))
       .map((m) => ({
@@ -206,7 +208,8 @@ export async function getToday(
         studentId: m.studentId,
         fullName: m.student.fullName,
         status: m.status,
-        attendance: marks.get(m.id) ?? "NOT_MARKED",
+        attendance: marks.get(m.id)?.status ?? "NOT_MARKED",
+        comment: marks.get(m.id)?.comment ?? null,
         balance: canSeeBalances ? (balances.get(m.id)?.balance ?? null) : null,
       }));
     const homework = l.homework

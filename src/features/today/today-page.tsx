@@ -368,6 +368,14 @@ function LessonCard({
                 >
                   <span className="min-w-0">
                     <span className="block truncate font-medium">{m.fullName}</span>
+                    {m.comment && status !== "PRESENT" && (
+                      <span
+                        className="block truncate text-xs text-muted-foreground"
+                        data-testid="today-member-comment"
+                      >
+                        {m.comment}
+                      </span>
+                    )}
                     {canSeeBalances && m.balance !== null && m.balance < 0 && (
                       <span className="block text-xs text-destructive tabular-nums">
                         {money(m.balance)}

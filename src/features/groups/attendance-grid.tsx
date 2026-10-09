@@ -233,18 +233,24 @@ export function AttendanceGrid({
                     {m.fullName}
                   </td>
                   {grid.lessons.map((l) => {
-                    const status = l.attendance[m.membershipId]?.status ?? "NOT_MARKED";
+                    const mark = l.attendance[m.membershipId];
+                    const status = mark?.status ?? "NOT_MARKED";
+                    const comment = mark?.comment ?? null;
                     return (
                       <td key={l.id} className="px-1 py-1 text-center">
                         <button
                           type="button"
                           disabled={!canMark}
                           onClick={() => cycle(l.id, m.membershipId, status)}
-                          aria-label={`${m.fullName} ${l.date}: ${t(`groups.attendance.${status}`)}`}
+                          title={comment ?? undefined}
+                          aria-label={`${m.fullName} ${l.date}: ${t(`groups.attendance.${status}`)}${comment ? ` — ${comment}` : ""}`}
                           className={cn(
                             "inline-flex size-7 items-center justify-center rounded text-sm font-semibold transition-colors",
                             CELL[status],
                             canMark && "hover:ring-2 hover:ring-ring/40",
+                            // A note on the mark (the reason a parent sent through the bot) gets a dot.
+                            comment &&
+                              "relative after:absolute after:top-0.5 after:right-0.5 after:size-1.5 after:rounded-full after:bg-foreground/60 after:content-['']",
                           )}
                         >
                           {MARK[status]}

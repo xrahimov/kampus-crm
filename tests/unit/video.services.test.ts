@@ -70,7 +70,10 @@ const sync = (
 ) => syncVideoPeer(id, videoSyncSchema.parse({ secret, ...extra }));
 
 beforeAll(async () => {
-  const stored = await prisma.integrationSetting.findFirst({ where: { provider: "VIDEO" } });
+  // The demo centre's row only: other test files give their own centres a VIDEO row.
+  const stored = await prisma.integrationSetting.findFirst({
+    where: { provider: "VIDEO", organizationId: DEMO_ORG_ID },
+  });
   previousVideo = stored ? { isEnabled: stored.isEnabled, config: stored.config } : null;
 
   const roles = await prisma.role.findMany({ where: { code: { in: ["TEACHER", "CASHIER"] } } });
@@ -150,8 +153,7 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
-  const organizationId = (await prisma.organization.findFirst({ orderBy: { createdAt: "asc" } }))!
-    .id;
+  const organizationId = DEMO_ORG_ID;
   if (previousVideo) {
     await prisma.integrationSetting.update({
       where: { organizationId_provider: { organizationId, provider: "VIDEO" } },

@@ -20,7 +20,8 @@ import {
 import { queueAutoSms } from "@/server/services/sms/auto-sms.service";
 import { membershipBalances } from "@/server/services/students/balances";
 import { notifyStudents } from "@/server/services/telegram/student-telegram.service";
-import { membershipByToken } from "@/server/services/video/video.service";
+import { appOriginFor } from "@/server/services/settings/domains.service";
+import { classLink, membershipByToken } from "@/server/services/video/video.service";
 
 /*
  * Online payments (A-106): a student pays from their personal link through
@@ -211,6 +212,65 @@ export async function createOnlinePayment(
       ? paymeCheckoutUrl(config as PaymeConfig, order.id, input.amount, returnUrl)
       : clickCheckoutUrl(config as ClickConfig, order.id, input.amount, returnUrl);
   return { id: order.id, url };
+}
+
+/** Providers a centre has switched on, Payme first. */
+export async function enabledPaymentProviders(
+  db: DbClient,
+  organizationId: string,
+): Promise<OnlinePaymentProvider[]> {
+  const [payme, click] = await Promise.all([
+    paymeConfig(db, organizationId),
+    clickConfig(db, organizationId),
+  ]);
+  const providers: OnlinePaymentProvider[] = [];
+  if (payme) providers.push("PAYME");
+  if (click) providers.push("CLICK");
+  return providers;
+}
+
+/**
+ * The links a linked Telegram chat gets on "pay" (A-119): one order per enabled
+ * provider for the amount due on the membership, with the student's page as
+ * the return address. Nothing when the centre takes no online payments.
+ */
+export async function botPaymentLinks(
+  db: DbClient,
+  organizationId: string,
+  membership: { id: string; studentId: string; branchId: string; videoToken: string | null },
+  amount: number,
+  effectiveMonth: string,
+): Promise<Array<{ provider: OnlinePaymentProvider; url: string }>> {
+  const [payme, click, origin] = await Promise.all([
+    paymeConfig(db, organizationId),
+    clickConfig(db, organizationId),
+    appOriginFor(organizationId, db),
+  ]);
+  const page = membership.videoToken ? classLink(origin, membership.videoToken) : origin;
+  const links: Array<{ provider: OnlinePaymentProvider; url: string }> = [];
+  for (const provider of ["PAYME", "CLICK"] as const) {
+    const config = provider === "PAYME" ? payme : click;
+    if (!config) continue;
+    const order = await db.onlinePayment.create({
+      data: {
+        provider,
+        studentId: membership.studentId,
+        membershipId: membership.id,
+        branchId: membership.branchId,
+        amount,
+        effectiveMonth: isoToDate(effectiveMonth),
+      },
+    });
+    const returnUrl = `${page}?paid=${order.id}`;
+    links.push({
+      provider,
+      url:
+        provider === "PAYME"
+          ? paymeCheckoutUrl(config as PaymeConfig, order.id, amount, returnUrl)
+          : clickCheckoutUrl(config as ClickConfig, order.id, amount, returnUrl),
+    });
+  }
+  return links;
 }
 
 /** The portal polls this after the provider sends the student back. */

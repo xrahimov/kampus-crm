@@ -3502,7 +3502,7 @@
     },
     "telegram": {
       "title": "Telegram",
-      "intro": "Dars eslatmalari, uy vazifalari va to‘lov xabarlarini Telegramda oling. Ota-onalar ham ulanishi mumkin.",
+      "intro": "Dars eslatmalari, uy vazifalari va to‘lov xabarlarini Telegramda oling. Ota-onalar ham ulanishi mumkin. Chatda balansni bilish, to‘lash yoki o‘quvchi bugun kelmasligini aytish ham mumkin.",
       "connect": "Telegramni ulash",
       "connectMore": "Yana bir telefon ulash",
       "connected": "Ulangan: {name}",
@@ -3533,7 +3533,7 @@
     }
   },
   "telegramBot": {
-    "linked": "Ulandi. Endi bu chatga {student} uchun dars eslatmalari, uy vazifalari va to‘lov xabarlari keladi. Uzish uchun /stop yuboring.",
+    "linked": "Ulandi. Endi bu chatga {student} uchun dars eslatmalari, uy vazifalari va to‘lov xabarlari keladi. Pastdagi tugmalar balansni ko‘rsatadi, to‘lov havolasini yuboradi yoki bugungi qoldirish haqida xabar beradi. Uzish uchun /stop yuboring.",
     "unlinked": "Uzildi. Endi Kampus’dan xabarlar kelmaydi.",
     "unknownCode": "Bu havola endi amal qilmaydi. Kampus sahifangizni ochib, “Telegramni ulash” tugmasini qayta bosing.",
     "lessonSoon": "{group}: dars {start}–{end}, taxminan 30 daqiqadan keyin.{link, select, none {} other { Kirish: {link}}}",
@@ -3553,7 +3553,23 @@
     "weeklyNoLessons": "{group}: bu hafta dars bo‘lmadi",
     "weeklyCoins": "Coinlar: bu hafta {earned}, jami {total}",
     "weeklyBalance": "Balans: {balance}{next, select, none {} other {, keyingi to‘lov {next} gacha}}",
-    "weeklyDebt": "Qarz: {debt}. Iltimos, o‘quv markazida yoki o‘z sahifangizdan to‘lang."
+    "weeklyDebt": "Qarz: {debt}. Iltimos, o‘quv markazida yoki o‘z sahifangizdan to‘lang.",
+    "menuBalance": "Balans",
+    "menuPay": "To‘lov",
+    "menuAbsent": "Bugun darsga kelmaydi",
+    "menuHint": "«Balans», «To‘lov» yoki «Bugun darsga kelmaydi» deb yozing yoki pastdagi tugmalardan foydalaning.",
+    "balanceGroup": "{group}: balans {balance}{next, select, none {} other {, keyingi to‘lov {next} gacha}}",
+    "balanceDebtGroup": "{group}: qarz {debt}",
+    "balanceCoins": "Coinlar: {total}",
+    "noGroups": "Hozir joriy guruh yo‘q. O‘quv markaziga murojaat qiling.",
+    "payTitle": "{group}: {month} uchun {amount}",
+    "payProvider": "{provider}: {url}",
+    "payOff": "O‘quv markazingizda onlayn to‘lov hali sozlanmagan. Iltimos, markazda to‘lang.",
+    "payNothing": "Hozir to‘lov uchun hech narsa yo‘q.",
+    "absentMarked": "{group}, bugun {time}: sababli qoldirilgan deb belgilandi{reason, select, none {} other { ({reason})}}. O‘qituvchi buni ko‘radi.",
+    "absentPresent": "{group}, bugun {time}: o‘qituvchi allaqachon kelgan deb belgilagan, hech narsa o‘zgarmadi.",
+    "absentNoLesson": "Bugun dars yo‘q.{next, select, none {} other { Keyingi dars: {next}.}}",
+    "absentComment": "Telegram orqali{reason, select, none {} other {: {reason}}}"
   },
   "video": {
     "title": "Video dars",
