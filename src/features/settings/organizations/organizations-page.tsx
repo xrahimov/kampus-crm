@@ -18,17 +18,21 @@ import {
 } from "@/components/ui/table";
 import { useRouter } from "@/i18n/navigation";
 import type { OrganizationDto } from "@/server/services/settings/organizations.service";
+import type { SystemStatusDto } from "@/server/services/system/monitoring.service";
 
 import { RowActions } from "../shared/row-actions";
 import { OrganizationDialog } from "./organization-dialog";
+import { ServerStatus } from "./server-status";
 
-/** Site owner's list of the centres this server hosts (A-108). */
+/** Site owner's list of the centres this server hosts (A-108) and the server's status (A-134). */
 export function OrganizationsPage({
   organizations,
   ownId,
+  status,
 }: {
   organizations: OrganizationDto[];
   ownId: string;
+  status: SystemStatusDto;
 }) {
   const t = useTranslations("settings.organizations");
   const tc = useTranslations("common");
@@ -54,6 +58,7 @@ export function OrganizationsPage({
           <Plus /> {t("add")}
         </Button>
       </div>
+      <ServerStatus initial={status} />
       <Card>
         {organizations.length === 0 ? (
           <EmptyState title={tc("nothingFound")} />

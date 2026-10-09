@@ -263,3 +263,13 @@ export const dayOffUpdateSchema = dayOffSchema.omit({ branchId: true }).partial(
 export const schoolSchema = z.object({ name });
 export type SchoolInput = z.infer<typeof schoolSchema>;
 export const schoolUpdateSchema = schoolSchema.partial();
+
+/** Server alerts recipient (A-134): a Telegram chat ID, or empty to switch alerts off. */
+export const alertRecipientSchema = z.object({
+  chatId: z
+    .string()
+    .trim()
+    .max(32)
+    .refine((v) => v === "" || /^-?\d{4,20}$/.test(v), "validation.chatId"),
+});
+export type AlertRecipientInput = z.infer<typeof alertRecipientSchema>;

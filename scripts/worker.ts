@@ -10,6 +10,7 @@ import "dotenv/config";
 import { prisma } from "../src/server/db/prisma";
 import { ensureDailyJob, registerJobHandlers } from "../src/server/jobs/handlers";
 import { runDueJobs } from "../src/server/jobs/queue";
+import { recordHeartbeat } from "../src/server/services/system/monitoring.service";
 
 const INTERVAL_MS = Number(process.env.WORKER_INTERVAL_MS ?? 5000);
 let stopping = false;
@@ -18,6 +19,8 @@ async function tick() {
   try {
     await ensureDailyJob(prisma);
     const result = await runDueJobs(20, prisma);
+    // The heartbeat the status card and the "worker silent" alert read (A-134).
+    await recordHeartbeat(prisma, "worker", { ...result });
     if (result.claimed > 0) {
       console.log(`[worker] claimed=${result.claimed} done=${result.done} failed=${result.failed}`);
     }

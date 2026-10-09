@@ -115,6 +115,13 @@ docker compose -f docker-compose.prod.yml logs --tail 50 app worker
 
 Then in the browser: sign in, create a course, a room, a group and a student,
 take a test payment, print its receipt, and open Settings → Logs → Actions.
+As the site owner (the first CEO), open Settings → Organisations: the **Server
+status** card shows the worker's last run, the job queue, the nightly backup,
+disk space and server errors, and takes the Telegram chat ID that receives
+alerts (sent by your own centre's bot from Settings → Integrations → Telegram).
+The server checks itself every five minutes, clocked by Docker's poll of
+`/api/v1/health`; that endpoint is also the one to give an external uptime
+service, if you use one.
 Webhook URLs for the integrations are `https://<DOMAIN>/api/v1/webhooks/telegram`,
 `/telephony` and `/face-id`; the public lead form is `https://<DOMAIN>/forms/<name>`.
 The URLs are the same for every organisation on the server: the secret a webhook
@@ -130,6 +137,11 @@ git pull
 docker compose -f docker-compose.prod.yml up -d --build   # migrations run automatically
 docker image prune -f
 ```
+
+The `backup` service reads `docker/backup.sh` when it starts, so after an update
+that changed the script, restart it once:
+`docker compose -f docker-compose.prod.yml restart backup`. It takes a dump
+straight away and reports it to the **Server status** card.
 
 ## 8. Backups and restore
 

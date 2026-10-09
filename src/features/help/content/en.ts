@@ -1097,6 +1097,16 @@ export const en: HelpContent = {
             },
           ],
         },
+        status: {
+          title: "Server status and alerts",
+          body: [
+            "Above the list, **Server status** shows what the server knows about itself: the application and database, the worker that sends SMS, Telegram messages and scheduled jobs (its last run), the job queue (waiting, overdue and failed jobs with the last error), the nightly backup (file, size, age and the free space on the backup disk), the disk the uploads and recordings live on, and server errors of the last 24 hours. A row is green, grey (attention) or red; **Check now** refreshes everything at once.",
+            "Alerts go to Telegram: enter the chat ID in **Alerts to Telegram** and press **Save**; the message is sent by your own centre's Telegram bot, so that bot must be set up under Settings → Integrations. **Send test message** proves the path works. The server then checks itself every five minutes and writes when the worker has been silent for three minutes, a job has failed, the backup is more than 26 hours old or failed, less than 2 GB of disk is left (red under 512 MB), or five or more server errors happened in a quarter of an hour. A problem still open is repeated every six hours, and a message follows when it is gone.",
+            {
+              note: "The backup row fills in after the backup container's first run on this version; after updating the server, restart that container once (the deployment guide says how).",
+            },
+          ],
+        },
         afterwards: {
           title: "Afterwards",
           body: [

@@ -1101,6 +1101,16 @@ export const uz: HelpContent = {
             },
           ],
         },
+        status: {
+          title: "Server holati va ogohlantirishlar",
+          body: [
+            "Ro‘yxat tepasidagi **Server holati** bloki server o‘zi haqida bilganini ko‘rsatadi: ilova va ma’lumotlar bazasi, SMS, Telegram xabarlari va jadval bo‘yicha vazifalarni yuboradigan worker (so‘nggi ishga tushishi), vazifalar navbati (kutayotgan, muddati o‘tgan va bajarilmagan vazifalar, so‘nggi xato bilan), tungi zaxira nusxa (fayl, hajm, yoshi va nusxalar diskidagi bo‘sh joy), yuklangan fayllar va yozuvlar turadigan disk hamda so‘nggi 24 soatdagi server xatolari. Qator yashil, kulrang (diqqat) yoki qizil bo‘ladi; **Hozir tekshirish** hammasini birdan yangilaydi.",
+            "Ogohlantirishlar Telegramga boradi: **Telegramga ogohlantirishlar** blokida chat ID ni kiriting va **Saqlash** ni bosing; xabarni markazingizning o‘z Telegram boti yuboradi, shuning uchun u Sozlamalar → Integratsiyalar da sozlangan bo‘lishi kerak. **Sinov xabari yuborish** yo‘l ishlayotganini tasdiqlaydi. Keyin server o‘zini har besh daqiqada tekshiradi va worker uch daqiqa jim bo‘lganda, vazifa bajarilmaganda, zaxira nusxa 26 soatdan eski bo‘lganda yoki muvaffaqiyatsiz chiqqanda, diskda 2 GB dan kam joy qolganda (512 MB dan kam bo‘lsa qizil) yoki chorak soatda besh va undan ko‘p server xatosi bo‘lganda yozadi. Ochiq muammo har olti soatda takrorlanadi, u yo‘qolganda bu haqda xabar keladi.",
+            {
+              note: "Zaxira nusxa qatori backup konteyneri shu versiyada birinchi marta ishga tushgandan keyin to‘ladi; serverni yangilagandan keyin bu konteynerni bir marta qayta ishga tushiring (qanday qilish o‘rnatish qo‘llanmasida yozilgan).",
+            },
+          ],
+        },
         afterwards: {
           title: "Keyin",
           body: [

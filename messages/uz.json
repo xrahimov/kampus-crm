@@ -432,7 +432,8 @@
     "leadArchived": "Lid arxivda.",
     "trialExists": "Bu lidning o‘sha kuni shu guruhda sinov darsi allaqachon bor.",
     "trialNotFound": "Sinov darsi topilmadi.",
-    "trialConverted": "Lid guruhga qo‘shilgan; sinov darsi yopilgan."
+    "trialConverted": "Lid guruhga qo‘shilgan; sinov darsi yopilgan.",
+    "telegramNotConfigured": "Bu markazning Telegram boti sozlanmagan (Sozlamalar → Integratsiyalar → Telegram)."
   },
   "validation": {
     "phone": "+998 90 123 45 67 ko‘rinishida raqam kiriting.",
@@ -835,6 +836,74 @@
       "staffCount": "Xodimlar",
       "studentsCount": "O‘quvchilar",
       "yours": "sizniki"
+    },
+    "system": {
+      "title": "Server holati",
+      "description": "Server egasi bilishi kerak bo‘lgan narsalar: worker, vazifalar navbati, tungi zaxira nusxa, diskdagi joy va server xatolari. Ogohlantirishlar Telegramga boradi.",
+      "checkNow": "Hozir tekshirish",
+      "checkedAt": "Tekshirildi {time}",
+      "levels": {
+        "ok": "Joyida",
+        "warning": "Diqqat",
+        "down": "Ishlamayapti",
+        "unknown": "Hali ma’lumot yo‘q"
+      },
+      "rows": {
+        "app": "Ilova",
+        "database": "Ma’lumotlar bazasi",
+        "worker": "Worker",
+        "jobs": "Vazifalar navbati",
+        "backup": "Zaxira nusxa",
+        "disk": "Disk",
+        "errors": "Server xatolari"
+      },
+      "app": {
+        "detail": "{duration} ishlayapti, Node {node}"
+      },
+      "database": {
+        "detail": "{ms} ms da javob beradi",
+        "down": "Javob bermayapti"
+      },
+      "worker": {
+        "never": "Hali xabar bermagan; worker konteyneri ishlayaptimi?",
+        "detail": "So‘nggi ishga tushish {ago}",
+        "stale": "Jim, so‘nggi ishga tushish {ago}. SMS, Telegram va jadval bo‘yicha vazifalar yuborilmayapti."
+      },
+      "jobs": {
+        "detail": "{pending} kutmoqda, {overdue} muddati o‘tgan, {failed} tasi 24 soatda bajarilmadi",
+        "lastError": "So‘nggi nosozlik: {type} — {message}"
+      },
+      "backup": {
+        "never": "Zaxira nusxa hali xabar bermagan. Backup konteyneri shu versiyada birinchi ishga tushgandan keyin xabar beradi.",
+        "detail": "{file} ({size}) {ago}; nusxalar diskida {free} bo‘sh",
+        "stale": "So‘nggi nusxa {ago}",
+        "error": "So‘nggi urinish muvaffaqiyatsiz {ago}: {message}"
+      },
+      "disk": {
+        "detail": "{total} dan {free} bo‘sh",
+        "unknown": "O‘lchanmagan"
+      },
+      "errors": {
+        "none": "24 soatda yo‘q",
+        "detail": "24 soatda {count, plural, one {# xato} other {# xato}}",
+        "recent": "So‘nggilari"
+      },
+      "alerts": {
+        "title": "Telegramga ogohlantirishlar",
+        "hint": "Ogohlantirishlarni markazingizning Telegram boti (Sozlamalar → Integratsiyalar → Telegram) quyidagi chatga yuboradi: worker jim bo‘lganda, vazifalar bajarilmaganda, zaxira nusxa bir kundan eski bo‘lganda, disk to‘lib qolganda yoki xatolar ko‘payganda. Muammo yo‘qolganda bu haqda xabar keladi; ochiq muammo har olti soatda takrorlanadi.",
+        "chatId": "Chat ID",
+        "chatIdHint": "Avval botga yozing, keyin chat ID ni Sozlamalar → Integratsiyalar → Telegram dan yoki @userinfobot dan oling. Bo‘sh qoldirilsa ogohlantirishlar o‘chadi.",
+        "save": "Saqlash",
+        "saved": "Saqlandi",
+        "test": "Sinov xabari yuborish",
+        "testSent": "Sinov xabari yuborildi",
+        "botMissing": "Markazingizning Telegram boti sozlanmagan, shuning uchun ogohlantirish yuborib bo‘lmaydi.",
+        "open": "Ochiq ogohlantirishlar",
+        "none": "Ochiq ogohlantirishlar yo‘q",
+        "since": "{time} dan beri",
+        "lastSent": "So‘nggi xabar {time}",
+        "never": "Hali xabar yuborilmagan"
+      }
     }
   },
   "teachers": {
