@@ -449,6 +449,9 @@
     "importNameExists": "Already exists with this name",
     "importUserExists": "A user with this phone already exists",
     "importParentExists": "This parent is already on the student",
+    "importArchivedExists": "This student is already in the archive",
+    "importGroupMissing": "No group with this name in this branch",
+    "importPaymentExists": "This payment is already in the student's history",
     "debtCaseClosed": "This debt is already closed.",
     "scheduleClash": "The room or the teacher is already busy at this time.",
     "familyOther": "This student already belongs to another family.",
@@ -1809,6 +1812,10 @@
     "importBalancesHint": "One row per student and group with the balance they bring from the previous system: a debt is a negative number, money the student has is positive. Students are found by Kampus ID, phone or exact name; a preview shows the matches before anything is written.",
     "importMenu": "Import",
     "importParents": "Import parents",
+    "importArchived": "Import archived students",
+    "importArchivedHint": "One row per student who had already left the previous system: name, phone, the group, the join and leave dates and the reason. Each becomes an archived student with a closed membership, so the left-students report and the archive are complete. Nothing is written until you confirm the preview.",
+    "importHistory": "Import payment history",
+    "importHistoryHint": "One row per payment made in the previous system: student, group, amount, date and method. The rows appear under the student's payments for the record only; no balance, debt or report changes. Students are found by Kampus ID, phone or exact name, archived ones included.",
     "picker": {
       "noResults": "No students found",
       "clear": "Clear"
@@ -1983,6 +1990,19 @@
         "OPENING": "Opening balance",
         "CORRECTION": "Correction"
       }
+    },
+    "legacy": {
+      "title": "Payments in the previous system",
+      "hint": "Imported for the record: these rows count in no balance or report.",
+      "total": "Total {amount}",
+      "date": "Date",
+      "group": "Group",
+      "amount": "Amount",
+      "method": "Method",
+      "comment": "Comment",
+      "remove": "Remove",
+      "removeTitle": "Remove this history row?",
+      "removeText": "The row goes away; balances are not affected either way."
     }
   },
   "debts": {
@@ -3870,7 +3890,9 @@
         },
         "payment": {
           "create": "Payment received",
-          "refund": "Refund made"
+          "refund": "Refund made",
+          "importHistory": "Payment history row imported",
+          "importHistoryRemove": "Payment history row removed"
         },
         "paymentMethod": {
           "create": "Payment method created",
@@ -3962,7 +3984,8 @@
           "fieldSet": "Extra information saved",
           "fieldRemove": "Extra information removed",
           "parentAdd": "Parent added",
-          "parentRemove": "Parent removed"
+          "parentRemove": "Parent removed",
+          "importArchived": "Archived student imported"
         },
         "teacher": {
           "create": "Teacher created",
@@ -4262,6 +4285,8 @@
       "staffTemplate": "staff-template",
       "groupsTemplate": "groups-template",
       "parentsTemplate": "parents-template",
+      "archivedTemplate": "archived-students-template",
+      "historyTemplate": "payment-history-template",
       "debtors": "debtors",
       "referralsReport": "referral-programme",
       "absences": "absences"
@@ -4275,7 +4300,9 @@
       "room": "<room name>",
       "roles": "Teacher",
       "days": "Mon, Wed, Fri",
-      "parentName": "<parent name>"
+      "parentName": "<parent name>",
+      "leaveReason": "Moved away",
+      "method": "Cash"
     },
     "marks": {
       "present": "+",

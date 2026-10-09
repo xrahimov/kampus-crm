@@ -11,14 +11,18 @@ export type StudentMatch =
 /**
  * The student an import row means (A-109): by Kampus id, then by phone, then by
  * exact name (case-insensitive), inside one branch. Two students sharing the
- * phone or the name are ambiguous rather than a guess.
+ * phone or the name are ambiguous rather than a guess. Archived students count
+ * only when `includeArchived` is set (the payment-history import, A-142).
  */
 export async function matchStudent(
   db: DbClient,
   branchId: string,
   row: { studentId: string | null; phone: string | null; fullName: string | null },
+  options: { includeArchived?: boolean } = {},
 ): Promise<StudentMatch> {
-  const where: Prisma.StudentWhereInput = { branchId, isArchived: false };
+  const where: Prisma.StudentWhereInput = options.includeArchived
+    ? { branchId }
+    : { branchId, isArchived: false };
   const select = { id: true, fullName: true } as const;
   let student: MatchedStudent | null = null;
   if (row.studentId) {

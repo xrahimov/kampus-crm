@@ -84,6 +84,7 @@ model Branch {
   callLogs       CallLog[]
   staffCheckIns  StaffAttendance[]
   adjustments    BalanceAdjustment[]
+  legacyPayments LegacyPayment[]
   debtCases      DebtCase[]
   absenceCases   AbsenceCase[]
   cashCloses     CashClose[]
@@ -184,23 +185,24 @@ model User {
   purchasesDecided PurchaseRequest[]  @relation("purchaseDecider")
   questionsWritten QuestionBankItem[] @relation("questionAuthor")
 
-  smsSent           SmsMessage[]         @relation("smsSender")
-  calls             CallLog[]            @relation("callStaff")
-  botRecipient      BotRecipient?
-  staffCheckIns     StaffAttendance[]
-  workSchedules     WorkSchedule[]
-  membershipsClosed GroupMembership[]    @relation("membershipsClosed")
-  testsWritten      Test[]               @relation("testAuthor")
-  attemptsEntered   TestAttempt[]        @relation("attemptEnteredBy")
-  videoRoomsStarted VideoRoom[]          @relation("videoRoomStarter")
-  videoPeers        VideoParticipant[]
-  homeworkSet       Homework[]           @relation("homeworkAuthor")
-  homeworkChecked   HomeworkSubmission[] @relation("homeworkChecker")
-  materialsAdded    LessonMaterial[]     @relation("materialAuthor")
-  adjustmentsMade   BalanceAdjustment[]  @relation("adjustmentAuthor")
-  debtContacts      DebtContact[]        @relation("debtContactAuthor")
-  absenceContacts   AbsenceContact[]     @relation("absenceContactAuthor")
-  announcements     Announcement[]       @relation("announcementAuthor")
+  smsSent             SmsMessage[]         @relation("smsSender")
+  calls               CallLog[]            @relation("callStaff")
+  botRecipient        BotRecipient?
+  staffCheckIns       StaffAttendance[]
+  workSchedules       WorkSchedule[]
+  membershipsClosed   GroupMembership[]    @relation("membershipsClosed")
+  testsWritten        Test[]               @relation("testAuthor")
+  attemptsEntered     TestAttempt[]        @relation("attemptEnteredBy")
+  videoRoomsStarted   VideoRoom[]          @relation("videoRoomStarter")
+  videoPeers          VideoParticipant[]
+  homeworkSet         Homework[]           @relation("homeworkAuthor")
+  homeworkChecked     HomeworkSubmission[] @relation("homeworkChecker")
+  materialsAdded      LessonMaterial[]     @relation("materialAuthor")
+  adjustmentsMade     BalanceAdjustment[]  @relation("adjustmentAuthor")
+  legacyPaymentsAdded LegacyPayment[]      @relation("legacyPaymentAuthor")
+  debtContacts        DebtContact[]        @relation("debtContactAuthor")
+  absenceContacts     AbsenceContact[]     @relation("absenceContactAuthor")
+  announcements       Announcement[]       @relation("announcementAuthor")
 
   @@index([organizationId])
 }
@@ -784,6 +786,7 @@ model Student {
   examResults       ExamResult[]
   financeEntries    FinanceEntry[]
   coins             CoinTransaction[]
+  legacyPayments    LegacyPayment[]
   purchases         PurchaseRequest[]
   testAttempts      TestAttempt[]
   smsMessages       SmsMessage[]
@@ -1202,6 +1205,28 @@ enum BalanceAdjustmentKind {
 
 /// A signed amount added to a membership's balance beside payments and charges (A-109):
 /// the debt or credit a student brought over from the centre's previous system, or a correction.
+/// A payment made in the previous system (A-142): shown under the student's payment
+/// history for the record; it counts in no balance and no report.
+model LegacyPayment {
+  id          String   @id @default(cuid())
+  studentId   String
+  branchId    String
+  groupName   String?
+  amount      Decimal  @db.Decimal(15, 2)
+  paidAt      DateTime @db.Date
+  method      String?
+  comment     String?
+  createdById String?
+  createdAt   DateTime @default(now())
+
+  student   Student @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  branch    Branch  @relation(fields: [branchId], references: [id])
+  createdBy User?   @relation("legacyPaymentAuthor", fields: [createdById], references: [id], onDelete: SetNull)
+
+  @@index([studentId, paidAt])
+  @@index([branchId, paidAt])
+}
+
 model BalanceAdjustment {
   id           String                @id @default(cuid())
   membershipId String
