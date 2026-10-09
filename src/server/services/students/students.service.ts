@@ -937,15 +937,17 @@ export async function listStudentHistory(
 ): Promise<Page<StudentHistoryDto>> {
   authorize(actor, "students.view");
   await findStudentInScope(db, actor, studentId, {});
-  const [memberships, payments] = await Promise.all([
+  const [memberships, payments, adjustments] = await Promise.all([
     db.groupMembership.findMany({ where: { studentId }, select: { id: true } }),
     db.payment.findMany({ where: { studentId }, select: { id: true } }),
+    db.balanceAdjustment.findMany({ where: { studentId }, select: { id: true } }),
   ]);
   const where: Prisma.AuditLogWhereInput = {
     OR: [
       { entity: "Student", entityId: studentId },
       { entity: "GroupMembership", entityId: { in: memberships.map((m) => m.id) } },
       { entity: "Payment", entityId: { in: payments.map((p) => p.id) } },
+      { entity: "BalanceAdjustment", entityId: { in: adjustments.map((a) => a.id) } },
     ],
   };
   const [total, rows] = await Promise.all([
@@ -992,6 +994,9 @@ const DETAIL_KEYS = [
   "joinedAt",
   "isArchived",
   "isBlacklisted",
+  "kind",
+  "date",
+  "comment",
 ];
 
 /** The few values worth showing on the timeline, old → new where both exist. */

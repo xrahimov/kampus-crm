@@ -64,6 +64,7 @@ export default async function Page({
         blacklist: can(current.actor, "students.blacklist"),
         activate: can(current.actor, "groups.update"),
         sms: can(current.actor, "sms.send"),
+        pay: can(current.actor, "payments.create"),
       }}
     />
   );

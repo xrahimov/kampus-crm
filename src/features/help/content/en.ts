@@ -447,6 +447,13 @@ export const en: HelpContent = {
             "Refunds are possible only when the switch **Refunds enabled** is on in Settings → General. On the student's profile press **Refund**, choose the payment, enter the amount (up to what is left of that payment) and the reason. The refund appears in the payment history and in the payments log, and the balance goes back up.",
           ],
         },
+        openingBalances: {
+          title: "Opening balances and corrections",
+          body: [
+            "A centre that moves to Kampus brings its students' debts and prepayments with it. On the student's profile press **Adjust balance**, pick the group, say whether the student owes or has credit, enter the amount, the type (**Opening balance** or **Correction**), the date and a comment. The amount counts in the balance like a payment: a debt shows at once in the debtor lists, the reminders and the reports, and the row appears under the payment history, where someone with the refund permission can remove it.",
+            "Many students at once: on the Students page press **Import opening balances**, download the template and fill one row per student and group. The balance is negative for a debt and positive for money the student has; a column called debt (positive = owes) works too. Students are matched by Kampus ID, phone or exact name, the group by its name (not needed when the student is in one group), and a branch column may name another branch. The first upload only previews: it lists the rows that match and the rows that will be skipped, and nothing is written until you press **Import**. A group that already has an opening balance for the student is skipped, so the same file can be uploaded twice without doubling anyone's debt.",
+          ],
+        },
         discounts: {
           title: "Discounts",
           body: [

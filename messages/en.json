@@ -180,7 +180,14 @@
     "videoEnded": "This video lesson has already ended.",
     "videoNotStarted": "The teacher has not started the lesson yet.",
     "homeworkAccepted": "This answer was already accepted.",
-    "onlinePaymentsOff": "Online payments are not switched on at your learning centre."
+    "onlinePaymentsOff": "Online payments are not switched on at your learning centre.",
+    "importAmbiguous": "Several students match this row; add the phone or Kampus ID",
+    "importGroupRequired": "The student is in several groups; fill in the group column",
+    "importGroupUnknown": "The student is not in a group with this name",
+    "importNoMembership": "The student is not in any group",
+    "importBalanceExists": "This student already has an opening balance in this group",
+    "importBranchUnknown": "No branch with this name",
+    "importZero": "The balance is zero, nothing to import"
   },
   "validation": {
     "phone": "Enter a number like +998 90 123 45 67.",
@@ -261,7 +268,8 @@
     "attachmentSize": "The file must be 20 MB or smaller.",
     "homeworkEmpty": "Write an answer or attach a file.",
     "botUsername": "Letters, digits and underscores only.",
-    "recordingSize": "The recording must be 400 MB or smaller."
+    "recordingSize": "The recording must be 400 MB or smaller.",
+    "nonZero": "Must not be zero"
   },
   "roles": {
     "CEO": "CEO",
@@ -1131,7 +1139,8 @@
       "showArchivedGroups": "Show archived groups",
       "hideArchivedGroups": "Hide archived groups",
       "paymentHistory": "Payment history",
-      "allGroups": "All groups"
+      "allGroups": "All groups",
+      "adjust": "Adjust balance"
     },
     "groupCard": {
       "grade": "Grade",
@@ -1203,6 +1212,10 @@
         "discount": {
           "give": "Discount given",
           "remove": "Discount removed"
+        },
+        "balance": {
+          "adjust": "Balance adjusted",
+          "adjustRemove": "Balance adjustment removed"
         }
       }
     },
@@ -1261,7 +1274,9 @@
       "group": "Group",
       "course": "Course",
       "status": "Status"
-    }
+    },
+    "importBalances": "Import opening balances",
+    "importBalancesHint": "One row per student and group with the balance they bring from the previous system: a debt is a negative number, money the student has is positive. Students are found by Kampus ID, phone or exact name; a preview shows the matches before anything is written."
   },
   "payments": {
     "pay": "Payment",
@@ -1328,6 +1343,34 @@
       "amount": "Amount",
       "printedAt": "Printed",
       "thanks": "Thank you for your payment!"
+    },
+    "adjust": {
+      "title": "Balance adjustment",
+      "hint": "Record the debt or credit a student brought from the old system, or correct a balance by hand. It counts in the balance like a payment and stays in the history.",
+      "group": "Group",
+      "direction": "Direction",
+      "debt": "Student owes",
+      "credit": "Student has credit",
+      "amount": "Amount",
+      "kind": "Type",
+      "date": "Date",
+      "comment": "Comment"
+    },
+    "adjustments": {
+      "title": "Opening balances and corrections",
+      "date": "Date",
+      "group": "Group",
+      "kind": "Type",
+      "amount": "Amount",
+      "comment": "Comment",
+      "by": "Recorded by",
+      "remove": "Remove",
+      "removeTitle": "Remove this adjustment?",
+      "removeText": "The student's balance moves back by this amount. The removal stays in the history.",
+      "kinds": {
+        "OPENING": "Opening balance",
+        "CORRECTION": "Correction"
+      }
     }
   },
   "discounts": {
@@ -2505,7 +2548,8 @@
         "VideoRoom": "Video lesson",
         "Homework": "Homework",
         "HomeworkSubmission": "Homework answer",
-        "LessonMaterial": "Lesson material"
+        "LessonMaterial": "Lesson material",
+        "BalanceAdjustment": "Balance adjustment"
       },
       "names": {
         "attendance": {
@@ -2766,6 +2810,10 @@
         "organization": {
           "create": "Organisation created",
           "update": "Organisation renamed"
+        },
+        "balance": {
+          "adjust": "Balance adjusted",
+          "adjustRemove": "Balance adjustment removed"
         }
       }
     }
@@ -2965,11 +3013,13 @@
       "graduates": "graduates",
       "leadsReport": "leads-report",
       "studentsReport": "students-report",
-      "statistics": "center-statistics"
+      "statistics": "center-statistics",
+      "balancesTemplate": "opening-balances-template"
     },
     "example": {
       "fullName": "<client name>",
-      "gender": "MALE"
+      "gender": "MALE",
+      "group": "<group name>"
     },
     "marks": {
       "present": "+",
@@ -3060,8 +3110,15 @@
       "advance": "Advance",
       "net": "Net",
       "gender": "Gender",
-      "birthDate": "Birth date"
-    }
+      "birthDate": "Birth date",
+      "studentId": "Kampus ID",
+      "date": "Date"
+    },
+    "preview": "Preview: {count} rows would be imported and {skipped} skipped. Nothing has been written yet.",
+    "previewButton": "Preview",
+    "confirmImport": "Import {count} rows",
+    "matchedRows": "Rows that will be imported",
+    "noHeader": "The header row was not recognised, so the template's column order was assumed."
   },
   "search": {
     "placeholder": "Search students, leads, groups…",

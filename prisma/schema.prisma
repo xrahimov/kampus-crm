@@ -59,7 +59,7 @@ model Branch {
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
 
-  organization   Organization      @relation(fields: [organizationId], references: [id])
+  organization   Organization        @relation(fields: [organizationId], references: [id])
   users          UserBranch[]
   sessions       Session[]
   auditLogs      AuditLog[]
@@ -76,6 +76,7 @@ model Branch {
   smsMessages    SmsMessage[]
   callLogs       CallLog[]
   staffCheckIns  StaffAttendance[]
+  adjustments    BalanceAdjustment[]
 
   @@index([organizationId])
 }
@@ -164,6 +165,7 @@ model User {
   homeworkSet       Homework[]           @relation("homeworkAuthor")
   homeworkChecked   HomeworkSubmission[] @relation("homeworkChecker")
   materialsAdded    LessonMaterial[]     @relation("materialAuthor")
+  adjustmentsMade   BalanceAdjustment[]  @relation("adjustmentAuthor")
 
   @@index([organizationId])
 }
@@ -649,6 +651,7 @@ model Student {
   callLogs       CallLog[]
   videoPeers     VideoParticipant[]
   telegramChats  StudentTelegramChat[]
+  adjustments    BalanceAdjustment[]
 
   @@index([branchId, isArchived])
   @@index([phone])
@@ -706,6 +709,7 @@ model GroupMembership {
   payments       Payment[]
   onlinePayments OnlinePayment[]
   homework       HomeworkSubmission[]
+  adjustments    BalanceAdjustment[]
 
   @@unique([groupId, studentId])
   @@index([studentId])
@@ -1024,6 +1028,37 @@ model Refund {
   refundedBy User?   @relation(fields: [refundedById], references: [id], onDelete: SetNull)
 
   @@index([paymentId])
+}
+
+/// Why a membership's balance was changed by hand (A-109).
+enum BalanceAdjustmentKind {
+  OPENING
+  CORRECTION
+}
+
+/// A signed amount added to a membership's balance beside payments and charges (A-109):
+/// the debt or credit a student brought over from the centre's previous system, or a correction.
+model BalanceAdjustment {
+  id           String                @id @default(cuid())
+  membershipId String
+  studentId    String
+  branchId     String
+  /// Positive = the student has money, negative = the student owes.
+  amount       Decimal               @db.Decimal(15, 2)
+  kind         BalanceAdjustmentKind @default(OPENING)
+  date         DateTime              @db.Date
+  comment      String?
+  createdById  String?
+  createdAt    DateTime              @default(now())
+
+  membership GroupMembership @relation(fields: [membershipId], references: [id], onDelete: Cascade)
+  student    Student         @relation(fields: [studentId], references: [id])
+  branch     Branch          @relation(fields: [branchId], references: [id])
+  createdBy  User?           @relation("adjustmentAuthor", fields: [createdById], references: [id], onDelete: SetNull)
+
+  @@index([membershipId])
+  @@index([studentId])
+  @@index([branchId, date])
 }
 
 enum ReceiptLogoPosition {

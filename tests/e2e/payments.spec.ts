@@ -1,4 +1,5 @@
 import { expect, test, type Page } from "@playwright/test";
+import ExcelJS from "exceljs";
 
 const CEO_PHONE = process.env.SEED_ADMIN_PHONE ?? "+998900000001";
 const PASSWORD = process.env.SEED_ADMIN_PASSWORD ?? "Kampus!2026";
@@ -96,5 +97,83 @@ test.describe("online payments", () => {
     await again.getByTestId("payme-save").click();
     await expect(again).toContainText("Saved");
     await ceoContext.close();
+  });
+});
+
+test.describe("opening balances", () => {
+  test("a cashier records an opening debt and sees it in the balance and the history", async ({
+    page,
+  }) => {
+    await signIn(page, CEO_PHONE);
+    const name = `E2E Opening ${Date.now()}`;
+    await page.goto("/en/students");
+    await page.getByTestId("add-button").click();
+    const dialog = page.getByTestId("student-dialog");
+    await expect(dialog).toBeVisible();
+    await dialog.getByLabel("Full name").fill(name);
+    await dialog.getByLabel("Phone").fill(`+99895${String(Date.now()).slice(-7)}`);
+    await dialog.getByTestId("section-group").click();
+    await dialog.getByLabel("Group", { exact: true }).click();
+    await page.getByRole("option", { name: /GE-Morning A1/ }).click();
+    await dialog.getByLabel("Joined the group on").fill("2026-10-01");
+    await dialog.getByRole("button", { name: "Save" }).click();
+    await expect(dialog).toBeHidden();
+    await expect(page).toHaveURL(/\/en\/students\/[a-z0-9]+/);
+    await expect(page.getByTestId("student-title")).toHaveText(name);
+
+    await page.getByTestId("adjust-student").click();
+    const adjust = page.getByTestId("adjustment-dialog");
+    await expect(adjust).toBeVisible();
+    await adjust.getByTestId("adjust-debt").click();
+    await adjust.getByTestId("adjust-amount").fill("250000");
+    await adjust.getByLabel("Comment").fill("Debt from the old CRM");
+    await adjust.getByRole("button", { name: "Save" }).click();
+    await expect(adjust).toBeHidden();
+
+    const row = page.getByTestId("adjustment-row");
+    await expect(row).toHaveCount(1);
+    await expect(row).toContainText("Opening balance");
+    await expect(row).toContainText("250");
+    await expect(row).toContainText("Debt from the old CRM");
+    await page.getByTestId("tab-history").click();
+    await expect(page.getByTestId("history-row").first()).toContainText("Balance adjusted");
+
+    // Removing it needs the refund permission, which the CEO has.
+    await page.getByTestId("remove-adjustment").click();
+    await page.getByRole("alertdialog").getByRole("button", { name: "Remove" }).click();
+    await expect(page.getByTestId("adjustment-row")).toHaveCount(0);
+  });
+
+  test("the opening-balance import previews before writing", async ({ page, request }) => {
+    await signIn(page, CEO_PHONE);
+    await page.goto("/en/students");
+    await page.getByTestId("students-import-balances").click();
+    const dialog = page.getByTestId("students-import-balances-dialog");
+    await expect(dialog).toBeVisible();
+    const templateHref = await dialog.getByTestId("import-template").getAttribute("href");
+    expect(templateHref).toContain("/api/v1/students/import-balances-template.xlsx");
+    const cookies = (await page.context().cookies()).map((c) => `${c.name}=${c.value}`).join("; ");
+    const template = await request.get(templateHref!, { headers: { cookie: cookies } });
+    expect(template.status()).toBe(200);
+    const workbook = new ExcelJS.Workbook();
+    await workbook.xlsx.load(Buffer.from(await template.body()) as unknown as ExcelJS.Buffer);
+    const sheet = workbook.worksheets[0]!;
+    expect(sheet.getRow(1).getCell(5).value).toBe("Balance");
+    sheet.spliceRows(2, 1);
+    // A seeded student of the demo branch and one nobody has.
+    sheet.addRow(["", "Nobody At All", "", "", "-1000", "", ""]);
+    sheet.addRow(["", "", "+998000000000", "", "-2000", "", ""]);
+    const buffer = Buffer.from(await workbook.xlsx.writeBuffer());
+    await dialog.getByTestId("import-file").setInputFiles({
+      name: "balances.xlsx",
+      mimeType: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+      buffer,
+    });
+    await expect(dialog.getByTestId("import-submit")).toHaveText("Preview");
+    await dialog.getByTestId("import-submit").click();
+    const preview = dialog.getByTestId("import-preview");
+    await expect(preview).toContainText("0 rows would be imported and 2 skipped");
+    await expect(preview).toContainText("Student not found");
+    await expect(dialog.getByTestId("import-submit")).toBeDisabled();
   });
 });
