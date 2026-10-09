@@ -1,6 +1,7 @@
 "use client";
 
 import {
+  CalendarCheck,
   ChartColumn,
   ClipboardCheck,
   Contact,
@@ -26,6 +27,7 @@ import { cn } from "@/lib/utils";
 
 const MODULE_PATH: Record<ModuleKey, string> = {
   dashboard: "/dashboard",
+  today: "/today",
   leads: "/leads",
   teachers: "/teachers",
   groups: "/groups",
@@ -39,6 +41,7 @@ const MODULE_PATH: Record<ModuleKey, string> = {
 
 const MODULE_ICON: Record<ModuleKey, LucideIcon> = {
   dashboard: House,
+  today: CalendarCheck,
   leads: Funnel,
   teachers: GraduationCap,
   groups: Users,

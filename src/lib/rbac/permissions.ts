@@ -85,6 +85,7 @@ export function isPermission(value: string): value is Permission {
 /** Modules as they appear in the main navigation (EXPLORATION.md §0). */
 export const MODULES = [
   "dashboard",
+  "today",
   "leads",
   "teachers",
   "groups",
@@ -100,6 +101,8 @@ export type ModuleKey = (typeof MODULES)[number];
 /** The permission that unlocks each navigation item. */
 export const MODULE_VIEW_PERMISSION: Record<ModuleKey, Permission> = {
   dashboard: "dashboard.view",
+  today: "groups.view",
+
   leads: "leads.view",
   teachers: "teachers.view",
   groups: "groups.view",

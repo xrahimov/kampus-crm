@@ -9,6 +9,7 @@ import {
   dashboardKpiSchema,
   scheduleSchema,
 } from "@/lib/validation/dashboard";
+import { redirect } from "@/i18n/navigation";
 import { requireCurrentUser } from "@/server/auth/current-user";
 import { can } from "@/server/rbac/authorize";
 import {
@@ -35,7 +36,11 @@ export default async function Page({
   const { locale } = await params;
   setRequestLocale(locale);
   const current = await requireCurrentUser();
-  if (!can(current.actor, "dashboard.view")) return <Forbidden />;
+  if (!can(current.actor, "dashboard.view")) {
+    // Teachers have no dashboard: their day lives on Today (A-113).
+    if (can(current.actor, "groups.view")) redirect({ href: "/today", locale });
+    return <Forbidden />;
+  }
   const sp = await searchParams;
   const kpiFilters = dashboardKpiSchema.safeParse({ branchId: str(sp.branchId) });
   const branchId = kpiFilters.success ? kpiFilters.data.branchId : undefined;

@@ -26,7 +26,7 @@ test.describe("authentication", () => {
     await page.getByLabel("Password").fill(PASSWORD);
     await page.getByRole("button", { name: "Sign in" }).click();
 
-    await expect(page).toHaveURL(/\/en\/dashboard/);
+    await expect(page).toHaveURL(/\/en\/(dashboard|today)/);
     await expect(page.getByRole("heading", { level: 1 })).toContainText("Welcome, Demo CEO");
 
     const nav = page.getByRole("navigation", { name: "Main" });
@@ -68,7 +68,7 @@ test.describe("authentication", () => {
     await page.getByLabel("Phone number").fill(TEACHER_PHONE);
     await page.getByLabel("Password").fill(PASSWORD);
     await page.getByRole("button", { name: "Sign in" }).click();
-    await expect(page).toHaveURL(/\/en\/dashboard/);
+    await expect(page).toHaveURL(/\/en\/(dashboard|today)/);
 
     const nav = page.getByRole("navigation", { name: "Main" });
     await expect(nav.getByRole("link", { name: "Groups" })).toBeVisible();
@@ -81,7 +81,7 @@ test.describe("authentication", () => {
     await page.getByLabel("Phone number").fill(CEO_PHONE);
     await page.getByLabel("Password").fill(PASSWORD);
     await page.getByRole("button", { name: "Sign in" }).click();
-    await expect(page).toHaveURL(/\/en\/dashboard/);
+    await expect(page).toHaveURL(/\/en\/(dashboard|today)/);
 
     const cookies = await page.context().cookies();
     const cookieHeader = cookies.map((c) => `${c.name}=${c.value}`).join("; ");

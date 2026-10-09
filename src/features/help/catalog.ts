@@ -21,6 +21,7 @@ export type HelpAudience = (typeof HELP_AUDIENCES)[number];
 export const HELP_ARTICLE_IDS = [
   "gettingStarted",
   "dashboard",
+  "today",
   "leads",
   "groups",
   "teaching",
@@ -122,6 +123,14 @@ export const HELP_ARTICLES = [
       { id: "tabs" },
       { id: "changes" },
     ],
+  },
+  {
+    id: "today",
+    slug: "today",
+    audiences: ["TEACHER", "BRANCH_MANAGER", "ADMIN"],
+    permission: "groups.view",
+    path: "/today",
+    sections: [{ id: "day" }, { id: "attendance" }, { id: "homework" }, { id: "install" }],
   },
   {
     id: "teaching",

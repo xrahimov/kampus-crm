@@ -39,6 +39,7 @@
   },
   "nav": {
     "dashboard": "Home",
+    "today": "Today",
     "leads": "Leads",
     "teachers": "Teachers",
     "groups": "Groups",
@@ -107,6 +108,56 @@
       "month": "Month",
       "wholeYear": "Whole year",
       "method": "Payment type"
+    }
+  },
+  "today": {
+    "title": "Today",
+    "todayWord": "today",
+    "subtitle": "{date}. Your lessons, attendance and homework in one place, {name}.",
+    "prevDay": "Previous day",
+    "nextDay": "Next day",
+    "backToToday": "Back to today",
+    "lessons": {
+      "empty": "No lessons on this day.",
+      "emptyHint": "Pick another day with the arrows, or open Groups for the full schedule."
+    },
+    "lesson": {
+      "extra": "Extra lesson",
+      "noRoom": "No room"
+    },
+    "attendance": {
+      "summary": "{marked} of {total} marked · {present} present",
+      "allPresent": "All present",
+      "noStudents": "No students in this group yet.",
+      "tap": "Tap a name: present, absent, excused, clear."
+    },
+    "homework": {
+      "title": "Homework",
+      "none": "No homework for this lesson yet.",
+      "set": "Set homework",
+      "text": "What to do",
+      "due": "Due",
+      "save": "Save",
+      "cancel": "Cancel",
+      "submitted": "{count, plural, =0 {no answers yet} one {# answer} other {# answers}}",
+      "toCheck": "{count} to check",
+      "open": "Open in the group"
+    },
+    "next": {
+      "title": "Next lesson",
+      "none": "No more lessons scheduled.",
+      "at": "{date}, {time}"
+    },
+    "debtors": {
+      "title": "Debtors in your groups",
+      "none": "Nobody in your groups owes anything.",
+      "summary": "{count, plural, one {# student owes} other {# students owe}} {amount} in total.",
+      "more": "and {count} more",
+      "hint": "A friendly word after the lesson helps; the office takes the payment."
+    },
+    "install": {
+      "title": "Kampus on your phone",
+      "text": "In Chrome choose “Install app” or “Add to Home screen” from the menu; on an iPhone tap Share in Safari, then “Add to Home Screen”. Kampus then opens full-screen like an app."
     }
   },
   "errors": {

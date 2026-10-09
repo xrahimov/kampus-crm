@@ -2,6 +2,7 @@
 
 import {
   BookOpen,
+  CalendarCheck,
   ChartColumn,
   ClipboardCheck,
   Contact,
@@ -41,6 +42,7 @@ import { searchHelp } from "./search";
 const ARTICLE_ICON: Record<HelpArticleId, LucideIcon> = {
   gettingStarted: Sparkles,
   dashboard: House,
+  today: CalendarCheck,
   leads: Funnel,
   groups: Users,
   teaching: BookOpen,
