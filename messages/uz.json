@@ -1670,6 +1670,20 @@
         "note": "Izoh",
         "hint": "Foiz oila a‘zolarining barcha guruhlari oylik narxidan keyingi hisoblanadigan oydan boshlab chegiriladi; 0 bog‘lanishni chegirmasiz qoldiradi.",
         "linkHint": "Aka-uka yoki opa-singilni tanlang. Ulardan birida oila bo‘lsa, ikkinchisi unga qo‘shiladi."
+      },
+      "page": {
+        "button": "Ota-onalar sahifasi",
+        "title": "Ota-onalar sahifasi",
+        "hint": "Butun oila uchun bir havola: har bir farzand, guruhlari, keyingi darslar va balanslar, orqasida har bir farzandning o‘z sahifasi.",
+        "none": "Avval aka-uka yoki opa-singilni bog‘lang: ota-onalar sahifasi oilaning hamma farzandini ko‘rsatadi.",
+        "copy": "Havolani nusxalash",
+        "copied": "Nusxalandi",
+        "reset": "Yangi havola",
+        "resetHint": "Eski havola darhol ishlamay qoladi.",
+        "sms": "Ota-onalarga SMS yuborish",
+        "smsSent": "{count} ta raqamga yuborildi",
+        "smsNone": "Bu talabada ota-ona telefoni yo‘q.",
+        "smsText": "Farzandlaringiz sahifasi: {url}"
       }
     }
   },
@@ -4202,6 +4216,21 @@
       "empty": "Hali yangilik yo‘q.",
       "from": "{from}dan",
       "new": "Yangi"
+    },
+    "family": {
+      "title": "{name}: farzandlaringiz",
+      "description": "{centre}dagi har bir farzandning guruhlari va har birining o‘z sahifasi bir bosishda.",
+      "noChildren": "Bu sahifada hali farzand yo‘q.",
+      "noGroups": "Hozir guruhda emas.",
+      "news": "{count} ta yangi e‘lon",
+      "teachers": "O‘qituvchi: {names}",
+      "nextLesson": "Keyingi dars: {when}, {time}",
+      "noLesson": "Dars rejalashtirilmagan.",
+      "debt": "Qarz: {amount}",
+      "balance": "Balans: {amount}",
+      "nextPayment": "keyingi to‘lov {date}",
+      "open": "Sahifani ochish",
+      "footer": "Bu sahifa faqat oilangiz uchun. Havolani boshqalarga bermang; tarqalsa markaz yangisini beradi."
     }
   },
   "telegramBot": {

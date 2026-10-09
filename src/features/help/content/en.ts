@@ -1102,6 +1102,15 @@ export const en: HelpContent = {
             },
           ],
         },
+        family: {
+          title: "One page for the whole family",
+          body: [
+            "Parents with two or three children at the centre can ask for a **parents' page**: one link that lists every child, their groups, the next lesson, the balance and any unread notices, with an **Open page** button into each child's own page. The centre makes the link from any of the children's cards and sends it by SMS or hands it over.",
+            {
+              note: "The family link shows your children's marks and payments, so keep it to yourselves. If it gets out, the centre issues a new one and the old one stops working.",
+            },
+          ],
+        },
         lesson: {
           title: "Joining a video lesson",
           body: [

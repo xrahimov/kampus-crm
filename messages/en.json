@@ -1670,6 +1670,20 @@
         "note": "Note",
         "hint": "The percent comes off the monthly price of every member's groups from the next charged month; 0 keeps the link without a discount.",
         "linkHint": "Pick the brother or sister. If either student already has a family, the other joins it."
+      },
+      "page": {
+        "button": "Parents' page",
+        "title": "Parents' page",
+        "hint": "One link for the whole family: every child, their groups, next lessons and balances, with each child's own page behind it.",
+        "none": "Link a sibling first; the parents' page lists every child of the family.",
+        "copy": "Copy link",
+        "copied": "Copied",
+        "reset": "New link",
+        "resetHint": "The old link stops working at once.",
+        "sms": "Send to parents by SMS",
+        "smsSent": "Sent to {count, plural, one {# phone} other {# phones}}",
+        "smsNone": "This student has no parent phone numbers.",
+        "smsText": "Your children's page: {url}"
       }
     }
   },
@@ -4202,6 +4216,21 @@
       "empty": "No news yet.",
       "from": "From {from}",
       "new": "New"
+    },
+    "family": {
+      "title": "{name}: your children",
+      "description": "Every child's groups at {centre}, with each child's own page one tap away.",
+      "noChildren": "No children are listed on this page yet.",
+      "noGroups": "Not in a group right now.",
+      "news": "{count, plural, one {# new notice} other {# new notices}}",
+      "teachers": "Teacher: {names}",
+      "nextLesson": "Next lesson: {when}, {time}",
+      "noLesson": "No lesson scheduled.",
+      "debt": "Debt: {amount}",
+      "balance": "Balance: {amount}",
+      "nextPayment": "next payment {date}",
+      "open": "Open page",
+      "footer": "This page is for your family only. Keep the link to yourselves; the centre can issue a new one if it gets out."
     }
   },
   "telegramBot": {

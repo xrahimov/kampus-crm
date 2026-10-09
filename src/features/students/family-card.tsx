@@ -1,6 +1,6 @@
 "use client";
 
-import { Pencil, UserMinus, UserPlus, Users } from "lucide-react";
+import { Link2, Pencil, UserMinus, UserPlus, Users } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useState } from "react";
 
@@ -16,6 +16,7 @@ import { Link } from "@/i18n/navigation";
 import { api, ApiError } from "@/lib/api-client";
 import type { FamilyDto } from "@/server/services/students/families.service";
 
+import { FamilyPortalDialog } from "./family-portal-dialog";
 import { StudentPicker } from "./student-picker";
 
 /** "Oila" (A-123): the siblings linked to this student and their shared discount. */
@@ -24,16 +25,19 @@ export function FamilyCard({
   family,
   canEdit,
   canDiscount,
+  canSms = false,
   onChanged,
 }: {
   student: { id: string; fullName: string };
   family: FamilyDto | null;
   canEdit: boolean;
   canDiscount: boolean;
+  /** May text the parents' page link to the parents (A-130). */
+  canSms?: boolean;
   onChanged: () => void;
 }) {
   const t = useTranslations("students.family");
-  const [dialog, setDialog] = useState<null | "link" | "edit" | "unlink">(null);
+  const [dialog, setDialog] = useState<null | "link" | "edit" | "unlink" | "portal">(null);
   const close = () => setDialog(null);
 
   return (
@@ -84,6 +88,16 @@ export function FamilyCard({
           </>
         ) : (
           <p className="text-sm text-muted-foreground">{t("none")}</p>
+        )}
+        {family && (
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setDialog("portal")}
+            data-testid="family-portal"
+          >
+            <Link2 /> {t("page.button")}
+          </Button>
         )}
         {canEdit && (
           <div className="flex flex-wrap gap-2">
@@ -137,6 +151,13 @@ export function FamilyCard({
           onSaved={onChanged}
         />
       )}
+      <FamilyPortalDialog
+        open={dialog === "portal"}
+        onOpenChange={(open) => !open && close()}
+        studentId={student.id}
+        canReset={canEdit}
+        canSms={canSms}
+      />
       <ConfirmDialog
         open={dialog === "unlink"}
         onOpenChange={(open) => !open && close()}

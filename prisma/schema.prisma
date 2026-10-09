@@ -2419,6 +2419,8 @@ model Family {
   /// Percent off the monthly price of every member's groups; 0 keeps the link without a discount.
   discountPercent Int      @default(0)
   note            String?
+  /// The parents' page link (A-130): one page listing every child's groups, made on first use.
+  portalToken     String?  @unique
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
 

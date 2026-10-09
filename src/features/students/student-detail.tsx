@@ -336,6 +336,7 @@ export function StudentDetail({
             family={family}
             canEdit={can.update && !student.isArchived}
             canDiscount={can.discounts}
+            canSms={can.sms && !student.isArchived}
             onChanged={refresh}
           />
 
