@@ -8,6 +8,7 @@ import { EmptyState } from "@/components/data/empty-state";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { Label } from "@/components/ui/label";
 import {
   Table,
   TableBody,
@@ -16,15 +17,29 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { Textarea } from "@/components/ui/textarea";
 import { useRouter } from "@/i18n/navigation";
+import { api } from "@/lib/api-client";
+import { useDateFormat } from "@/lib/use-date-format";
 import type { OrganizationDto } from "@/server/services/settings/organizations.service";
 import type { SystemStatusDto } from "@/server/services/system/monitoring.service";
 
+import { FormDialog } from "../shared/form-dialog";
 import { RowActions } from "../shared/row-actions";
 import { OrganizationDialog } from "./organization-dialog";
 import { ServerStatus } from "./server-status";
 
-/** Site owner's list of the centres this server hosts (A-108) and the server's status (A-134). */
+function formatBytes(bytes: number): string {
+  if (bytes >= 1024 ** 3) return `${(bytes / 1024 ** 3).toFixed(1)} GB`;
+  if (bytes >= 1024 ** 2) return `${Math.round(bytes / 1024 ** 2)} MB`;
+  if (bytes >= 1024) return `${Math.round(bytes / 1024)} KB`;
+  return bytes === 0 ? "0" : `${bytes} B`;
+}
+
+/**
+ * Site owner's console (A-108, A-144): the centres this server hosts with their
+ * usage, the suspend switch and the data export, plus the server's status (A-134).
+ */
 export function OrganizationsPage({
   organizations,
   ownId,
@@ -43,6 +58,30 @@ export function OrganizationsPage({
     organization: null,
   });
   const refresh = () => startTransition(() => router.refresh());
+  const fmt = useDateFormat();
+  const [suspending, setSuspending] = useState<OrganizationDto | null>(null);
+  const [reason, setReason] = useState("");
+  const [suspendBusy, setSuspendBusy] = useState(false);
+  const [suspendError, setSuspendError] = useState<string | null>(null);
+
+  async function toggleSuspended() {
+    if (!suspending) return;
+    setSuspendBusy(true);
+    setSuspendError(null);
+    try {
+      await api(`/organizations/${suspending.id}/suspend`, {
+        method: "POST",
+        body: { suspended: !suspending.suspendedAt, reason: reason || undefined },
+      });
+      setSuspending(null);
+      setReason("");
+      refresh();
+    } catch (e) {
+      setSuspendError(e instanceof Error ? e.message : "errors.internal");
+    } finally {
+      setSuspendBusy(false);
+    }
+  }
 
   return (
     <div className="space-y-4">
@@ -72,6 +111,10 @@ export function OrganizationsPage({
                 <TableHead>{t("ceo")}</TableHead>
                 <TableHead className="text-right">{t("staffCount")}</TableHead>
                 <TableHead className="text-right">{t("studentsCount")}</TableHead>
+                <TableHead className="text-right">{t("groupsCount")}</TableHead>
+                <TableHead className="text-right">{t("storage")}</TableHead>
+                <TableHead>{t("lastSignIn")}</TableHead>
+                <TableHead>{t("integrations")}</TableHead>
                 <TableHead className="w-12" />
               </TableRow>
             </TableHeader>
@@ -83,6 +126,16 @@ export function OrganizationsPage({
                     {org.id === ownId && (
                       <Badge variant="secondary" className="ml-2">
                         {t("yours")}
+                      </Badge>
+                    )}
+                    {org.suspendedAt && (
+                      <Badge
+                        variant="destructive"
+                        className="ml-2"
+                        title={org.suspendedReason ?? undefined}
+                        data-testid="organization-suspended"
+                      >
+                        {t("suspended")}
                       </Badge>
                     )}
                   </TableCell>
@@ -120,11 +173,70 @@ export function OrganizationsPage({
                     )}
                   </TableCell>
                   <TableCell className="text-right tabular-nums">{org.staffCount}</TableCell>
-                  <TableCell className="text-right tabular-nums">{org.studentsCount}</TableCell>
+                  <TableCell
+                    className="text-right tabular-nums"
+                    data-testid="organization-students"
+                  >
+                    {org.studentsCount}
+                    {org.archivedStudentsCount > 0 && (
+                      <span className="text-xs text-muted-foreground">
+                        {" "}
+                        {t("archivedCount", { count: org.archivedStudentsCount })}
+                      </span>
+                    )}
+                  </TableCell>
+                  <TableCell className="text-right tabular-nums">{org.groupsCount}</TableCell>
+                  <TableCell className="text-right tabular-nums" data-testid="organization-storage">
+                    {formatBytes(org.storageBytes)}
+                  </TableCell>
+                  <TableCell
+                    className="text-muted-foreground"
+                    data-testid="organization-last-sign-in"
+                  >
+                    {org.lastSignInAt
+                      ? fmt(new Date(org.lastSignInAt), { dateStyle: "medium", timeStyle: "short" })
+                      : t("never")}
+                  </TableCell>
+                  <TableCell>
+                    {org.integrations.length === 0 ? (
+                      <span className="text-muted-foreground">—</span>
+                    ) : (
+                      <div className="flex flex-wrap gap-1">
+                        {org.integrations.map((p) => (
+                          <Badge key={p} variant="outline">
+                            {tc.has(`integrations.providers.${p}`)
+                              ? tc(`integrations.providers.${p}`)
+                              : p}
+                          </Badge>
+                        ))}
+                      </div>
+                    )}
+                  </TableCell>
                   <TableCell>
                     <RowActions
                       name={org.name}
                       onEdit={() => setDialog({ open: true, organization: org })}
+                      extra={[
+                        {
+                          label: t("export"),
+                          onSelect: () =>
+                            window.open(`/api/v1/organizations/${org.id}/export`, "_blank"),
+                          testId: "organization-export",
+                        },
+                        ...(org.id === ownId
+                          ? []
+                          : [
+                              {
+                                label: org.suspendedAt ? t("resume") : t("suspend"),
+                                onSelect: () => {
+                                  setReason("");
+                                  setSuspendError(null);
+                                  setSuspending(org);
+                                },
+                                testId: "organization-suspend",
+                              },
+                            ]),
+                      ]}
                     />
                   </TableCell>
                 </TableRow>
@@ -133,6 +245,34 @@ export function OrganizationsPage({
           </Table>
         )}
       </Card>
+      <FormDialog
+        open={!!suspending}
+        onOpenChange={(open) => !open && setSuspending(null)}
+        title={suspending?.suspendedAt ? t("resumeTitle") : t("suspendTitle")}
+        description={
+          suspending?.suspendedAt
+            ? t("resumeText", { name: suspending?.name ?? "" })
+            : t("suspendText", { name: suspending?.name ?? "" })
+        }
+        onSubmit={toggleSuspended}
+        submitting={suspendBusy}
+        error={suspendError}
+        submitLabel={suspending?.suspendedAt ? t("resume") : t("suspend")}
+        testId="organization-suspend-dialog"
+      >
+        {!suspending?.suspendedAt && (
+          <div className="space-y-2">
+            <Label htmlFor="suspend-reason">{t("reason")}</Label>
+            <Textarea
+              id="suspend-reason"
+              value={reason}
+              onChange={(e) => setReason(e.target.value)}
+              rows={2}
+              maxLength={300}
+            />
+          </div>
+        )}
+      </FormDialog>
       <OrganizationDialog
         open={dialog.open}
         onOpenChange={(open) => setDialog((d) => ({ ...d, open }))}

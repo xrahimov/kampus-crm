@@ -453,6 +453,8 @@
     "importGroupMissing": "Bu filialda shunday nomli guruh yo‘q",
     "importPaymentExists": "Bu to‘lov o‘quvchi tarixida allaqachon bor",
     "soffKindMismatch": "Fayl bu import kutgan eksport emas",
+    "organizationSuspended": "Bu markaz to‘xtatilgan. Server egasiga murojaat qiling.",
+    "ownOrganization": "O‘z markazingizni to‘xtata olmaysiz.",
     "debtCaseClosed": "Bu qarz allaqachon yopilgan.",
     "scheduleClash": "Bu vaqtda xona yoki o‘qituvchi band.",
     "familyOther": "Bu o‘quvchi allaqachon boshqa oilada.",
@@ -980,7 +982,22 @@
       "ceoPasswordHint": "Kamida 8 ta belgi. Rahbarga shaxsan ayting; u boshqa ko‘rsatilmaydi.",
       "staffCount": "Xodimlar",
       "studentsCount": "O‘quvchilar",
-      "yours": "sizniki"
+      "yours": "sizniki",
+      "groupsCount": "Guruhlar",
+      "archivedCount": "(+{count} arxivda)",
+      "storage": "Fayllar",
+      "lastSignIn": "Oxirgi kirish",
+      "never": "hech qachon",
+      "integrations": "Integratsiyalar",
+      "suspended": "To‘xtatilgan",
+      "suspend": "To‘xtatish",
+      "resume": "Davom ettirish",
+      "suspendTitle": "Bu markaz to‘xtatilsinmi?",
+      "suspendText": "To‘xtatilgan vaqtda “{name}” dan hech kim kira olmaydi va kirganlar chiqariladi. Ma‘lumotlari o‘z joyida qoladi; Davom ettirish ularni qaytaradi.",
+      "resumeTitle": "Bu markaz davom ettirilsinmi?",
+      "resumeText": "“{name}” odamlari yana kira oladi.",
+      "reason": "Sabab (faqat sizga ko‘rinadi)",
+      "export": "Ma‘lumotlarni eksport qilish"
     },
     "system": {
       "title": "Server holati",
@@ -4118,7 +4135,10 @@
         },
         "organization": {
           "create": "Tashkilot yaratildi",
-          "update": "Tashkilot nomi o‘zgartirildi"
+          "update": "Tashkilot nomi o‘zgartirildi",
+          "suspend": "Markaz to‘xtatildi",
+          "resume": "Markaz davom ettirildi",
+          "export": "Markaz ma‘lumotlari eksport qilindi"
         },
         "balance": {
           "adjust": "Qoldiq to'g'rilandi",

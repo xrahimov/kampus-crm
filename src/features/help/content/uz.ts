@@ -1135,6 +1135,12 @@ export const uz: HelpContent = {
             },
           ],
         },
+        console: {
+          title: "Foydalanish, to‘xtatish va eksport",
+          body: [
+            "Sozlamalar → Tashkilotlar har bir markaz uchun xodimlar, o‘quvchilar (faol va arxivdagi) va guruhlar sonini, yuklangan fayllari qancha joy olishini, undan oxirgi marta kim qachon kirganini va qaysi integratsiyalar yoqilganini ko‘rsatadi. Qator menyusida **Ma‘lumotlarni eksport qilish** bor: markazning barcha yozuvlari (filiallar, parolsiz xodimlar, kurslar, guruhlar, o‘quvchilar, to‘lovlar, davomat, baholar, lidlar, moliya va boshqalar) bitta JSON fayl bo‘lib, markaz egasi saqlab qo‘yishi yoki boshqa joyga ko‘chirishi uchun. **To‘xtatish** markazni yopadi: undan hech kim kira olmaydi, kirganlar chiqariladi, ma‘lumotlari **Davom ettirish** bosilguncha o‘z joyida qoladi. O‘z markazingizni to‘xtata olmaysiz. Ikkala amal ham harakatlar jurnaliga yoziladi.",
+          ],
+        },
         afterwards: {
           title: "Keyin",
           body: [

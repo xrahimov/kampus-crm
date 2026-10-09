@@ -95,6 +95,15 @@ export class LocalStorage implements Storage {
     return { key, contentType, size };
   }
 
+  async size(key: string): Promise<number | null> {
+    if (!STORAGE_KEY_PATTERN.test(key)) return null;
+    try {
+      return (await stat(this.resolve(key))).size;
+    } catch {
+      return null;
+    }
+  }
+
   async delete(key: string): Promise<void> {
     if (!STORAGE_KEY_PATTERN.test(key)) return;
     await rm(this.resolve(key), { force: true });

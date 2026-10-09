@@ -34,6 +34,8 @@ export interface Storage {
   get(key: string): Promise<{ data: Uint8Array; contentType: string } | null>;
   /** Removes a file; a missing key is not an error. */
   delete(key: string): Promise<void>;
+  /** The file's size in bytes, or null when the key does not exist. */
+  size(key: string): Promise<number | null>;
   /** A byte range of the file for streaming playback; null when the key does not exist. */
   getRange(key: string, start?: number, end?: number): Promise<StoredRange | null>;
 }

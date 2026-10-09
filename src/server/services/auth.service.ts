@@ -61,6 +61,7 @@ export async function login(
     include: {
       branches: { select: { branchId: true } },
       botRecipient: { select: { chatId: true } },
+      organization: { select: { suspendedAt: true } },
     },
   });
 
@@ -81,6 +82,11 @@ export async function login(
   }
 
   await clearLoginFailures(db, keys);
+
+  // A suspended centre (A-144) keeps everyone but the site owner out, with a clear message.
+  if (user.organization.suspendedAt && !user.isSiteOwner) {
+    throw AppError.forbidden("errors.organizationSuspended");
+  }
 
   // Default to the user's only branch; users with several pick one in the header.
   const activeBranchId = user.branches.length === 1 ? user.branches[0]!.branchId : null;

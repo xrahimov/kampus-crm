@@ -175,6 +175,12 @@ export const domainFieldSchema = z
   .refine((value) => value === "" || HOSTNAME.test(value), "validation.domain");
 export const organizationUpdateSchema = z.object({ name, domain: domainSchema });
 export type OrganizationUpdateInput = z.infer<typeof organizationUpdateSchema>;
+/** Site owner's suspend / resume of a centre (A-144). */
+export const organizationSuspendSchema = z.object({
+  suspended: z.boolean(),
+  reason: z.string().trim().max(300, "validation.tooLong").optional(),
+});
+export type OrganizationSuspendInput = z.infer<typeof organizationSuspendSchema>;
 
 // --- Payment methods ----------------------------------------------------------
 
