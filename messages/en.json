@@ -337,7 +337,8 @@
     "homeworkEmpty": "Write an answer or attach a file.",
     "botUsername": "Letters, digits and underscores only.",
     "recordingSize": "The recording must be 400 MB or smaller.",
-    "nonZero": "Must not be zero"
+    "nonZero": "Must not be zero",
+    "lessonExists": "There is already a lesson at this time."
   },
   "roles": {
     "CEO": "CEO",
@@ -502,7 +503,8 @@
       "date": "Date",
       "reason": "Reason",
       "deleteTitle": "Delete day off?",
-      "deleteText": "{date} will be removed."
+      "deleteText": "{date} will be removed.",
+      "notify": "Tell the students and parents of that day's groups (Telegram and SMS)"
     },
     "schools": {
       "title": "Schools",
@@ -912,7 +914,7 @@
       "incomingTeacher": "New teacher",
       "noCandidates": "No one available",
       "dayOff": "Give a day off",
-      "dayOffHint": "The group skips this day; an unmarked lesson on it is removed.",
+      "dayOffHint": "The group skips this day: the unmarked lesson is removed, or moved if you pick a new time. Students and parents can be told at once.",
       "date": "Date",
       "reason": "Reason",
       "laterPhase": "Arrives in phase {phase}",
@@ -930,7 +932,13 @@
         "homework": "Homework",
         "materials": "Materials"
       },
-      "changeTeacherHint": "The new teacher's share counts from today."
+      "changeTeacherHint": "The new teacher's share counts from today.",
+      "notify": "Tell the students and parents (Telegram and SMS)",
+      "moveLesson": "Move the lesson to another time instead",
+      "newDate": "New date",
+      "newStart": "Start",
+      "newEnd": "End",
+      "movedTo": "moved to {date}, {start}–{end}"
     },
     "attendance": {
       "PRESENT": "Present",
@@ -945,7 +953,13 @@
       "topics": "Topic",
       "setTopic": "Lesson topic",
       "topic": "Topic",
-      "attachment": "Attachment link"
+      "attachment": "Attachment link",
+      "changes": "Cancelled and moved lessons",
+      "cancelled": "{date}: cancelled — {reason}",
+      "moved": "{date}: moved to {newDate}, {start}–{end} — {reason}",
+      "holiday": "{date}: branch holiday — {reason}",
+      "undo": "Undo",
+      "movedFrom": "Moved from {date}"
     },
     "grades": {
       "system": "Grading",
@@ -1024,7 +1038,8 @@
         "changeTeacher": "Teacher changed",
         "supportTeachers": "Support teachers changed",
         "dayOff": "Day off given",
-        "note": "Note added"
+        "note": "Note added",
+        "dayOffRemove": "Day off undone"
       }
     },
     "homework": {
@@ -2588,7 +2603,10 @@
       "DEBTOR": "Debtor warning",
       "GRADES": "Grades",
       "DAY_BEFORE_FIRST_LESSON": "Day before the first lesson",
-      "ADDED_TO_GROUP": "Added to a group"
+      "ADDED_TO_GROUP": "Added to a group",
+      "LESSON_CANCELLED": "Lesson cancelled",
+      "LESSON_MOVED": "Lesson moved",
+      "LESSON_RESTORED": "Cancelled lesson back on"
     },
     "variables": {
       "studentName": "Student name",
@@ -2597,7 +2615,11 @@
       "amount": "Amount",
       "debt": "Debt",
       "score": "Score",
-      "centerName": "Center name"
+      "centerName": "Center name",
+      "time": "Lesson time",
+      "newDate": "New date",
+      "newTime": "New time",
+      "reason": "Reason"
     },
     "studentTab": {
       "title": "SMS sent to the student",
@@ -2834,7 +2856,8 @@
           "supportTeachers": "Support teachers changed",
           "moveBranch": "Group moved to another branch",
           "dayOff": "Group day off set",
-          "note": "Group note added"
+          "note": "Group note added",
+          "dayOffRemove": "Group day off undone"
         },
         "integration": {
           "update": "Integration settings updated"
@@ -3520,7 +3543,10 @@
     "homeworkReturned": "{group}: your homework for the lesson of {date} was returned, please look at it again.{comment}",
     "debtor": "{group}: your balance is {debt} short. Please pay at the learning centre.",
     "materialAdded": "{group}: new {kind, select, RECORDING {lesson recording} LINK {link} other {file}}: {title}. Open your page: {link}",
-    "paymentReceived": "{group}: your payment of {amount} so'm was received. Thank you!"
+    "paymentReceived": "{group}: your payment of {amount} so'm was received. Thank you!",
+    "lessonCancelled": "{group}: the lesson on {date}{time, select, none {} other { at {time}}} is cancelled. {reason}",
+    "lessonMoved": "{group}: the lesson on {date}{time, select, none {} other { at {time}}} moves to {newDate}, {newTime}. {reason}",
+    "lessonRestored": "{group}: the lesson on {date}{time, select, none {} other { at {time}}} takes place after all."
   },
   "video": {
     "title": "Video lesson",

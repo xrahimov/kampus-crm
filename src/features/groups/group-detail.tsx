@@ -34,8 +34,8 @@ import { parseDateOnly } from "@/lib/dates";
 import type { Page } from "@/lib/validation/common";
 import { useDateFormat } from "@/lib/use-date-format";
 import { useMoneyFormat } from "@/lib/use-money-format";
+import type { GroupDayOffDto } from "@/server/services/groups/day-off.service";
 import type {
-  GroupDayOffDto,
   GroupDto,
   GroupHistoryDto,
   GroupNoteDto,
@@ -358,7 +358,19 @@ export function GroupDetail({
                     {daysOff.map((d) => (
                       <li key={d.id} className="flex justify-between gap-2">
                         <span>{date(d.date)}</span>
-                        <span className="text-muted-foreground">{d.reason}</span>
+                        <span className="text-right text-muted-foreground">
+                          {d.reason}
+                          {d.movedTo && (
+                            <>
+                              {" · "}
+                              {td("movedTo", {
+                                date: date(d.movedTo.date),
+                                start: d.movedTo.startTime,
+                                end: d.movedTo.endTime,
+                              })}
+                            </>
+                          )}
+                        </span>
                       </li>
                     ))}
                   </ul>

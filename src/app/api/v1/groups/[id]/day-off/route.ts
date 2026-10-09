@@ -1,6 +1,6 @@
 import { groupDayOffSchema } from "@/lib/validation/groups";
 import { json, route } from "@/server/http/handler";
-import { addGroupDayOff, listGroupDaysOff } from "@/server/services/groups/groups.service";
+import { addGroupDayOff, listGroupDaysOff } from "@/server/services/groups/day-off.service";
 
 type Params = { id: string };
 

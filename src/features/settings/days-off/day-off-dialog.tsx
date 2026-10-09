@@ -9,6 +9,7 @@ import type { z } from "zod";
 import { FieldError } from "@/components/data/field-error";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { api } from "@/lib/api-client";
 import { applyApiError } from "@/lib/api-errors";
@@ -40,15 +41,15 @@ export function DayOffDialog({
   const [error, setError] = useState<string | null>(null);
   const form = useForm<Input, unknown, Output>({
     resolver: zodResolver(dayOffSchema),
-    defaultValues: { branchId: defaultBranchId, date: "", reason: "" },
+    defaultValues: { branchId: defaultBranchId, date: "", reason: "", notify: true },
   });
 
   useEffect(() => {
     if (!open) return;
     form.reset(
       dayOff
-        ? { branchId: dayOff.branchId, date: dayOff.date, reason: dayOff.reason }
-        : { branchId: defaultBranchId, date: "", reason: "" },
+        ? { branchId: dayOff.branchId, date: dayOff.date, reason: dayOff.reason, notify: true }
+        : { branchId: defaultBranchId, date: "", reason: "", notify: true },
     );
   }, [open, dayOff, defaultBranchId, form]);
 
@@ -111,6 +112,22 @@ export function DayOffDialog({
         <Textarea id="day-off-reason" aria-invalid={!!errors.reason} {...form.register("reason")} />
         <FieldError id="day-off-reason-error" message={errors.reason?.message} />
       </div>
+      {!dayOff && (
+        <Controller
+          control={form.control}
+          name="notify"
+          render={({ field }) => (
+            <div className="flex items-center gap-2">
+              <Switch
+                id="day-off-notify"
+                checked={!!field.value}
+                onCheckedChange={field.onChange}
+              />
+              <Label htmlFor="day-off-notify">{t("notify")}</Label>
+            </div>
+          )}
+        />
+      )}
     </FormDialog>
   );
 }

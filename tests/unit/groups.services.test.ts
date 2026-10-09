@@ -7,8 +7,8 @@ import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { DEFAULT_ROLE_PERMISSIONS } from "@/lib/rbac/default-roles";
 import { prisma } from "@/server/db/prisma";
 import type { Actor } from "@/server/rbac/authorize";
+import { addGroupDayOff } from "@/server/services/groups/day-off.service";
 import {
-  addGroupDayOff,
   addGroupNote,
   changeGroupTeacher,
   createGroup,
@@ -439,14 +439,14 @@ describe("groups", () => {
     });
 
     it("records a group day off and drops that day's unmarked lesson (A-53)", async () => {
-      await addGroupDayOff(ceo, groupId, { date: "2026-09-07", reason: "Open day" });
+      await addGroupDayOff(ceo, groupId, { date: "2026-09-07", reason: "Open day", notify: false });
       expect(
         await prisma.lesson.count({
           where: { groupId, date: new Date("2026-09-07T00:00:00.000Z") },
         }),
       ).toBe(0);
       await expect(
-        addGroupDayOff(ceo, groupId, { date: "2026-09-07", reason: "Again" }),
+        addGroupDayOff(ceo, groupId, { date: "2026-09-07", reason: "Again", notify: false }),
       ).rejects.toMatchObject({
         code: "VALIDATION",
       });

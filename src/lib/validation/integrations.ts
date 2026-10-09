@@ -40,6 +40,9 @@ export const AUTO_SMS_EVENTS = [
   "GRADES",
   "DAY_BEFORE_FIRST_LESSON",
   "ADDED_TO_GROUP",
+  "LESSON_CANCELLED",
+  "LESSON_MOVED",
+  "LESSON_RESTORED",
 ] as const;
 export type AutoSmsEvent = (typeof AUTO_SMS_EVENTS)[number];
 
@@ -52,6 +55,10 @@ export const SMS_VARIABLES = [
   "debt",
   "score",
   "centerName",
+  "time",
+  "newDate",
+  "newTime",
+  "reason",
 ] as const;
 export type SmsVariable = (typeof SMS_VARIABLES)[number];
 

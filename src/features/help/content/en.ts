@@ -252,7 +252,7 @@ export const en: HelpContent = {
         changes: {
           title: "Days off, teacher changes and finishing",
           body: [
-            "**Give a day off** removes one date's lesson for this group, for example a teacher's trip. Branch-wide holidays go to Settings → Days off instead and apply to every group.",
+            "**Give a day off** removes one date's lesson for this group, for example a teacher's trip, and can tell the students and parents at once by Telegram and SMS (the SMS switches are in Settings → General → Auto SMS). Pick a new date and time to move the lesson instead of dropping it. The month's cancelled and moved lessons are listed above the attendance grid, where a day off can be undone. Branch-wide holidays go to Settings → Days off instead and apply to every group.",
             "**Change teacher** replaces the outgoing teacher with a new one from today; the new teacher's share of the pay counts from today, the old one's until yesterday. **Support teachers** attaches extra teachers who may mark attendance and see the group without a pay share.",
             "**Finish group** when the course is over: every active student becomes a graduate and the remaining lessons are removed. The graduates report lists them. **Archive** hides a group that was abandoned; its lessons and history stay. Archived groups are listed under the Archived tab.",
           ],

@@ -43,9 +43,9 @@ test.describe("integrations", () => {
       page.getByTestId("sms-template-row").filter({ hasText: `E2E template ${STAMP}` }),
     ).toBeVisible();
 
-    // General settings → Auto SMS tab: ten rows, toggle one and save.
+    // General settings → Auto SMS tab: thirteen rows, toggle one and save.
     await page.goto("/en/settings/general?tab=sms");
-    await expect(page.getByTestId("auto-sms-row")).toHaveCount(10);
+    await expect(page.getByTestId("auto-sms-row")).toHaveCount(13);
     const absent = page.getByTestId("auto-sms-switch-ABSENT");
     const wasOn = (await absent.getAttribute("aria-checked")) === "true";
     await absent.click();

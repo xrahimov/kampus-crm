@@ -31,6 +31,12 @@ export const DEFAULT_AUTO_SMS: Record<AutoSmsEvent, string> = {
   DAY_BEFORE_FIRST_LESSON:
     "{studentName}, {groupName} guruhidagi birinchi dars ertaga, {date}. {centerName}",
   ADDED_TO_GROUP: "{studentName}, siz {groupName} guruhiga qo'shildingiz. {centerName}",
+  LESSON_CANCELLED:
+    "{studentName}, {groupName} guruhining {date} kungi {time} darsi bekor qilindi: {reason}. {centerName}",
+  LESSON_MOVED:
+    "{studentName}, {groupName} guruhining {date} kungi {time} darsi {newDate} kuni {newTime} ga ko'chirildi: {reason}. {centerName}",
+  LESSON_RESTORED:
+    "{studentName}, {groupName} guruhining {date} kungi {time} darsi o'z vaqtida o'tkaziladi. {centerName}",
 };
 
 /** Which variables each event's template may use (shown as chips in the settings). */
@@ -45,6 +51,18 @@ export const AUTO_SMS_VARIABLES: Record<AutoSmsEvent, SmsVariable[]> = {
   GRADES: ["studentName", "groupName", "score", "date", "centerName"],
   DAY_BEFORE_FIRST_LESSON: ["studentName", "groupName", "date", "centerName"],
   ADDED_TO_GROUP: ["studentName", "groupName", "centerName"],
+  LESSON_CANCELLED: ["studentName", "groupName", "date", "time", "reason", "centerName"],
+  LESSON_MOVED: [
+    "studentName",
+    "groupName",
+    "date",
+    "time",
+    "newDate",
+    "newTime",
+    "reason",
+    "centerName",
+  ],
+  LESSON_RESTORED: ["studentName", "groupName", "date", "time", "centerName"],
 };
 
 export interface AutoSmsSettingDto {
@@ -142,7 +160,8 @@ export async function queueAutoSms(
     studentId: string;
     refKey: string;
     vars?: SmsVars;
-    /** Who the message is about when it goes to the parents too; v1 texts the student (A-88). */
+    /** Also text each parent on file (A-117); v1 otherwise texts the student only (A-88). */
+    toParents?: boolean;
   },
 ): Promise<boolean> {
   const student = await tx.student.findUnique({
@@ -153,39 +172,67 @@ export async function queueAutoSms(
       branchId: true,
       isArchived: true,
       branch: { select: { organization: { select: { id: true, name: true } } } },
+      parents: input.toParents ? { select: { id: true, fullName: true, phone: true } } : false,
     },
   });
-  if (!student || !student.phone || student.isArchived) return false;
+  if (!student || student.isArchived) return false;
   const org = student.branch.organization;
   const organizationId = org.id;
   const setting = await tx.autoSmsSetting.findUnique({
     where: { organizationId_event: { organizationId, event: input.event } },
   });
   if (!setting?.isActive) return false;
-  const existing = await tx.smsMessage.findUnique({ where: { refKey: input.refKey } });
-  if (existing) return false;
   const text = renderTemplate(setting.template, {
     studentName: student.fullName,
     centerName: org?.name ?? "",
     date: dateToIso(new Date()),
     ...input.vars,
   });
-  const message = await tx.smsMessage.create({
-    data: {
-      organizationId,
-      branchId: student.branchId,
-      recipientType: "STUDENT",
-      recipientName: student.fullName,
+  const recipients: Array<{
+    type: "STUDENT" | "PARENT";
+    name: string;
+    phone: string;
+    refKey: string;
+  }> = [];
+  if (student.phone) {
+    recipients.push({
+      type: "STUDENT",
+      name: student.fullName,
       phone: student.phone,
-      studentId: input.studentId,
-      text,
-      status: "QUEUED",
-      event: input.event,
       refKey: input.refKey,
-    },
-  });
-  await enqueue(tx, { type: "sms.send", payload: { messageId: message.id } });
-  return true;
+    });
+  }
+  for (const parent of student.parents ?? []) {
+    if (!parent.phone) continue;
+    recipients.push({
+      type: "PARENT",
+      name: parent.fullName,
+      phone: parent.phone,
+      refKey: `${input.refKey}:parent:${parent.id}`,
+    });
+  }
+  let queued = 0;
+  for (const r of recipients) {
+    const existing = await tx.smsMessage.findUnique({ where: { refKey: r.refKey } });
+    if (existing) continue;
+    const message = await tx.smsMessage.create({
+      data: {
+        organizationId,
+        branchId: student.branchId,
+        recipientType: r.type,
+        recipientName: r.name,
+        phone: r.phone,
+        studentId: input.studentId,
+        text,
+        status: "QUEUED",
+        event: input.event,
+        refKey: r.refKey,
+      },
+    });
+    await enqueue(tx, { type: "sms.send", payload: { messageId: message.id } });
+    queued += 1;
+  }
+  return queued > 0;
 }
 
 const LEFT = ["ARCHIVED", "GRADUATED"] as const;

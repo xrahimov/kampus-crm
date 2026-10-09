@@ -311,9 +311,9 @@ describe("sending SMS", () => {
 });
 
 describe("auto-SMS and the job queue", () => {
-  it("exposes ten switches and saves them", async () => {
+  it("exposes the thirteen switches and saves them", async () => {
     const settings = await getAutoSmsSettings(ceo);
-    expect(settings).toHaveLength(10);
+    expect(settings).toHaveLength(13);
     const absent = settings.find((s) => s.event === "ABSENT")!;
     await updateAutoSmsSettings(ceo, {
       settings: [

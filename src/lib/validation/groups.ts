@@ -100,10 +100,19 @@ export const changeTeacherSchema = z.object({
   to: groupTeacherSchema,
 });
 export const supportTeachersSchema = z.object({ userIds: z.array(idSchema).max(10) });
+/** Where a cancelled lesson moves to (A-117). */
+export const lessonMoveSchema = z
+  .object({ date: dateOnlySchema, startTime: timeSchema, endTime: timeSchema })
+  .refine((s) => s.endTime > s.startTime, { message: "validation.workHours", path: ["endTime"] });
 export const groupDayOffSchema = z.object({
   date: dateOnlySchema,
   reason: z.string().trim().min(1, "validation.required").max(200, "validation.tooLong"),
+  /** Tell the current students and their parents by Telegram and auto-SMS (A-117). */
+  notify: z.boolean().default(true),
+  /** The lesson moves to this date and time instead of being dropped (A-117). */
+  moveTo: lessonMoveSchema.nullable().optional(),
 });
+export type GroupDayOffInput = z.output<typeof groupDayOffSchema>;
 export const extraLessonSchema = z
   .object({ date: dateOnlySchema, startTime: timeSchema, endTime: timeSchema })
   .refine((s) => s.endTime > s.startTime, { message: "validation.workHours", path: ["endTime"] });

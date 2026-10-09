@@ -237,6 +237,7 @@ describe("rooms, days off, schools", () => {
       branchId: branchA,
       date: "2026-03-08",
       reason: "Holiday",
+      notify: false,
     });
     expect(created.date).toBe("2026-03-08");
     const page = await listDaysOff(adminA(), list("date"));
