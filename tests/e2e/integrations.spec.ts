@@ -155,6 +155,71 @@ test.describe("integrations", () => {
     await page.getByTestId("amocrm-test").click();
     await expect(page.getByTestId("amocrm-test-result")).toBeVisible();
 
+    // Leads from amoCRM (A-115): switch on, set the webhook secret, post "lead added", run the queue.
+    const amoSwitch = page.locator("#amocrm-enabled");
+    if ((await amoSwitch.getAttribute("aria-checked")) !== "true") await amoSwitch.click();
+    const hookSecret = `hook-${Date.now()}`;
+    await page.getByLabel("Webhook secret").fill(hookSecret);
+    await page.getByTestId("amocrm-save").click();
+    await expect(page.getByTestId("integration-amocrm")).toContainText("Saved");
+    const dealId = String(Date.now() % 1_000_000_000);
+    const dealName = `Insta ${dealId}`;
+    const hook = await request.post(`/api/v1/webhooks/amocrm?secret=${hookSecret}`, {
+      form: {
+        "leads[add][0][id]": dealId,
+        "leads[add][0][name]": dealName,
+        "account[subdomain]": "kampusdemo",
+      },
+    });
+    expect(hook.status()).toBe(200);
+    expect(await hook.json()).toMatchObject({ queued: 1 });
+    const refused = await request.post(`/api/v1/webhooks/amocrm?secret=nope-${hookSecret}`, {
+      form: { "leads[add][0][id]": "1" },
+    });
+    expect(refused.status()).toBe(403);
+    const amoCookies = await page.context().cookies();
+    const amoHeaders = {
+      cookie: amoCookies.map((c) => `${c.name}=${c.value}`).join("; "),
+      "x-csrf-token": amoCookies.find((c) => c.name === "kampus_csrf")?.value ?? "",
+    };
+    // One pass runs up to 50 jobs; older queued jobs may come first.
+    for (let pass = 0; pass < 6; pass += 1) {
+      const run = await page.request.post("/api/v1/jobs/run", { headers: amoHeaders });
+      expect(run.status()).toBe(200);
+      if (!((await run.json()) as { pending: number }).pending) break;
+    }
+    const boards = (await (
+      await page.request.get("/api/v1/lead-boards", { headers: amoHeaders })
+    ).json()) as Array<{ id: string }>;
+    const view: unknown = await (
+      await page.request.get(
+        `/api/v1/leads?boardId=${boards[0]?.id ?? ""}&q=${encodeURIComponent(dealName)}`,
+        { headers: amoHeaders },
+      )
+    ).json();
+    type LeadLike = { fullName: string; sourceName: string | null; comment: string | null };
+    const findLead = (node: unknown): LeadLike | null => {
+      if (Array.isArray(node)) {
+        for (const item of node) {
+          const found = findLead(item);
+          if (found) return found;
+        }
+        return null;
+      }
+      if (node && typeof node === "object") {
+        const rec = node as Record<string, unknown>;
+        if (rec.fullName === dealName) return rec as unknown as LeadLike;
+        for (const value of Object.values(rec)) {
+          const found = findLead(value);
+          if (found) return found;
+        }
+      }
+      return null;
+    };
+    const imported = findLead(view);
+    expect(imported?.sourceName).toBe("Instagram");
+    expect(imported?.comment).toContain(`amocrm.ru/leads/detail/${dealId}`);
+
     // FaceID webhook with the seeded demo secret: a check-in for Demo Teacher Three.
     const now = new Date();
     const posted = await request.post("/api/v1/webhooks/face-id", {

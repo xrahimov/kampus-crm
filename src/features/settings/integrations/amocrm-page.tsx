@@ -9,10 +9,20 @@ import { Button } from "@/components/ui/button";
 import { api, ApiError } from "@/lib/api-client";
 import type { IntegrationDto } from "@/server/services/integrations/integrations.service";
 
-import { IntegrationForm } from "./integration-form";
+import { IntegrationForm, WebhookHint } from "./integration-form";
 
-/** Settings → Integrations → AmoCRM (EXP §8): the four fields plus "Test connection". */
-export function AmoCrmPage({ dto }: { dto: IntegrationDto }) {
+/**
+ * Settings → Integrations → AmoCRM (EXP §8): the four credential fields plus
+ * "Test connection", and the webhook that brings amoCRM's leads here (A-115).
+ */
+export function AmoCrmPage({
+  dto,
+  columns,
+}: {
+  dto: IntegrationDto;
+  /** The board columns a lead from amoCRM may land in. */
+  columns: Array<{ id: string; label: string }>;
+}) {
   const t = useTranslations("integrations.AMOCRM");
   const [testing, setTesting] = useState(false);
   const [result, setResult] = useState<{ kind: "ok" | "error"; text: string } | null>(null);
@@ -50,9 +60,20 @@ export function AmoCrmPage({ dto }: { dto: IntegrationDto }) {
         { key: "integrationId" },
         { key: "authorizationCode", secret: true },
         { key: "subDomain" },
+        { key: "webhookSecret", secret: true },
+        { key: "leadSourceName" },
+        {
+          key: "leadColumnId",
+          options: [
+            { value: "", label: t("firstColumn") },
+            ...columns.map((c) => ({ value: c.id, label: c.label })),
+          ],
+        },
       ]}
       extra={
         <div className="space-y-2">
+          <WebhookHint path="amocrm?secret=…" />
+          <p className="text-xs text-muted-foreground">{t("inboundHint")}</p>
           {result && (
             <Alert
               variant={result.kind === "ok" ? "success" : "destructive"}

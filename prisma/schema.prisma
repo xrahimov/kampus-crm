@@ -1246,29 +1246,32 @@ model LeadColumn {
 
 /// "Yangi Lid" (EXP §2 form). Phones live in LeadPhone ("+ Telefon raqam qo'shish").
 model Lead {
-  id          String           @id @default(cuid())
-  branchId    String
-  boardId     String
-  columnId    String
-  fullName    String
-  birthDate   DateTime?        @db.Date
-  age         Int?
-  sourceId    String?
-  teacherId   String?
-  days        LeadDays?
-  lessonTime  String? // "HH:mm"
-  status      LeadStatus       @default(NEW)
-  temperature LeadTemperature?
-  comment     String?
-  sortOrder   Int              @default(0)
-  isArchived  Boolean          @default(false)
+  id           String           @id @default(cuid())
+  branchId     String
+  boardId      String
+  columnId     String
+  fullName     String
+  birthDate    DateTime?        @db.Date
+  age          Int?
+  sourceId     String?
+  teacherId    String?
+  days         LeadDays?
+  lessonTime   String? // "HH:mm"
+  status       LeadStatus       @default(NEW)
+  temperature  LeadTemperature?
+  comment      String?
+  sortOrder    Int              @default(0)
+  isArchived   Boolean          @default(false)
   /// Set when the lead was added to a group (converted) or came back from a group.
-  studentId   String?
-  convertedAt DateTime?
-  formId      String?
-  createdById String?
-  createdAt   DateTime         @default(now())
-  updatedAt   DateTime         @updatedAt
+  studentId    String?
+  convertedAt  DateTime?
+  formId       String?
+  createdById  String?
+  /// The deal in amoCRM this lead mirrors (A-115): set when amoCRM posted it or
+  /// when Kampus pushed it there, so neither side imports it twice.
+  amoCrmLeadId String?
+  createdAt    DateTime         @default(now())
+  updatedAt    DateTime         @updatedAt
 
   branch    Branch      @relation(fields: [branchId], references: [id])
   board     LeadBoard   @relation(fields: [boardId], references: [id], onDelete: Cascade)
@@ -1286,6 +1289,7 @@ model Lead {
   @@index([branchId, isArchived])
   @@index([sourceId, createdAt])
   @@index([studentId])
+  @@index([amoCrmLeadId])
 }
 
 model LeadPhone {

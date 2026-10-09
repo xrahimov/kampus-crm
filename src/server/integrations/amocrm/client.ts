@@ -9,6 +9,15 @@ export interface AmoCrmLead {
   source?: string | null;
 }
 
+/** A deal as amoCRM holds it, with its main contact (A-115). */
+export interface AmoCrmRemoteLead {
+  id: string;
+  name: string | null;
+  contactName: string | null;
+  phones: string[];
+  tags: string[];
+}
+
 export interface AmoCrmTokens {
   accessToken: string;
   refreshToken: string;
@@ -20,6 +29,8 @@ export interface AmoCrmClient {
   /** Checks the credentials; returns the account name when they work. */
   testConnection(): Promise<{ ok: boolean; account?: string; error?: string }>;
   pushLead(lead: AmoCrmLead): Promise<{ externalId: string }>;
+  /** The deal and its main contact, for leads amoCRM posted to Kampus (A-115). */
+  fetchLead(id: string): Promise<AmoCrmRemoteLead>;
   /** Tokens to persist after a call (the real client rotates them). */
   tokens(): AmoCrmTokens | null;
 }
@@ -34,6 +45,8 @@ export interface AmoCrmConfig {
 }
 
 export const fakeAmoCrmLeads: AmoCrmLead[] = [];
+/** What the fake client answers to fetchLead, keyed by deal id (tests fill it). */
+export const fakeAmoCrmRemoteLeads = new Map<string, AmoCrmRemoteLead>();
 
 export class FakeAmoCrmClient implements AmoCrmClient {
   readonly name = "fake" as const;
@@ -44,6 +57,11 @@ export class FakeAmoCrmClient implements AmoCrmClient {
     fakeAmoCrmLeads.push(lead);
     if (fakeAmoCrmLeads.length > 500) fakeAmoCrmLeads.splice(0, fakeAmoCrmLeads.length - 500);
     return { externalId: `fake-${fakeAmoCrmLeads.length}` };
+  }
+  async fetchLead(id: string): Promise<AmoCrmRemoteLead> {
+    return (
+      fakeAmoCrmRemoteLeads.get(id) ?? { id, name: null, contactName: null, phones: [], tags: [] }
+    );
   }
   tokens() {
     return null;
@@ -147,6 +165,50 @@ export class HttpAmoCrmClient implements AmoCrmClient {
     const data = (await res.json().catch(() => null)) as Array<{ id?: number }> | null;
     if (!res.ok) throw new Error(`amocrm: lead failed (${res.status})`);
     return { externalId: String(data?.[0]?.id ?? "") };
+  }
+
+  async fetchLead(id: string): Promise<AmoCrmRemoteLead> {
+    const token = await this.token();
+    const headers = { Authorization: `Bearer ${token}` };
+    const res = await fetch(`${this.base}/api/v4/leads/${encodeURIComponent(id)}?with=contacts`, {
+      headers,
+    });
+    if (!res.ok) throw new Error(`amocrm: lead ${id} failed (${res.status})`);
+    const lead = (await res.json()) as {
+      name?: string;
+      _embedded?: {
+        contacts?: Array<{ id: number; is_main?: boolean }>;
+        tags?: Array<{ name?: string }>;
+      };
+    };
+    const contacts = lead._embedded?.contacts ?? [];
+    const main = contacts.find((c) => c.is_main) ?? contacts[0];
+    let contactName: string | null = null;
+    const phones: string[] = [];
+    if (main) {
+      const cres = await fetch(`${this.base}/api/v4/contacts/${main.id}`, { headers });
+      if (cres.ok) {
+        const contact = (await cres.json()) as {
+          name?: string;
+          custom_fields_values?: Array<{
+            field_code?: string;
+            values?: Array<{ value?: string | number }>;
+          }> | null;
+        };
+        contactName = contact.name?.trim() || null;
+        for (const field of contact.custom_fields_values ?? []) {
+          if (field.field_code !== "PHONE") continue;
+          for (const v of field.values ?? []) if (v.value) phones.push(String(v.value));
+        }
+      }
+    }
+    return {
+      id,
+      name: lead.name?.trim() || null,
+      contactName,
+      phones,
+      tags: (lead._embedded?.tags ?? []).map((t) => t.name?.trim() ?? "").filter(Boolean),
+    };
   }
 
   tokens() {

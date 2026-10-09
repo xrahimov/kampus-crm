@@ -4,6 +4,10 @@ import {
   getTelegramNotifier,
   saveAmoCrmTokens,
 } from "@/server/services/integrations/integrations.service";
+import {
+  importAmoCrmLead,
+  type AmoCrmImportPayload,
+} from "@/server/services/leads/amocrm-inbound.service";
 import { runDailyNotifications } from "@/server/services/dashboard/notifications.service";
 import { runDailyDebtCollection } from "@/server/services/debts/debts.service";
 import { purgeOldRecordings } from "@/server/services/materials/materials.service";
@@ -25,6 +29,7 @@ export const JOB_TYPES = [
   "auto-sms.daily",
   "telegram.reminders",
   "amocrm.pushLead",
+  "amocrm.importLead",
 ] as const;
 
 function payloadOf<T>(payload: unknown): T {
@@ -69,16 +74,28 @@ export function registerJobHandlers(): void {
   });
 
   registerJobHandler("amocrm.pushLead", async (payload, db) => {
-    const { organizationId, ...lead } = payloadOf<{
+    const { organizationId, leadId, ...lead } = payloadOf<{
       organizationId?: string;
+      leadId?: string;
       name: string;
       phone: string | null;
       source: string | null;
     }>(payload);
     if (!organizationId) throw new Error("amocrm.pushLead without organizationId");
     const client = await getAmoCrmClient(db, organizationId);
-    await client.pushLead(lead);
+    const { externalId } = await client.pushLead(lead);
     if (client.tokens()) await saveAmoCrmTokens(db, organizationId, client.tokens());
+    // Remember the deal, so amoCRM's webhook for it is not imported as a new lead (A-115).
+    if (leadId && externalId) {
+      await db.lead.updateMany({
+        where: { id: leadId, amoCrmLeadId: null },
+        data: { amoCrmLeadId: externalId },
+      });
+    }
+  });
+
+  registerJobHandler("amocrm.importLead", async (payload, db) => {
+    await importAmoCrmLead(db, payloadOf<AmoCrmImportPayload>(payload));
   });
 }
 

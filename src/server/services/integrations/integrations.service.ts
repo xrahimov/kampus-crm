@@ -31,7 +31,7 @@ import { authorize, type Actor } from "@/server/rbac/authorize";
 const SECRET_FIELDS: Record<IntegrationProvider, readonly string[]> = {
   SMS: ["password"],
   TELEGRAM: ["botToken", "webhookSecret"],
-  AMOCRM: ["secretKey", "authorizationCode"],
+  AMOCRM: ["secretKey", "authorizationCode", "webhookSecret"],
   TELEPHONY: ["webhookSecret"],
   FACE_ID: ["webhookSecret"],
   VIDEO: ["turnCredential", "turnSecret"],
@@ -252,7 +252,7 @@ export async function testAmoCrm(
  */
 export async function assertWebhookSecret(
   db: DbClient,
-  provider: "TELEGRAM" | "TELEPHONY" | "FACE_ID",
+  provider: "TELEGRAM" | "TELEPHONY" | "FACE_ID" | "AMOCRM",
   presented: string | null,
 ): Promise<string> {
   const organizationId = presented

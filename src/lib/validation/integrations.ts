@@ -231,6 +231,12 @@ export const amoCrmIntegrationSchema = z.object({
     .trim()
     .max(100)
     .regex(/^[a-z0-9-]*$/i, "validation.subDomain"),
+  /** Leads added in amoCRM come back through the webhook that presents this secret (A-115). */
+  webhookSecret: secret.default(""),
+  /** The board column they land in; empty = the first column of the first board. */
+  leadColumnId: z.string().trim().max(50).default(""),
+  /** The source they are filed under, created when missing. */
+  leadSourceName: z.string().trim().max(100).default("Instagram"),
 });
 export const telephonyIntegrationSchema = z.object({
   isEnabled: z.boolean(),

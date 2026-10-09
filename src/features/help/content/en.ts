@@ -867,6 +867,7 @@ export const en: HelpContent = {
           title: "AmoCRM",
           body: [
             "Enter the integration ID, secret key, authorisation code and sub-domain from your AmoCRM account and press **Test connection**. When enabled, every new lead is pushed to AmoCRM by a background job.",
+            "Leads can also come the other way (A-115): in amoCRM add a webhook with the address shown on the page and your webhook secret, ticking “Lead added”. Each deal added in amoCRM, for example from an Instagram conversation, becomes a lead here in the column you chose, under the source you named (“Instagram” unless changed), with a link back to the deal in its comment. A deal that Kampus itself pushed to amoCRM is recognised and not imported again, and a lead whose phone number is already on the board is skipped.",
           ],
         },
         telephony: {

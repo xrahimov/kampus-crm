@@ -871,6 +871,7 @@ export const uz: HelpContent = {
           title: "AmoCRM",
           body: [
             "AmoCRM hisobingizdan integratsiya ID, maxfiy kalit, avtorizatsiya kodi va sub-domenni kiriting va **Ulanishni tekshirish** ni bosing. Yoqilganda har bir yangi lid fon vazifasi orqali AmoCRM ga yuboriladi.",
+            "Lidlar teskari tomonga ham yurishi mumkin (A-115): amoCRM da sahifada ko‘rsatilgan manzil va webhook maxfiy kalitingiz bilan webhook qo‘shing, “Bitim qo‘shildi” ni belgilang. amoCRM da qo‘shilgan har bir bitim, masalan Instagram yozishmasidan kelgani, shu yerda tanlangan ustunda, ko‘rsatilgan manba bilan (“Instagram”, o‘zgartirilmasa) lid bo‘ladi, izohida bitimga havola bo‘ladi. Kampus o‘zi amoCRM ga yuborgan bitim taniladi va qayta import qilinmaydi; raqami doskada bor lid esa o‘tkazib yuboriladi.",
           ],
         },
         telephony: {
