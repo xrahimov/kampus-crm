@@ -226,6 +226,8 @@ export const telegramIntegrationSchema = z.object({
     .regex(/^@?[A-Za-z0-9_]{0,64}$/, "validation.botUsername")
     .transform((v) => v.replace(/^@/, ""))
     .default(""),
+  /** Sunday evening digest to every chat linked to a student (A-118). */
+  weeklyReport: z.boolean().default(true),
 });
 /** The four fields of the reference's AmoCRM page (EXP §8). */
 export const amoCrmIntegrationSchema = z.object({

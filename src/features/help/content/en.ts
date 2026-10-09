@@ -866,7 +866,7 @@ export const en: HelpContent = {
         telegram: {
           title: "Telegram bot",
           body: [
-            "Create a bot with BotFather, paste its token and username, set a webhook secret and enable it. Two things then work. Staff listed under Settings → Bot notifications get a Telegram message about payments and new students: each staff member sends **/id** to the bot, and you enter the ID they receive with the branches they should hear about. Students and parents press **Connect Telegram** on the student's personal page and get lesson reminders about thirty minutes before, a message when the teacher starts a video lesson, homework notices, new materials, debt reminders and payment confirmations.",
+            "Create a bot with BotFather, paste its token and username, set a webhook secret and enable it. Two things then work. Staff listed under Settings → Bot notifications get a Telegram message about payments and new students: each staff member sends **/id** to the bot, and you enter the ID they receive with the branches they should hear about. Students and parents press **Connect Telegram** on the student's personal page and get lesson reminders about thirty minutes before, a message when the teacher starts a video lesson, homework notices, new materials, debt reminders and payment confirmations. Every Sunday evening the same chats get a weekly report: lessons attended and missed, grades, homework done, coins, and the balance with the next payment date (the **Weekly report to parents** switch on the Telegram card).",
           ],
         },
         amocrm: {

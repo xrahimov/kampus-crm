@@ -24,11 +24,22 @@ test.describe("Telegram for students", () => {
     // The centre names its bot and turns the integration on.
     await ceo.goto("/en/settings/integrations");
     const form = ceo.getByTestId("integration-telegram");
-    if (!(await form.getByRole("switch").isChecked())) await form.getByRole("switch").click();
+    const enabled = form.getByRole("switch", { name: "Enabled" });
+    if (!(await enabled.isChecked())) await enabled.click();
     await form.getByLabel("Bot username (without @)").fill("kampus_e2e_bot");
     await form.getByLabel("Webhook secret").fill(secret);
+    // The Sunday report to parents (A-118) is on by default and can be switched off.
+    const weekly = form.getByRole("switch", { name: "Weekly report to parents on Sunday evening" });
+    await expect(weekly).toBeChecked();
+    await weekly.click();
     await form.getByTestId("telegram-save").click();
     await expect(form).toContainText("Saved");
+    await ceo.reload();
+    await expect(
+      ceo
+        .getByTestId("integration-telegram")
+        .getByRole("switch", { name: "Weekly report to parents on Sunday evening" }),
+    ).not.toBeChecked();
 
     await ceo.goto("/en/groups");
     await ceo.getByRole("link", { name: "GE-Morning A1" }).first().click();
@@ -70,7 +81,8 @@ test.describe("Telegram for students", () => {
     // Leave the integration off, as the seed has it.
     await ceo.goto("/en/settings/integrations");
     const again = ceo.getByTestId("integration-telegram");
-    await again.getByRole("switch").click();
+    await again.getByRole("switch", { name: "Enabled" }).click();
+    await again.getByRole("switch", { name: "Weekly report to parents on Sunday evening" }).click();
     await again.getByTestId("telegram-save").click();
     await expect(again).toContainText("Saved");
   });

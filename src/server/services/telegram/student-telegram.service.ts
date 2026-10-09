@@ -53,7 +53,13 @@ export type BotMessageKind =
   | "debtor"
   | "lessonCancelled"
   | "lessonMoved"
-  | "lessonRestored";
+  | "lessonRestored"
+  | "weeklyTitle"
+  | "weeklyGroup"
+  | "weeklyNoLessons"
+  | "weeklyCoins"
+  | "weeklyBalance"
+  | "weeklyDebt";
 
 /** Narrows Telegram's language_code to a language the bot speaks. */
 export function botLocale(languageCode: string | undefined | null): BotLocale {
@@ -190,7 +196,8 @@ export async function handleStudentCommand(
  * Queues one message to every chat linked to the given students, in each
  * chat's language, through the bot of the student's own centre (A-108).
  * `refKey` makes a notification idempotent per chat. Call it inside the
- * transaction of the event it reports.
+ * transaction of the event it reports. A composed message (several lines of
+ * bot texts) comes through `text` instead of `kind` + `values`.
  */
 export async function notifyStudents(
   tx: DbClient,
@@ -200,6 +207,7 @@ export async function notifyStudents(
     refKey: string;
     values?:
       Record<string, string | number> | ((locale: BotLocale) => Record<string, string | number>);
+    text?: (locale: BotLocale) => string;
   },
 ): Promise<number> {
   if (input.studentIds.length === 0) return 0;
@@ -216,7 +224,7 @@ export async function notifyStudents(
       payload: {
         organizationId: chat.student.branch.organizationId,
         chatId: chat.chatId,
-        text: botText(locale, input.kind, values),
+        text: input.text ? input.text(locale) : botText(locale, input.kind, values),
       },
       uniqueKey: `tg:${input.refKey}:${chat.chatId}`,
     });

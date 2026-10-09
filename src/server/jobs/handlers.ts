@@ -16,6 +16,10 @@ import {
   reminderSlotKey,
   runLessonReminders,
 } from "@/server/services/telegram/student-telegram.service";
+import {
+  runWeeklyReports,
+  weeklyReportDue,
+} from "@/server/services/telegram/weekly-report.service";
 import { deliverMessage } from "@/server/services/sms/sms.service";
 import { dateToIso } from "@/server/services/settings/shared";
 
@@ -28,6 +32,7 @@ export const JOB_TYPES = [
   "telegram.send",
   "auto-sms.daily",
   "telegram.reminders",
+  "telegram.weeklyReport",
   "amocrm.pushLead",
   "amocrm.importLead",
 ] as const;
@@ -73,6 +78,13 @@ export function registerJobHandlers(): void {
     await runLessonReminders(db);
   });
 
+  // The Sunday evening report to parents and students on Telegram (A-118).
+  registerJobHandler("telegram.weeklyReport", async (payload, db) => {
+    const { date } = payloadOf<{ date?: string }>(payload);
+    if (!date) throw new Error("telegram.weeklyReport without date");
+    await runWeeklyReports(db, date);
+  });
+
   registerJobHandler("amocrm.pushLead", async (payload, db) => {
     const { organizationId, leadId, ...lead } = payloadOf<{
       organizationId?: string;
@@ -111,4 +123,13 @@ export async function ensureDailyJob(
   });
   // Lesson reminders for students on Telegram: one scan per five-minute slot (A-103).
   await enqueue(db, { type: "telegram.reminders", payload: {}, uniqueKey: reminderSlotKey() });
+  // The weekly report, once per Sunday evening (A-118).
+  const weekly = weeklyReportDue();
+  if (weekly) {
+    await enqueue(db, {
+      type: "telegram.weeklyReport",
+      payload: { date: weekly.date },
+      uniqueKey: weekly.key,
+    });
+  }
 }

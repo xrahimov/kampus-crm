@@ -24,7 +24,7 @@ import type { IntegrationDto } from "@/server/services/integrations/integrations
 export interface IntegrationField {
   key: string;
   secret?: boolean;
-  type?: "text" | "number";
+  type?: "text" | "number" | "boolean";
   /** A fixed choice instead of free text; an option with value "" means "not set". */
   options?: Array<{ value: string; label: string }>;
 }
@@ -69,7 +69,12 @@ export function IntegrationForm({
     try {
       const body: Record<string, unknown> = { isEnabled: enabled };
       for (const f of fields)
-        body[f.key] = f.type === "number" ? Number(values[f.key] ?? 0) : values[f.key];
+        body[f.key] =
+          f.type === "number"
+            ? Number(values[f.key] ?? 0)
+            : f.type === "boolean"
+              ? values[f.key] === "true"
+              : values[f.key];
       await api(`/integrations/${path}`, { method: "PUT", body });
       setMessage({ kind: "ok", text: tc("saved") });
       startTransition(() => router.refresh());
@@ -101,38 +106,51 @@ export function IntegrationForm({
           <Alert variant={message.kind === "ok" ? "success" : "destructive"}>{message.text}</Alert>
         )}
         <div className="grid gap-4 sm:grid-cols-2">
-          {fields.map((f) => (
-            <div key={f.key} className="space-y-2">
-              <Label htmlFor={`${path}-${f.key}`}>{t(`fields.${f.key}`)}</Label>
-              {f.options ? (
-                <Select
-                  value={values[f.key] || NONE}
-                  onValueChange={(next) =>
-                    setValues((v) => ({ ...v, [f.key]: next === NONE ? "" : next }))
-                  }
-                >
-                  <SelectTrigger id={`${path}-${f.key}`} data-testid={`${path}-${f.key}`}>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {f.options.map((o) => (
-                      <SelectItem key={o.value || NONE} value={o.value || NONE}>
-                        {o.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              ) : (
-                <Input
+          {fields.map((f) =>
+            f.type === "boolean" ? (
+              <div key={f.key} className="flex items-center gap-2 self-end">
+                <Switch
                   id={`${path}-${f.key}`}
-                  type={f.secret ? "password" : (f.type ?? "text")}
-                  autoComplete="off"
-                  value={values[f.key] ?? ""}
-                  onChange={(e) => setValues((v) => ({ ...v, [f.key]: e.target.value }))}
+                  checked={values[f.key] === "true"}
+                  onCheckedChange={(next) =>
+                    setValues((v) => ({ ...v, [f.key]: next ? "true" : "false" }))
+                  }
                 />
-              )}
-            </div>
-          ))}
+                <Label htmlFor={`${path}-${f.key}`}>{t(`fields.${f.key}`)}</Label>
+              </div>
+            ) : (
+              <div key={f.key} className="space-y-2">
+                <Label htmlFor={`${path}-${f.key}`}>{t(`fields.${f.key}`)}</Label>
+                {f.options ? (
+                  <Select
+                    value={values[f.key] || NONE}
+                    onValueChange={(next) =>
+                      setValues((v) => ({ ...v, [f.key]: next === NONE ? "" : next }))
+                    }
+                  >
+                    <SelectTrigger id={`${path}-${f.key}`} data-testid={`${path}-${f.key}`}>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {f.options.map((o) => (
+                        <SelectItem key={o.value || NONE} value={o.value || NONE}>
+                          {o.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                ) : (
+                  <Input
+                    id={`${path}-${f.key}`}
+                    type={f.secret ? "password" : (f.type ?? "text")}
+                    autoComplete="off"
+                    value={values[f.key] ?? ""}
+                    onChange={(e) => setValues((v) => ({ ...v, [f.key]: e.target.value }))}
+                  />
+                )}
+              </div>
+            ),
+          )}
         </div>
         {extra}
         <div className="flex justify-end">

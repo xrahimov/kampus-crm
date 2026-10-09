@@ -50,6 +50,7 @@ export function IntegrationsPage({ integrations }: { integrations: IntegrationDt
           { key: "botToken", secret: true },
           { key: "botUsername" },
           { key: "webhookSecret", secret: true },
+          { key: "weeklyReport", type: "boolean" },
         ]}
         extra={<WebhookHint path="telegram?secret=…" />}
         testId="integration-telegram"
