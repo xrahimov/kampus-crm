@@ -10,6 +10,7 @@ import { Pagination } from "@/components/data/pagination";
 import { SortHeader } from "@/components/data/sort-header";
 import { Avatar } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
@@ -35,6 +36,7 @@ import type { RoleCount, StaffDto } from "@/server/services/staff/staff.service"
 
 import { creatableBranches, type BranchOption } from "../shared/branch-select";
 import { ExcelLink } from "@/features/shared/excel-link";
+import { ImportDialog } from "@/features/shared/import-dialog";
 
 import { ListHeader } from "../shared/list-header";
 import { RowActions } from "../shared/row-actions";
@@ -79,6 +81,7 @@ export function StaffPage({
     person: null,
   });
   const [archiving, setArchiving] = useState<StaffDto | null>(null);
+  const [importing, setImporting] = useState(false);
   const { options, defaultId } = creatableBranches(
     branches,
     actorBranchIds,
@@ -115,6 +118,20 @@ export function StaffPage({
           <Label htmlFor="staff-archived">{t("common.archived")}</Label>
         </div>
         <ExcelLink path="/staff/export.xlsx" params={searchParams} testId="staff-excel" />
+        <Button variant="outline" onClick={() => setImporting(true)} data-testid="staff-import">
+          {t("excel.importButton")}
+        </Button>
+        <ImportDialog
+          open={importing}
+          onOpenChange={setImporting}
+          title={t("excel.importTitles.staff")}
+          description={t("excel.hints.staff")}
+          templatePath="/staff/import-template.xlsx"
+          importPath="/staff/import"
+          fields={{ branchId: defaultId }}
+          onDone={refresh}
+          testId="staff-import-dialog"
+        />
       </ListHeader>
 
       <div className="flex flex-wrap gap-2" role="group" aria-label={t("staff.filterByRole")}>

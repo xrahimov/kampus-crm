@@ -149,6 +149,7 @@ test.describe("reports and Excel", () => {
   }) => {
     await signIn(page, CEO_PHONE);
     await page.goto("/en/students");
+    await page.getByTestId("students-import-menu").click();
     await page.getByTestId("students-import").click();
     const dialog = page.getByTestId("students-import-dialog");
     await expect(dialog).toBeVisible();

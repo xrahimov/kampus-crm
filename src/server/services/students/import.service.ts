@@ -8,7 +8,8 @@ import { authorize, authorizeBranch, type Actor } from "@/server/rbac/authorize"
 import { addMember } from "@/server/services/groups/memberships.service";
 import { findGroupInScope } from "@/server/services/groups/shared";
 
-import { createStudent } from "./students.service";
+import { matchStudent } from "./student-match";
+import { addParent, createStudent } from "./students.service";
 
 /*
  * "EXCEL ORQALI QO'SHISH" (EXP §5 add-student dialog, §6 students page; A-24, A-90).
@@ -43,6 +44,8 @@ export const IMPORT_MAX_ROWS = 1000;
 export interface ImportResult {
   imported: number;
   skipped: Array<{ row: number; reason: string }>;
+  /** Staff import: temporary passwords it made, returned once and never stored in clear (A-111). */
+  logins?: Array<{ row: number; label: string; secret: string }>;
 }
 
 /** "+998901234567", "998901234567", "901234567", "+998 90 123-45-67" → "+998901234567". */
@@ -65,7 +68,7 @@ export function normalizeDate(raw: string): string | null {
   return v;
 }
 
-const GENDER_WORDS: Record<string, "MALE" | "FEMALE"> = {
+export const GENDER_WORDS: Record<string, "MALE" | "FEMALE"> = {
   m: "MALE",
   male: "MALE",
   erkak: "MALE",
@@ -101,6 +104,13 @@ export const cell = (row: string[], i: number) => (row[i] ?? "").trim() || null;
 export function firstIssue(error: z.ZodError): string {
   const issue = error.issues[0];
   return issue ? `${String(issue.path[0] ?? "")}: ${issue.message}` : "validation.invalid";
+}
+
+/** A skipped row's reason from a service error: the first field message, else the error's. */
+export function reasonOf(error: unknown): string {
+  if (!isAppError(error)) return "errors.internal";
+  const entry = Object.entries(error.fields ?? {})[0];
+  return entry?.[1]?.[0] ? `${entry[0]}: ${entry[1][0]}` : error.message;
 }
 
 export function dataRows(rows: string[][]): string[][] {
@@ -255,6 +265,88 @@ export async function importMembers(
             ? error.message
             : "errors.internal";
       result.skipped.push({ row: line, reason });
+    }
+  }
+  return result;
+}
+
+// --- Parents (A-111) ----------------------------------------------------------
+
+export const PARENT_IMPORT_COLUMNS = [
+  "studentId",
+  "fullName",
+  "phone",
+  "parentName",
+  "parentPhone",
+] as const;
+const PARENT_IMPORT_SPECS: ColumnSpec[] = [
+  { key: "studentId", aliases: ["id", "kampus id", "student id"] },
+  { key: "fullName", aliases: ["student", "name", "o'quvchi", "ism", "ученик", "имя", "фио"] },
+  { key: "phone", aliases: ["student phone", "telefon", "телефон", "o'quvchi telefoni"] },
+  {
+    key: "parentName",
+    aliases: ["parent", "parent name", "ota-ona", "ota-onasi", "родитель", "имя родителя"],
+  },
+  {
+    key: "parentPhone",
+    aliases: ["parent phone", "parent's phone", "ota-ona telefoni", "телефон родителя"],
+  },
+];
+const parentRowSchema = z.object({
+  fullName: z.string().trim().min(1, "validation.required").max(120, "validation.tooLong"),
+  phone: phoneSchema,
+});
+
+/** Students page "Import parents": one row per parent, the student found by id, phone or name. */
+export async function importParents(
+  actor: Actor,
+  branchId: string,
+  rows: string[][],
+  db: DbClient = prisma,
+): Promise<ImportResult> {
+  authorize(actor, "students.update");
+  authorizeBranch(actor, branchId);
+  const result: ImportResult = { imported: 0, skipped: [] };
+  const map = mapColumns(rows[0] ?? [], PARENT_IMPORT_SPECS);
+  let line = 1;
+  for (const raw of dataRows(rows)) {
+    line += 1;
+    const get = (key: (typeof PARENT_IMPORT_COLUMNS)[number]) => pick(map, raw, key);
+    const parsed = parentRowSchema.safeParse({
+      fullName: get("parentName") ?? "",
+      phone: get("parentPhone") ? normalizePhone(get("parentPhone")!) : "",
+    });
+    if (!parsed.success) {
+      const issue = parsed.error.issues[0];
+      const field = issue?.path[0] === "phone" ? "parentPhone" : "parentName";
+      result.skipped.push({
+        row: line,
+        reason: `${field}: ${issue?.message ?? "validation.invalid"}`,
+      });
+      continue;
+    }
+    const match = await matchStudent(db, branchId, {
+      studentId: get("studentId"),
+      phone: get("phone"),
+      fullName: get("fullName"),
+    });
+    if (!match.student) {
+      result.skipped.push({ row: line, reason: match.reason });
+      continue;
+    }
+    const existing = await db.parent.findFirst({
+      where: { studentId: match.student.id, phone: parsed.data.phone },
+      select: { id: true },
+    });
+    if (existing) {
+      result.skipped.push({ row: line, reason: "errors.importParentExists" });
+      continue;
+    }
+    try {
+      await addParent(actor, match.student.id, parsed.data, db);
+      result.imported += 1;
+    } catch (error) {
+      result.skipped.push({ row: line, reason: reasonOf(error) });
     }
   }
   return result;

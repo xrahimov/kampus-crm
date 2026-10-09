@@ -399,6 +399,7 @@ export const en: HelpContent = {
           body: [
             "**Import from Excel** adds many students at once: download the template, fill one row per student with the column headers kept, upload the file and read the result, which says how many rows were imported and which were skipped and why. The same works for adding many students to one group from the group page.",
             "**Excel** on any list downloads what you see with the current filters, in the language of the interface.",
+            "Rooms, courses and staff have the same **Import from Excel** on their Settings pages, groups on the Groups page and parents under **Import** on the Students page, so a centre moving to Kampus is loaded from a few files. Each dialog has its own template and accepts CSV too. Staff rows without a password get a temporary one, shown once after the import.",
           ],
         },
         leaving: {

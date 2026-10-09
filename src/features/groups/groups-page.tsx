@@ -46,6 +46,7 @@ import {
 } from "@/components/ui/table";
 import { creatableBranches, type BranchOption } from "@/features/settings/shared/branch-select";
 import { ExcelLink } from "@/features/shared/excel-link";
+import { ImportDialog } from "@/features/shared/import-dialog";
 import { Link, usePathname, useRouter } from "@/i18n/navigation";
 import { api } from "@/lib/api-client";
 import { parseDateOnly } from "@/lib/dates";
@@ -106,6 +107,7 @@ export function GroupsPage({
   const searchParams = useSearchParams();
   const locale = useLocale();
   const [, startTransition] = useTransition();
+  const [importing, setImporting] = useState(false);
   const [dialog, setDialog] = useState<{ open: boolean; group: GroupDto | null }>({
     open: false,
     group: null,
@@ -153,10 +155,30 @@ export function GroupsPage({
         <div className="flex flex-wrap gap-2">
           <ExcelLink path="/groups/export.xlsx" params={searchParams} testId="groups-excel" />
           {can.create && (
+            <Button
+              variant="outline"
+              onClick={() => setImporting(true)}
+              data-testid="groups-import"
+            >
+              {t("excel.importButton")}
+            </Button>
+          )}
+          {can.create && (
             <Button onClick={() => setDialog({ open: true, group: null })} data-testid="add-button">
               {t("groups.add")}
             </Button>
           )}
+          <ImportDialog
+            open={importing}
+            onOpenChange={setImporting}
+            title={t("excel.importTitles.groups")}
+            description={t("excel.hints.groups")}
+            templatePath="/groups/import-groups-template.xlsx"
+            importPath="/groups/import"
+            fields={{ branchId: defaultId }}
+            onDone={refresh}
+            testId="groups-import-dialog"
+          />
         </div>
       </div>
 

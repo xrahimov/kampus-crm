@@ -9,6 +9,7 @@ import { EmptyState } from "@/components/data/empty-state";
 import { Pagination } from "@/components/data/pagination";
 import { SortHeader } from "@/components/data/sort-header";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
@@ -20,6 +21,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { ImportDialog } from "@/features/shared/import-dialog";
 import { usePathname, useRouter } from "@/i18n/navigation";
 import { api } from "@/lib/api-client";
 import type { Page } from "@/lib/validation/common";
@@ -60,6 +62,7 @@ export function CoursesPage({
     course: null,
   });
   const [archiving, setArchiving] = useState<CourseDto | null>(null);
+  const [importing, setImporting] = useState(false);
   const { options, defaultId } = creatableBranches(
     branches,
     actorBranchIds,
@@ -88,6 +91,20 @@ export function CoursesPage({
           <Switch id="courses-archived" checked={archived} onCheckedChange={toggleArchived} />
           <Label htmlFor="courses-archived">{t("common.archived")}</Label>
         </div>
+        <Button variant="outline" onClick={() => setImporting(true)} data-testid="courses-import">
+          {t("excel.importButton")}
+        </Button>
+        <ImportDialog
+          open={importing}
+          onOpenChange={setImporting}
+          title={t("excel.importTitles.courses")}
+          description={t("excel.hints.courses")}
+          templatePath="/courses/import-template.xlsx"
+          importPath="/courses/import"
+          fields={{ branchId: defaultId }}
+          onDone={refresh}
+          testId="courses-import-dialog"
+        />
       </ListHeader>
       <Card>
         {page.items.length === 0 ? (

@@ -25,12 +25,18 @@ export interface ColumnMap {
 
 type Messages = { excel: { columns: Record<string, string> } };
 const LOCALE_MESSAGES: Messages[] = [en, ru, uz];
+const UI_MESSAGES: Array<Record<string, unknown>> = [en, ru, uz];
+
+/** One top-level message section (e.g. "roles") in every UI language, for matching labels. */
+export function labelsOf(section: string): Array<Record<string, string>> {
+  return UI_MESSAGES.map((m) => (m[section] as Record<string, string> | undefined) ?? {});
+}
 
 /** "Full name", "full_name", "F.I.O." and "fullname" are the same header. */
 export function normalizeHeader(raw: string): string {
   return raw
     .toLowerCase()
-    .replace(/[\s_\-.,:;'ʼ’`"()№#*]+/g, "")
+    .replace(/[\s_\-.,:;'ʼ’‘´`"()№#*]+/g, "")
     .trim();
 }
 

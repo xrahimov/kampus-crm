@@ -8,7 +8,8 @@ import { authorize, authorizeBranch, type Actor } from "@/server/rbac/authorize"
 import { findGroupInScope } from "@/server/services/groups/shared";
 import { dateToIso, decimalToNumber, isoToDate, mustFind } from "@/server/services/settings/shared";
 
-import { dataRows, normalizeDate, normalizePhone, type ImportResult } from "./import.service";
+import { dataRows, normalizeDate, type ImportResult } from "./import.service";
+import { matchStudent } from "./student-match";
 import { studentScope } from "./students.service";
 
 /*
@@ -296,44 +297,16 @@ export async function importOpeningBalances(
       continue;
     }
 
-    const studentId = pick(map, raw, "studentId");
-    const phone = pick(map, raw, "phone");
-    const fullName = pick(map, raw, "fullName");
-    const studentWhere: Prisma.StudentWhereInput = { branchId, isArchived: false };
-    let student: { id: string; fullName: string } | null = null;
-    if (studentId) {
-      student = await db.student.findFirst({
-        where: { id: studentId, branchId },
-        select: { id: true, fullName: true },
-      });
-    } else if (phone && normalizePhone(phone)) {
-      const candidates = await db.student.findMany({
-        where: { ...studentWhere, phone: normalizePhone(phone)! },
-        select: { id: true, fullName: true },
-        take: 2,
-      });
-      if (candidates.length > 1) {
-        skip("errors.importAmbiguous");
-        continue;
-      }
-      student = candidates[0] ?? null;
-    }
-    if (!student && fullName) {
-      const candidates = await db.student.findMany({
-        where: { ...studentWhere, fullName: { equals: fullName, mode: "insensitive" } },
-        select: { id: true, fullName: true },
-        take: 2,
-      });
-      if (candidates.length > 1) {
-        skip("errors.importAmbiguous");
-        continue;
-      }
-      student = candidates[0] ?? null;
-    }
-    if (!student) {
-      skip("errors.studentNotFound");
+    const match = await matchStudent(db, branchId, {
+      studentId: pick(map, raw, "studentId"),
+      phone: pick(map, raw, "phone"),
+      fullName: pick(map, raw, "fullName"),
+    });
+    if (!match.student) {
+      skip(match.reason);
       continue;
     }
+    const student = match.student;
 
     const groupName = pick(map, raw, "group");
     const memberships = await db.groupMembership.findMany({
