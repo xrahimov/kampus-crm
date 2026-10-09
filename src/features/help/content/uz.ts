@@ -160,6 +160,12 @@ export const uz: HelpContent = {
             "Undan yangi guruh uchun bo‘sh xona va vaqt topishda yoki hozir kim dars berayotganini ko‘rishda foydalaning. Xonalar Sozlamalar → Xonalar bo‘limida qo‘shiladi; guruh xonasini o‘z jadvalida oladi.",
           ],
         },
+        forecast: {
+          title: "Tushum prognozi",
+          body: [
+            "Moliyani ko‘ra oladiganlar **Tushum prognozi** ni ham oladi: shu oy qancha tushishi kerak, to‘lov hisoblanadigan tarzda hisoblanadi (har bir faol a‘zolik, uning narxi yoki chegirmasi, darslarga mutanosib), oy uchun allaqachon to‘langan summaga qarshi, progress chizig‘i va yig‘ilgan foiz bilan. Keyingi oy ham shunday, allaqachon olingan oldindan to‘lovlar bilan ko‘rsatiladi. Olti ustun oylar bo‘yicha hisoblangan va yig‘ilganni qiyoslaydi, jadval shu oy, yig‘ilgan va keyingi oyni kurslar bo‘yicha, filiallar bir nechta bo‘lsa filiallar bo‘yicha ajratadi. Raqamlar yuqoridagi kartochkalar kabi **Raqamlarni ko‘rish** bosilmaguncha yashirin.",
+          ],
+        },
         finance: {
           title: "Moliya bir qarashda",
           body: [

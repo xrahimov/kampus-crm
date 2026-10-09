@@ -157,6 +157,12 @@ export const en: HelpContent = {
             "Use it to find a free room and time for a new group, or to see who is teaching right now. Rooms are added under Settings → Rooms; a group gets its room in its schedule.",
           ],
         },
+        forecast: {
+          title: "Revenue forecast",
+          body: [
+            "People who may see finance also get **Revenue forecast**: what this month should bring in, computed the way fees are charged (every active membership, its price or discount, pro-rated by the lessons it is in), against what has already been paid for the month, with a progress bar and the percentage collected. The next month is shown the same way, with any prepayments already received. Six bars compare charged and collected month by month, and a table splits this month, what is collected and next month by course, and by branch when there are several. The numbers stay hidden until **Show numbers** is pressed, like the cards above.",
+          ],
+        },
         finance: {
           title: "Finance at a glance",
           body: [

@@ -96,6 +96,7 @@ export const HELP_ARTICLES = [
       { id: "setup" },
       { id: "kpis", screenshot: "dashboard-numbers" },
       { id: "schedule", screenshot: "dashboard-schedule" },
+      { id: "forecast" },
       { id: "finance" },
     ],
   },

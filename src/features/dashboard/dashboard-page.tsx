@@ -25,9 +25,11 @@ import type { DashboardFinanceOptions } from "@/server/services/dashboard/financ
 import type { DashboardKpisDto } from "@/server/services/dashboard/kpis.service";
 import type { ScheduleDto } from "@/server/services/dashboard/schedule.service";
 import type { SetupChecklistDto } from "@/server/services/dashboard/setup.service";
+import type { RevenueForecastDto } from "@/server/services/finance/forecast.service";
 import type { FinanceOverviewDto } from "@/server/services/finance/overview.service";
 
 import { ScheduleGrid } from "./schedule-grid";
+import { RevenueForecast } from "./revenue-forecast";
 import { SetupChecklist } from "./setup-checklist";
 
 const ALL = "__all";
@@ -50,6 +52,7 @@ export function DashboardPage({
   branches,
   canReports,
   setup = null,
+  forecast = null,
 }: {
   userName: string;
   kpis: DashboardKpisDto;
@@ -61,6 +64,8 @@ export function DashboardPage({
   canReports: boolean;
   /** The setup checklist (A-128), for people who may change the centre's settings. */
   setup?: SetupChecklistDto | null;
+  /** The revenue forecast (A-133), for people who may see the finance block. */
+  forecast?: RevenueForecastDto | null;
 }) {
   const t = useTranslations("dashboard");
   const tc = useTranslations("common");
@@ -192,6 +197,8 @@ export function DashboardPage({
           </Link>
         ))}
       </div>
+
+      {forecast && <RevenueForecast data={forecast} mask={mask} />}
 
       <ScheduleGrid schedule={schedule} onChange={(next) => setParams(next)} />
 
