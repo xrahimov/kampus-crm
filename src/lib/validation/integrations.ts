@@ -44,6 +44,7 @@ export const AUTO_SMS_EVENTS = [
   "LESSON_MOVED",
   "LESSON_RESTORED",
   "INSTALMENT_DUE",
+  "WAITLIST_OFFER",
 ] as const;
 export type AutoSmsEvent = (typeof AUTO_SMS_EVENTS)[number];
 
@@ -60,6 +61,7 @@ export const SMS_VARIABLES = [
   "newDate",
   "newTime",
   "reason",
+  "days",
 ] as const;
 export type SmsVariable = (typeof SMS_VARIABLES)[number];
 

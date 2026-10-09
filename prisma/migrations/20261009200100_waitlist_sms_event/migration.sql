@@ -1,0 +1,3 @@
+-- AlterEnum
+ALTER TYPE "AutoSmsEvent" ADD VALUE 'WAITLIST_OFFER';
+

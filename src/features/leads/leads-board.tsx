@@ -1,6 +1,15 @@
 "use client";
 
-import { MoreHorizontal, Pencil, PhoneCall, Plus, Trash2, UsersRound, X } from "lucide-react";
+import {
+  ListOrdered,
+  MoreHorizontal,
+  Pencil,
+  PhoneCall,
+  Plus,
+  Trash2,
+  UsersRound,
+  X,
+} from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useSearchParams } from "next/navigation";
 import { useState, useTransition } from "react";
@@ -52,6 +61,7 @@ import type {
 import { AddToGroupDialog } from "./add-to-group-dialog";
 import { LeadCard } from "./lead-card";
 import { TrialDialog } from "./trial-dialog";
+import { WaitlistDialog, type WaitlistDraft } from "./waitlist-dialog";
 import { LeadDialog } from "./lead-dialog";
 import { NameDialog } from "./name-dialog";
 
@@ -110,6 +120,7 @@ export function LeadsBoard({
   const [inlineError, setInlineError] = useState<string | null>(null);
   const [deletingLead, setDeletingLead] = useState<LeadDto | null>(null);
   const [trialLead, setTrialLead] = useState<LeadDto | null>(null);
+  const [waitlistDraft, setWaitlistDraft] = useState<WaitlistDraft | null>(null);
   const [deletingColumn, setDeletingColumn] = useState<BoardColumnDto | null>(null);
   const [smsColumn, setSmsColumn] = useState<BoardColumnDto | null>(null);
   const [deletingBoard, setDeletingBoard] = useState(false);
@@ -319,6 +330,11 @@ export function LeadsBoard({
           <Button asChild variant={view.due > 0 ? "default" : "outline"} size="sm">
             <Link href="/leads/calls" data-testid="leads-calls">
               <PhoneCall /> {tl("calls.button", { count: view.due })}
+            </Link>
+          </Button>
+          <Button asChild variant="outline" size="sm">
+            <Link href="/leads/waitlist" data-testid="leads-waitlist">
+              <ListOrdered /> {tl("waitlist.button", { count: options.waiting })}
             </Link>
           </Button>
           <ExcelLink path="/leads/export.xlsx" params={searchParams} testId="leads-excel" />
@@ -538,6 +554,20 @@ export function LeadsBoard({
                     onArchive={() => void toggleArchived(lead)}
                     onDelete={() => setDeletingLead(lead)}
                     onTrial={lead.studentId || lead.isArchived ? null : () => setTrialLead(lead)}
+                    onWaitlist={
+                      lead.isArchived
+                        ? null
+                        : () =>
+                            setWaitlistDraft({
+                              entry: null,
+                              leadId: lead.id,
+                              branchId: lead.branchId,
+                              fullName: lead.fullName,
+                              phone: lead.phones[0] ?? "",
+                              days: lead.days,
+                              lessonTime: lead.lessonTime,
+                            })
+                    }
                     onCancelTrial={lead.trial ? () => void cancelTrial(lead) : null}
                     onDragStart={() => setDragging(lead.id)}
                     onDragEnd={() => {
@@ -738,6 +768,18 @@ export function LeadsBoard({
         target={selected.size > 0 ? { kind: "leads", leadIds: [...selected] } : null}
         title={tl("bulk.smsTitle", { count: selected.size })}
         onSent={refresh}
+      />
+      <WaitlistDialog
+        draft={waitlistDraft}
+        courses={options.courses}
+        branches={allBranchOptions}
+        onOpenChange={(open) => {
+          if (!open) setWaitlistDraft(null);
+        }}
+        onSaved={(entry) => {
+          setNotice(tl("waitlist.added", { name: entry.fullName, course: entry.courseName }));
+          refresh();
+        }}
       />
       <TrialDialog
         lead={trialLead}

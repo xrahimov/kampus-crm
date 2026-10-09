@@ -59,6 +59,7 @@ export function LeadCard({
   onDelete,
   onTrial,
   onCancelTrial,
+  onWaitlist,
   onDragStart,
   onDragEnd,
   dragging,
@@ -79,6 +80,8 @@ export function LeadCard({
   onTrial: (() => void) | null;
   /** Cancels the booked trial the card shows. */
   onCancelTrial: (() => void) | null;
+  /** "Add to waiting list" (A-138); null for archived leads. */
+  onWaitlist: (() => void) | null;
   onDragStart: () => void;
   onDragEnd: () => void;
   dragging: boolean;
@@ -160,6 +163,11 @@ export function LeadCard({
               {canUpdate && onCancelTrial && lead.trial?.status === "BOOKED" && (
                 <DropdownMenuItem onSelect={onCancelTrial} data-testid="lead-cancel-trial">
                   {tl("trial.cancel")}
+                </DropdownMenuItem>
+              )}
+              {canUpdate && onWaitlist && (
+                <DropdownMenuItem onSelect={onWaitlist} data-testid="lead-waitlist">
+                  {tl("waitlist.addLead")}
                 </DropdownMenuItem>
               )}
               {canUpdate && columns.length > 1 && (

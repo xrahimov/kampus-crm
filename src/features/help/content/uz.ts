@@ -246,6 +246,13 @@ export const uz: HelpContent = {
             "O‘quvchi keyinroq guruhdan chiqsa, guruh sahifasidagi qator menyusida **Lidlarga qaytarish** bor, u o‘quvchini doskaga qaytaradi.",
           ],
         },
+        waitlist: {
+          title: "Kutish ro‘yxati",
+          body: [
+            "Kimdir kursni istasa, lekin hech bir guruhda bo‘sh joy yoki mos vaqt bo‘lmasa, uni **Kutish ro‘yxati**ga kiriting: lid kartasi menyusidan (**Kutish ro‘yxatiga**) yoki ro‘yxat sahifasidagi tugma bilan, filial, kurs, istalgan kunlar va vaqt hamda eslatma bilan. Ro‘yxat odamlarni qo‘shilgan tartibda saqlaydi; raqam har kimning o‘z kursi navbatidagi o‘rnini ko‘rsatadi.",
+            "Shu kurs guruhi ochilganda yoki joy bo‘shaganda guruhni oching va menyusidan **Kutish ro‘yxatiga joy taklif qilish**ni tanlang. Kampus bo‘sh joylarni (jadvaldagi eng kichik xona sig‘imidan hozirgi a’zolar ayirilgani), navbatda kim turganini va Sozlamalar → Umumiy → Avto SMS da «Kutish ro‘yxati taklifi» SMS yoqilganini ko‘rsatadi; tasdiqlangach birinchilar guruhning kunlari, vaqti va boshlanish sanasi bilan xabar oladi (ulangan o‘quvchi bo‘lsa Telegramda ham) va **Taklif qilindi** deb belgilanadi. So‘ng yozuvdagi **Guruhga qo‘shish** odamni guruhga qo‘shadi (lid o‘quvchiga aylanadi, yangi odam o‘quvchi bo‘ladi); **Rad etdi** va **O‘chirish** yozuvni yopadi, **Yana kutishga** uni navbatga qaytaradi.",
+          ],
+        },
         sources: {
           title: "Manbalar",
           body: [
@@ -319,6 +326,7 @@ export const uz: HelpContent = {
             "**Dam berish** shu guruh uchun bitta sanadagi darsni olib tashlaydi, masalan o‘qituvchining safari uchun, va o‘quvchilar bilan ota-onalarga darhol Telegram va SMS orqali xabar bera oladi (SMS tugmalari Sozlamalar → Umumiy → Avto SMS bo‘limida). Darsni bekor qilish o‘rniga ko‘chirish uchun yangi sana va vaqtni tanlang. Oyning bekor qilingan va ko‘chirilgan darslari davomat jadvali tepasida ro‘yxat bo‘lib chiqadi, dam kunini o‘sha yerda qaytarish mumkin. Filial bo‘yicha bayramlar esa Sozlamalar → Dam olish kunlari bo‘limiga kiritiladi va har bir guruhga amal qiladi.",
             "**O‘qituvchini o‘zgartirish** ketayotgan o‘qituvchini bugundan boshlab yangisi bilan almashtiradi; yangi o‘qituvchining ish haqi ulushi bugundan, eskisiniki kechagacha hisoblanadi. **Support o‘qituvchilar** davomat qila oladigan va guruhni ko‘ra oladigan, lekin ish haqi ulushi bo‘lmagan qo‘shimcha o‘qituvchilarni biriktiradi.",
             "Kurs tugaganda **Guruhni tugatish** ni bosing: har bir faol o‘quvchi bitiruvchiga aylanadi va qolgan darslar olib tashlanadi. Bitiruvchilar hisoboti ularni ko‘rsatadi. **Arxivlash** tashlab qo‘yilgan guruhni yashiradi; darslari va tarixi saqlanadi. Arxivlangan guruhlar Arxivlangan yorlig‘ida ko‘rinadi.",
+            "**Kutish ro‘yxatiga joy taklif qilish** shu filialda guruh kursini kutayotganlarga, guruhdagi bo‘sh joylar soniga qarab, xabar yuboradi va ularni taklif qilingan deb belgilaydi (Lidlar → Kutish ro‘yxati ga qarang).",
           ],
         },
         timetable: {

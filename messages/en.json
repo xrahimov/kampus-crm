@@ -436,7 +436,9 @@
     "trialExists": "This lead already has a trial in that group on that day.",
     "trialNotFound": "Trial not found.",
     "trialConverted": "The lead already joined the group; the trial is closed.",
-    "telegramNotConfigured": "This centre's Telegram bot is not set up (Settings → Integrations → Telegram)."
+    "telegramNotConfigured": "This centre's Telegram bot is not set up (Settings → Integrations → Telegram).",
+    "waitlistDuplicate": "This phone is already waiting for this course.",
+    "waitlistClosed": "This entry is already enrolled."
   },
   "validation": {
     "phone": "Enter a number like +998 90 123 45 67.",
@@ -541,7 +543,9 @@
     "currentSession": "This is the device you are using; use Sign out instead.",
     "ownerUnknown": "This person cannot own leads in the branch.",
     "trialOtherBranch": "The group is in another branch than the lead.",
-    "courseTopic": "This topic is not in the group's course"
+    "courseTopic": "This topic is not in the group's course",
+    "courseBranch": "The course belongs to another branch",
+    "waitlistCourse": "Choose a group of the entry's course"
   },
   "roles": {
     "CEO": "CEO",
@@ -1184,7 +1188,8 @@
       "view": "Open",
       "moveBranch": "Move to another branch",
       "finish": "Finish group",
-      "sms": "Send SMS"
+      "sms": "Send SMS",
+      "offerSeats": "Offer seats to the waiting list"
     },
     "form": {
       "add": "New group",
@@ -1448,6 +1453,19 @@
         "next": "Next",
         "planned": "Planned"
       }
+    },
+    "waitlist": {
+      "title": "Offer seats to the waiting list",
+      "hint": "The first people waiting for this course in this branch get the group's days, time and start date and are marked as offered.",
+      "freeSeats": "Free seats",
+      "freeSeatsUnknown": "unknown (no room on the schedule)",
+      "waiting": "Waiting for this course",
+      "none": "Nobody is waiting for this course in this branch.",
+      "smsOn": "The \"Waiting list offer\" SMS is on: each person gets a text. Students linked to the Telegram bot get a message there too.",
+      "smsOff": "The \"Waiting list offer\" SMS is off (Settings → General → Auto SMS), so nobody is texted: call them yourself. Linked students still get a Telegram message.",
+      "offer": "{count, plural, =0 {Offer} one {Offer # seat} other {Offer # seats}}",
+      "done": "{offered} offered: {sms} SMS sent, {telegram} Telegram messages queued.",
+      "noSeats": "People are waiting, but the group has no free seat: every seat is taken or already offered."
     }
   },
   "timetable": {
@@ -2418,6 +2436,64 @@
       "restoreText": "They return to their columns.",
       "smsTitle": "SMS to {count} leads",
       "done": "{done} done, {skipped} skipped."
+    },
+    "waitlist": {
+      "title": "Waiting list",
+      "button": "Waiting list ({count})",
+      "count": "{count, plural, =0 {No entries} one {# entry} other {# entries}}",
+      "add": "Add to waiting list",
+      "edit": "Edit entry",
+      "addLead": "Add to waiting list",
+      "hint": "The person waits for a course of their branch. When a group of that course opens, Offer seats on the group texts the first in line.",
+      "added": "{name} is on the waiting list for {course}.",
+      "enrolled": "{name} joined the group.",
+      "enrol": "Enrol in a group",
+      "enrolTitle": "Enrol: {name}",
+      "enrolHint": "A group of {course} in the same branch; the entry closes as enrolled.",
+      "fields": {
+        "branch": "Branch",
+        "course": "Course",
+        "coursePlaceholder": "Choose a course",
+        "name": "Name",
+        "phone": "Phone",
+        "days": "Preferred days",
+        "anyDays": "Any days",
+        "time": "Preferred time",
+        "note": "Note",
+        "group": "Group",
+        "groupPlaceholder": "Choose a group",
+        "joinedAt": "Joined on",
+        "status": "Status in the group"
+      },
+      "filters": {
+        "course": "Course",
+        "allCourses": "All courses",
+        "status": "Status",
+        "open": "Waiting and offered",
+        "search": "Name or phone"
+      },
+      "columns": {
+        "person": "Person",
+        "course": "Course",
+        "preferred": "Preferred",
+        "status": "Status",
+        "added": "Added"
+      },
+      "statuses": {
+        "WAITING": "Waiting",
+        "OFFERED": "Offered",
+        "ENROLLED": "Enrolled",
+        "DECLINED": "Declined",
+        "REMOVED": "Removed"
+      },
+      "actions": {
+        "reopen": "Back to waiting",
+        "decline": "Declined"
+      },
+      "empty": "Nobody is waiting.",
+      "emptyHint": "Add people who want a course that has no group with a free seat yet, from a lead card or with the button above.",
+      "removeTitle": "Remove from the waiting list?",
+      "removeText": "{name} is taken off the list; the entry stays in the history as removed."
     }
   },
   "exams": {
@@ -3439,7 +3515,8 @@
       "LESSON_CANCELLED": "Lesson cancelled",
       "LESSON_MOVED": "Lesson moved",
       "LESSON_RESTORED": "Cancelled lesson back on",
-      "INSTALMENT_DUE": "Instalment due soon"
+      "INSTALMENT_DUE": "Instalment due soon",
+      "WAITLIST_OFFER": "Waiting list offer"
     },
     "variables": {
       "studentName": "Student name",
@@ -3452,7 +3529,8 @@
       "time": "Lesson time",
       "newDate": "New date",
       "newTime": "New time",
-      "reason": "Reason"
+      "reason": "Reason",
+      "days": "Lesson days"
     },
     "studentTab": {
       "title": "SMS sent to the student",
@@ -3914,6 +3992,12 @@
         "announcement": {
           "create": "Announcement posted",
           "delete": "Announcement deleted"
+        },
+        "waitlist": {
+          "create": "Added to the waiting list",
+          "update": "Waiting list entry changed",
+          "offer": "Seats offered to the waiting list",
+          "enrol": "Enrolled from the waiting list"
         }
       }
     }
@@ -4497,7 +4581,8 @@
     "leadCallsTitle": "📞 {name}, calls today: {count} leads, {overdue} overdue",
     "leadCallsLine": "• {name} — {phone} ({when})",
     "leadCallsMore": "… and {count} more",
-    "announcement": "📢 {title}\n\n{body}\n\n— {from}"
+    "announcement": "📢 {title}\n\n{body}\n\n— {from}",
+    "waitlistOffer": "{group} is opening: {days} {time}, from {date}. Call the centre to take your seat."
   },
   "video": {
     "title": "Video lesson",
