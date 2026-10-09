@@ -134,6 +134,8 @@ beforeAll(async () => {
       startDate: daysAgo(45),
       endDate: null,
       status: "ACTIVE",
+      // The same teacher at the same hour twice: the clash check (A-116) has its own suite.
+      ignoreClashes: true,
     });
   groupA = (await group(`${TAG} GE-A`, roomA, teacher.userId)).id;
   groupB = (await group(`${TAG} GE-B`, null, teacher.userId)).id;

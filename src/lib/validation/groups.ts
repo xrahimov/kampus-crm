@@ -61,6 +61,8 @@ const groupBase = z.object({
   /** Defaults to start date + course duration (A-51). */
   endDate: dateOnlySchema.nullable().optional(),
   status: z.enum(GROUP_STATUSES).default("ACTIVE"),
+  /** The clash warning (A-116) was shown and the user chose to save anyway. */
+  ignoreClashes: z.boolean().optional(),
 });
 
 export const groupSchema = groupBase

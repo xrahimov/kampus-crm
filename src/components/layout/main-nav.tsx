@@ -2,6 +2,7 @@
 
 import {
   CalendarCheck,
+  CalendarRange,
   ChartColumn,
   ClipboardCheck,
   Contact,
@@ -31,6 +32,7 @@ const MODULE_PATH: Record<ModuleKey, string> = {
   leads: "/leads",
   teachers: "/teachers",
   groups: "/groups",
+  timetable: "/timetable",
   students: "/students",
   debts: "/debts",
   exams: "/exams",
@@ -45,6 +47,7 @@ const MODULE_ICON: Record<ModuleKey, LucideIcon> = {
   leads: Funnel,
   teachers: GraduationCap,
   groups: Users,
+  timetable: CalendarRange,
   students: Contact,
   debts: HandCoins,
   exams: ClipboardCheck,

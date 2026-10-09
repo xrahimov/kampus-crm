@@ -44,6 +44,7 @@
     "leads": "Lidlar",
     "teachers": "O‘qituvchilar",
     "groups": "Guruhlar",
+    "timetable": "Dars jadvali",
     "students": "O‘quvchilar",
     "debts": "Qarzdorlar",
     "exams": "Imtihonlar",
@@ -250,7 +251,8 @@
     "importNameExists": "Bu nom bilan allaqachon mavjud",
     "importUserExists": "Bu telefonli foydalanuvchi allaqachon bor",
     "importParentExists": "Bu ota-ona o‘quvchiga allaqachon qo‘shilgan",
-    "debtCaseClosed": "Bu qarz allaqachon yopilgan."
+    "debtCaseClosed": "Bu qarz allaqachon yopilgan.",
+    "scheduleClash": "Bu vaqtda xona yoki o‘qituvchi band."
   },
   "validation": {
     "phone": "+998 90 123 45 67 ko‘rinishida raqam kiriting.",
@@ -881,7 +883,14 @@
       "addTeacher": "O'qituvchi qo'shish",
       "startDate": "Boshlanish sanasi",
       "endDate": "Tugash sanasi",
-      "endDateHint": "Bo'sh qolsa — boshlanish sanasi + kurs davomiyligi."
+      "endDateHint": "Bo'sh qolsa — boshlanish sanasi + kurs davomiyligi.",
+      "clashes": {
+        "title": "Allaqachon band",
+        "room": "{day} {start}–{end}: {room} xonasi {group} guruhi bilan band.",
+        "teacher": "{day} {start}–{end}: {teacher} {group} guruhida dars beradi.",
+        "saveAnyway": "Baribir saqlash",
+        "hint": "Vaqt, xona yoki o‘qituvchini o‘zgartiring, yoki ustma-ustlik ataylab bo‘lsa, baribir saqlang."
+      }
     },
     "detail": {
       "info": "Guruh",
@@ -1086,6 +1095,20 @@
       "duration": "{minutes} daqiqa",
       "size": "{mb} MB"
     }
+  },
+  "timetable": {
+    "title": "Dars jadvali",
+    "subtitle": "Guruhlar jadvalidan tuzilgan bitta xona yoki bitta o‘qituvchining haftasi.",
+    "byRoom": "Xonalar bo‘yicha",
+    "byTeacher": "O‘qituvchilar bo‘yicha",
+    "room": "Xona",
+    "teacher": "O‘qituvchi",
+    "branch": "Filial",
+    "empty": "Bu hafta bu yerda hech narsa rejalashtirilmagan.",
+    "noRooms": "Bu filialda hali xonalar yo‘q.",
+    "noTeachers": "Bu filialda hali o‘qituvchilar yo‘q.",
+    "noRoom": "Xonasiz",
+    "hours": "Ish vaqti {start}–{end}"
   },
   "students": {
     "title": "O‘quvchilar",

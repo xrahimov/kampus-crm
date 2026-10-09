@@ -284,9 +284,17 @@ describe("leads from amoCRM (A-115)", () => {
       },
       uniqueKey: `amocrm:lead:${pushed.id}`,
     });
-    await runDueJobs(50, prisma);
+    // Another test file's pass may claim the job first: wait for whoever runs it.
+    await expect
+      .poll(
+        async () => {
+          await runDueJobs(50, prisma);
+          return (await prisma.lead.findUniqueOrThrow({ where: { id: pushed.id } })).amoCrmLeadId;
+        },
+        { timeout: 15_000, interval: 250 },
+      )
+      .toMatch(/^fake-/);
     const after = await prisma.lead.findUniqueOrThrow({ where: { id: pushed.id } });
-    expect(after.amoCrmLeadId).toMatch(/^fake-/);
     expect(
       await importAmoCrmLead(prisma, {
         organizationId: orgId,

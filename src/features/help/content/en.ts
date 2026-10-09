@@ -257,6 +257,12 @@ export const en: HelpContent = {
             "**Finish group** when the course is over: every active student becomes a graduate and the remaining lessons are removed. The graduates report lists them. **Archive** hides a group that was abandoned; its lessons and history stay. Archived groups are listed under the Archived tab.",
           ],
         },
+        timetable: {
+          title: "Timetable and clashes",
+          body: [
+            "When a group's schedule is saved, Kampus checks the other current groups of the centre: the same room at an overlapping time on the same day, or the same teacher in two places at once. The dialog lists what clashes (day, time, room or teacher, the other group) and the save waits; change the time, room or teacher, or press **Save anyway** when the overlap is intended, for example a shared hall. **Timetable** in the main menu shows a week of one room or one teacher: pick the branch, switch between rooms and teachers, and click a block to open the group. Teachers see their own week.",
+          ],
+        },
       },
     },
     today: {

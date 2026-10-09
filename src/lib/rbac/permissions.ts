@@ -89,6 +89,7 @@ export const MODULES = [
   "leads",
   "teachers",
   "groups",
+  "timetable",
   "students",
   "debts",
   "exams",
@@ -106,6 +107,7 @@ export const MODULE_VIEW_PERMISSION: Record<ModuleKey, Permission> = {
   leads: "leads.view",
   teachers: "teachers.view",
   groups: "groups.view",
+  timetable: "groups.view",
   students: "students.view",
   // Whoever takes payments collects debts (A-112).
   debts: "payments.create",

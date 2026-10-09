@@ -37,6 +37,14 @@ export function ConfirmDialog({
   const t = useTranslations();
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  // Each opening gets a fresh dialog tree. Radix portals the overlay and the panel
+  // separately; re-opened while the previous panel was still fading out, a remounted
+  // overlay would land after that panel in the DOM and swallow its clicks.
+  const [opening, setOpening] = useState({ open, count: 0 });
+  if (open !== opening.open) {
+    setOpening({ open, count: opening.count + (open ? 1 : 0) });
+    if (open) setError(null);
+  }
 
   async function confirm(event: React.MouseEvent) {
     event.preventDefault();
@@ -54,7 +62,7 @@ export function ConfirmDialog({
   }
 
   return (
-    <AlertDialog open={open} onOpenChange={onOpenChange}>
+    <AlertDialog key={opening.count} open={open} onOpenChange={onOpenChange}>
       <AlertDialogContent>
         <AlertDialogHeader>
           <AlertDialogTitle>{title}</AlertDialogTitle>
