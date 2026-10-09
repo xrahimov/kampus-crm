@@ -717,6 +717,21 @@ export const uz: HelpContent = {
             "O‘qituvchiga guruhning dam kuni uchun haq to‘lanishi yoki faqat o‘zi kelgan darslar uchun to‘lanishi, hamda o‘qituvchilar o‘z maoshini ko‘rishi Sozlamalar → Umumiy sozlamalardagi tugmalar orqali belgilanadi.",
           ],
         },
+        cashClose: {
+          title: "Kassa kunining yopilishi",
+          body: [
+            "Yon menyudagi **Kassa** (to‘lov qabul qiladigan har kimda bor) kassir kunini yopadi. Yopilishda shu kuni bitta filialda siz kiritgan hamma narsa to‘lov turlari bo‘yicha ko‘rinadi: to‘lovlar, qaytarishlar, boshqa kirimlar va kassadan to‘langan chiqimlar. Kutilgan naqd pul Sozlamalar → Umumiy → To‘lov turlari bo‘limida naqd deb belgilangan turlardan yig‘iladi; farq — sanalgan pul minus kutilgan.",
+            {
+              steps: [
+                "**Kunni yopish** tugmasini bosing, filial va kunni tekshiring.",
+                "Raqamlarni cheklar bilan solishtiring, naqd pulni sanab **Sanalgan naqd** maydoniga kiriting. Raqamlar farq qilsa, izoh yozing.",
+                "Oynadagi **Kunni yopish** tugmasini bosing. Yopilish farqi bilan ro‘yxatda paydo bo‘ladi; **Chop etish** raqamlar va topshirish uchun ikki imzo qatori bo‘lgan varaqni ochadi.",
+                "Rahbar pulni olganda **Qabul qilish** tugmasini bosadi. Qabul qilingan kunni qayta yopib bo‘lmaydi; hali qabul qilinmaganini — mumkin, yangi raqamlar eskisini almashtiradi.",
+              ],
+            },
+            "Rahbarlar barcha kassirlarning yopilishlarini ko‘radi, Moliya sahifasi ularni sanaydi; kassir faqat o‘zinikini ko‘radi. Har bir yopilish xodimlar Telegram lentasiga va amallar jurnaliga kim yopgani va kim qabul qilgani bilan tushadi.",
+          ],
+        },
       },
     },
     reports: {

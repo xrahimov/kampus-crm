@@ -6,6 +6,7 @@ import { Forbidden } from "@/features/settings/forbidden";
 import type { SearchParams } from "@/features/settings/list-params";
 import { requireCurrentUser } from "@/server/auth/current-user";
 import { can } from "@/server/rbac/authorize";
+import { countCashCloses } from "@/server/services/finance/cash-close.service";
 import { listCategories } from "@/server/services/finance/categories.service";
 import { getFinanceOptions, sumEntriesByType } from "@/server/services/finance/entries.service";
 import { getFinanceOverview, getFinancePlan } from "@/server/services/finance/overview.service";
@@ -37,7 +38,7 @@ export default async function Page({
     paymentMethodId: f.paymentMethodId ?? undefined,
   };
   const planMonth = f.month ?? new Date().getMonth() + 1;
-  const [overview, plan, categories, totals, payroll, options] = await Promise.all([
+  const [overview, plan, categories, totals, payroll, options, cashCloses] = await Promise.all([
     getFinanceOverview(current.actor, period),
     getFinancePlan(current.actor, {
       branchId: period.branchId,
@@ -49,6 +50,11 @@ export default async function Page({
     sumEntriesByType(current.actor, period),
     listPayrollRuns(current.actor),
     getFinanceOptions(current.actor),
+    countCashCloses(current.actor, {
+      branchId: period.branchId,
+      year: f.year,
+      month: f.month ?? undefined,
+    }),
   ]);
   return (
     <FinancePage
@@ -64,6 +70,7 @@ export default async function Page({
         investment: totals.INVESTMENT,
       }}
       payroll={payroll}
+      cashCloses={cashCloses}
       options={options}
       branches={options.branches}
       years={yearOptions()}

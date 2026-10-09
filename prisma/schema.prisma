@@ -52,6 +52,7 @@ model Organization {
   botRecipients     BotRecipient[]
   integrations      IntegrationSetting[]
   leaveReasons      LeaveReason[]
+  cashCloses        CashClose[]
 }
 
 model Branch {
@@ -81,6 +82,7 @@ model Branch {
   staffCheckIns  StaffAttendance[]
   adjustments    BalanceAdjustment[]
   debtCases      DebtCase[]
+  cashCloses     CashClose[]
 
   @@index([organizationId])
 }
@@ -135,10 +137,12 @@ model User {
   groupsSupported GroupSupportTeacher[] @relation("supportOf")
   groupNotes      GroupNote[]
 
-  paymentsReceived Payment[]
-  refundsMade      Refund[]
-  discountsGiven   Discount[]
-  studentComments  StudentComment[]
+  paymentsReceived   Payment[]
+  refundsMade        Refund[]
+  cashClosesMade     CashClose[]      @relation("cashCloseCashier")
+  cashClosesAccepted CashClose[]      @relation("cashCloseAcceptor")
+  discountsGiven     Discount[]
+  studentComments    StudentComment[]
 
   leadsAssigned Lead[] @relation("leadTeacher")
   leadsCreated  Lead[] @relation("leadCreator")
@@ -358,6 +362,8 @@ model PaymentMethod {
   organizationId String
   name           String
   isActive       Boolean  @default(true)
+  /// Counted at the cashier's day close (A-122): money in the drawer, unlike cards or transfers.
+  isCash         Boolean  @default(false)
   sortOrder      Int      @default(0)
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
@@ -2193,4 +2199,34 @@ model VideoSignal {
   room VideoRoom @relation(fields: [roomId], references: [id], onDelete: Cascade)
 
   @@index([roomId, toId, id])
+}
+
+/// A cashier's day close (A-122): what one cashier recorded in one branch on one Tashkent
+/// calendar day, by payment method, the cash the drawer should hold, the cash counted, and the
+/// hand-over to whoever accepts it.
+model CashClose {
+  id             String    @id @default(cuid())
+  organizationId String
+  branchId       String
+  cashierId      String
+  date           DateTime  @db.Date
+  /// Per payment method: payments, other income, refunds, expenses and the net, as computed when closing.
+  totals         Json
+  paymentsCount  Int       @default(0)
+  expectedCash   Decimal   @db.Decimal(15, 2)
+  countedCash    Decimal   @db.Decimal(15, 2)
+  difference     Decimal   @db.Decimal(15, 2)
+  note           String?
+  acceptedById   String?
+  acceptedAt     DateTime?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  branch       Branch       @relation(fields: [branchId], references: [id], onDelete: Cascade)
+  cashier      User         @relation("cashCloseCashier", fields: [cashierId], references: [id], onDelete: Cascade)
+  acceptedBy   User?        @relation("cashCloseAcceptor", fields: [acceptedById], references: [id], onDelete: SetNull)
+
+  @@unique([branchId, cashierId, date])
+  @@index([organizationId, date])
 }

@@ -172,7 +172,10 @@ beforeAll(async () => {
   studentOne = one.studentId;
   studentTwo = two.studentId;
   membershipOne = one.id;
-  const settings = await prisma.orgSettings.findFirst();
+  // The demo centre's own switch: other test files create centres of their own meanwhile.
+  const settings = await prisma.orgSettings.findUnique({
+    where: { organizationId: DEMO_ORG_ID },
+  });
   switchBefore = settings?.teachersSeeExamSchedule ?? null;
   if (settings) {
     await prisma.orgSettings.update({
@@ -185,7 +188,10 @@ beforeAll(async () => {
 afterAll(async () => {
   const branches = [branchA, branchB];
   if (switchBefore !== null) {
-    await prisma.orgSettings.updateMany({ data: { teachersSeeExamSchedule: switchBefore } });
+    await prisma.orgSettings.updateMany({
+      where: { organizationId: DEMO_ORG_ID },
+      data: { teachersSeeExamSchedule: switchBefore },
+    });
   }
   const exams = await prisma.exam.findMany({ where: { branchId: { in: branches } } });
   const students = await prisma.student.findMany({ where: { branchId: { in: branches } } });
@@ -266,7 +272,10 @@ describe("group exams", () => {
       code: "FORBIDDEN",
       message: "errors.examsHidden",
     });
-    await prisma.orgSettings.updateMany({ data: { teachersSeeExamSchedule: true } });
+    await prisma.orgSettings.updateMany({
+      where: { organizationId: DEMO_ORG_ID },
+      data: { teachersSeeExamSchedule: true },
+    });
     const other = await createExam(ceo, examInput({ groupId: groupB, name: `${TAG} other` }));
     const mine = await listExams(teacher, { type: "GROUP" });
     expect(mine.items.map((x) => x.id)).toContain(examId);

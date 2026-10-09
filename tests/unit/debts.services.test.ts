@@ -143,8 +143,14 @@ beforeAll(async () => {
       status: "ACTIVE",
     })
   ).id;
-  methodId = (await createPaymentMethod(ceo, { name: `${TAG} Cash`, isActive: true, sortOrder: 0 }))
-    .id;
+  methodId = (
+    await createPaymentMethod(ceo, {
+      name: `${TAG} Cash`,
+      isActive: true,
+      isCash: true,
+      sortOrder: 0,
+    })
+  ).id;
   savedCadence = await prisma.orgSettings.findUniqueOrThrow({
     where: { organizationId: DEMO_ORG_ID },
     select: { debtTelegramDays: true, debtSmsDays: true, debtTaskDays: true },

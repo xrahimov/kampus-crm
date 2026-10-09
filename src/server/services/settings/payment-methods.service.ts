@@ -9,10 +9,12 @@ export interface PaymentMethodDto {
   id: string;
   name: string;
   isActive: boolean;
+  /** Counted at the cashier's day close (A-122). */
+  isCash: boolean;
   sortOrder: number;
 }
 
-const select = { id: true, name: true, isActive: true, sortOrder: true } as const;
+const select = { id: true, name: true, isActive: true, isCash: true, sortOrder: true } as const;
 
 export async function listPaymentMethods(
   actor: Actor,

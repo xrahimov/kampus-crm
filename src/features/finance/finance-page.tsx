@@ -60,6 +60,7 @@ export function FinancePage({
   categories,
   staffTotals,
   payroll,
+  cashCloses,
   options,
   branches,
   years,
@@ -77,6 +78,8 @@ export function FinancePage({
     investment: number;
   };
   payroll: PayrollSummaryDto[];
+  /** Cashier day closes in the period and how many still wait for the hand-over (A-122). */
+  cashCloses: { count: number; pending: number };
   options: FinanceOptions;
   branches: BranchOption[];
   years: number[];
@@ -383,6 +386,16 @@ export function FinancePage({
             href="/finance/penalty"
             title={t("sections.penalty")}
             value={money(staffTotals.penalty)}
+          />
+          <LinkCard
+            href="/cashdesk"
+            title={t("sections.cashdesk")}
+            value={
+              cashCloses.pending > 0
+                ? `${t("cashdeskCount", { count: cashCloses.count })} · ${t("cashdeskPending", { count: cashCloses.pending })}`
+                : t("cashdeskCount", { count: cashCloses.count })
+            }
+            testId="cashdesk-card"
           />
         </div>
       </section>

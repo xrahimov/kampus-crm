@@ -13,6 +13,7 @@ import {
   Landmark,
   Settings2,
   Users,
+  Wallet,
   type LucideIcon,
 } from "lucide-react";
 import { useTranslations } from "next-intl";
@@ -35,6 +36,7 @@ const MODULE_PATH: Record<ModuleKey, string> = {
   timetable: "/timetable",
   students: "/students",
   debts: "/debts",
+  cashdesk: "/cashdesk",
   exams: "/exams",
   settings: "/settings",
   finance: "/finance",
@@ -50,6 +52,7 @@ const MODULE_ICON: Record<ModuleKey, LucideIcon> = {
   timetable: CalendarRange,
   students: Contact,
   debts: HandCoins,
+  cashdesk: Wallet,
   exams: ClipboardCheck,
   settings: Settings2,
   finance: Landmark,
