@@ -46,6 +46,7 @@
     "groups": "Группы",
     "timetable": "Расписание",
     "students": "Ученики",
+    "absences": "Пропуски",
     "debts": "Должники",
     "cashdesk": "Касса",
     "exams": "Экзамены",
@@ -301,7 +302,8 @@
     "signInCodeWrong": "Неверный код. Попробуйте ещё раз.",
     "signInCodeExpired": "Код истёк или введён неверно слишком много раз. Войдите заново.",
     "signInCodeFailed": "Не удалось отправить код в Telegram. Попросите администратора отключить вам код входа.",
-    "passwordChangeRequired": "Сначала задайте свой пароль."
+    "passwordChangeRequired": "Сначала задайте свой пароль.",
+    "absenceCaseClosed": "Этот случай уже закрыт."
   },
   "validation": {
     "phone": "Введите номер в формате +998 90 123 45 67.",
@@ -469,6 +471,15 @@
         "telegram": "Сообщение ученику в Telegram через",
         "sms": "SMS через",
         "task": "Задача менеджерам филиала через",
+        "days": "дней",
+        "off": "выкл."
+      },
+      "absence": {
+        "title": "Контроль пропусков",
+        "hint": "Когда ученик попадает в список «Пропуски». Пустое поле выключает правило.",
+        "streak": "Пропусков подряд",
+        "silent": "Дней без отметки «был»",
+        "lessons": "занятий",
         "days": "дней",
         "off": "выкл."
       },
@@ -1747,6 +1758,96 @@
     },
     "empty": "Должников нет.",
     "emptyHint": "Ученик появляется здесь, как только его баланс в филиале уходит в минус, и исчезает после оплаты."
+  },
+  "absences": {
+    "title": "Пропуски",
+    "description": "Ученики, которые перестали ходить: сколько их нет, почему они в списке и кто с ними связывался последним.",
+    "count": "{count, plural, =0 {В списке никого} one {# ученик} few {# ученика} other {# учеников}}",
+    "summary": {
+      "open": "В списке",
+      "noContact": "Без звонка",
+      "streak": "Пропуски подряд",
+      "silent": "Не было {days} дней",
+      "silentOff": "Давно не было"
+    },
+    "filters": {
+      "status": "Показать",
+      "reason": "Причина",
+      "search": "Имя или телефон",
+      "OPEN": "Открытые",
+      "NO_CONTACT": "Без звонка",
+      "CLOSED": "Закрытые",
+      "ALL": "Все",
+      "anyReason": "Любая причина",
+      "STREAK": "Пропуски подряд",
+      "SILENT": "Не появлялся"
+    },
+    "columns": {
+      "student": "Ученик",
+      "group": "Группа",
+      "absence": "Пропуск",
+      "lastSeen": "Был в последний раз",
+      "lastContact": "Последний контакт"
+    },
+    "reason": {
+      "STREAK": "{count, plural, one {# занятие подряд пропущено} few {# занятия подряд пропущено} other {# занятий подряд пропущено}}",
+      "SILENT": "{count, plural, one {# занятие} few {# занятия} other {# занятий}} без отметки «был»"
+    },
+    "reasonShort": {
+      "STREAK": "Подряд",
+      "SILENT": "Не появлялся"
+    },
+    "since": "с {date}",
+    "days": "{count, plural, one {# день} few {# дня} other {# дней}}",
+    "never": "Ни разу не отмечен как присутствующий",
+    "teacher": "Учитель: {name}",
+    "noContact": "Ещё никто не звонил",
+    "by": "— {name}",
+    "status": {
+      "OPEN": "Открыт",
+      "CLOSED": "Закрыт"
+    },
+    "closed": {
+      "RETURNED": "Вернулся",
+      "LEFT": "Покинул группу",
+      "CLEARED": "Больше не отмечен"
+    },
+    "channels": {
+      "CALL": "Звонок",
+      "TELEGRAM": "Telegram",
+      "SMS": "SMS",
+      "VISIT": "Приходил(а)",
+      "NOTE": "Заметка"
+    },
+    "outcomes": {
+      "NO_ANSWER": "Нет ответа",
+      "WILL_RETURN": "Вернётся",
+      "ILL": "Болеет",
+      "LEAVING": "Уходит из группы",
+      "OTHER": "Другое"
+    },
+    "actions": {
+      "call": "Позвонить и записать итог",
+      "log": "Записать контакт",
+      "history": "История",
+      "profile": "Открыть ученика",
+      "group": "Открыть группу"
+    },
+    "dialog": {
+      "title": "Контакт: {name}",
+      "channel": "Как",
+      "outcome": "Итог",
+      "none": "Не указан",
+      "note": "Заметка",
+      "parentPhone": "родитель"
+    },
+    "history": {
+      "title": "История: {name}",
+      "loading": "Загрузка…",
+      "empty": "Контактов пока нет."
+    },
+    "empty": "Здесь никто не пропускает занятия.",
+    "emptyHint": "Ученик попадает в список после пропусков подряд или долгого отсутствия отметки «был» по правилам в Настройки → Настройки центра и уходит из него, когда снова приходит."
   },
   "discounts": {
     "title": "Скидки",
@@ -3331,6 +3432,9 @@
           "contact": "Контакт с должником записан",
           "remind": "Напоминание о долге отправлено"
         },
+        "absence": {
+          "contact": "Контакт с пропускающим учеником записан"
+        },
         "referral": {
           "credit": "Реферал засчитан"
         },
@@ -3565,7 +3669,8 @@
       "groupsTemplate": "gruppy-shablon",
       "parentsTemplate": "roditeli-shablon",
       "debtors": "dolzhniki",
-      "referralsReport": "referalnaya-programma"
+      "referralsReport": "referalnaya-programma",
+      "absences": "absences"
     },
     "example": {
       "fullName": "<имя клиента>",
@@ -3685,7 +3790,10 @@
       "lastContact": "Последний контакт",
       "leads": "Лиды",
       "joined": "Присоединились",
-      "coins": "Монеты"
+      "coins": "Монеты",
+      "missedLessons": "Пропущено занятий",
+      "absentSince": "Не ходит с",
+      "lastPresent": "Был в последний раз"
     },
     "preview": "Предпросмотр: будет импортировано строк: {count}, пропущено: {skipped}. Пока ничего не записано.",
     "previewButton": "Предпросмотр",
@@ -3735,7 +3843,8 @@
       "DEBTORS": "Сегодня должников: {count}",
       "BIRTHDAY": "У {name} сегодня день рождения",
       "DEBT_TASK": "{count, plural, one {# должник ждёт} few {# должника ждут} other {# должников ждут}} звонка уже {days} дней",
-      "DEBT_PROMISE_BROKEN": "{name} обещал(а) оплатить {amount} до {date}, но не оплатил(а)"
+      "DEBT_PROMISE_BROKEN": "{name} обещал(а) оплатить {amount} до {date}, но не оплатил(а)",
+      "ABSENCES": "{count, plural, one {# ученик перестал} few {# ученика перестали} other {# учеников перестали}} ходить на занятия: нужен звонок"
     }
   },
   "portal": {
@@ -3894,7 +4003,10 @@
     "absentComment": "Через Telegram{reason, select, none {} other {: {reason}}}",
     "instalment": "{group}: часть оплаты {amount} нужно внести до {date}. Оплатить можно в учебном центре или на своей странице.",
     "signInCode": "Kampus: ваш код входа — {code}. Он действует 5 минут. Если вы не пытались войти, смените пароль.",
-    "signInAlert": "Kampus: новый вход для {name} в {when} с {device}, IP {ip}. Если это не вы, смените пароль и выйдите на всех устройствах на странице аккаунта."
+    "signInAlert": "Kampus: новый вход для {name} в {when} с {device}, IP {ip}. Если это не вы, смените пароль и выйдите на всех устройствах на странице аккаунта.",
+    "absenceWeeklyTitle": "Пропуски, {branch}, {from} – {to}: в списке {open}, без звонка {noContact}. За неделю: новых {opened}, вернулись {returned}, ушли {left}.",
+    "absenceWeeklyLine": "• {student}, {group}: не ходит {days} дн.",
+    "absenceWeeklyMore": "… и ещё {count}"
   },
   "video": {
     "title": "Видеоурок",

@@ -83,6 +83,7 @@ model Branch {
   staffCheckIns  StaffAttendance[]
   adjustments    BalanceAdjustment[]
   debtCases      DebtCase[]
+  absenceCases   AbsenceCase[]
   cashCloses     CashClose[]
 
   @@index([organizationId])
@@ -189,6 +190,7 @@ model User {
   materialsAdded    LessonMaterial[]     @relation("materialAuthor")
   adjustmentsMade   BalanceAdjustment[]  @relation("adjustmentAuthor")
   debtContacts      DebtContact[]        @relation("debtContactAuthor")
+  absenceContacts   AbsenceContact[]     @relation("absenceContactAuthor")
 
   @@index([organizationId])
 }
@@ -364,9 +366,13 @@ model OrgSettings {
 
   /// Debt collection cadence (A-112): days after a debt appears until the student is
   /// reminded on Telegram, then by SMS, then the branch managers get a task. Null = off.
-  debtTelegramDays Int? @default(1)
-  debtSmsDays      Int? @default(3)
-  debtTaskDays     Int? @default(7)
+  debtTelegramDays  Int? @default(1)
+  debtSmsDays       Int? @default(3)
+  debtTaskDays      Int? @default(7)
+  /// Absence follow-up (A-125): lessons missed in a row, and days without a present mark,
+  /// before a student lands on the list; null switches that rule off.
+  absenceStreak     Int? @default(2)
+  absenceSilentDays Int? @default(14)
 
   /// Public page per centre (A-121): courses, prices, timetable, teachers and the sign-up form,
   /// at the centre's own address and at /c/<publicSlug> on the server's.
@@ -593,6 +599,7 @@ model Group {
   videoRooms      VideoRoom[]
   homework        Homework[]
   materials       LessonMaterial[]
+  absenceCases    AbsenceCase[]
 
   @@index([branchId, status])
   @@index([courseId])
@@ -744,6 +751,7 @@ model Student {
   telegramChats  StudentTelegramChat[]
   adjustments    BalanceAdjustment[]
   debtCases      DebtCase[]
+  absenceCases   AbsenceCase[]
 
   @@index([branchId, isArchived])
   @@index([phone])
@@ -808,6 +816,7 @@ model GroupMembership {
   homework       HomeworkSubmission[]
   adjustments    BalanceAdjustment[]
   instalments    Instalment[]
+  absenceCases   AbsenceCase[]
 
   @@unique([groupId, studentId])
   @@index([studentId])
@@ -1255,6 +1264,86 @@ model DebtContact {
 
   case      DebtCase @relation(fields: [caseId], references: [id], onDelete: Cascade)
   createdBy User?    @relation("debtContactAuthor", fields: [createdById], references: [id], onDelete: SetNull)
+
+  @@index([caseId, createdAt])
+}
+
+/**
+ * Absence follow-up (A-125). A case follows one student in one group from the
+ * day they stop coming until they are back or gone: STREAK = the last marked
+ * lessons are absences in a row, SILENT = not one present mark for a number of
+ * days although the group met.
+ */
+enum AbsenceReason {
+  STREAK
+  SILENT
+}
+
+enum AbsenceCaseStatus {
+  OPEN
+  CLOSED
+}
+
+enum AbsenceCloseReason {
+  RETURNED
+  LEFT
+  CLEARED
+}
+
+enum AbsenceContactOutcome {
+  NO_ANSWER
+  WILL_RETURN
+  ILL
+  LEAVING
+  OTHER
+}
+
+model AbsenceCase {
+  id            String                 @id @default(cuid())
+  membershipId  String
+  studentId     String
+  groupId       String
+  branchId      String
+  status        AbsenceCaseStatus      @default(OPEN)
+  reason        AbsenceReason
+  /// Lessons missed in a row (STREAK) or held without a present mark (SILENT), refreshed while open.
+  missed        Int                    @default(0)
+  /// The first lesson of the run the student missed.
+  sinceAt       DateTime               @db.Date
+  /// The last lesson the student was marked present at, when there is one.
+  lastPresentAt DateTime?              @db.Date
+  openedAt      DateTime               @db.Date
+  lastContactAt DateTime?
+  lastChannel   DebtContactChannel?
+  lastOutcome   AbsenceContactOutcome?
+  closedAt      DateTime?
+  closedReason  AbsenceCloseReason?
+  createdAt     DateTime               @default(now())
+  updatedAt     DateTime               @updatedAt
+
+  membership GroupMembership  @relation(fields: [membershipId], references: [id], onDelete: Cascade)
+  student    Student          @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  group      Group            @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  branch     Branch           @relation(fields: [branchId], references: [id], onDelete: Cascade)
+  contacts   AbsenceContact[]
+
+  @@index([branchId, status, sinceAt])
+  @@index([membershipId, status])
+  @@index([studentId])
+}
+
+/// A call, visit, message or note on an absence case; the channel list is shared with debts.
+model AbsenceContact {
+  id          String                 @id @default(cuid())
+  caseId      String
+  channel     DebtContactChannel
+  outcome     AbsenceContactOutcome?
+  note        String?
+  createdById String?
+  createdAt   DateTime               @default(now())
+
+  case      AbsenceCase @relation(fields: [caseId], references: [id], onDelete: Cascade)
+  createdBy User?       @relation("absenceContactAuthor", fields: [createdById], references: [id], onDelete: SetNull)
 
   @@index([caseId, createdAt])
 }
@@ -2151,6 +2240,7 @@ enum NotificationKind {
   BIRTHDAY
   DEBT_TASK
   DEBT_PROMISE_BROKEN
+  ABSENCES
 }
 
 model Notification {

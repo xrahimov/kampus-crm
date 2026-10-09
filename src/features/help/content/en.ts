@@ -594,6 +594,39 @@ export const en: HelpContent = {
         },
       },
     },
+    absences: {
+      title: "Absences",
+      summary:
+        "Catching a student before they leave: who stopped coming, who called them and what they said.",
+      sections: {
+        list: {
+          title: "The absence list",
+          body: [
+            "**Absences** lists every active student who stopped coming to a group: the group and its teacher, why they are on the list (lessons missed in a row, or not one present mark for a while), since when, the last lesson they attended, and who last reached them and how it went. A student appears as soon as the rules match their attendance and leaves the list when they are marked present again or leave the group; nothing is opened or closed by hand.",
+            "The cards above the list count who is on it, how many nobody has called yet and how many fall under each rule. **Show** narrows the list to open cases, those without a call or closed ones; **Reason** picks one rule; the search box finds a name or phone. **Excel** downloads the list as shown. New cases are announced to the branch's managers in the bell every morning, and the staff Telegram feed gets a summary per branch on Monday morning.",
+          ],
+        },
+        contact: {
+          title: "Calls and outcomes",
+          body: [
+            {
+              steps: [
+                "Open the row's menu and choose **Call and log the outcome** (the phone numbers are links) or **Log a contact** for a visit, a message or a note.",
+                "Pick how you reached the student and the outcome: no answer, will come back, ill, leaving the group or other, and add a note if you like.",
+                "The row shows the last contact and who made it, so nobody calls the same family twice. **History** lists every contact.",
+              ],
+            },
+            "A student who said they are leaving stays on the list until someone ends their membership on the group page; a student who is back is closed as **Came back** by their next present mark.",
+          ],
+        },
+        rules: {
+          title: "The rules",
+          body: [
+            "Each centre sets its own rules under Settings → Centre settings → **Absence follow-up**: after how many absences in a row a student is listed (lessons nobody marked and excused absences are skipped), and after how many days without a present mark, counting only when the group met at least twice in that time, so a group whose teacher never marks attendance shows up too. Leave a field empty to switch that rule off.",
+          ],
+        },
+      },
+    },
     exams: {
       title: "Exams",
       summary: "Group exams and mock exams: scheduling, registrations, scores and results.",

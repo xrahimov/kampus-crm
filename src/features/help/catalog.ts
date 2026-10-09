@@ -28,6 +28,7 @@ export const HELP_ARTICLE_IDS = [
   "students",
   "payments",
   "debts",
+  "absences",
   "exams",
   "testsAndCoins",
   "finance",
@@ -193,6 +194,14 @@ export const HELP_ARTICLES = [
     permission: "payments.create",
     path: "/debts",
     sections: [{ id: "list" }, { id: "contact" }, { id: "cadence" }],
+  },
+  {
+    id: "absences",
+    slug: "absences",
+    audiences: ["CEO", "BRANCH_MANAGER", "ADMIN"],
+    permission: "students.update",
+    path: "/absences",
+    sections: [{ id: "list" }, { id: "contact" }, { id: "rules" }],
   },
   {
     id: "exams",
