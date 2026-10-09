@@ -4,6 +4,7 @@ import { setRequestLocale } from "next-intl/server";
 import { notFound } from "next/navigation";
 
 import { routing } from "@/i18n/routing";
+import { THEME_BOOT_SCRIPT } from "@/lib/theme";
 
 import "../globals.css";
 
@@ -41,6 +42,10 @@ export default async function LocaleLayout({
 
   return (
     <html lang={locale} suppressHydrationWarning>
+      <head>
+        {/* Light or dark before the first paint, from this device's choice (A-136). */}
+        <script dangerouslySetInnerHTML={{ __html: THEME_BOOT_SCRIPT }} />
+      </head>
       <body className="min-h-screen">
         <NextIntlClientProvider>{children}</NextIntlClientProvider>
       </body>

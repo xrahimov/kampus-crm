@@ -12,6 +12,7 @@
     "search": "Qidirish…",
     "allBranches": "Barcha filiallar",
     "language": "Til",
+    "theme": "Mavzu",
     "comingSoon": "Bu bo‘lim {phase}-bosqichda quriladi.",
     "retry": "Qayta urinish",
     "delete": "O‘chirish",
@@ -555,6 +556,11 @@
     "uz": "O‘zbekcha",
     "ru": "Русский",
     "en": "English"
+  },
+  "theme": {
+    "light": "Yorug‘",
+    "dark": "Qorong‘i",
+    "system": "Qurilmadagidek"
   },
   "settings": {
     "title": "Sozlamalar",

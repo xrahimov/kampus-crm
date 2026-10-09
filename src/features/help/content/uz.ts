@@ -88,6 +88,7 @@ export const uz: HelpContent = {
           body: [
             "Har bir kurs, xona, guruh va o‘quvchi biror filialga tegishli. Yuqori paneldagi filial tanlovi sahifalar qaysi filialni ko‘rsatishini belgilaydi. Butun tashkilotni ko‘ra oladigan odamlar **Barcha filiallar** ni ham tanlashi mumkin.",
             "Til tugmasi o‘zbek, rus va ingliz tillari orasida almashtiradi. Tanlov faqat sizniki va keyingi tashrifingizgacha saqlanadi. Sanalar, pul va Excel fayllari siz tanlagan tilga mos bo‘ladi.",
+            "Yonidagi mavzu tugmasi **Yorug‘**, **Qorong‘i** va **Qurilmadagidek** ni taklif qiladi: oxirgisi telefon yoki kompyuterga ergashadi, shunda kechqurun qurilma qorayganda ilova ham qorayadi. Tanlov shu qurilmada, kirish sahifasida va o‘quvchilar sahifalarida ham saqlanadi; cheklar va beyjlar doim yorug‘ chop etiladi.",
           ],
         },
         notifications: {

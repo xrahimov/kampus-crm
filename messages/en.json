@@ -12,6 +12,7 @@
     "search": "Search…",
     "allBranches": "All branches",
     "language": "Language",
+    "theme": "Theme",
     "comingSoon": "This section will be built in phase {phase}.",
     "retry": "Try again",
     "delete": "Delete",
@@ -555,6 +556,11 @@
     "uz": "O‘zbekcha",
     "ru": "Русский",
     "en": "English"
+  },
+  "theme": {
+    "light": "Light",
+    "dark": "Dark",
+    "system": "Same as the device"
   },
   "settings": {
     "title": "Settings",

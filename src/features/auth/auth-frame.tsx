@@ -3,6 +3,7 @@ import { getTranslations } from "next-intl/server";
 
 import { KampusMark, KampusWordmark } from "@/components/brand/logo";
 import { LocaleSwitcher } from "@/components/layout/locale-switcher";
+import { ThemeToggle } from "@/components/layout/theme-toggle";
 import { organizationForHost } from "@/server/services/settings/domains.service";
 
 /** The centre whose own address this request came in on, if any (A-114). */
@@ -53,7 +54,10 @@ export async function AuthFrame({
       <section className="flex min-h-screen flex-col px-6 py-6 lg:min-h-0 lg:px-16">
         <div className="flex items-center justify-between">
           <KampusWordmark name={name} className="lg:invisible" />
-          <LocaleSwitcher />
+          <div className="flex items-center gap-1">
+            <LocaleSwitcher />
+            <ThemeToggle />
+          </div>
         </div>
         <div className="flex flex-1 items-center justify-center py-10">
           <div className="w-full max-w-sm">

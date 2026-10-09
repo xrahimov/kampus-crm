@@ -14,6 +14,7 @@ import { NotificationBell } from "./notification-bell";
 import { PayButton } from "@/features/payments/pay-button";
 
 import { LocaleSwitcher } from "./locale-switcher";
+import { ThemeToggle } from "./theme-toggle";
 import { MainNav } from "./main-nav";
 import { MobileNav } from "./mobile-nav";
 import { UserMenu } from "./user-menu";
@@ -81,6 +82,7 @@ export async function AppShell({
                 canChooseAll={canChooseAll}
               />
               <LocaleSwitcher />
+              <ThemeToggle />
               <NotificationBell initialUnread={unread} />
               <UserMenu user={user} roles={roles} canReceipt={canReceipt} canSalary={canSalary} />
             </div>
