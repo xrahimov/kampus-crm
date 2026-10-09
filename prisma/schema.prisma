@@ -88,6 +88,8 @@ model Branch {
   cashCloses     CashClose[]
   announcements  Announcement[]
 
+  waitlist WaitlistEntry[]
+
   @@index([organizationId])
 }
 
@@ -477,6 +479,8 @@ model Course {
   groups        Group[]
   topics        CourseTopic[]
 
+  waitlist WaitlistEntry[]
+
   @@index([branchId, isArchived])
   @@index([gradingSystemId])
 }
@@ -628,6 +632,8 @@ model Group {
   absenceCases    AbsenceCase[]
   announcements   Announcement[]
   trials          TrialBooking[]
+
+  waitlistOffers WaitlistEntry[] @relation("waitlistOffers")
 
   @@index([branchId, status])
   @@index([courseId])
@@ -786,6 +792,8 @@ model Student {
   debtCases         DebtCase[]
   absenceCases      AbsenceCase[]
   announcementReads AnnouncementRead[]
+
+  waitlist WaitlistEntry[]
 
   @@index([branchId, isArchived])
   @@index([phone])
@@ -1520,6 +1528,8 @@ model Lead {
   school    School?        @relation(fields: [schoolId], references: [id])
   schoolId  String?
 
+  waitlist WaitlistEntry[]
+
   @@index([columnId, isArchived, sortOrder])
   @@index([referrerId])
   @@index([branchId, isArchived])
@@ -2104,6 +2114,7 @@ enum AutoSmsEvent {
   LESSON_MOVED
   LESSON_RESTORED
   INSTALMENT_DUE
+  WAITLIST_OFFER
 }
 
 model AutoSmsSetting {
@@ -2578,4 +2589,47 @@ model AnnouncementRead {
   student      Student      @relation(fields: [studentId], references: [id], onDelete: Cascade)
 
   @@unique([announcementId, studentId])
+}
+
+/// Waiting list (A-138, round 2 B6): people who want a course for which no
+/// group with a free seat exists yet. Offers go out in order when a group opens.
+enum WaitlistStatus {
+  WAITING
+  OFFERED
+  ENROLLED
+  DECLINED
+  REMOVED
+}
+
+model WaitlistEntry {
+  id             String         @id @default(cuid())
+  branchId       String
+  courseId       String
+  /// The lead or student this entry came from, when it came from one.
+  leadId         String?
+  studentId      String?
+  fullName       String
+  phone          String
+  /// Preferred days and start time, as on a lead.
+  days           LeadDays?
+  lessonTime     String?
+  note           String?
+  status         WaitlistStatus @default(WAITING)
+  /// The group whose seat was offered last, and when.
+  offeredGroupId String?
+  offeredAt      DateTime?
+  /// When the entry left the WAITING/OFFERED states.
+  closedAt       DateTime?
+  createdById    String?
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+
+  branch       Branch   @relation(fields: [branchId], references: [id])
+  course       Course   @relation(fields: [courseId], references: [id])
+  lead         Lead?    @relation(fields: [leadId], references: [id], onDelete: SetNull)
+  student      Student? @relation(fields: [studentId], references: [id], onDelete: SetNull)
+  offeredGroup Group?   @relation("waitlistOffers", fields: [offeredGroupId], references: [id], onDelete: SetNull)
+
+  @@index([branchId, courseId, status, createdAt])
+  @@index([phone])
 }

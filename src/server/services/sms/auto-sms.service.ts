@@ -39,6 +39,8 @@ export const DEFAULT_AUTO_SMS: Record<AutoSmsEvent, string> = {
     "{studentName}, {groupName} guruhining {date} kungi {time} darsi o'z vaqtida o'tkaziladi. {centerName}",
   INSTALMENT_DUE:
     "{studentName}, {groupName} guruhi uchun to'lovning {amount} qismi {date} gacha to'lanishi kerak. {centerName}",
+  WAITLIST_OFFER:
+    "{studentName}, siz kutgan kurs bo'yicha {groupName} guruhi ochilmoqda: {days} {time}, boshlanishi {date}. Joy band qilish uchun bizga qo'ng'iroq qiling. {centerName}",
 };
 
 /** Which variables each event's template may use (shown as chips in the settings). */
@@ -66,6 +68,7 @@ export const AUTO_SMS_VARIABLES: Record<AutoSmsEvent, SmsVariable[]> = {
   ],
   LESSON_RESTORED: ["studentName", "groupName", "date", "time", "centerName"],
   INSTALMENT_DUE: ["studentName", "groupName", "amount", "date", "centerName"],
+  WAITLIST_OFFER: ["studentName", "groupName", "days", "time", "date", "centerName"],
 };
 
 export interface AutoSmsSettingDto {

@@ -4,6 +4,7 @@ import {
   ArrowLeft,
   ArrowRightLeft,
   CalendarOff,
+  ListOrdered,
   Flag,
   Pencil,
   Trash2,
@@ -76,6 +77,7 @@ import { GroupStatusBadge } from "./groups-page";
 import { MembersPanel } from "./members-panel";
 import { MoveBranchDialog } from "./move-branch-dialog";
 import { HistoryTab, NotesTab } from "./notes-history";
+import { OfferSeatsDialog } from "./offer-seats-dialog";
 import { SyllabusTab } from "./syllabus-tab";
 import { weekdayLabel } from "./weekday";
 
@@ -175,8 +177,17 @@ export function GroupDetail({
   const searchParams = useSearchParams();
   const [, startTransition] = useTransition();
   const [dialog, setDialog] = useState<
-    null | "edit" | "move" | "finish" | "archive" | "support" | "changeTeacher" | "dayOff"
+    | null
+    | "edit"
+    | "move"
+    | "finish"
+    | "archive"
+    | "support"
+    | "changeTeacher"
+    | "dayOff"
+    | "offerSeats"
   >(null);
+  const [notice, setNotice] = useState<string | null>(null);
   const close = () => setDialog(null);
   const refresh = () => startTransition(() => router.refresh());
   const { options: branchOptions, defaultId } = creatableBranches(
@@ -207,6 +218,11 @@ export function GroupDetail({
         </Link>
       </Button>
 
+      {notice && (
+        <Alert variant="success" data-testid="group-notice">
+          {notice}
+        </Alert>
+      )}
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div className="flex flex-wrap items-center gap-3">
           <h1 className="text-2xl font-semibold tracking-tight" data-testid="group-title">
@@ -253,6 +269,14 @@ export function GroupDetail({
                   <DropdownMenuItem onSelect={() => setDialog("dayOff")}>
                     <CalendarOff /> {td("dayOff")}
                   </DropdownMenuItem>
+                  {can.leads && (
+                    <DropdownMenuItem
+                      onSelect={() => setDialog("offerSeats")}
+                      data-testid="group-offer-seats"
+                    >
+                      <ListOrdered /> {t("groups.actions.offerSeats")}
+                    </DropdownMenuItem>
+                  )}
                   {branchOptions.length > 1 && (
                     <DropdownMenuItem onSelect={() => setDialog("move")}>
                       <ArrowRightLeft /> {t("groups.actions.moveBranch")}
@@ -554,6 +578,15 @@ export function GroupDetail({
         open={dialog === "dayOff"}
         onOpenChange={(open) => !open && close()}
         onSaved={refresh}
+      />
+      <OfferSeatsDialog
+        groupId={group.id}
+        open={dialog === "offerSeats"}
+        onOpenChange={(open) => !open && close()}
+        onDone={(result) => {
+          setNotice(t("groups.waitlist.done", { ...result }));
+          refresh();
+        }}
       />
       <ConfirmDialog
         open={dialog === "finish"}

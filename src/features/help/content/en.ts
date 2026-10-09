@@ -243,6 +243,13 @@ export const en: HelpContent = {
             "If a student later leaves a group, their row menu on the group page offers **Return to leads**, which puts them back on the board.",
           ],
         },
+        waitlist: {
+          title: "Waiting list",
+          body: [
+            "When someone wants a course but no group has a free seat, or the right time, put them on the **Waiting list**: from the lead card's menu (**Add to waiting list**) or from the list page with **Add**, with the branch, the course, the preferred days and time and a note. The list keeps people in the order they were added; the number shows each person's place for their course.",
+            "When a group of that course opens or a seat frees up, open the group and choose **Offer seats to the waiting list** in its menu. Kampus shows the free seats (the smallest room on the schedule minus the current members), who is next in line and whether the **Waiting list offer** SMS is switched on under Settings → General → Auto SMS; on confirm the first people get a text with the group's days, time and start date (and a Telegram message when they are a linked student) and are marked **Offered**. Then **Enrol in a group** on the entry adds the person to the group (a lead is converted, a new person becomes a student); **Declined** and **Remove** close the entry, **Back to waiting** returns it to the queue.",
+          ],
+        },
         sources: {
           title: "Sources",
           body: [
@@ -316,6 +323,7 @@ export const en: HelpContent = {
             "**Give a day off** removes one date's lesson for this group, for example a teacher's trip, and can tell the students and parents at once by Telegram and SMS (the SMS switches are in Settings → General → Auto SMS). Pick a new date and time to move the lesson instead of dropping it. The month's cancelled and moved lessons are listed above the attendance grid, where a day off can be undone. Branch-wide holidays go to Settings → Days off instead and apply to every group.",
             "**Change teacher** replaces the outgoing teacher with a new one from today; the new teacher's share of the pay counts from today, the old one's until yesterday. **Support teachers** attaches extra teachers who may mark attendance and see the group without a pay share.",
             "**Finish group** when the course is over: every active student becomes a graduate and the remaining lessons are removed. The graduates report lists them. **Archive** hides a group that was abandoned; its lessons and history stay. Archived groups are listed under the Archived tab.",
+            "**Offer seats to the waiting list** texts the people waiting for the group's course in this branch, as many as the group has free seats, and marks them offered (see Leads → Waiting list).",
           ],
         },
         timetable: {

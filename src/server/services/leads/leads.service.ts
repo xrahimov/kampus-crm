@@ -109,6 +109,10 @@ export interface LeadOptions {
   /** Staff who may work leads in the branches in scope: the owner choices (A-126). */
   owners: Array<{ id: string; fullName: string }>;
   groups: Array<{ id: string; name: string; branchId: string }>;
+  /** Courses in scope, for the waiting list form (A-138). */
+  courses: Array<{ id: string; name: string; branchId: string }>;
+  /** People waiting for a course in the branches in scope (A-138). */
+  waiting: number;
   boards: Array<{
     id: string;
     name: string;
@@ -244,53 +248,70 @@ export async function getLeadOptions(actor: Actor, db: DbClient = prisma): Promi
   authorize(actor, "leads.view");
   const organizationId = actor.organizationId;
   const scope = branchScope(actor);
-  const [teachers, sources, slots, leadTimes, groups, boards] = await Promise.all([
-    db.user.findMany({
-      where: {
-        isArchived: false,
-        roles: { some: { role: { code: { in: [...TEACHER_ROLE_CODES] } } } },
-        organizationId: actor.organizationId,
-        branches: { some: scope },
-      },
-      select: { id: true, fullName: true },
-      orderBy: { fullName: "asc" },
-    }),
-    db.leadSource.findMany({
-      where: { organizationId, isActive: true },
-      select: { id: true, name: true },
-      orderBy: { name: "asc" },
-    }),
-    db.groupScheduleSlot.findMany({
-      where: { group: { ...scope, status: { not: "ARCHIVED" } } },
-      select: { startTime: true },
-      distinct: ["startTime"],
-    }),
-    db.lead.findMany({
-      where: { ...scope, lessonTime: { not: null } },
-      select: { lessonTime: true },
-      distinct: ["lessonTime"],
-    }),
-    db.group.findMany({
-      where: { ...scope, status: { not: "ARCHIVED" } },
-      select: { id: true, name: true, branchId: true },
-      orderBy: { name: "asc" },
-    }),
-    db.leadBoard.findMany({
-      where: scope,
-      select: {
-        id: true,
-        name: true,
-        branchId: true,
-        columns: { select: { id: true, name: true }, orderBy: { sortOrder: "asc" } },
-      },
-      orderBy: [{ sortOrder: "asc" }, { createdAt: "asc" }],
-    }),
-  ]);
+  const [teachers, sources, slots, leadTimes, groups, boards, courses, waiting] = await Promise.all(
+    [
+      db.user.findMany({
+        where: {
+          isArchived: false,
+          roles: { some: { role: { code: { in: [...TEACHER_ROLE_CODES] } } } },
+          organizationId: actor.organizationId,
+          branches: { some: scope },
+        },
+        select: { id: true, fullName: true },
+        orderBy: { fullName: "asc" },
+      }),
+      db.leadSource.findMany({
+        where: { organizationId, isActive: true },
+        select: { id: true, name: true },
+        orderBy: { name: "asc" },
+      }),
+      db.groupScheduleSlot.findMany({
+        where: { group: { ...scope, status: { not: "ARCHIVED" } } },
+        select: { startTime: true },
+        distinct: ["startTime"],
+      }),
+      db.lead.findMany({
+        where: { ...scope, lessonTime: { not: null } },
+        select: { lessonTime: true },
+        distinct: ["lessonTime"],
+      }),
+      db.group.findMany({
+        where: { ...scope, status: { not: "ARCHIVED" } },
+        select: { id: true, name: true, branchId: true },
+        orderBy: { name: "asc" },
+      }),
+      db.leadBoard.findMany({
+        where: scope,
+        select: {
+          id: true,
+          name: true,
+          branchId: true,
+          columns: { select: { id: true, name: true }, orderBy: { sortOrder: "asc" } },
+        },
+        orderBy: [{ sortOrder: "asc" }, { createdAt: "asc" }],
+      }),
+      db.course.findMany({
+        where: { ...scope, isArchived: false },
+        select: { id: true, name: true, branchId: true },
+        orderBy: { name: "asc" },
+      }),
+      db.waitlistEntry.count({ where: { ...scope, status: "WAITING" } }),
+    ],
+  );
   const times = new Set<string>();
   for (const s of slots) times.add(s.startTime);
   for (const l of leadTimes) if (l.lessonTime) times.add(l.lessonTime);
   const owners = await leadHandlers(db, actor);
-  return { teachers, sources, lessonTimes: [...times].sort(), owners, groups, boards };
+  return {
+    teachers,
+    sources,
+    lessonTimes: [...times].sort(),
+    owners,
+    groups,
+    courses,
+    waiting,
+    boards,
+  };
 }
 
 /**

@@ -204,3 +204,52 @@ export const publicLeadSchema = z.object({
   ref: z.string().trim().max(32).nullable().optional(),
 });
 export type PublicLeadInput = z.infer<typeof publicLeadSchema>;
+
+/* Waiting list (A-138): who waits for which course, and offers when a group opens. */
+export const WAITLIST_STATUSES = ["WAITING", "OFFERED", "ENROLLED", "DECLINED", "REMOVED"] as const;
+export type WaitlistStatus = (typeof WAITLIST_STATUSES)[number];
+export const WAITLIST_SORT_FIELDS = ["createdAt", "fullName", "status"] as const;
+export type WaitlistSortField = (typeof WAITLIST_SORT_FIELDS)[number];
+
+export const waitlistEntrySchema = z.object({
+  branchId: idSchema,
+  courseId: idSchema,
+  /** The lead the entry comes from; name and phone are copied from it when given. */
+  leadId: idSchema.nullable().optional(),
+  studentId: idSchema.nullable().optional(),
+  fullName: name,
+  phone: phoneSchema,
+  days: z.enum(LEAD_DAYS).nullable().optional(),
+  lessonTime: timeSchema.nullable().optional(),
+  note: z.string().trim().max(500, "validation.tooLong").nullable().optional(),
+});
+export type WaitlistEntryInput = z.infer<typeof waitlistEntrySchema>;
+
+export const waitlistUpdateSchema = waitlistEntrySchema
+  .omit({ branchId: true, leadId: true, studentId: true })
+  .partial()
+  .extend({
+    /** Back to waiting, declined by the person, or taken off the list. */
+    status: z.enum(["WAITING", "DECLINED", "REMOVED"]).optional(),
+  });
+export type WaitlistUpdateInput = z.infer<typeof waitlistUpdateSchema>;
+
+export const waitlistFilterSchema = z.object({
+  courseId: idSchema.optional(),
+  status: z.enum(WAITLIST_STATUSES).optional(),
+});
+export type WaitlistFilters = z.infer<typeof waitlistFilterSchema>;
+
+/** "Offer seats": the group's free seats go to the first entries in line. */
+export const waitlistOfferSchema = z.object({
+  /** How many to offer; defaults to the group's free seats, or every waiting entry when the rooms have no capacity. */
+  limit: z.coerce.number().int().min(1, "validation.min").max(100, "validation.max").optional(),
+});
+export type WaitlistOfferInput = z.infer<typeof waitlistOfferSchema>;
+
+export const waitlistEnrolSchema = z.object({
+  groupId: idSchema,
+  joinedAt: dateOnlySchema,
+  status: z.enum(MEMBERSHIP_STATUSES).default("NEW"),
+});
+export type WaitlistEnrolInput = z.infer<typeof waitlistEnrolSchema>;
