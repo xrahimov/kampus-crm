@@ -88,6 +88,7 @@ export const ORG_SWITCHES = [
   "teacherCanAddStudents",
   "bookAnySupportTeacher",
   "groupSupportSessions",
+  "showSetupChecklist",
 ] as const;
 export type OrgSwitch = (typeof ORG_SWITCHES)[number];
 

@@ -23,6 +23,7 @@ const org = {
   teacherCanAddStudents: false,
   bookAnySupportTeacher: false,
   groupSupportSessions: false,
+  showSetupChecklist: true,
   workStart: "08:00",
   workEnd: "20:00",
   scheduleStepMinutes: 30,

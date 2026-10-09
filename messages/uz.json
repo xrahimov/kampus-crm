@@ -217,6 +217,37 @@
       "month": "Oy",
       "wholeYear": "Butun yil",
       "method": "To'lov turi"
+    },
+    "setup": {
+      "title": "Markazni sozlang",
+      "progress": "{total} tadan {done} tasi bajarildi",
+      "hide": "Yashirish",
+      "hideHint": "Sozlamalar → Umumiy bo‘limida qaytarish mumkin.",
+      "open": "Ochish",
+      "have": "{count} ta qo‘shilgan",
+      "connected": "Ulangan",
+      "steps": {
+        "branches": "Filiallar",
+        "courses": "Kurslar",
+        "rooms": "Xonalar",
+        "staff": "Xodimlar",
+        "groups": "Guruhlar",
+        "students": "Talabalar",
+        "paymentMethods": "To‘lov usullari",
+        "telegram": "Telegram bot",
+        "onlinePayments": "Onlayn to‘lov"
+      },
+      "todo": {
+        "branches": "Filiallaringiz va ish vaqtini qo‘shing.",
+        "courses": "O‘qitadigan kurslaringizni narxlari bilan qo‘shing.",
+        "rooms": "Har bir filialning xonalarini qo‘shing.",
+        "staff": "Administrator va o‘qituvchilarni qo‘shing.",
+        "groups": "Jadvali bilan birinchi guruhni oching.",
+        "students": "Guruhlarga talaba qo‘shing yoki import qiling.",
+        "paymentMethods": "Pulni qanday qabul qilishingizni qo‘shing: naqd, karta.",
+        "telegram": "Talaba va ota-onalar xabar olishi uchun botni ulang.",
+        "onlinePayments": "To‘lov havolalari uchun Payme yoki Click merchant ma‘lumotlarini kiriting."
+      }
     }
   },
   "today": {
@@ -583,7 +614,8 @@
       "payOnlyAttendedLessons": "O‘qituvchiga faqat kelgan darslar uchun oylik yozilsin",
       "teacherCanAddStudents": "O‘qituvchi o‘quvchi qo‘sha oladi",
       "bookAnySupportTeacher": "Har qanday support ustozga yozilish",
-      "groupSupportSessions": "Guruhli support uchrashuvlariga ruxsat"
+      "groupSupportSessions": "Guruhli support uchrashuvlariga ruxsat",
+      "showSetupChecklist": "Bosh sahifada markazni sozlash ro‘yxatini ko‘rsatish"
     },
     "switchHints": {
       "adminActionsNeedApproval": "Adminlarning pul qaytarish, chegirma, o‘chirish va to‘lovni tahrirlash amallari CEO tasdig‘ini kutadi.",

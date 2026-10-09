@@ -138,6 +138,13 @@ export const uz: HelpContent = {
       title: "Bosh sahifa",
       summary: "Kunning raqamlari, xonalar jadvali va pul, bitta ekranda.",
       sections: {
+        setup: {
+          title: "Yangi markazni sozlash",
+          body: [
+            "Markaz yangi bo‘lganda bosh sahifa **Markazni sozlang** kartasi bilan ochiladi: filiallar, kurslar, xonalar, xodimlar, guruhlar, talabalar, to‘lov usullari, Telegram bot va onlayn to‘lov — har biri tayyor bo‘lganda belgi oladi va **Ochish** tugmasi kerakli sahifaga olib boradi. Karta bajarilganlarni sanaydi va hamma qadam belgilangach o‘zi yo‘qoladi.",
+            "Uni faqat markaz sozlamalarini o‘zgartira oladiganlar ko‘radi. **Yashirish** uni olib tashlaydi; Sozlamalar → Umumiy bo‘limidagi *Bosh sahifada markazni sozlash ro‘yxatini ko‘rsatish* tugmasi qaytaradi.",
+          ],
+        },
         kpis: {
           title: "O‘n ikki raqam",
           body: [

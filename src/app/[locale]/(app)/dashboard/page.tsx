@@ -18,6 +18,7 @@ import {
 } from "@/server/services/dashboard/finance.service";
 import { getDashboardKpis } from "@/server/services/dashboard/kpis.service";
 import { getDashboardSchedule } from "@/server/services/dashboard/schedule.service";
+import { getSetupChecklist } from "@/server/services/dashboard/setup.service";
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations("dashboard");
@@ -60,7 +61,7 @@ export default async function Page({
     ? financeParsed.data
     : { branchId, year: now.getUTCFullYear() };
   const canFinance = can(current.actor, "dashboard.finance");
-  const [kpis, schedule, finance, financeOptions] = await Promise.all([
+  const [kpis, schedule, finance, financeOptions, setup] = await Promise.all([
     getDashboardKpis(current.actor, { branchId }),
     getDashboardSchedule(
       current.actor,
@@ -68,6 +69,7 @@ export default async function Page({
     ),
     canFinance ? getDashboardFinance(current.actor, financePeriod) : null,
     canFinance ? getDashboardFinanceOptions(current.actor) : null,
+    getSetupChecklist(current.actor),
   ]);
   const filters: DashboardFilters = {
     branchId,
@@ -85,6 +87,7 @@ export default async function Page({
       filters={filters}
       branches={current.branches}
       canReports={can(current.actor, "reports.view")}
+      setup={setup}
     />
   );
 }

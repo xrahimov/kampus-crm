@@ -24,9 +24,11 @@ import { useMoneyFormat } from "@/lib/use-money-format";
 import type { DashboardFinanceOptions } from "@/server/services/dashboard/finance.service";
 import type { DashboardKpisDto } from "@/server/services/dashboard/kpis.service";
 import type { ScheduleDto } from "@/server/services/dashboard/schedule.service";
+import type { SetupChecklistDto } from "@/server/services/dashboard/setup.service";
 import type { FinanceOverviewDto } from "@/server/services/finance/overview.service";
 
 import { ScheduleGrid } from "./schedule-grid";
+import { SetupChecklist } from "./setup-checklist";
 
 const ALL = "__all";
 
@@ -47,6 +49,7 @@ export function DashboardPage({
   filters,
   branches,
   canReports,
+  setup = null,
 }: {
   userName: string;
   kpis: DashboardKpisDto;
@@ -56,6 +59,8 @@ export function DashboardPage({
   filters: DashboardFilters;
   branches: Array<{ id: string; name: string }>;
   canReports: boolean;
+  /** The setup checklist (A-128), for people who may change the centre's settings. */
+  setup?: SetupChecklistDto | null;
 }) {
   const t = useTranslations("dashboard");
   const tc = useTranslations("common");
@@ -164,6 +169,8 @@ export function DashboardPage({
           </Button>
         </div>
       </div>
+
+      {setup && <SetupChecklist data={setup} />}
 
       <div
         className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"

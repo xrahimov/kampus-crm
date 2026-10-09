@@ -217,6 +217,37 @@
       "month": "Month",
       "wholeYear": "Whole year",
       "method": "Payment type"
+    },
+    "setup": {
+      "title": "Set up your centre",
+      "progress": "{done} of {total} done",
+      "hide": "Hide",
+      "hideHint": "You can bring it back in Settings → General.",
+      "open": "Open",
+      "have": "{count} added",
+      "connected": "Connected",
+      "steps": {
+        "branches": "Branches",
+        "courses": "Courses",
+        "rooms": "Rooms",
+        "staff": "Staff",
+        "groups": "Groups",
+        "students": "Students",
+        "paymentMethods": "Payment methods",
+        "telegram": "Telegram bot",
+        "onlinePayments": "Online payments"
+      },
+      "todo": {
+        "branches": "Add your branches and their working hours.",
+        "courses": "Add the courses you teach, with their prices.",
+        "rooms": "Add the rooms of each branch.",
+        "staff": "Add your administrators and teachers.",
+        "groups": "Open the first group with its timetable.",
+        "students": "Add students to the groups, or import them.",
+        "paymentMethods": "Add how you take money: cash, card.",
+        "telegram": "Connect the bot so students and parents get messages.",
+        "onlinePayments": "Enter the Payme or Click merchant details for payment links."
+      }
     }
   },
   "today": {
@@ -583,7 +614,8 @@
       "payOnlyAttendedLessons": "Pay teachers only for lessons they attended",
       "teacherCanAddStudents": "Teachers can add students",
       "bookAnySupportTeacher": "Students may book any support teacher",
-      "groupSupportSessions": "Allow group support sessions"
+      "groupSupportSessions": "Allow group support sessions",
+      "showSetupChecklist": "Show the setup checklist on the home page"
     },
     "switchHints": {
       "adminActionsNeedApproval": "Refunds, discounts, deletions and payment edits by admins wait for the CEO.",
