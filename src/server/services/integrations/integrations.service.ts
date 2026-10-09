@@ -14,6 +14,7 @@ import {
   type AmoCrmClient,
   type AmoCrmTokens,
 } from "@/server/integrations/amocrm/client";
+import { createFiscalProvider, type FiscalProvider } from "@/server/integrations/fiscal/provider";
 import { createSmsProvider, type SmsProvider } from "@/server/integrations/sms/provider";
 import {
   createTelegramNotifier,
@@ -37,6 +38,7 @@ const SECRET_FIELDS: Record<IntegrationProvider, readonly string[]> = {
   VIDEO: ["turnCredential", "turnSecret"],
   PAYME: ["key"],
   CLICK: ["secretKey"],
+  FISCAL: ["apiKey"],
 };
 
 /** Providers that work without any setup and are therefore on until switched off. */
@@ -250,6 +252,21 @@ export async function getTelegramNotifier(
   organizationId: string,
 ): Promise<TelegramNotifier> {
   return createTelegramNotifier((await telegramConfigFor(db, organizationId))?.config ?? null);
+}
+
+export type FiscalConfig = Config<"FISCAL"> & { isEnabled: boolean };
+
+/** The centre's fiscal settings when the integration is on; null otherwise (A-147). */
+export async function fiscalConfigFor(
+  db: DbClient,
+  organizationId: string,
+): Promise<FiscalConfig | null> {
+  const config = await loadIntegrationConfig(db, "FISCAL", organizationId);
+  return config?.isEnabled ? config : null;
+}
+
+export function getFiscalProvider(config: FiscalConfig | null): FiscalProvider {
+  return createFiscalProvider(config);
 }
 
 export function getTelephonyProvider(): TelephonyProvider {

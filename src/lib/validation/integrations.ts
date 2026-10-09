@@ -207,6 +207,7 @@ export const INTEGRATION_PROVIDERS = [
   "VIDEO",
   "PAYME",
   "CLICK",
+  "FISCAL",
 ] as const;
 export type IntegrationProvider = (typeof INTEGRATION_PROVIDERS)[number];
 
@@ -328,6 +329,34 @@ export const clickIntegrationSchema = z.object({
   secretKey: secret.default(""),
 });
 
+/**
+ * Online fiscal receipts through an OFD provider (A-147). The provider's API is
+ * reached through one small contract (see `HttpFiscalProvider`); without an
+ * address and key the fake provider issues receipts in memory.
+ */
+export const fiscalIntegrationSchema = z.object({
+  isEnabled: z.boolean(),
+  apiUrl: z.union([z.literal(""), z.string().trim().url("validation.url").max(300)]).default(""),
+  apiKey: secret.default(""),
+  /** The centre's taxpayer number (STIR / ИНН), 9 digits. */
+  inn: z
+    .string()
+    .trim()
+    .regex(/^(\d{9})?$/, "validation.inn")
+    .default(""),
+  /** The online cash register (terminal) the provider registered for the centre. */
+  cashRegisterId: z.string().trim().max(64).default(""),
+  vatPercent: z.coerce.number().int().min(0).max(30).default(12),
+  /** The MXIK (ИКПУ) code of educational services, 17 digits, when the accountant gives one. */
+  ikpuCode: z
+    .string()
+    .trim()
+    .regex(/^(\d{17})?$/, "validation.ikpu")
+    .default(""),
+  /** Issue a receipt by itself for every cash-desk payment and refund. */
+  autoIssue: z.boolean().default(true),
+});
+
 export const integrationSchemas = {
   SMS: smsIntegrationSchema,
   TELEGRAM: telegramIntegrationSchema,
@@ -337,6 +366,7 @@ export const integrationSchemas = {
   VIDEO: videoIntegrationSchema,
   PAYME: paymeIntegrationSchema,
   CLICK: clickIntegrationSchema,
+  FISCAL: fiscalIntegrationSchema,
 } as const;
 export type IntegrationInput<P extends IntegrationProvider> = z.infer<
   (typeof integrationSchemas)[P]

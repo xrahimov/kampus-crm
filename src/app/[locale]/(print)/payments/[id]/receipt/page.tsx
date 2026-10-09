@@ -38,12 +38,17 @@ export default async function Page({ params }: Props) {
     ? await qrSvg(`kampus:payment:${receipt.id}`)
     : null;
 
+  const fiscalQr =
+    receipt.fiscal?.status === "ISSUED" && receipt.fiscal.receiptUrl
+      ? await qrSvg(receipt.fiscal.receiptUrl)
+      : null;
+
   return (
     <div className="space-y-4">
       <div className="flex justify-end print:hidden">
         <PrintButton label={t("print")} />
       </div>
-      <Receipt receipt={receipt} qr={qr} locale={locale} />
+      <Receipt receipt={receipt} qr={qr} fiscalQr={fiscalQr} locale={locale} />
     </div>
   );
 }

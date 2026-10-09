@@ -329,6 +329,7 @@ export const HELP_ARTICLES = [
       { id: "faceId" },
       { id: "video" },
       { id: "onlinePayments" },
+      { id: "fiscal" },
       { id: "jobs" },
     ],
   },

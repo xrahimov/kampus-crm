@@ -477,7 +477,9 @@
     "waitlistDuplicate": "This phone is already waiting for this course.",
     "waitlistClosed": "This entry is already enrolled.",
     "certificateExists": "This graduate already has a certificate",
-    "certificateRevoked": "This certificate is already revoked"
+    "certificateRevoked": "This certificate is already revoked",
+    "fiscalDisabled": "Fiscal receipts are switched off in Settings → Integrations.",
+    "fiscalIssued": "The fiscal receipt for this payment has already been issued."
   },
   "validation": {
     "phone": "Enter a number like +998 90 123 45 67.",
@@ -584,7 +586,9 @@
     "trialOtherBranch": "The group is in another branch than the lead.",
     "courseTopic": "This topic is not in the group's course",
     "courseBranch": "The course belongs to another branch",
-    "waitlistCourse": "Choose a group of the entry's course"
+    "waitlistCourse": "Choose a group of the entry's course",
+    "inn": "Enter the 9-digit taxpayer number.",
+    "ikpu": "Enter the 17-digit MXIK code."
   },
   "roles": {
     "CEO": "CEO",
@@ -2056,7 +2060,14 @@
       "createdAt": "Recorded",
       "receipt": "Receipt",
       "total": "Total: {amount}",
-      "excel": "Export to Excel"
+      "excel": "Export to Excel",
+      "fiscal": "Fiscal receipt",
+      "fiscalStatus": {
+        "PENDING": "Pending",
+        "ISSUED": "Issued",
+        "FAILED": "Failed"
+      },
+      "fiscalRetry": "Send the fiscal receipt again"
     },
     "log": {
       "title": "Payments",
@@ -2081,7 +2092,10 @@
       "cashier": "Cashier",
       "amount": "Amount",
       "printedAt": "Printed",
-      "thanks": "Thank you for your payment!"
+      "thanks": "Thank you for your payment!",
+      "fiscalTitle": "Fiscal receipt",
+      "fiscalNumber": "Fiscal number",
+      "fiscalSign": "Fiscal sign"
     },
     "adjust": {
       "title": "Balance adjustment",
@@ -4039,7 +4053,8 @@
           "create": "Payment received",
           "refund": "Refund made",
           "importHistory": "Payment history row imported",
-          "importHistoryRemove": "Payment history row removed"
+          "importHistoryRemove": "Payment history row removed",
+          "fiscal": "Fiscal receipt issued"
         },
         "paymentMethod": {
           "create": "Payment method created",
@@ -4343,6 +4358,20 @@
         "secretKey": "Secret key"
       },
       "hint": "In the Click merchant cabinet, set this webhook as both the prepare and the complete URL."
+    },
+    "FISCAL": {
+      "title": "Fiscal receipts (OFD)",
+      "description": "Every cash-desk payment and refund gets an online fiscal receipt from your OFD provider; its number and fiscal sign print on the receipt.",
+      "fields": {
+        "apiUrl": "Provider API address",
+        "apiKey": "API key",
+        "inn": "Taxpayer number (STIR)",
+        "cashRegisterId": "Cash register ID",
+        "vatPercent": "VAT, %",
+        "ikpuCode": "MXIK code of the service",
+        "autoIssue": "Issue a receipt for every payment automatically"
+      },
+      "hint": "Your accountant names the OFD provider and gives the API address and key, the cash register ID and the MXIK code. Switched on without an address, receipts are issued by Kampus' test provider so you can try the flow."
     }
   },
   "staffAttendance": {
