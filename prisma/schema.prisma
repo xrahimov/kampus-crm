@@ -54,6 +54,7 @@ model Organization {
   leaveReasons      LeaveReason[]
   cashCloses        CashClose[]
   families          Family[]
+  announcements     Announcement[]
 }
 
 model Branch {
@@ -85,6 +86,7 @@ model Branch {
   debtCases      DebtCase[]
   absenceCases   AbsenceCase[]
   cashCloses     CashClose[]
+  announcements  Announcement[]
 
   @@index([organizationId])
 }
@@ -193,6 +195,7 @@ model User {
   adjustmentsMade   BalanceAdjustment[]  @relation("adjustmentAuthor")
   debtContacts      DebtContact[]        @relation("debtContactAuthor")
   absenceContacts   AbsenceContact[]     @relation("absenceContactAuthor")
+  announcements     Announcement[]       @relation("announcementAuthor")
 
   @@index([organizationId])
 }
@@ -604,6 +607,7 @@ model Group {
   homework        Homework[]
   materials       LessonMaterial[]
   absenceCases    AbsenceCase[]
+  announcements   Announcement[]
 
   @@index([branchId, status])
   @@index([courseId])
@@ -730,32 +734,33 @@ model Student {
   createdAt          DateTime  @default(now())
   updatedAt          DateTime  @updatedAt
 
-  branch         Branch                @relation(fields: [branchId], references: [id])
-  school         School?               @relation(fields: [schoolId], references: [id], onDelete: SetNull)
-  source         LeadSource?           @relation(fields: [sourceId], references: [id], onDelete: SetNull)
-  referredBy     Student?              @relation("referrals", fields: [referredById], references: [id], onDelete: SetNull)
-  referrals      Student[]             @relation("referrals")
-  referredLeads  Lead[]                @relation("leadReferrer")
-  family         Family?               @relation(fields: [familyId], references: [id], onDelete: SetNull)
-  memberships    GroupMembership[]
-  parents        Parent[]
-  customFields   StudentCustomField[]
-  comments       StudentComment[]
-  payments       Payment[]
-  onlinePayments OnlinePayment[]
-  leads          Lead[]
-  examResults    ExamResult[]
-  financeEntries FinanceEntry[]
-  coins          CoinTransaction[]
-  purchases      PurchaseRequest[]
-  testAttempts   TestAttempt[]
-  smsMessages    SmsMessage[]
-  callLogs       CallLog[]
-  videoPeers     VideoParticipant[]
-  telegramChats  StudentTelegramChat[]
-  adjustments    BalanceAdjustment[]
-  debtCases      DebtCase[]
-  absenceCases   AbsenceCase[]
+  branch            Branch                @relation(fields: [branchId], references: [id])
+  school            School?               @relation(fields: [schoolId], references: [id], onDelete: SetNull)
+  source            LeadSource?           @relation(fields: [sourceId], references: [id], onDelete: SetNull)
+  referredBy        Student?              @relation("referrals", fields: [referredById], references: [id], onDelete: SetNull)
+  referrals         Student[]             @relation("referrals")
+  referredLeads     Lead[]                @relation("leadReferrer")
+  family            Family?               @relation(fields: [familyId], references: [id], onDelete: SetNull)
+  memberships       GroupMembership[]
+  parents           Parent[]
+  customFields      StudentCustomField[]
+  comments          StudentComment[]
+  payments          Payment[]
+  onlinePayments    OnlinePayment[]
+  leads             Lead[]
+  examResults       ExamResult[]
+  financeEntries    FinanceEntry[]
+  coins             CoinTransaction[]
+  purchases         PurchaseRequest[]
+  testAttempts      TestAttempt[]
+  smsMessages       SmsMessage[]
+  callLogs          CallLog[]
+  videoPeers        VideoParticipant[]
+  telegramChats     StudentTelegramChat[]
+  adjustments       BalanceAdjustment[]
+  debtCases         DebtCase[]
+  absenceCases      AbsenceCase[]
+  announcementReads AnnouncementRead[]
 
   @@index([branchId, isArchived])
   @@index([phone])
@@ -2442,4 +2447,54 @@ model Instalment {
 
   @@index([membershipId, month])
   @@index([dueDate])
+}
+
+/// Who an announcement is for (A-129).
+enum AnnouncementAudience {
+  CENTRE
+  BRANCH
+  GROUP
+}
+
+/// One notice posted to a group, a branch or the whole centre (A-129): shown on the
+/// students' personal pages, sent to their Telegram chats and optionally by SMS.
+model Announcement {
+  id             String               @id @default(cuid())
+  organizationId String
+  audience       AnnouncementAudience
+  /// The branch for BRANCH, the group's branch for GROUP, null for the centre.
+  branchId       String?
+  groupId        String?
+  title          String
+  body           String
+  sendSms        Boolean              @default(false)
+  /// How many students it was addressed to, and how many messages were queued.
+  recipients     Int                  @default(0)
+  telegramQueued Int                  @default(0)
+  smsQueued      Int                  @default(0)
+  createdById    String?
+  createdAt      DateTime             @default(now())
+
+  organization Organization       @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  branch       Branch?            @relation(fields: [branchId], references: [id], onDelete: Cascade)
+  group        Group?             @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  createdBy    User?              @relation("announcementAuthor", fields: [createdById], references: [id], onDelete: SetNull)
+  reads        AnnouncementRead[]
+
+  @@index([organizationId, createdAt])
+  @@index([branchId, createdAt])
+  @@index([groupId, createdAt])
+}
+
+/// A student opened the announcement on their personal page.
+model AnnouncementRead {
+  id             String   @id @default(cuid())
+  announcementId String
+  studentId      String
+  readAt         DateTime @default(now())
+
+  announcement Announcement @relation(fields: [announcementId], references: [id], onDelete: Cascade)
+  student      Student      @relation(fields: [studentId], references: [id], onDelete: Cascade)
+
+  @@unique([announcementId, studentId])
 }

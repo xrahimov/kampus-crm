@@ -22,6 +22,7 @@ import {
   Wallet,
   type LucideIcon,
   UserRoundX,
+  Megaphone,
 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useMemo, useState } from "react";
@@ -50,6 +51,7 @@ const ARTICLE_ICON: Record<HelpArticleId, LucideIcon> = {
   students: Contact,
   payments: Wallet,
   absences: UserRoundX,
+  announcements: Megaphone,
   debts: HandCoins,
   exams: ClipboardCheck,
   testsAndCoins: GraduationCap,

@@ -52,7 +52,8 @@
     "exams": "Exams",
     "settings": "Settings",
     "finance": "Finance",
-    "reports": "Reports"
+    "reports": "Reports",
+    "announcements": "Announcements"
   },
   "auth": {
     "signIn": "Sign in",
@@ -908,7 +909,8 @@
       "settings": "Settings",
       "logs": "Logs",
       "coins": "Coins",
-      "sms": "SMS"
+      "sms": "SMS",
+      "announcements": "Announcements"
     },
     "names": {
       "dashboard": {
@@ -997,6 +999,10 @@
       },
       "sms": {
         "send": "Send SMS"
+      },
+      "announcements": {
+        "view": "See announcements",
+        "create": "Post and delete announcements"
       }
     }
   },
@@ -1945,6 +1951,44 @@
     },
     "empty": "Nobody is missing lessons here.",
     "emptyHint": "A student appears after missing lessons in a row or after a while without a present mark, by the rules under Settings → Centre settings, and leaves the list once they are back."
+  },
+  "announcements": {
+    "title": "Announcements",
+    "description": "One notice to a group, a branch or the whole centre: on the students' pages, in Telegram and, if you like, by SMS.",
+    "count": "{count, plural, =0 {No announcements yet} one {# announcement} other {# announcements}}",
+    "new": "New announcement",
+    "audience": {
+      "CENTRE": "Whole centre",
+      "BRANCH": "Branch",
+      "GROUP": "Group"
+    },
+    "filters": {
+      "audience": "Posted to",
+      "any": "Everyone"
+    },
+    "dialog": {
+      "title": "New announcement",
+      "recipientsHint": "Everyone with a personal page in the chosen place sees it; the Telegram chats linked to them get it at once.",
+      "audience": "Post to",
+      "branch": "Branch",
+      "group": "Group",
+      "pickGroup": "Choose a group",
+      "titleField": "Title",
+      "body": "Text",
+      "sendSms": "Also send by SMS",
+      "sendSmsHint": "Students with a phone number get the title and text as an SMS. This uses your SMS balance.",
+      "submit": "Post"
+    },
+    "stats": {
+      "reads": "{reads} of {total} read",
+      "telegram": "{count} on Telegram",
+      "sms": "{count} SMS"
+    },
+    "delete": "Delete",
+    "deleteTitle": "Delete this announcement?",
+    "deleteDescription": "It disappears from the students' pages. Messages already sent stay sent.",
+    "empty": "No announcements yet",
+    "emptyHint": "Post holiday notices, exam dates or price changes once; they reach every student in one go."
   },
   "discounts": {
     "title": "Discounts",
@@ -3640,6 +3684,10 @@
           "passwordChange": "Password changed",
           "signOutAll": "Signed out everywhere",
           "signInCode": "Sign-in code switched"
+        },
+        "announcement": {
+          "create": "Announcement posted",
+          "delete": "Announcement deleted"
         }
       }
     }
@@ -4049,7 +4097,8 @@
       "results": "Results",
       "schedule": "Schedule",
       "homework": "Homework",
-      "materials": "Materials"
+      "materials": "Materials",
+      "announcements": "News"
     },
     "lessons": {
       "empty": "No lessons yet.",
@@ -4148,6 +4197,11 @@
       "copyCode": "Copy code",
       "copied": "Copied",
       "joined": "{count, plural, =0 {No friends have joined yet.} one {# friend has joined through you.} other {# friends have joined through you.}}"
+    },
+    "announcements": {
+      "empty": "No news yet.",
+      "from": "From {from}",
+      "new": "New"
     }
   },
   "telegramBot": {
@@ -4196,7 +4250,8 @@
     "absenceWeeklyMore": "… and {count} more",
     "leadCallsTitle": "📞 {name}, calls today: {count} leads, {overdue} overdue",
     "leadCallsLine": "• {name} — {phone} ({when})",
-    "leadCallsMore": "… and {count} more"
+    "leadCallsMore": "… and {count} more",
+    "announcement": "📢 {title}\n\n{body}\n\n— {from}"
   },
   "video": {
     "title": "Video lesson",

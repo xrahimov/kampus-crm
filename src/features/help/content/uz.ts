@@ -658,6 +658,32 @@ export const uz: HelpContent = {
         },
       },
     },
+    announcements: {
+      title: "E‘lonlar",
+      summary: "Guruhga, filialga yoki butun markazga bir xabar va uni kim o‘qigani.",
+      sections: {
+        post: {
+          title: "E‘lon joylash",
+          body: [
+            {
+              steps: [
+                "Menyudan **E‘lonlar**ni oching va **Yangi e‘lon**ni bosing.",
+                "Kimga ekanini tanlang: bir **guruh**, butun **filial** yoki **butun markaz** (butun markazga faqat hamma filialni ko‘radiganlar yoza oladi). O‘qituvchilar o‘z guruhlariga yozadi.",
+                "Sarlavha va matn yozing. Talabalar telefoniga ham borishi kerak bo‘lsa **SMS orqali ham yuborish**ni belgilang; bu markazning SMS balansini sarflaydi.",
+                "**Joylash**ni bosing. E‘lon darhol har bir manzildagi talabaning shaxsiy sahifasida paydo bo‘ladi, talaba va ota-onalarning ulangan Telegram chatlari uni oladi.",
+              ],
+            },
+            "Hali guruhda bo‘lgan talaba (yangi, sinov, faol yoki muzlatilgan) manzil hisoblanadi. E‘lonni o‘chirish uni sahifalardan olib tashlaydi; yuborilgan xabarlar qoladi.",
+          ],
+        },
+        reach: {
+          title: "Kim o‘qidi",
+          body: [
+            "Har bir e‘londa u qancha talabaga ketgani, qanchasi sahifasida ochgani, Telegramga qancha xabar navbatga qo‘yilgani va so‘ralgan bo‘lsa qancha SMS ko‘rinadi. Talabalar e‘lonlarni o‘z sahifasidagi **Yangiliklar** bo‘limida ko‘radi, yangilari yuqorida, ochilmaganlari belgili; bo‘limni ochish ularni o‘qilgan deb belgilaydi.",
+          ],
+        },
+      },
+    },
     exams: {
       title: "Imtihonlar",
       summary:
