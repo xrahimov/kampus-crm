@@ -450,6 +450,13 @@ export const uz: HelpContent = {
             "Pul qaytarish faqat Sozlamalar → Umumiy sozlamalarda **Pul qaytarish funksiyasi** tugmasi yoqilgan bo‘lsa mumkin. O‘quvchi profilida **Pul qaytarish** ni bosing, to‘lovni tanlang, summani (o‘sha to‘lovdan qolgan miqdorgacha) va sababni kiriting. Qaytarish to‘lov tarixida va to‘lovlar jurnalida ko‘rinadi, balans esa qayta oshadi.",
           ],
         },
+        openingBalances: {
+          title: "Boshlang'ich qoldiqlar va to'g'rilashlar",
+          body: [
+            "Kampus'ga o'tayotgan o'quv markazi o'quvchilarning qarzlari va oldindan to'lovlarini ham olib o'tadi. O'quvchi profilida **Qoldiqni to'g'rilash** ni bosing, guruhni tanlang, o'quvchi qarzdor yoki ortiqcha puli borligini belgilang, summa, turi (**Boshlang'ich qoldiq** yoki **To'g'rilash**), sana va izohni kiriting. Summa to'lov kabi balansga qo'shiladi: qarz darhol qarzdorlar ro'yxatida, eslatmalarda va hisobotlarda ko'rinadi, qator esa to'lov tarixi ostida paydo bo'ladi va pul qaytarish huquqi bor xodim uni o'chira oladi.",
+            "Ko'p o'quvchi uchun birdaniga: O'quvchilar sahifasida **Boshlang'ich qoldiqlarni import qilish** ni bosing, shablonni yuklab oling va har bir o'quvchi va guruh uchun bir qator to'ldiring. Qarz manfiy, o'quvchining ortiqcha puli musbat son bilan yoziladi; «qarz» nomli ustun ham ishlaydi (musbat son = qarzdor). O'quvchi Kampus ID, telefon yoki aniq ism bo'yicha, guruh nomi bo'yicha topiladi (o'quvchi bitta guruhda bo'lsa, guruh shart emas), «filial» ustuni boshqa filialni ko'rsatishi mumkin. Birinchi yuklash faqat oldindan ko'rsatadi: qaysi qatorlar mos kelgani va qaysilari o'tkazib yuborilishi; **Import qilish** bosilmaguncha hech narsa yozilmaydi. O'quvchining boshlang'ich qoldig'i bo'lgan guruh o'tkazib yuboriladi, shuning uchun bir xil faylni ikki marta yuklash hech kimning qarzini ikki baravar qilmaydi.",
+          ],
+        },
         discounts: {
           title: "Chegirmalar",
           body: [

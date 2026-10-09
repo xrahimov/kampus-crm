@@ -167,6 +167,7 @@ export const HELP_ARTICLES = [
       { id: "record", screenshot: "payment-dialog" },
       { id: "receipt", screenshot: "receipt" },
       { id: "refund" },
+      { id: "openingBalances" },
       { id: "discounts" },
       { id: "log", screenshot: "payments-log" },
       { id: "online" },

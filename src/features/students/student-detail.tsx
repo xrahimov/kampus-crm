@@ -7,6 +7,7 @@ import {
   Pencil,
   Plus,
   Printer,
+  Scale,
   Undo2,
   Users,
   Wallet,
@@ -44,6 +45,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { ToLeadDialog } from "@/features/groups/to-lead-dialog";
 import { LeaveReasonField } from "@/features/groups/leave-reason-field";
 import { TransferDialog } from "@/features/groups/transfer-dialog";
+import { AdjustmentDialog } from "@/features/payments/adjustment-dialog";
+import { AdjustmentsTable } from "@/features/payments/adjustments-table";
 import { PaymentDialog, type PayableMembership } from "@/features/payments/payment-dialog";
 import { PaymentsTable } from "@/features/payments/payments-table";
 import { RefundDialog } from "@/features/payments/refund-dialog";
@@ -58,6 +61,7 @@ import { useDateFormat } from "@/lib/use-date-format";
 import { useMoneyFormat } from "@/lib/use-money-format";
 import type { Page } from "@/lib/validation/common";
 import type { MembershipStatus } from "@/lib/validation/groups";
+import type { AdjustmentDto } from "@/server/services/students/adjustments.service";
 import type { PaymentDto, PaymentOptionsDto } from "@/server/services/students/payments.service";
 import type {
   StudentCommentDto,
@@ -101,6 +105,7 @@ export function StudentDetail({
   comments,
   history,
   payments,
+  adjustments,
   paymentGroupId,
   progress,
   testResults,
@@ -116,6 +121,7 @@ export function StudentDetail({
   comments: StudentCommentDto[];
   history: Page<StudentHistoryDto>;
   payments: Page<PaymentDto> & { totalAmount: number };
+  adjustments: AdjustmentDto[];
   paymentGroupId: string | null;
   progress: StudentProgressDto;
   testResults: StudentTestResultsDto;
@@ -146,7 +152,16 @@ export function StudentDetail({
   const [, startTransition] = useTransition();
   const refresh = () => startTransition(() => router.refresh());
   const [dialog, setDialog] = useState<
-    null | "edit" | "field" | "addGroup" | "pay" | "refund" | "blacklist" | "parent" | "comment"
+    | null
+    | "edit"
+    | "field"
+    | "addGroup"
+    | "pay"
+    | "refund"
+    | "adjust"
+    | "blacklist"
+    | "parent"
+    | "comment"
   >(null);
   const [payMembership, setPayMembership] = useState<string | null>(null);
   const [transferring, setTransferring] = useState<StudentDetailDto["groups"][number] | null>(null);
@@ -332,6 +347,15 @@ export function StudentDetail({
                 data-testid="refund-student"
               >
                 <Undo2 /> {td("refund")}
+              </Button>
+            )}
+            {can.pay && student.groups.length > 0 && (
+              <Button
+                variant="outline"
+                onClick={() => setDialog("adjust")}
+                data-testid="adjust-student"
+              >
+                <Scale /> {td("adjust")}
               </Button>
             )}
             <Button asChild variant="outline">
@@ -531,6 +555,11 @@ export function StudentDetail({
                 pageSize={payments.pageSize}
                 total={payments.total}
               />
+              <AdjustmentsTable
+                adjustments={adjustments}
+                canRemove={can.refund}
+                onChanged={refresh}
+              />
             </CardContent>
           </Card>
         </div>
@@ -582,6 +611,16 @@ export function StudentDetail({
         open={dialog === "refund"}
         onOpenChange={(open) => !open && close()}
         payments={payments.items}
+        onSaved={refresh}
+      />
+      <AdjustmentDialog
+        open={dialog === "adjust"}
+        onOpenChange={(open) => !open && close()}
+        memberships={student.groups.map((g) => ({
+          membershipId: g.membershipId,
+          groupName: g.groupName,
+          status: g.status,
+        }))}
         onSaved={refresh}
       />
       <TransferDialog

@@ -81,14 +81,14 @@ const memberRowSchema = z.object({
   note: z.string().trim().max(500, "validation.tooLong").nullable(),
 });
 
-const cell = (row: string[], i: number) => (row[i] ?? "").trim() || null;
+export const cell = (row: string[], i: number) => (row[i] ?? "").trim() || null;
 
-function firstIssue(error: z.ZodError): string {
+export function firstIssue(error: z.ZodError): string {
   const issue = error.issues[0];
   return issue ? `${String(issue.path[0] ?? "")}: ${issue.message}` : "validation.invalid";
 }
 
-function dataRows(rows: string[][]): string[][] {
+export function dataRows(rows: string[][]): string[][] {
   if (rows.length === 0) return [];
   if (rows.length > IMPORT_MAX_ROWS + 1)
     throw AppError.validation({ file: ["validation.importTooLarge"] });

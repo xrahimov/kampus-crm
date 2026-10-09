@@ -180,7 +180,14 @@
     "videoEnded": "Bu video dars allaqachon yakunlangan.",
     "videoNotStarted": "O‘qituvchi hali darsni boshlamadi.",
     "homeworkAccepted": "Bu javob allaqachon qabul qilingan.",
-    "onlinePaymentsOff": "O‘quv markazingizda onlayn to‘lov yoqilmagan."
+    "onlinePaymentsOff": "O‘quv markazingizda onlayn to‘lov yoqilmagan.",
+    "importAmbiguous": "Bu qatorga bir nechta o'quvchi mos keladi; telefon yoki Kampus ID ni yozing",
+    "importGroupRequired": "O'quvchi bir nechta guruhda; «Guruh» ustunini to'ldiring",
+    "importGroupUnknown": "O'quvchi shu nomli guruhda yo'q",
+    "importNoMembership": "O'quvchi hech qanday guruhda yo'q",
+    "importBalanceExists": "Bu o'quvchining shu guruhda boshlang'ich qoldig'i allaqachon bor",
+    "importBranchUnknown": "Shu nomli filial yo'q",
+    "importZero": "Qoldiq nolga teng, import qilinadigan narsa yo'q"
   },
   "validation": {
     "phone": "+998 90 123 45 67 ko‘rinishida raqam kiriting.",
@@ -261,7 +268,8 @@
     "attachmentSize": "Fayl hajmi 20 MB dan oshmasligi kerak.",
     "homeworkEmpty": "Javob yozing yoki fayl biriktiring.",
     "botUsername": "Faqat harflar, raqamlar va pastki chiziq.",
-    "recordingSize": "Yozuv hajmi 400 MB dan oshmasligi kerak."
+    "recordingSize": "Yozuv hajmi 400 MB dan oshmasligi kerak.",
+    "nonZero": "Nol bo'lishi mumkin emas"
   },
   "roles": {
     "CEO": "CEO",
@@ -1131,7 +1139,8 @@
       "showArchivedGroups": "Arxivdagi guruhlarni ko‘rish",
       "hideArchivedGroups": "Arxivdagi guruhlarni yashirish",
       "paymentHistory": "To‘lov tarixi",
-      "allGroups": "Barcha guruhlar"
+      "allGroups": "Barcha guruhlar",
+      "adjust": "Qoldiqni to'g'rilash"
     },
     "groupCard": {
       "grade": "Baho",
@@ -1203,6 +1212,10 @@
         "discount": {
           "give": "Chegirma berildi",
           "remove": "Chegirma o‘chirildi"
+        },
+        "balance": {
+          "adjust": "Qoldiq to'g'rilandi",
+          "adjustRemove": "Qoldiq to'g'rilashi o'chirildi"
         }
       }
     },
@@ -1261,7 +1274,9 @@
       "group": "Guruh",
       "course": "Kurs",
       "status": "Holat"
-    }
+    },
+    "importBalances": "Boshlang'ich qoldiqlarni import qilish",
+    "importBalancesHint": "Har bir o'quvchi va guruh uchun bir qator: oldingi tizimdan kelgan qoldiq. Qarz manfiy son, o'quvchining ortiqcha puli musbat son bilan yoziladi. O'quvchi Kampus ID, telefon yoki aniq ism bo'yicha topiladi; yozishdan oldin mosliklar ko'rsatiladi."
   },
   "payments": {
     "pay": "To‘lov",
@@ -1328,6 +1343,34 @@
       "amount": "Summa",
       "printedAt": "Chek chiqarilgan vaqt",
       "thanks": "To‘lovingiz uchun rahmat!"
+    },
+    "adjust": {
+      "title": "Qoldiqni to'g'rilash",
+      "hint": "O'quvchining eski tizimdan kelgan qarzi yoki ortiqcha pulini kiriting yoki qoldiqni qo'lda to'g'rilang. Summa to'lov kabi balansga qo'shiladi va tarixda qoladi.",
+      "group": "Guruh",
+      "direction": "Yo'nalish",
+      "debt": "O'quvchi qarzdor",
+      "credit": "O'quvchida ortiqcha pul",
+      "amount": "Summa",
+      "kind": "Turi",
+      "date": "Sana",
+      "comment": "Izoh"
+    },
+    "adjustments": {
+      "title": "Boshlang'ich qoldiqlar va to'g'rilashlar",
+      "date": "Sana",
+      "group": "Guruh",
+      "kind": "Turi",
+      "amount": "Summa",
+      "comment": "Izoh",
+      "by": "Kim kiritgan",
+      "remove": "O'chirish",
+      "removeTitle": "To'g'rilash o'chirilsinmi?",
+      "removeText": "O'quvchining balansi shu summaga qaytadi. O'chirish tarixda qoladi.",
+      "kinds": {
+        "OPENING": "Boshlang'ich qoldiq",
+        "CORRECTION": "To'g'rilash"
+      }
     }
   },
   "discounts": {
@@ -2505,7 +2548,8 @@
         "VideoRoom": "Video dars",
         "Homework": "Uy vazifasi",
         "HomeworkSubmission": "Uy vazifasi javobi",
-        "LessonMaterial": "Dars materiali"
+        "LessonMaterial": "Dars materiali",
+        "BalanceAdjustment": "Qoldiq to'g'rilashi"
       },
       "names": {
         "attendance": {
@@ -2766,6 +2810,10 @@
         "organization": {
           "create": "Tashkilot yaratildi",
           "update": "Tashkilot nomi o‘zgartirildi"
+        },
+        "balance": {
+          "adjust": "Qoldiq to'g'rilandi",
+          "adjustRemove": "Qoldiq to'g'rilashi o'chirildi"
         }
       }
     }
@@ -2965,11 +3013,13 @@
       "graduates": "bitiruvchilar",
       "leadsReport": "lidlar-hisoboti",
       "studentsReport": "oquvchilar-hisoboti",
-      "statistics": "markaz-statistikasi"
+      "statistics": "markaz-statistikasi",
+      "balancesTemplate": "boshlangich-qoldiqlar-shablon"
     },
     "example": {
       "fullName": "<mijoz ismi>",
-      "gender": "MALE"
+      "gender": "MALE",
+      "group": "<guruh nomi>"
     },
     "marks": {
       "present": "+",
@@ -3060,8 +3110,15 @@
       "advance": "Avans",
       "net": "Qo'lga",
       "gender": "Jinsi",
-      "birthDate": "Tug'ilgan sana"
-    }
+      "birthDate": "Tug'ilgan sana",
+      "studentId": "Kampus ID",
+      "date": "Sana"
+    },
+    "preview": "Oldindan ko'rish: {count} qator import qilinadi, {skipped} qator o'tkazib yuboriladi. Hali hech narsa yozilmadi.",
+    "previewButton": "Oldindan ko'rish",
+    "confirmImport": "{count} qatorni import qilish",
+    "matchedRows": "Import qilinadigan qatorlar",
+    "noHeader": "Sarlavha qatori tanilmadi, shuning uchun shablondagi ustunlar tartibi olindi."
   },
   "search": {
     "placeholder": "O'quvchi, lid, guruh qidirish…",

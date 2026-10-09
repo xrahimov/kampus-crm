@@ -105,6 +105,7 @@ export function StudentsPage({
     blacklist: boolean;
     activate: boolean;
     sms: boolean;
+    pay: boolean;
   };
 }) {
   const t = useTranslations();
@@ -124,6 +125,7 @@ export function StudentsPage({
   const [activating, setActivating] = useState(false);
   const [smsOpen, setSmsOpen] = useState(false);
   const [importing, setImporting] = useState(false);
+  const [importingBalances, setImportingBalances] = useState(false);
   const [notice, setNotice] = useState<string | null>(null);
   const { options: branchOptions, defaultId } = creatableBranches(
     branches,
@@ -228,6 +230,16 @@ export function StudentsPage({
               data-testid="students-import"
             >
               {ts("importExcel")}
+            </Button>
+          )}
+          {can.pay && !archived && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setImportingBalances(true)}
+              data-testid="students-import-balances"
+            >
+              {ts("importBalances")}
             </Button>
           )}
           {can.create && (
@@ -511,6 +523,18 @@ export function StudentsPage({
         fields={{ branchId: defaultId }}
         onDone={refresh}
         testId="students-import-dialog"
+      />
+      <ImportDialog
+        open={importingBalances}
+        onOpenChange={setImportingBalances}
+        title={ts("importBalances")}
+        description={ts("importBalancesHint")}
+        templatePath="/students/import-balances-template.xlsx"
+        importPath="/students/import-balances"
+        fields={{ branchId: defaultId }}
+        preview
+        onDone={refresh}
+        testId="students-import-balances-dialog"
       />
       <SendSmsDialog
         open={smsOpen}

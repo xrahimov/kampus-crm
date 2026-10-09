@@ -30,6 +30,8 @@ export interface MembershipBalance {
   paid: number;
   bonus: number;
   refunded: number;
+  /** Opening balances and corrections, signed (A-109). */
+  adjusted: number;
   balance: number;
   /** When the student's money runs out, for "Keyingi to'lov"; null when nothing is due. */
   nextPaymentDate: string | null;
@@ -182,7 +184,7 @@ export async function membershipBalances(
   const today = todayIso();
   const currentMonth = monthStart(today);
 
-  const [rows, payments, refunds] = await Promise.all([
+  const [rows, payments, refunds, adjustments] = await Promise.all([
     db.groupMembership.findMany({
       where: { id: { in: membershipIds } },
       select: membershipSelect,
@@ -196,7 +198,15 @@ export async function membershipBalances(
       where: { payment: { membershipId: { in: membershipIds } } },
       select: { amount: true, payment: { select: { membershipId: true } } },
     }),
+    db.balanceAdjustment.groupBy({
+      by: ["membershipId"],
+      where: { membershipId: { in: membershipIds } },
+      _sum: { amount: true },
+    }),
   ]);
+  const adjustedBy = new Map(
+    adjustments.map((a) => [a.membershipId, a._sum.amount ? decimalToNumber(a._sum.amount) : 0]),
+  );
   const paidBy = new Map(
     payments.map((p) => [
       p.membershipId,
@@ -223,7 +233,10 @@ export async function membershipBalances(
     const paid = paidBy.get(m.id)?.amount ?? 0;
     const bonus = paidBy.get(m.id)?.bonus ?? 0;
     const refunded = refundedBy.get(m.id) ?? 0;
-    const credit = paid + bonus - refunded;
+    // What the student brought from the old system, or a hand correction, counts as money
+    // (or debt) that exists before any charge of this membership (A-109).
+    const adjusted = adjustedBy.get(m.id) ?? 0;
+    const credit = paid + bonus - refunded + adjusted;
     const balance = credit - charged;
     const lastChargedMonth = charges.at(-1)?.month ?? null;
     const unpaid = firstUnpaidMonth(charges, credit);
@@ -253,6 +266,7 @@ export async function membershipBalances(
       paid,
       bonus,
       refunded,
+      adjusted,
       balance,
       nextPaymentDate,
       suggestedMonth: unpaid ?? (nextMonth <= endMonth ? nextMonth : currentMonth),

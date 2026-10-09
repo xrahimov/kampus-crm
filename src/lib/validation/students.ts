@@ -144,6 +144,25 @@ export const onlinePaymentSchema = z.object({
 });
 export type OnlinePaymentInput = z.infer<typeof onlinePaymentSchema>;
 
+export const BALANCE_ADJUSTMENT_KINDS = ["OPENING", "CORRECTION"] as const;
+export type BalanceAdjustmentKind = (typeof BALANCE_ADJUSTMENT_KINDS)[number];
+/**
+ * "Boshlang'ich qoldiq" (A-109): a signed amount on one membership. Negative means the
+ * student owes, positive means the student has money; zero changes nothing and is refused.
+ */
+export const adjustmentSchema = z.object({
+  membershipId: idSchema,
+  amount: z.coerce
+    .number()
+    .min(-9_999_999_999_999, "validation.min")
+    .max(9_999_999_999_999, "validation.max")
+    .refine((v) => v !== 0, "validation.nonZero"),
+  kind: z.enum(BALANCE_ADJUSTMENT_KINDS).default("OPENING"),
+  date: dateOnlySchema,
+  comment: text(500).nullable().optional(),
+});
+export type AdjustmentInput = z.infer<typeof adjustmentSchema>;
+
 export const refundSchema = z.object({
   amount: positiveMoney,
   reason: text(500).nullable().optional(),
