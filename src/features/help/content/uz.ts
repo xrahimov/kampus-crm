@@ -119,6 +119,13 @@ export const uz: HelpContent = {
             },
           ],
         },
+        mySalary: {
+          title: "Sizning maoshingiz",
+          body: [
+            "O‘qituvchilar va maosh oladigan boshqa xodimlar o‘ng yuqori burchakdagi ismlari ostida **Mening maoshim**ni topadi. Sahifa oy raqamlarini buxgalterning maosh hisoboti kabi hisoblab ko‘rsatadi: bo‘lsa oylik maosh, har bir guruh o‘z qoidasi bilan (talaba boshiga kurs narxining foizi, o‘tilgan dars uchun yoki talaba uchun to‘lov) va hozirgacha yig‘ilgan summa, keyin shu oydagi bonus, jarima va avanslar.",
+            "Buxgalter oy hisobotini ochib tasdiqlamaguncha summa joriy hisob bo‘lib qoladi; sahifa qaysi biri ekanini aytadi. Strelkalar o‘tgan oylarni ko‘rsatadi. Sahifa maosh qoidasi yo‘q desa, administratordan xodim kartangizda maosh usulini belgilashni yoki sizni guruhga o‘qituvchi sifatida qo‘shishni so‘rang.",
+          ],
+        },
         help: {
           title: "Bu yordamdan foydalanish",
           body: [

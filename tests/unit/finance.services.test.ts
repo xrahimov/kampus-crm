@@ -25,6 +25,7 @@ import {
   updateEntry,
 } from "@/server/services/finance/entries.service";
 import { getFinanceOverview, getFinancePlan } from "@/server/services/finance/overview.service";
+import { getMySalary } from "@/server/services/finance/my-salary.service";
 import {
   approvePayrollLine,
   getPayroll,
@@ -496,5 +497,48 @@ describe("payroll", () => {
     const saved = await savePayroll(ceo, `${YEAR}-03`, "SAVED");
     expect(saved.status).toBe("SAVED");
     await expect(getPayroll(viewer, `${YEAR}-03`)).resolves.toMatchObject({ status: "SAVED" });
+  });
+});
+
+describe("my salary (A-127)", () => {
+  it("shows a teacher their own month the payroll way, with the accountant's line and the history", async () => {
+    const mine = await getMySalary(teacher, `${YEAR}-03`);
+    expect(mine.paid).toBe(true);
+    expect(mine.method).toBe("MONTHLY");
+    expect(mine.rate).toBe(1_000_000);
+    expect(mine.line.fixed).toBe(1_000_000);
+    expect(mine.line.percent).toBe(400_000);
+    // The 999 bonus given after approval counts in the running estimate, not in the approved line.
+    expect(mine.line.bonus).toBe(200_999);
+    expect(mine.line.details[0]).toMatchObject({
+      groupName: `${TAG} GE-A`,
+      shareType: "PERCENT",
+      students: 2,
+    });
+    expect(mine.official).toMatchObject({
+      status: "APPROVED",
+      net: 1_225_000,
+      runStatus: "SAVED",
+      approvedBy: `${TAG} CEO`,
+    });
+    expect(mine.entries.map((e) => e.type).sort()).toEqual([
+      "ADVANCE",
+      "BONUS",
+      "BONUS",
+      "PENALTY",
+    ]);
+    expect(mine.history[0]).toMatchObject({
+      month: `${YEAR}-03`,
+      net: 1_225_000,
+      status: "APPROVED",
+    });
+    // Someone without a rule or a group sees an empty month; a session without a user sees nothing.
+    const none = await getMySalary(viewer, `${YEAR}-03`);
+    expect(none.paid).toBe(false);
+    expect(none.line.net).toBe(0);
+    expect(none.official).toBeNull();
+    await expect(getMySalary({ ...viewer, userId: "" }, `${YEAR}-03`)).rejects.toMatchObject({
+      code: "UNAUTHENTICATED",
+    });
   });
 });

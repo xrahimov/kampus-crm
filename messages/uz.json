@@ -108,6 +108,69 @@
       "signedOutOthers": "{count, plural, =0 {Boshqa qurilma yo‘q edi.} one {# boshqa qurilmadan chiqildi.} other {# boshqa qurilmadan chiqildi.}}"
     }
   },
+  "salary": {
+    "title": "Mening maoshim",
+    "description": "Bu oy qancha ishlab topdingiz: guruhlar bo‘yicha, bonus, jarima va avanslar bilan.",
+    "prevMonth": "Oldingi oy",
+    "nextMonth": "Keyingi oy",
+    "thisMonth": "Shu oy",
+    "notPaid": "Maosh qoidasi hali yo‘q",
+    "notPaidHint": "Administratordan xodim kartangizda maosh usulini belgilashni yoki sizni guruhga o‘qituvchi sifatida qo‘shishni so‘rang.",
+    "cards": {
+      "net": "Hozircha hisoblandi",
+      "groups": "Guruhlardan",
+      "fixed": "Oylik maosh",
+      "adjustments": "Bonus, jarima, avans"
+    },
+    "rule": "Sizning qoidangiz",
+    "noRule": "Umumiy qoida yo‘q; ulush har bir guruhda belgilanadi.",
+    "methods": {
+      "PERCENT": "Har bir talaba uchun kurs narxining {value}%",
+      "MONTHLY": "Oyiga {value}",
+      "PER_LESSON": "O‘tilgan har bir dars uchun {value}",
+      "PER_STUDENT": "Har bir talaba uchun {value}"
+    },
+    "status": {
+      "approved": "Tasdiqlangan ({name}, {date}): {amount}.",
+      "moderation": "Buxgalter bu oyni hali tekshirmoqda; bu yerdagi raqamlar joriy hisob.",
+      "open": "Joriy hisob. Buxgalter bu oy maoshini hali ochmagan."
+    },
+    "groups": {
+      "title": "Guruhlar",
+      "group": "Guruh",
+      "rule": "Qoida",
+      "students": "Talabalar",
+      "lessons": "Darslar",
+      "amount": "Summa",
+      "empty": "Bu oy guruhlar yo‘q."
+    },
+    "entries": {
+      "title": "Bonus, jarima va avanslar",
+      "date": "Sana",
+      "type": "Turi",
+      "amount": "Summa",
+      "comment": "Izoh",
+      "empty": "Bu oy hech narsa yo‘q.",
+      "types": {
+        "BONUS": "Bonus",
+        "PENALTY": "Jarima",
+        "ADVANCE": "Avans"
+      }
+    },
+    "history": {
+      "title": "O‘tgan oylar",
+      "month": "Oy",
+      "salary": "Maosh",
+      "status": "Holat",
+      "APPROVED": "Tasdiqlangan",
+      "MODERATION": "Tekshirilmoqda",
+      "empty": "Buxgalter hali birorta oyni hisoblamagan."
+    },
+    "rules": {
+      "onlyAttended": "Faqat davomati belgilangan darslar o‘tilgan hisoblanadi.",
+      "dayOff": "Guruhning dam olish kunlari o‘tilgan dars hisoblanadi."
+    }
+  },
   "branch": {
     "select": "Filial",
     "active": "Joriy filial"

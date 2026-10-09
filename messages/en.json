@@ -108,6 +108,69 @@
       "signedOutOthers": "{count, plural, =0 {No other devices were signed in.} one {One other device was signed out.} other {# other devices were signed out.}}"
     }
   },
+  "salary": {
+    "title": "My salary",
+    "description": "What you have earned this month, group by group, with bonuses, fines and advances.",
+    "prevMonth": "Previous month",
+    "nextMonth": "Next month",
+    "thisMonth": "This month",
+    "notPaid": "No salary rule yet",
+    "notPaidHint": "Ask the administrator to set the salary method on your staff card, or to add you to a group as its teacher.",
+    "cards": {
+      "net": "Accrued so far",
+      "groups": "From groups",
+      "fixed": "Fixed salary",
+      "adjustments": "Bonuses, fines, advances"
+    },
+    "rule": "Your rule",
+    "noRule": "No default rule; each group sets its own share.",
+    "methods": {
+      "PERCENT": "{value}% of the course price for each student",
+      "MONTHLY": "{value} per month",
+      "PER_LESSON": "{value} per lesson held",
+      "PER_STUDENT": "{value} per student"
+    },
+    "status": {
+      "approved": "Approved by {name} on {date}: {amount}.",
+      "moderation": "The accountant is still checking this month; the figures here are the running estimate.",
+      "open": "Running estimate. The accountant has not opened this month's payroll yet."
+    },
+    "groups": {
+      "title": "Groups",
+      "group": "Group",
+      "rule": "Rule",
+      "students": "Students",
+      "lessons": "Lessons",
+      "amount": "Amount",
+      "empty": "No groups this month."
+    },
+    "entries": {
+      "title": "Bonuses, fines and advances",
+      "date": "Date",
+      "type": "Type",
+      "amount": "Amount",
+      "comment": "Comment",
+      "empty": "Nothing this month.",
+      "types": {
+        "BONUS": "Bonus",
+        "PENALTY": "Fine",
+        "ADVANCE": "Advance"
+      }
+    },
+    "history": {
+      "title": "Earlier months",
+      "month": "Month",
+      "salary": "Salary",
+      "status": "Status",
+      "APPROVED": "Approved",
+      "MODERATION": "Being checked",
+      "empty": "The accountant has not computed a month yet."
+    },
+    "rules": {
+      "onlyAttended": "Only lessons with attendance marked count as held.",
+      "dayOff": "Group days off count as lessons held."
+    }
+  },
   "branch": {
     "select": "Branch",
     "active": "Active branch"
