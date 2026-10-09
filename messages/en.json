@@ -340,7 +340,8 @@
     "nonZero": "Must not be zero",
     "lessonExists": "There is already a lesson at this time.",
     "referralSelf": "A student cannot invite themselves",
-    "referralUnknown": "Student not found"
+    "referralUnknown": "Student not found",
+    "formUnknown": "Form not found"
   },
   "roles": {
     "CEO": "CEO",
@@ -414,6 +415,21 @@
         "hint": "A student who brings a friend gets coins (Settings → Coins, event Referral) and this bonus on their balance when the friend joins a group. 0 means coins only.",
         "bonus": "Bonus for the inviting student",
         "currency": "so'm"
+      },
+      "publicPage": {
+        "title": "Public page",
+        "hint": "A page with your courses, prices, timetable, teachers and the sign-up form. On your own address it opens at the root; on the server's address at the link below. Put the link in your Instagram bio.",
+        "enabled": "Page is on",
+        "slug": "Page address",
+        "link": "Link: {path}",
+        "form": "Sign-up form",
+        "formAuto": "First active form",
+        "intro": "About the centre",
+        "publicPhone": "Phone",
+        "publicAddress": "Address",
+        "publicInstagram": "Instagram (username or link)",
+        "publicTelegram": "Telegram (username or link)",
+        "open": "Open the page"
       }
     },
     "switches": {
@@ -3774,5 +3790,36 @@
     "next": "Next",
     "nav": "Help",
     "portalLink": "How to use this page"
+  },
+  "publicPage": {
+    "signIn": "Staff sign-in",
+    "cta": "Sign up for a course",
+    "telegram": "Telegram",
+    "instagram": "Instagram",
+    "hours": "Open {from}–{to}",
+    "branches": "Branches: {names}",
+    "coursesTitle": "Courses",
+    "noCourses": "The course list is being prepared.",
+    "perMonth": "{price} / month",
+    "duration": "{count, plural, one {# month} other {# months}}",
+    "groupsCount": "{count, plural, =0 {New group forming} one {# group open} other {# groups open}}",
+    "enrol": "Sign up",
+    "scheduleTitle": "Timetable",
+    "noSchedule": "New groups are forming. Leave your details and we will call you.",
+    "columns": {
+      "group": "Group",
+      "days": "Days",
+      "time": "Time",
+      "teacher": "Teacher",
+      "branch": "Branch",
+      "starts": "Starts",
+      "seats": "Seats"
+    },
+    "seatsLeft": "{count, plural, =0 {Full} one {# seat left} other {# seats left}}",
+    "teachersTitle": "Teachers",
+    "signupTitle": "Sign up",
+    "signupIntro": "Leave your name and phone number, and {organization} will call you back.",
+    "signupClosed": "Call us or write to us and we will sign you up.",
+    "courseInterest": "Course: {name}"
   }
 }

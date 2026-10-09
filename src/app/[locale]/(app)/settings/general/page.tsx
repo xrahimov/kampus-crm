@@ -9,6 +9,7 @@ import { listBranches } from "@/server/services/settings/branches.service";
 import { listGradingSystems } from "@/server/services/settings/grading-systems.service";
 import { getOrgSettings } from "@/server/services/settings/org-settings.service";
 import { listPaymentMethods } from "@/server/services/settings/payment-methods.service";
+import { listForms } from "@/server/services/leads/forms.service";
 import { getAutoSmsSettings } from "@/server/services/sms/auto-sms.service";
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -30,12 +31,13 @@ export default async function GeneralSettingsPage({
   const current = await requireCurrentUser();
   if (!can(current.actor, "settings.org")) return <Forbidden />;
 
-  const [settings, branches, paymentMethods, gradingSystems, autoSms] = await Promise.all([
+  const [settings, branches, paymentMethods, gradingSystems, autoSms, forms] = await Promise.all([
     getOrgSettings(current.actor),
     listBranches(current.actor),
     listPaymentMethods(current.actor),
     listGradingSystems(current.actor),
     getAutoSmsSettings(current.actor),
+    can(current.actor, "settings.catalog") ? listForms(current.actor) : Promise.resolve([]),
   ]);
 
   return (
@@ -45,6 +47,7 @@ export default async function GeneralSettingsPage({
       paymentMethods={paymentMethods}
       gradingSystems={gradingSystems}
       autoSms={autoSms}
+      forms={forms.map((f) => ({ id: f.id, name: f.name }))}
       tab={tab}
     />
   );

@@ -4,6 +4,8 @@
  * what is due and reports today's absence, each in its own language, and the
  * webhook's replies carry the three-button keyboard.
  */
+import { randomInt } from "node:crypto";
+
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 
 import { formatMoneyUz } from "@/lib/dates";
@@ -27,7 +29,7 @@ import { botDate, botText, wallClock } from "@/server/services/telegram/student-
 
 import { DEMO_ORG_ID, demoBranchIds } from "./support/tenant";
 
-const RUN = String(Date.now() % 100_000).padStart(5, "0");
+const RUN = String(randomInt(100_000)).padStart(5, "0");
 const TAG = `tg${RUN}`;
 const phone = (n: number) => `+99895${RUN}${String(n).padStart(2, "0")}`;
 const chatOf = (n: number) => `${RUN}${n}${Date.now() % 1000}`;
@@ -167,6 +169,8 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
+  // A failed set-up leaves the ids unset; an unset filter would match every centre.
+  if (!organizationId) return;
   await prisma.user.deleteMany({ where: { id: owner.userId } });
   // The centre goes with everything in it, children first where nothing cascades.
   await prisma.auditLog.deleteMany({

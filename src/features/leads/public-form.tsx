@@ -23,14 +23,23 @@ type Output = z.output<typeof publicLeadSchema>;
  * The visitor side of a lead form: name, phone, comment (A-69). `inviteCode` is
  * the `?ref=` of a student's link (A-120); it travels along, unseen.
  */
-export function PublicLeadForm({ slug, inviteCode }: { slug: string; inviteCode: string | null }) {
+export function PublicLeadForm({
+  slug,
+  inviteCode,
+  defaultComment = null,
+}: {
+  slug: string;
+  inviteCode: string | null;
+  /** Pre-filled comment, e.g. the course picked on the centre's page (A-121). */
+  defaultComment?: string | null;
+}) {
   const t = useTranslations();
   const tp = useTranslations("leads.publicForm");
   const [error, setError] = useState<string | null>(null);
   const [done, setDone] = useState(false);
   const form = useForm<Input, unknown, Output>({
     resolver: zodResolver(publicLeadSchema),
-    defaultValues: { fullName: "", phone: "+998", comment: "", ref: inviteCode },
+    defaultValues: { fullName: "", phone: "+998", comment: defaultComment ?? "", ref: inviteCode },
   });
 
   async function onSubmit(values: Output) {

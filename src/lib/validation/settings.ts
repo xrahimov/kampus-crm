@@ -38,6 +38,28 @@ const cadenceDays = z
   ])
   .optional();
 
+/** Public page (A-121): an empty field clears the value. */
+const publicText = (max: number) =>
+  z
+    .union([
+      z.literal("").transform(() => null),
+      z.null(),
+      z.string().trim().max(max, "validation.tooLong"),
+    ])
+    .optional();
+/** The page's address on the server's domain: /c/<slug>, 3 to 40 characters. */
+export const PUBLIC_SLUG = /^[a-z0-9](?:[a-z0-9-]{1,38}[a-z0-9])?$/;
+const publicSlug = z
+  .union([
+    z.literal("").transform(() => null),
+    z.null(),
+    z.string().trim().toLowerCase().regex(PUBLIC_SLUG, "validation.slug"),
+  ])
+  .optional();
+const optionalFormId = z
+  .union([z.literal("").transform(() => null), z.null(), idSchema])
+  .optional();
+
 export const ORG_SWITCHES = [
   "spreadOverpayment",
   "adminActionsNeedApproval",
@@ -81,6 +103,15 @@ export const orgSettingsSchema = z
       .min(0, "validation.min")
       .max(99_999_999, "validation.max")
       .default(0),
+    /** Public page per centre (A-121). */
+    publicPage: z.boolean().default(false),
+    publicSlug,
+    publicIntro: publicText(1000),
+    publicPhone: publicText(30),
+    publicAddress: publicText(300),
+    publicInstagram: publicText(100),
+    publicTelegram: publicText(100),
+    publicFormId: optionalFormId,
   })
   .refine((v) => v.workStart < v.workEnd, {
     message: "validation.workHours",

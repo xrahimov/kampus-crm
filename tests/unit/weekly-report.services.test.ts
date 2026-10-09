@@ -224,6 +224,8 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
+  // A failed set-up leaves the ids unset; an unset filter would match every centre.
+  if (!organizationId) return;
   await prisma.job.deleteMany({ where: { uniqueKey: { endsWith: `:${aliceChat}` } } });
   await prisma.job.deleteMany({ where: { uniqueKey: { endsWith: `:${bobChat}` } } });
   await prisma.user.deleteMany({ where: { id: owner.userId } });

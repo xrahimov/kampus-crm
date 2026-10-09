@@ -2,6 +2,8 @@ import { ORG_SWITCHES, type OrgSettingsInput } from "@/lib/validation/settings";
 import { recordAudit } from "@/server/audit/audit";
 import { prisma, type DbClient } from "@/server/db/prisma";
 import { authorize, type Actor } from "@/server/rbac/authorize";
+import { AppError } from "@/server/errors/app-error";
+import { rethrowAsAppError } from "@/server/services/settings/shared";
 
 export interface OrgSettingsDto extends OrgSettingsInput {
   organizationId: string;
@@ -37,6 +39,14 @@ function toDto(
     debtSmsDays: settings.debtSmsDays,
     debtTaskDays: settings.debtTaskDays,
     referralBonus: settings.referralBonus,
+    publicPage: settings.publicPage,
+    publicSlug: settings.publicSlug,
+    publicIntro: settings.publicIntro,
+    publicPhone: settings.publicPhone,
+    publicAddress: settings.publicAddress,
+    publicInstagram: settings.publicInstagram,
+    publicTelegram: settings.publicTelegram,
+    publicFormId: settings.publicFormId,
   };
 }
 
@@ -72,7 +82,23 @@ export async function updateOrgSettings(
     debtTaskDays: input.debtTaskDays,
     // Referral programme (A-120): the bonus a student earns when a friend they invited joins.
     referralBonus: input.referralBonus,
+    // Public page (A-121); a field left out keeps its value, "" clears it.
+    publicPage: input.publicPage,
+    publicSlug: input.publicSlug,
+    publicIntro: input.publicIntro,
+    publicPhone: input.publicPhone,
+    publicAddress: input.publicAddress,
+    publicInstagram: input.publicInstagram,
+    publicTelegram: input.publicTelegram,
+    publicFormId: input.publicFormId,
   };
+  if (input.publicFormId) {
+    const form = await db.leadForm.findFirst({
+      where: { id: input.publicFormId, organizationId },
+      select: { id: true },
+    });
+    if (!form) throw AppError.validation({ publicFormId: ["validation.formUnknown"] });
+  }
 
   return db.$transaction(async (tx) => {
     const beforeOrg = await tx.organization.findUniqueOrThrow({ where: { id: organizationId } });
@@ -83,7 +109,10 @@ export async function updateOrgSettings(
       where: { id: organizationId },
       data: { name: input.name },
     });
-    const settings = await tx.orgSettings.update({ where: { organizationId }, data });
+    const settings = await tx.orgSettings
+      .update({ where: { organizationId }, data })
+      // Another centre already uses that page address.
+      .catch((error: unknown) => rethrowAsAppError(error, "publicSlug"));
     const after = toDto(org, settings);
 
     await recordAudit(tx, actor, {

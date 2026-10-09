@@ -331,6 +331,17 @@ model OrgSettings {
   debtSmsDays      Int? @default(3)
   debtTaskDays     Int? @default(7)
 
+  /// Public page per centre (A-121): courses, prices, timetable, teachers and the sign-up form,
+  /// at the centre's own address and at /c/<publicSlug> on the server's.
+  publicPage      Boolean @default(false)
+  publicSlug      String? @unique
+  publicIntro     String?
+  publicPhone     String?
+  publicAddress   String?
+  publicInstagram String?
+  publicTelegram  String?
+  publicFormId    String?
+
   /// Referral programme (A-120): so'm credited to the referrer as a payment bonus
   /// when a friend they brought joins a group. 0 = coins only (the REFERRAL coin rule).
   referralBonus Int @default(0)
@@ -338,6 +349,7 @@ model OrgSettings {
   updatedAt DateTime @updatedAt
 
   organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  publicForm   LeadForm?    @relation(fields: [publicFormId], references: [id], onDelete: SetNull)
 }
 
 /// "To'lov usullari" on the general settings tab. Payments reference these from Phase 6.
@@ -1353,11 +1365,12 @@ model LeadForm {
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
 
-  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
-  column       LeadColumn   @relation(fields: [columnId], references: [id])
-  source       LeadSource?  @relation(fields: [sourceId], references: [id], onDelete: SetNull)
+  organization Organization  @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  column       LeadColumn    @relation(fields: [columnId], references: [id])
+  source       LeadSource?   @relation(fields: [sourceId], references: [id], onDelete: SetNull)
   leads        Lead[]
-  school       School?      @relation(fields: [schoolId], references: [id])
+  publicPageOf OrgSettings[]
+  school       School?       @relation(fields: [schoolId], references: [id])
   schoolId     String?
 
   @@index([organizationId])
