@@ -1104,6 +1104,12 @@ export const uz: HelpContent = {
             "O'zbekistonda onlayn kassalar OFD provayderi orqali ishlaydi. Buxgalterdan markaz qaysi provayderdan foydalanishini so'rang va uning API manzili va kalitini, STIR, kassa ID, QQS stavkasi va ta'lim xizmatlarining MXIK kodini kiriting. **Har bir to'lovga chekni avtomatik berish** yoqilganda kassadagi har bir to'lov va qaytarish fonda fiskal chek oladi; uning raqami va fiskal belgisi chop etilgan kvitansiyada ko'rinadi, to'lovlar ro'yxatidagi **Fiskal chek** ustuni esa Navbatda, Berildi yoki Xato holatini qayta yuborish tugmasi bilan ko'rsatadi. API manzilsiz yoqilsa, cheklarni Kampus sinov provayderi beradi — shartnoma imzolanishidan oldin jarayonni sinab ko'rish mumkin. Payme va Click orqali to'lovlarni o'sha provayderlar o'zlari fiskallashtiradi.",
           ],
         },
+        instagram: {
+          title: "Instagram xabarlari",
+          body: [
+            "Kingston kabi markazlar lidlarning ko'pini Instagram'dan oladi. Integratsiya ulangach markazning Instagram professional akkauntiga yozilgan har bir xabar **Lidlar → Kirish qutisi**ga Telegram suhbatlari yoniga tushadi, yozgan odam Instagram manbali lid bo'ladi, xodimlar Kampus'dan javob beradi; javob Meta Graph API orqali ketadi. Ulash uchun Meta for Developers'da Instagram messaging bilan ilova kerak: unda forma ostidagi vebhuk manzilini (vebhuk siringiz bilan) va verify tokenni ko'rsating, so'ng ilova sirini va uzoq muddatli sahifa tokenini kartaga nusxalang. Meta ilovani boshqa akkauntlarning xabarlarini o'qishga ruxsat berishdan oldin tekshiradi, bu haftalar oladi; ungacha vebhukni qo'lda sinab ko'rish mumkin.",
+          ],
+        },
         jobs: {
           title: "Fon vazifalari",
           body: [

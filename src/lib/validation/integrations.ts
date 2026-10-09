@@ -208,6 +208,7 @@ export const INTEGRATION_PROVIDERS = [
   "PAYME",
   "CLICK",
   "FISCAL",
+  "INSTAGRAM",
 ] as const;
 export type IntegrationProvider = (typeof INTEGRATION_PROVIDERS)[number];
 
@@ -357,6 +358,28 @@ export const fiscalIntegrationSchema = z.object({
   autoIssue: z.boolean().default(true),
 });
 
+/**
+ * Instagram direct messages through Meta's messaging webhook (A-148). The
+ * webhook secret in the address names the centre, the verify token answers
+ * Meta's subscription handshake, the app secret checks each delivery's
+ * signature and the page access token sends replies through the Graph API.
+ */
+export const instagramIntegrationSchema = z.object({
+  isEnabled: z.boolean(),
+  webhookSecret: secret.default(""),
+  verifyToken: secret.default(""),
+  appSecret: secret.default(""),
+  pageAccessToken: secret.default(""),
+  /** The Instagram professional account's id, so the centre's own messages are not filed as leads. */
+  instagramAccountId: z
+    .string()
+    .trim()
+    .regex(/^\d{0,32}$/, "validation.digits")
+    .default(""),
+  /** Greet a new conversation with the same welcome the Telegram bot sends. */
+  welcomeReply: z.boolean().default(true),
+});
+
 export const integrationSchemas = {
   SMS: smsIntegrationSchema,
   TELEGRAM: telegramIntegrationSchema,
@@ -367,6 +390,7 @@ export const integrationSchemas = {
   PAYME: paymeIntegrationSchema,
   CLICK: clickIntegrationSchema,
   FISCAL: fiscalIntegrationSchema,
+  INSTAGRAM: instagramIntegrationSchema,
 } as const;
 export type IntegrationInput<P extends IntegrationProvider> = z.infer<
   (typeof integrationSchemas)[P]

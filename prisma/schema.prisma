@@ -2392,6 +2392,7 @@ enum IntegrationProvider {
   PAYME
   CLICK
   FISCAL
+  INSTAGRAM
 }
 
 /// One row per provider: enabled flag plus its settings (A-83). Secrets are masked in the API.

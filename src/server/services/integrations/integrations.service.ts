@@ -15,6 +15,10 @@ import {
   type AmoCrmTokens,
 } from "@/server/integrations/amocrm/client";
 import { createFiscalProvider, type FiscalProvider } from "@/server/integrations/fiscal/provider";
+import {
+  createInstagramProvider,
+  type InstagramProvider,
+} from "@/server/integrations/instagram/provider";
 import { createSmsProvider, type SmsProvider } from "@/server/integrations/sms/provider";
 import {
   createTelegramNotifier,
@@ -39,6 +43,7 @@ const SECRET_FIELDS: Record<IntegrationProvider, readonly string[]> = {
   PAYME: ["key"],
   CLICK: ["secretKey"],
   FISCAL: ["apiKey"],
+  INSTAGRAM: ["webhookSecret", "verifyToken", "appSecret", "pageAccessToken"],
 };
 
 /** Providers that work without any setup and are therefore on until switched off. */
@@ -269,6 +274,20 @@ export function getFiscalProvider(config: FiscalConfig | null): FiscalProvider {
   return createFiscalProvider(config);
 }
 
+export type InstagramConfig = Config<"INSTAGRAM"> & { isEnabled: boolean };
+
+/** The centre's Instagram settings, on or off; null when never saved (A-148). */
+export async function instagramConfigFor(
+  db: DbClient,
+  organizationId: string,
+): Promise<InstagramConfig | null> {
+  return loadIntegrationConfig(db, "INSTAGRAM", organizationId);
+}
+
+export function getInstagramProvider(config: InstagramConfig | null): InstagramProvider {
+  return createInstagramProvider(config);
+}
+
 export function getTelephonyProvider(): TelephonyProvider {
   return createTelephonyProvider();
 }
@@ -322,7 +341,7 @@ export async function testAmoCrm(
  */
 export async function assertWebhookSecret(
   db: DbClient,
-  provider: "TELEGRAM" | "TELEPHONY" | "FACE_ID" | "AMOCRM",
+  provider: "TELEGRAM" | "TELEPHONY" | "FACE_ID" | "AMOCRM" | "INSTAGRAM",
   presented: string | null,
 ): Promise<string> {
   const organizationId = presented

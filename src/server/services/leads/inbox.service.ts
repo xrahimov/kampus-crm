@@ -7,7 +7,9 @@ import { AppError } from "@/server/errors/app-error";
 import { authorize, branchScope } from "@/server/rbac/authorize";
 import { notifyUsers } from "@/server/services/dashboard/notifications.service";
 import {
+  getInstagramProvider,
   getTelegramNotifier,
+  instagramConfigFor,
   telegramConfigFor,
 } from "@/server/services/integrations/integrations.service";
 import { normalizePhone } from "@/server/services/leads/amocrm-inbound.service";
@@ -24,7 +26,8 @@ import {
  * the centre's Telegram bot (a chat not linked to any student) becomes a lead
  * at their first message; the chat lands in Leads → Inbox, where managers read
  * and answer from Kampus, and every later message of theirs is appended. The
- * same tables carry Instagram once that channel is connected (E6).
+ * same tables carry Instagram direct messages delivered by Meta's webhook (E6,
+ * A-148); the channel decides which provider carries the answer.
  */
 
 export interface InboundChatMessage {
@@ -148,13 +151,150 @@ async function firstBranch(db: DbClient, organizationId: string): Promise<string
   return branch?.id ?? null;
 }
 
-async function telegramSource(tx: DbClient, organizationId: string) {
+const CHANNEL_LABEL: Record<LeadChannel, string> = { TELEGRAM: "Telegram", INSTAGRAM: "Instagram" };
+
+async function channelSource(tx: DbClient, organizationId: string, channel: LeadChannel) {
+  const name = CHANNEL_LABEL[channel];
   return tx.leadSource.upsert({
-    where: { organizationId_name: { organizationId, name: "Telegram" } },
-    create: { organizationId, name: "Telegram" },
+    where: { organizationId_name: { organizationId, name } },
+    create: { organizationId, name },
     update: {},
     select: { id: true },
   });
+}
+
+type ExistingConversation = Prisma.LeadConversationGetPayload<{
+  include: { lead: { select: { id: true; phones: { select: { phone: true } } } } };
+}>;
+
+interface InboundFiling {
+  organizationId: string;
+  channel: LeadChannel;
+  externalChatId: string;
+  /** The message to append; the Telegram `/start lead-<id>` code only opens the chat. */
+  text: string | null;
+  displayName: string | null;
+  username: string | null;
+  locale: BotLocale;
+  externalId: string | null;
+  existing: ExistingConversation | null;
+}
+
+/**
+ * Files one inbound message, whatever the channel: appends to the open chat
+ * (reopening it, adding a new phone to the lead) or makes the lead and the
+ * chat, and rings the bell once per unread stretch. Returns the chat and
+ * whether it is new, which decides the one-time welcome.
+ */
+async function fileInbound(
+  db: DbClient,
+  f: InboundFiling,
+): Promise<{ conversationId: string; isNew: boolean }> {
+  const { existing, organizationId, channel, text } = f;
+  const phone = text ? phoneIn(text) : null;
+  const label = CHANNEL_LABEL[channel];
+  return db.$transaction(async (tx) => {
+    let conversationId: string;
+    let leadId: string | null;
+    let fresh = false;
+    if (existing) {
+      conversationId = existing.id;
+      leadId = existing.lead?.id ?? null;
+      const wasUnread = existing.unreadCount > 0;
+      await tx.leadConversation.update({
+        where: { id: existing.id },
+        data: {
+          displayName: f.displayName ?? existing.displayName,
+          username: f.username ?? existing.username,
+          lastMessageAt: new Date(),
+          isClosed: false,
+          unreadCount: text ? { increment: 1 } : existing.unreadCount,
+        },
+      });
+      fresh = !wasUnread;
+      if (phone && leadId && !existing.lead!.phones.some((p) => p.phone === phone)) {
+        await tx.leadPhone.create({
+          data: { leadId, phone, sortOrder: existing.lead!.phones.length },
+        });
+      }
+    } else {
+      const branchId = await firstBranch(tx, organizationId);
+      leadId = null;
+      if (branchId) {
+        const column = await defaultColumnForBranch(tx, branchId);
+        const source = await channelSource(tx, organizationId, channel);
+        const last = await tx.lead.findFirst({
+          where: { columnId: column.columnId },
+          orderBy: { sortOrder: "desc" },
+          select: { sortOrder: true },
+        });
+        const fullName = f.displayName ?? `${label} ${f.username ?? f.externalChatId}`;
+        const lead = await tx.lead.create({
+          data: {
+            branchId,
+            boardId: column.boardId,
+            columnId: column.columnId,
+            fullName,
+            sourceId: source.id,
+            comment: f.username ? `${label} @${f.username}` : null,
+            sortOrder: (last?.sortOrder ?? -1) + 1,
+            phones: phone ? { create: [{ phone, sortOrder: 0 }] } : undefined,
+          },
+          select: { id: true },
+        });
+        leadId = lead.id;
+        await recordAudit(tx, null, {
+          organizationId,
+          branchId,
+          action: "lead.create",
+          entity: "Lead",
+          entityId: lead.id,
+          after: { fullName, source: label, chatId: f.externalChatId },
+        });
+      }
+      const created = await tx.leadConversation.create({
+        data: {
+          organizationId,
+          leadId,
+          channel,
+          externalChatId: f.externalChatId,
+          displayName: f.displayName,
+          username: f.username,
+          locale: f.locale,
+          unreadCount: text ? 1 : 0,
+        },
+        select: { id: true },
+      });
+      conversationId = created.id;
+      fresh = true;
+    }
+    if (text) {
+      await tx.leadMessage.create({
+        data: { conversationId, direction: "IN", text, externalId: f.externalId },
+      });
+    }
+    if (fresh && text) {
+      await notifyUsers(tx, {
+        kind: "LEAD_MESSAGE",
+        params: {
+          name: f.displayName ?? f.username ?? f.externalChatId,
+          text: text.slice(0, 80),
+        },
+        href: `/leads/inbox?c=${conversationId}`,
+        organizationId,
+        permission: "leads.view",
+      });
+    }
+    return { conversationId, isNew: !existing };
+  });
+}
+
+async function welcomeText(db: DbClient, organizationId: string, locale: BotLocale) {
+  const org = await db.organization.findUniqueOrThrow({
+    where: { id: organizationId },
+    select: { name: true },
+  });
+  return { text: botText(locale, "leadWelcome", { centre: org.name }) };
 }
 
 /**
@@ -200,115 +340,60 @@ export async function receiveTelegramLeadMessage(
   const locale: BotLocale = existing ? botLocale(existing.locale) : botLocale(message.languageCode);
   const displayName =
     [message.firstName, message.lastName].filter(Boolean).join(" ").trim() || null;
-  const phone = phoneIn(text);
-
-  return db.$transaction(async (tx) => {
-    let conversationId: string;
-    let leadId: string | null;
-    let fresh = false;
-    if (existing) {
-      conversationId = existing.id;
-      leadId = existing.lead?.id ?? null;
-      const wasUnread = existing.unreadCount > 0;
-      await tx.leadConversation.update({
-        where: { id: existing.id },
-        data: {
-          displayName: displayName ?? existing.displayName,
-          username: message.username ?? existing.username,
-          lastMessageAt: new Date(),
-          isClosed: false,
-          unreadCount: code ? existing.unreadCount : { increment: 1 },
-        },
-      });
-      fresh = !wasUnread;
-      if (phone && leadId && !existing.lead!.phones.some((p) => p.phone === phone)) {
-        await tx.leadPhone.create({
-          data: { leadId, phone, sortOrder: existing.lead!.phones.length },
-        });
-      }
-    } else {
-      const branchId = await firstBranch(tx, organizationId);
-      leadId = null;
-      if (branchId) {
-        const column = await defaultColumnForBranch(tx, branchId);
-        const source = await telegramSource(tx, organizationId);
-        const last = await tx.lead.findFirst({
-          where: { columnId: column.columnId },
-          orderBy: { sortOrder: "desc" },
-          select: { sortOrder: true },
-        });
-        const fullName = displayName ?? `Telegram ${message.username ?? message.chatId}`;
-        const lead = await tx.lead.create({
-          data: {
-            branchId,
-            boardId: column.boardId,
-            columnId: column.columnId,
-            fullName,
-            sourceId: source.id,
-            comment: message.username ? `Telegram @${message.username}` : null,
-            sortOrder: (last?.sortOrder ?? -1) + 1,
-            phones: phone ? { create: [{ phone, sortOrder: 0 }] } : undefined,
-          },
-          select: { id: true },
-        });
-        leadId = lead.id;
-        await recordAudit(tx, null, {
-          organizationId,
-          branchId,
-          action: "lead.create",
-          entity: "Lead",
-          entityId: lead.id,
-          after: { fullName, source: "Telegram", chatId: message.chatId },
-        });
-      }
-      const created = await tx.leadConversation.create({
-        data: {
-          organizationId,
-          leadId,
-          channel: "TELEGRAM",
-          externalChatId: message.chatId,
-          displayName,
-          username: message.username ?? null,
-          locale,
-          unreadCount: code ? 0 : 1,
-        },
-        select: { id: true },
-      });
-      conversationId = created.id;
-      fresh = true;
-    }
-    if (!code) {
-      await tx.leadMessage.create({
-        data: {
-          conversationId,
-          direction: "IN",
-          text,
-          externalId: message.externalId ?? null,
-        },
-      });
-    }
-    if (fresh && !code) {
-      await notifyUsers(tx, {
-        kind: "LEAD_MESSAGE",
-        params: {
-          name: displayName ?? message.username ?? message.chatId,
-          text: text.slice(0, 80),
-        },
-        href: `/leads/inbox?c=${conversationId}`,
-        organizationId,
-        permission: "leads.view",
-      });
-    }
-    // The bot greets a new conversation once; later messages wait for a person.
-    if (!existing) {
-      const org = await tx.organization.findUniqueOrThrow({
-        where: { id: organizationId },
-        select: { name: true },
-      });
-      return { text: botText(locale, "leadWelcome", { centre: org.name }) };
-    }
-    return null;
+  const { isNew } = await fileInbound(db, {
+    organizationId,
+    channel: "TELEGRAM",
+    externalChatId: message.chatId,
+    text: code ? null : text,
+    displayName,
+    username: message.username ?? null,
+    locale,
+    externalId: message.externalId ?? null,
+    existing,
   });
+  // The bot greets a new conversation once; later messages wait for a person.
+  return isNew ? welcomeText(db, organizationId, locale) : null;
+}
+
+export interface InstagramInboundMessage {
+  /** The Instagram-scoped id of the person who wrote. */
+  senderId: string;
+  text: string;
+  externalId?: string | null;
+  profile?: { name: string | null; username: string | null } | null;
+}
+
+/**
+ * A direct message to the centre's Instagram account, delivered by Meta's
+ * webhook (A-148). The centre is known from the address, so every stranger's
+ * message is filed. Returns the welcome for a new conversation, which the
+ * webhook sends when the centre wants one.
+ */
+export async function receiveInstagramLeadMessage(
+  db: DbClient,
+  organizationId: string,
+  message: InstagramInboundMessage,
+): Promise<{ text: string } | null> {
+  const text = message.text.trim();
+  if (!text) return null;
+  const existing = await db.leadConversation.findFirst({
+    where: { organizationId, channel: "INSTAGRAM", externalChatId: message.senderId },
+    orderBy: { lastMessageAt: "desc" },
+    include: { lead: { select: { id: true, phones: { select: { phone: true } } } } },
+  });
+  const locale: BotLocale = existing ? botLocale(existing.locale) : "uz";
+  const { isNew } = await fileInbound(db, {
+    organizationId,
+    channel: "INSTAGRAM",
+    externalChatId: message.senderId,
+    text,
+    displayName: message.profile?.name?.trim() || null,
+    username: message.profile?.username?.trim() || null,
+    locale,
+    externalId: message.externalId ?? null,
+    existing,
+  });
+  return isNew ? welcomeText(db, organizationId, locale) : null;
 }
 
 /** Leads → Inbox: open chats first, newest message first. */
@@ -395,12 +480,25 @@ export async function replyToConversation(
 ): Promise<ConversationMessageDto> {
   authorize(actor, "leads.update");
   const row = await findConversation(db, actor, id);
-  if (row.channel !== "TELEGRAM") throw AppError.conflict("errors.channelNotConnected");
-  const notifier = await getTelegramNotifier(db, row.organizationId);
-  await notifier.sendMessage(row.externalChatId, input.text);
+  let externalId: string | null = null;
+  if (row.channel === "TELEGRAM") {
+    const notifier = await getTelegramNotifier(db, row.organizationId);
+    await notifier.sendMessage(row.externalChatId, input.text);
+  } else if (row.channel === "INSTAGRAM") {
+    const provider = getInstagramProvider(await instagramConfigFor(db, row.organizationId));
+    externalId = (await provider.sendMessage(row.externalChatId, input.text)).externalId;
+  } else {
+    throw AppError.conflict("errors.channelNotConnected");
+  }
   return db.$transaction(async (tx) => {
     const message = await tx.leadMessage.create({
-      data: { conversationId: id, direction: "OUT", text: input.text, sentById: actor.userId },
+      data: {
+        conversationId: id,
+        direction: "OUT",
+        text: input.text,
+        sentById: actor.userId,
+        externalId,
+      },
     });
     await tx.leadConversation.update({
       where: { id },
