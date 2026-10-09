@@ -106,6 +106,7 @@ beforeAll(async () => {
     webhookSecret: "s3cret",
     botUsername: "kampus_test_bot",
     weeklyReport: true,
+    sharedWithAllCentres: false,
   });
   branchId = (await createBranch(ceo, { name: `${TAG} A`, isActive: true })).id;
   ceo.branchIds = await demoBranchIds();

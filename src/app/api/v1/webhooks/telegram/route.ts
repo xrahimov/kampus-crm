@@ -5,6 +5,7 @@ import { json, route } from "@/server/http/handler";
 import {
   assertWebhookSecret,
   getTelegramNotifier,
+  isSharedTelegramBot,
 } from "@/server/services/integrations/integrations.service";
 
 import { handleBotUpdate } from "@/server/services/telegram/bot-commands.service";
@@ -25,7 +26,8 @@ const update = z.object({
 
 /**
  * Telegram update webhook. Every centre has its own bot and its own secret, so
- * the secret says whose bot is calling (A-108). `/start <code>` and `/stop` come
+ * the secret says whose bot is calling (A-108); the site owner's bot may be
+ * shared with every centre, and then the chat says whose student writes (A-135). `/start <code>` and `/stop` come
  * from students and parents linking their chat from the portal (A-103), and a
  * linked chat may ask for its balance, a payment link or report an absence
  * (A-119); a bare `/start` or `/id` is answered with the chat id, the "Mahsus
@@ -38,7 +40,9 @@ export const POST = route<z.output<typeof update>>(
     const message = body.message;
     if (!message?.text) return json({ ok: true });
     const chatId = String(message.chat.id);
-    const reply = await handleBotUpdate(prisma, organizationId, {
+    // The site owner's shared bot serves every centre: route by the chat, not the bot (A-135).
+    const shared = await isSharedTelegramBot(prisma, organizationId);
+    const reply = await handleBotUpdate(prisma, shared ? null : organizationId, {
       chatId,
       text: message.text,
       firstName: message.from?.first_name ?? null,

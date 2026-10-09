@@ -103,6 +103,7 @@ beforeAll(async () => {
     webhookSecret: `${TAG}-hook`,
     botUsername: `${TAG}_bot`,
     weeklyReport: true,
+    sharedWithAllCentres: false,
   });
   const courseId = (
     await createCourse(ceo, {
@@ -355,6 +356,7 @@ describe("the weekly report", () => {
       webhookSecret: `${TAG}-hook`,
       botUsername: `${TAG}_bot`,
       weeklyReport: false,
+      sharedWithAllCentres: false,
     });
     const earlier = shift(sunday, -7);
     await runWeeklyReports(prisma, earlier);

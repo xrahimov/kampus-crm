@@ -1026,6 +1026,7 @@ export const uz: HelpContent = {
           title: "Telegram bot",
           body: [
             "BotFather orqali bot yarating, uning tokeni va nomini qo‘ying, webhook maxfiy kalitini belgilang va uni yoqing. Shundan keyin ikki narsa ishlaydi. Sozlamalar → Bot xabarnoma ro‘yxatidagi xodimlar to‘lovlar va yangi o‘quvchilar haqida Telegram xabari oladi: har bir xodim botga **/id** yuboradi, siz esa u olgan ID ni u xabar olishi kerak bo‘lgan filiallar bilan kiritasiz. O‘quvchilar va ota-onalar o‘quvchining shaxsiy sahifasida **Telegramni ulash** ni bosadi va dars boshlanishiga taxminan o‘ttiz daqiqa qolganda eslatma, o‘qituvchi video darsni boshlaganda xabar, uy vazifasi xabarlari, yangi materiallar, qarz eslatmalari va to‘lov tasdiqlarini oladi. Har yakshanba kechqurun shu chatlar haftalik hisobot oladi: qatnashilgan va qoldirilgan darslar, baholar, bajarilgan uy vazifalari, coinlar va keyingi to‘lov sanasi bilan balans (Telegram kartasidagi **Yakshanba kuni kechqurun ota-onalarga haftalik hisobot** tugmasi). Ulangan chatlar botga yozishi ham mumkin: **Balans** har bir guruh bo‘yicha balans va coinlarni aytadi, **To‘lov** to‘lanadigan summa uchun Payme va Click havolalarini yuboradi (onlayn to‘lov sozlangan bo‘lsa), **Bugun darsga kelmaydi** esa bugungi darsda yuborilgan sabab bilan sababli qoldirilgan deb belgilaydi — o‘qituvchi buni «Bugun» ekranida va davomat jadvalida nuqta sifatida ko‘radi.",
+            "Markaz o‘z botini yaratishi shart emas. Server egasi o‘z Telegram kartasida **Bu serverdagi barcha markazlar uchun umumiy** ni yoqishi mumkin; shunda o‘z boti bo‘lmagan har bir markaz o‘quvchilarni ulash, xodimlar ID si va barcha xabarlar uchun shu botdan foydalanadi, bu haqda uning Telegram kartasidagi eslatma aytadi. Keyinroq o‘z botini kiritgan markaz o‘zi unga o‘tadi.",
           ],
         },
         amocrm: {
@@ -1114,7 +1115,7 @@ export const uz: HelpContent = {
         afterwards: {
           title: "Keyin",
           body: [
-            "Ro‘yxatda har bir markazning filiallari, rahbari, xodimlar va o‘quvchilar soni ko‘rinadi; qator menyusi markaz nomi va o‘z manzilini tahrirlaydi. Har bir markaz bitta manzildan kiradi va o‘z integratsiyalarini o‘zi sozlaydi: o‘z Telegram boti, SMS hisobi, Payme yoki Click merchanti va webhook maxfiy kalitlari, chunki umumiy webhook manzillari markazlarni ular ko‘rsatgan maxfiy kalit yoki merchant ma’lumotlari orqali ajratadi.",
+            "Ro‘yxatda har bir markazning filiallari, rahbari, xodimlar va o‘quvchilar soni ko‘rinadi; qator menyusi markaz nomi va o‘z manzilini tahrirlaydi. Har bir markaz bitta manzildan kiradi va o‘z integratsiyalarini o‘zi sozlaydi: o‘z Telegram boti, SMS hisobi, Payme yoki Click merchanti va webhook maxfiy kalitlari, chunki umumiy webhook manzillari markazlarni ular ko‘rsatgan maxfiy kalit yoki merchant ma’lumotlari orqali ajratadi. Telegram bundan mustasno: o‘z Telegram kartangizda **Bu serverdagi barcha markazlar uchun umumiy** ni yoqing, o‘z boti bo‘lmagan markazlar sizning botingizdan foydalanadi.",
             {
               note: "Markazni o‘chirib bo‘lmaydi; u Kampusdan foydalanishni to‘xtatsa, xodimlari va o‘quvchilarini ichkaridan arxivlang.",
             },

@@ -130,7 +130,16 @@ export async function getIntegration<P extends IntegrationProvider>(
 ): Promise<IntegrationDto<P>> {
   authorize(actor, "settings.integrations");
   const { row, isEnabled, config } = await loadRow(db, actor.organizationId, provider);
-  return toDto(provider, isEnabled, config, row?.updatedAt ?? null);
+  const dto = toDto(provider, isEnabled, config, row?.updatedAt ?? null);
+  if (provider === "TELEGRAM") {
+    // Tell the centre when the server's shared bot is the one serving it (A-135).
+    const effective = await telegramConfigFor(db, actor.organizationId);
+    dto.state.sharedBot =
+      effective && effective.organizationId !== actor.organizationId
+        ? { username: effective.config.botUsername || null }
+        : null;
+  }
+  return dto;
 }
 
 export async function listIntegrations(
@@ -155,6 +164,10 @@ export async function updateIntegration<P extends IntegrationProvider>(
     // A masked secret means "keep what is stored".
     if (SECRET_FIELDS[provider].includes(key) && value === MASKED) continue;
     next[key] = value;
+  }
+  if (provider === "TELEGRAM" && actor.isSiteOwner !== true) {
+    // Only the server's owner may offer their bot to every centre (A-135).
+    next.sharedWithAllCentres = false;
   }
   if (provider === "AMOCRM") {
     // New credentials invalidate the tokens obtained with the old ones.
@@ -192,11 +205,51 @@ export async function getSmsProvider(db: DbClient, organizationId: string): Prom
   return createSmsProvider(await loadIntegrationConfig(db, "SMS", organizationId));
 }
 
+type TelegramConfig = Config<"TELEGRAM"> & { isEnabled: boolean };
+
+function hasOwnBot(config: TelegramConfig | null): boolean {
+  return Boolean(
+    config?.isEnabled && (config.botToken || config.botUsername || config.webhookSecret),
+  );
+}
+
+/**
+ * The Telegram bot that serves a centre (A-135): its own when it has set one
+ * up, else the server's shared bot when the site owner ticked "shared with all
+ * centres" on theirs. The centre's own preferences (the weekly report switch)
+ * still apply when it has a row of its own. Null when neither exists.
+ */
+export async function telegramConfigFor(
+  db: DbClient,
+  organizationId: string,
+): Promise<{ organizationId: string; config: TelegramConfig } | null> {
+  const own = await loadIntegrationConfig(db, "TELEGRAM", organizationId);
+  if (own && hasOwnBot(own)) return { organizationId, config: own };
+  const sharedOrganizationId = await findOrganizationByConfig(
+    db,
+    "TELEGRAM",
+    (c) => c.sharedWithAllCentres === true,
+  );
+  if (!sharedOrganizationId || sharedOrganizationId === organizationId) return null;
+  const shared = await loadIntegrationConfig(db, "TELEGRAM", sharedOrganizationId);
+  if (!shared?.isEnabled) return null;
+  return {
+    organizationId: sharedOrganizationId,
+    config: own ? { ...shared, weeklyReport: own.weeklyReport } : shared,
+  };
+}
+
+/** Whether updates arriving through this centre's bot may concern any centre (A-135). */
+export async function isSharedTelegramBot(db: DbClient, organizationId: string): Promise<boolean> {
+  const config = await loadIntegrationConfig(db, "TELEGRAM", organizationId);
+  return Boolean(config?.isEnabled && config.sharedWithAllCentres);
+}
+
 export async function getTelegramNotifier(
   db: DbClient,
   organizationId: string,
 ): Promise<TelegramNotifier> {
-  return createTelegramNotifier(await loadIntegrationConfig(db, "TELEGRAM", organizationId));
+  return createTelegramNotifier((await telegramConfigFor(db, organizationId))?.config ?? null);
 }
 
 export function getTelephonyProvider(): TelephonyProvider {

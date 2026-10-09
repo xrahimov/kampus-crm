@@ -127,7 +127,9 @@ Webhook URLs for the integrations are `https://<DOMAIN>/api/v1/webhooks/telegram
 The URLs are the same for every organisation on the server: the secret a webhook
 presents (or, for Payme and Click, the merchant key and service id) says which
 centre it is for, so each centre sets its own bot, secrets and merchant
-credentials in its own Settings → Integrations.
+credentials in its own Settings → Integrations. Telegram is the exception: the
+site owner can tick **Shared with every centre on this server** on their own
+Telegram card, and centres without a bot of their own use that one.
 
 ## 7. Update to a new version
 

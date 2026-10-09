@@ -3930,8 +3930,12 @@
         "botToken": "Bot tokeni",
         "webhookSecret": "Webhook maxfiy kaliti",
         "botUsername": "Bot nomi (@ belgisisiz)",
-        "weeklyReport": "Yakshanba kuni kechqurun ota-onalarga haftalik hisobot"
-      }
+        "weeklyReport": "Yakshanba kuni kechqurun ota-onalarga haftalik hisobot",
+        "sharedWithAllCentres": "Bu serverdagi barcha markazlar uchun umumiy"
+      },
+      "sharedHint": "Server egasi sifatida bu botni o‘z boti bo‘lmagan barcha markazlarga taklif qilishingiz mumkin: ularning o‘quvchilari o‘z sahifalaridan unga ulanadi, xodimlari unga /id yuboradi, xabarlari u orqali ketadi. O‘z botini kiritgan markaz o‘zinikidan foydalanishda davom etadi.",
+      "sharedNote": "Markazingiz serverning umumiy boti @{username} dan foydalanadi: o‘quvchilar shaxsiy sahifalaridan unga ulanadi, xodimlar Bot xabarnoma uchun unga /id yuboradi. O‘zingiznikidan foydalanish uchun yuqorida o‘z botingizni kiriting.",
+      "sharedNoteNoUsername": "Markazingiz serverning umumiy Telegram botidan foydalanadi. O‘zingiznikidan foydalanish uchun yuqorida o‘z botingizni kiriting."
     },
     "TELEPHONY": {
       "title": "Telefoniya",

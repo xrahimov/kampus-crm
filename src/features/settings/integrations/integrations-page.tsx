@@ -13,9 +13,17 @@ import type { IntegrationDto } from "@/server/services/integrations/integrations
 import { IntegrationForm, WebhookHint } from "./integration-form";
 
 /** Settings → Integrations: SMS gateway, Telegram bot, telephony, video lessons, and the job queue (A-83). */
-export function IntegrationsPage({ integrations }: { integrations: IntegrationDto[] }) {
+export function IntegrationsPage({
+  integrations,
+  isSiteOwner = false,
+}: {
+  integrations: IntegrationDto[];
+  /** The server's owner may share their Telegram bot with every centre (A-135). */
+  isSiteOwner?: boolean;
+}) {
   const t = useTranslations("integrations");
   const by = (p: IntegrationDto["provider"]) => integrations.find((i) => i.provider === p)!;
+  const sharedBot = by("TELEGRAM").state.sharedBot as { username: string | null } | null;
   const [running, setRunning] = useState(false);
   const [queue, setQueue] = useState<{ kind: "ok" | "error"; text: string } | null>(null);
 
@@ -51,8 +59,23 @@ export function IntegrationsPage({ integrations }: { integrations: IntegrationDt
           { key: "botUsername" },
           { key: "webhookSecret", secret: true },
           { key: "weeklyReport", type: "boolean" },
+          ...(isSiteOwner ? [{ key: "sharedWithAllCentres", type: "boolean" as const }] : []),
         ]}
-        extra={<WebhookHint path="telegram?secret=…" />}
+        extra={
+          <>
+            <WebhookHint path="telegram?secret=…" />
+            {isSiteOwner && (
+              <p className="text-xs text-muted-foreground">{t("TELEGRAM.sharedHint")}</p>
+            )}
+            {sharedBot && (
+              <Alert data-testid="telegram-shared-bot">
+                {sharedBot.username
+                  ? t("TELEGRAM.sharedNote", { username: sharedBot.username })
+                  : t("TELEGRAM.sharedNoteNoUsername")}
+              </Alert>
+            )}
+          </>
+        }
         testId="integration-telegram"
       />
       <IntegrationForm

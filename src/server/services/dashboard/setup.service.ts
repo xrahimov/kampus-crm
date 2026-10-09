@@ -1,4 +1,5 @@
 import { prisma, type DbClient } from "@/server/db/prisma";
+import { telegramConfigFor } from "@/server/services/integrations/integrations.service";
 import { authorize, can, type Actor } from "@/server/rbac/authorize";
 
 /*
@@ -89,7 +90,10 @@ export async function getSetupChecklist(
       const value = (i.config as Record<string, unknown> | null)?.[field];
       return typeof value === "string" && value.length > 0;
     });
-  const telegram = configured("TELEGRAM", "botToken");
+  const telegram =
+    configured("TELEGRAM", "botToken") ||
+    // The server's shared bot counts (A-135).
+    (await telegramConfigFor(db, organizationId)) !== null;
   const online = configured("PAYME", "merchantId") || configured("CLICK", "merchantId");
   const counted = (key: SetupStep, count: number, min = 1): SetupStepDto => ({
     key,

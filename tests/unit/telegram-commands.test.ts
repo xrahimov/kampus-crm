@@ -107,6 +107,7 @@ beforeAll(async () => {
     webhookSecret: `${TAG}-hook`,
     botUsername: `${TAG}_bot`,
     weeklyReport: true,
+    sharedWithAllCentres: false,
   });
   const courseId = (
     await createCourse(ceo, {

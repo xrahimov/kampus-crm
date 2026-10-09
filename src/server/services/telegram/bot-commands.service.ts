@@ -308,7 +308,8 @@ async function absentReply(
  */
 export async function handleBotUpdate(
   db: DbClient,
-  organizationId: string,
+  /** The centre whose bot received the update; null for the shared bot, which serves every centre (A-135). */
+  organizationId: string | null,
   message: {
     chatId: string;
     text: string;
@@ -327,7 +328,9 @@ export async function handleBotUpdate(
     },
   });
   const linked =
-    chat && !chat.student.isArchived && chat.student.branch.organizationId === organizationId
+    chat &&
+    !chat.student.isArchived &&
+    (organizationId === null || chat.student.branch.organizationId === organizationId)
       ? chat
       : null;
   if (linkReply) {
@@ -340,10 +343,12 @@ export async function handleBotUpdate(
   const locale = botLocale(linked.locale);
   const command = parseBotCommand(message.text);
   const studentId = linked.student.id;
+  // Through the shared bot, the answer is about the student's own centre.
+  const centreId = organizationId ?? linked.student.branch.organizationId;
   let text: string;
   if (!command) text = botText(locale, "menuHint");
   else if (command.kind === "balance") text = await balanceReply(db, locale, studentId);
-  else if (command.kind === "pay") text = await payReply(db, locale, organizationId, studentId);
-  else text = await absentReply(db, locale, organizationId, studentId, command.rest);
+  else if (command.kind === "pay") text = await payReply(db, locale, centreId, studentId);
+  else text = await absentReply(db, locale, centreId, studentId, command.rest);
   return { text, replyMarkup: botMenu(locale) };
 }
