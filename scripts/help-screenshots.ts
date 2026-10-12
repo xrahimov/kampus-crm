@@ -116,6 +116,44 @@ async function firstId(page: Page, apiPath: string): Promise<string | null> {
   return rows[0]?.id ?? null;
 }
 
+/** Posts once: creates the row when the list is empty, so re-runs do not pile up demo rows. */
+async function ensureRow(page: Page, listPath: string, createPath: string, body: unknown) {
+  const res = await page.request.get(`${BASE}/api/v1${listPath}`);
+  if (res.ok()) {
+    const data = (await res.json()) as { items?: unknown[] } | unknown[];
+    const rows = Array.isArray(data) ? data : (data.items ?? []);
+    if (rows.length > 0) return;
+  }
+  await mutate(page, "post", createPath, body);
+}
+
+/** A POST or PATCH with the double-submit CSRF token the app's own fetches send. */
+async function mutate(page: Page, method: "post" | "patch", apiPath: string, body: unknown) {
+  const csrf = (await page.context().cookies(BASE)).find((c) => c.name === "kampus_csrf")?.value;
+  const res = await page.request[method](`${BASE}/api/v1${apiPath}`, {
+    data: body,
+    headers: csrf ? { "x-csrf-token": csrf } : {},
+  });
+  if (!res.ok()) throw new Error(`${method.toUpperCase()} ${apiPath} failed: ${res.status()}`);
+}
+
+/** Today's date in Tashkent (UTC+5), as the app counts days. */
+function tashkentToday(): string {
+  return new Date(Date.now() + 5 * 60 * 60 * 1000).toISOString().slice(0, 10);
+}
+
+/** The first day from tomorrow on which the signed-in teacher has lessons, for the Today page. */
+async function nextLessonDay(page: Page, locale: string): Promise<string> {
+  for (let offset = 0; offset < 7; offset++) {
+    const d = new Date();
+    d.setUTCDate(d.getUTCDate() + offset);
+    const iso = d.toISOString().slice(0, 10);
+    await go(page, locale, `/today?date=${iso}`);
+    if ((await page.getByTestId("today-empty").count()) === 0) return iso;
+  }
+  throw new Error("the teacher has no lessons in the coming week");
+}
+
 /** Shots taken as the CEO. */
 const CEO_SHOTS: Shot[] = [
   {
@@ -460,6 +498,181 @@ const CEO_SHOTS: Shot[] = [
       await shotPage(page, locale, "bot-recipients");
     },
   },
+  {
+    name: "setup-checklist",
+    take: async ({ page, locale }) => {
+      await go(page, locale, "/dashboard");
+      await shotElement(page.getByTestId("setup-checklist"), locale, "setup-checklist");
+    },
+  },
+  {
+    name: "forecast",
+    take: async ({ page, locale }) => {
+      await go(page, locale, "/dashboard");
+      await page.getByTestId("show-numbers").click();
+      await page.waitForTimeout(300);
+      await shotElement(page.getByTestId("dashboard-forecast"), locale, "forecast");
+    },
+  },
+  {
+    name: "calls-today",
+    take: async ({ page, locale }) => {
+      // The page lists leads whose next contact is due: put one on today's list.
+      const board = await (await page.request.get(`${BASE}/api/v1/leads`)).json();
+      const leadId = (board as { columns: Array<{ leads: Array<{ id: string }> }> }).columns
+        .flatMap((c) => c.leads)
+        .find(Boolean)?.id;
+      if (!leadId) throw new Error("no lead in the seed");
+      await mutate(page, "patch", `/leads/${leadId}`, { nextContactAt: tashkentToday() });
+      await go(page, locale, "/leads/calls");
+      await page.getByTestId("call-row").first().waitFor();
+      await shotPage(page, locale, "calls-today");
+    },
+  },
+  {
+    name: "trial-form",
+    take: async ({ page, locale }) => {
+      await go(page, locale, "/leads");
+      const card = page.getByTestId("lead-card").first();
+      await card.locator('button[aria-haspopup="menu"]').click();
+      await page.getByTestId("lead-book-trial").click();
+      await page.getByRole("dialog").waitFor();
+      await shotPage(page, locale, "trial-form");
+    },
+  },
+  {
+    name: "waitlist",
+    take: async ({ page, locale }) => {
+      const branchId = await firstId(page, "/branches");
+      const courseId = await firstId(page, "/courses?pageSize=1");
+      if (!branchId || !courseId) throw new Error("no branch or course in the seed");
+      await ensureRow(page, "/waitlist?status=WAITING", "/waitlist", {
+        branchId,
+        courseId,
+        fullName: "Demo Waiting Student",
+        phone: "+998901112233",
+        days: "EVEN",
+        lessonTime: "18:00",
+        note: "Wants an evening group",
+      });
+      await go(page, locale, "/leads/waitlist");
+      await shotPage(page, locale, "waitlist");
+    },
+  },
+  {
+    name: "timetable",
+    take: async ({ page, locale }) => {
+      // The first room alphabetically may be empty: show the first one with lessons.
+      const res = await page.request.get(`${BASE}/api/v1/rooms`);
+      const rooms = (await res.json()) as { items?: Array<{ id: string }> } | Array<{ id: string }>;
+      const ids = (Array.isArray(rooms) ? rooms : (rooms.items ?? [])).map((r) => r.id);
+      for (const id of ids) {
+        await go(page, locale, `/timetable?id=${id}`);
+        if ((await page.getByTestId("timetable-block").count()) > 0) break;
+      }
+      await page.getByTestId("timetable-block").first().waitFor();
+      await shotPage(page, locale, "timetable");
+    },
+  },
+  {
+    name: "students-bulk",
+    take: async ({ page, locale }) => {
+      await go(page, locale, "/students");
+      await page.getByTestId("student-row").nth(0).getByRole("checkbox").check();
+      await page.getByTestId("student-row").nth(1).getByRole("checkbox").check();
+      await page.getByTestId("students-bulk").waitFor();
+      await shotPage(page, locale, "students-bulk");
+    },
+  },
+  {
+    name: "students-import",
+    take: async ({ page, locale }) => {
+      await go(page, locale, "/students");
+      await page.getByTestId("students-import-menu").click();
+      await page.getByTestId("students-import-balances").waitFor();
+      await page.waitForTimeout(300);
+      await page.screenshot({
+        path: out(locale, "students-import"),
+        type: "jpeg",
+        quality: QUALITY,
+        clip: { x: 0, y: 0, width: 1280, height: 520 },
+      });
+    },
+  },
+  {
+    name: "debtors",
+    take: async ({ page, locale }) => {
+      await go(page, locale, "/debts");
+      await shotPage(page, locale, "debtors");
+    },
+  },
+  {
+    name: "cashdesk",
+    take: async ({ page, locale }) => {
+      // One closed day, so the table is not empty.
+      const branchId = await firstId(page, "/branches");
+      if (!branchId) throw new Error("no branch in the seed");
+      const today = tashkentToday();
+      const [year, month] = today.split("-").map(Number);
+      await ensureRow(page, `/cashdesk?year=${year}&month=${month}`, "/cashdesk", {
+        branchId,
+        date: today,
+        countedCash: 450000,
+        note: "",
+      });
+      await go(page, locale, "/cashdesk");
+      await page.getByTestId("cash-close-row").first().waitFor();
+      await shotPage(page, locale, "cashdesk");
+    },
+  },
+  {
+    name: "announcements",
+    take: async ({ page, locale }) => {
+      await ensureRow(page, "/announcements?pageSize=1", "/announcements", {
+        audience: "CENTRE",
+        title: "Holiday on Friday",
+        body: "There are no lessons this Friday. Missed lessons move to Saturday at the usual time.",
+        sendSms: false,
+      });
+      await go(page, locale, "/announcements");
+      await shotPage(page, locale, "announcements");
+    },
+  },
+  {
+    name: "announcement-form",
+    take: async ({ page, locale }) => {
+      await go(page, locale, "/announcements");
+      await page.getByTestId("announcements-new").click();
+      await page.getByRole("dialog").waitFor();
+      await shotPage(page, locale, "announcement-form");
+    },
+  },
+  {
+    name: "assistant",
+    take: async ({ page, locale }) => {
+      await go(page, locale, "/assistant");
+      // The last suggestion asks for a draft SMS, which test mode answers in words.
+      await page.getByTestId("assistant-suggestion").last().click();
+      await page.getByTestId("assistant-message").nth(1).waitFor();
+      await shotPage(page, locale, "assistant");
+    },
+  },
+  {
+    name: "soff-import",
+    take: async ({ page, locale }) => {
+      await go(page, locale, "/settings/migration");
+      await page.getByTestId("soff-import-button").waitFor();
+      await shotPage(page, locale, "soff-import");
+    },
+  },
+  {
+    name: "organizations",
+    take: async ({ page, locale }) => {
+      await go(page, locale, "/settings/organizations");
+      await page.getByTestId("organization-row").first().waitFor();
+      await shotPage(page, locale, "organizations");
+    },
+  },
 ];
 
 /** Shots taken as a teacher, on the group they teach. */
@@ -517,6 +730,29 @@ const TEACHER_SHOTS: Shot[] = [
       await shotPage(page, locale, "student-links");
     },
   },
+  {
+    name: "today",
+    take: async ({ page, locale }) => {
+      await nextLessonDay(page, locale);
+      await shotPage(page, locale, "today");
+    },
+  },
+  {
+    name: "today-scan",
+    take: async ({ page, locale }) => {
+      await go(page, locale, "/today/scan");
+      await page.getByTestId("scan-start").waitFor();
+      await shotPage(page, locale, "today-scan");
+    },
+  },
+  {
+    name: "my-salary",
+    take: async ({ page, locale }) => {
+      await go(page, locale, "/account/salary");
+      await page.getByTestId("salary-month").waitFor();
+      await shotPage(page, locale, "my-salary");
+    },
+  },
 ];
 
 /** Shots of a student's personal page; no sign-in. */
@@ -558,6 +794,15 @@ const STUDENT_SHOTS: Shot[] = [
       await page.getByTestId("class-title").waitFor();
       await scrollTo(page.getByTestId("portal-tab-homework"));
       await shotPage(page, locale, "portal-money");
+    },
+  },
+  {
+    name: "portal-tests",
+    take: async ({ page, locale, studentToken }) => {
+      await go(page, locale, `/class/${studentToken}`);
+      await page.getByTestId("portal-tab-tests").click();
+      await scrollTo(page.getByTestId("portal-tab-tests"));
+      await shotPage(page, locale, "portal-tests");
     },
   },
 ];

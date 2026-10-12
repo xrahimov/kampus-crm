@@ -1281,6 +1281,16 @@ export const uz: HelpContent = {
             "Sahifangizda **Telegramni ulash** ni bosing va ochilgan botda Start ni bosing. Shundan boshlab har bir darsdan oldin eslatma, o‘qituvchi video darsni boshlaganda xabar, uy vazifasi xabarlari, yangi materiallar va to‘lov tasdiqlarini olasiz. Ota-onalar **Yana bir telefon ulash** bilan o‘z telefonini ulashi mumkin. Uzish uchun botga **/stop** yuboring.",
           ],
         },
+        weekly: {
+          title: "Ota-onalar uchun haftalik hisobot",
+          body: [
+            "Har yakshanba kechqurun ulangan Telegram chatlari tugagan hafta haqida chat tilida qisqa hisobot oladi. Har bir guruh bo‘yicha unda o‘tilgan va qatnashilgan darslar, qoldirilgan va sababli darslar, olingan baholar, qancha uy vazifasi berilgani va topshirilgani, keyin shu haftada yig‘ilgan coinlar jami bilan va keyingi to‘lov sanasi bilan balans yoki balans manfiy bo‘lsa, qarz summasi ko‘rsatiladi.",
+            "Guruhda shu haftada dars bo‘lmagan bo‘lsa, bu bir qatorda aytiladi. **Yana bir telefon ulash** orqali ulangan ota-onalar o‘quvchi bilan bir xil hisobotni oladi.",
+            {
+              note: "Markaz hisobotni Sozlamalar → Integratsiyalar bo‘limidagi Telegram kartasidagi **Yakshanba kuni kechqurun ota-onalarga haftalik hisobot** tugmasi bilan yoqadi. Tugma o‘chiq bo‘lsa, bot eslatma va xabarlarni yuboradi, lekin yakshanba hisoboti bo‘lmaydi.",
+            },
+          ],
+        },
       },
     },
   },
