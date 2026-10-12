@@ -1277,6 +1277,16 @@ export const en: HelpContent = {
             "Press **Connect Telegram** on your page and press Start in the bot that opens. From then on you get a reminder before each lesson, a message when the teacher starts a video lesson, homework notices, new materials and payment confirmations. Parents can connect their own phone with **Connect another phone**. Send **/stop** to the bot to disconnect.",
           ],
         },
+        weekly: {
+          title: "Weekly report for parents",
+          body: [
+            "Every Sunday evening the connected Telegram chats get a short report on the week that has just ended, in the chat's language. For each group it lists the lessons held and attended, the lessons missed and excused, the grades received, how many homework tasks were set and handed in, and then the coins earned this week with the total, and the balance with the next payment date, or the amount owed when the balance is negative.",
+            "A group with no lessons that week says so in one line. Parents connected with **Connect another phone** get the same report as the student.",
+            {
+              note: "The centre turns the report on with the **Weekly report to parents on Sunday evening** switch on the Telegram card in Settings → Integrations. If the switch is off, the bot sends reminders and notices but no Sunday report.",
+            },
+          ],
+        },
       },
     },
   },
