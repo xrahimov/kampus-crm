@@ -171,3 +171,20 @@ export async function uploadRecording(
   );
   if (!response.ok) throw new Error(String(response.status));
 }
+
+/** Uploads the whiteboard picture; it is filed under the lesson's materials (A-155). */
+export async function uploadBoard(roomId: string, png: Blob): Promise<void> {
+  const headers: Record<string, string> = {
+    "Content-Type": "image/png",
+    Accept: "application/json",
+  };
+  const csrf = readCookie(CSRF_COOKIE);
+  if (csrf) headers[CSRF_HEADER] = csrf;
+  const response = await fetch(`/api/v1/video/rooms/${roomId}/board`, {
+    method: "POST",
+    headers,
+    credentials: "same-origin",
+    body: png,
+  });
+  if (!response.ok) throw new Error(String(response.status));
+}

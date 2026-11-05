@@ -2690,6 +2690,8 @@ model VideoRoom {
   /// only the teacher (focus mode); set from the host's browser (A-152).
   spotlightId String?
   focusMode   Boolean         @default(false)
+  /// The shared whiteboard is on everyone's stage (A-155).
+  boardOpen   Boolean         @default(false)
 
   group        Group              @relation(fields: [groupId], references: [id], onDelete: Cascade)
   lesson       Lesson?            @relation(fields: [lessonId], references: [id], onDelete: SetNull)

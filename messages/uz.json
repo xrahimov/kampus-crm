@@ -5064,7 +5064,9 @@
       "poll": "So‘rovnoma",
       "pollNew": "Yangi so‘rovnoma",
       "pollAsk": "O‘qituvchi so‘rayapti: {question} Javob berish uchun bosing.",
-      "lesson": "Dars"
+      "lesson": "Dars",
+      "boardOn": "Doskani ochish",
+      "boardOff": "Doskani yopish"
     },
     "done": {
       "left": "Siz darsdan chiqdingiz.",
@@ -5169,6 +5171,22 @@
       "file": "Fayl",
       "speaking": "Og‘zaki topshiriq: yozuv bilan javob bering",
       "studentHint": "Materiallar yangi oynada ochiladi. Uy vazifasini darsdan keyin shaxsiy sahifangizdan topshiring."
+    },
+    "board": {
+      "title": "Doska",
+      "color": "Qalam rangi",
+      "width": "Qalam qalinligi {width}",
+      "eraser": "O‘chirg‘ich",
+      "undo": "Oxirgi chizig‘imni qaytarish",
+      "clear": "Doskani tozalash",
+      "viewOnly": "Hozircha faqat o‘qituvchi chizadi.",
+      "studentsDrawOn": "O‘quvchilar chizsin",
+      "studentsDrawOff": "O‘quvchilar chizishini to‘xtatish",
+      "studentsDrawing": "O‘quvchilar chiza oladi",
+      "save": "Materiallarga saqlash",
+      "saving": "Saqlanmoqda…",
+      "saved": "Guruh materiallariga saqlandi",
+      "saveFailed": "Saqlab bo‘lmadi"
     }
   },
   "help": {

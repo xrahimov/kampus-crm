@@ -1,6 +1,10 @@
 import {
+  BOARD_MAX_STROKES,
+  boardOpSchema,
   PACE_REACTIONS,
   REACTIONS,
+  type BoardOp,
+  type BoardStroke,
   type Reaction,
   type SignalKind,
   type VideoSyncInput,
@@ -109,7 +113,7 @@ export class CallEngine {
   /** Set when the teacher lowered this hand; the room shows a notice. */
   loweredBy: { name: string; at: number } | null = null;
   /** The teacher's spotlight and focus mode, as the server last reported them. */
-  stage: StageDto = { spotlight: null, focus: false };
+  stage: StageDto = { spotlight: null, focus: false, board: false };
   /** The teacher's own change, sent on every poll until the server reports it back. */
   private stageDraft: StageDto | null = null;
   /** When this browser's hand went up (server time), for its place in the queue. */
@@ -118,6 +122,14 @@ export class CallEngine {
   reactions: ShownReaction[] = [];
   /** Latest "slower" / "faster" per student, for the teacher. */
   private pace = new Map<string, { reaction: Reaction; at: number }>();
+  /** Whiteboard strokes in drawing order (A-155); `by` is null for this browser's own. */
+  board: Array<BoardStroke & { by: string | null }> = [];
+  /** Bumped on every board change so the canvas redraws. */
+  boardVersion = 0;
+  /** Whether students may draw; the teacher decides. */
+  boardStudentsMayDraw = false;
+  /** Peers that still need the board history (the teacher sends it after they appear). */
+  private boardNewcomers = new Set<string>();
   /** The open poll, else the last closed one (A-153). */
   poll: PollDto | null = null;
   /** Poll ids this browser has already been shown, for the "new poll" badge. */
@@ -256,6 +268,94 @@ export class CallEngine {
       this.send(link.info.id, "react", { reaction });
     }
     this.pushReaction(null, reaction);
+  }
+
+  /* ----- whiteboard (A-155) --------------------------------------------------------------- */
+
+  /** Whether this browser may draw right now. */
+  get canDraw(): boolean {
+    return this.self.role !== "STUDENT" || this.boardStudentsMayDraw;
+  }
+
+  /** Adds a finished stroke of this browser and sends it to everyone. */
+  drawStroke(stroke: BoardStroke): void {
+    if (!this.canDraw) return;
+    this.applyBoard({ op: "stroke", stroke }, null);
+    this.broadcastBoard({ op: "stroke", stroke });
+  }
+
+  /** Removes this browser's latest stroke everywhere. */
+  undoStroke(): void {
+    const mine = [...this.board].reverse().find((s) => s.by === null);
+    if (!mine) return;
+    this.applyBoard({ op: "undo", id: mine.id }, null);
+    this.broadcastBoard({ op: "undo", id: mine.id });
+  }
+
+  /** Teacher only: wipes the board for everyone. */
+  clearBoard(): void {
+    if (this.self.role !== "HOST") return;
+    this.applyBoard({ op: "clear" }, null);
+    this.broadcastBoard({ op: "clear" });
+  }
+
+  /** Teacher only: lets students draw, or stops them. */
+  setStudentsMayDraw(on: boolean): void {
+    if (this.self.role !== "HOST") return;
+    this.boardStudentsMayDraw = on;
+    this.broadcastBoard({ op: "allow", students: on });
+    this.onChange();
+  }
+
+  private broadcastBoard(op: BoardOp): void {
+    for (const id of this.links.keys()) this.send(id, "board", op);
+  }
+
+  private applyBoard(op: BoardOp, from: string | null): void {
+    if (op.op === "stroke") {
+      this.board = [...this.board, { ...op.stroke, by: from }].slice(-BOARD_MAX_STROKES);
+    } else if (op.op === "undo") {
+      // Only the stroke's author (or the teacher) may take it back.
+      const target = this.board.find((s) => s.id === op.id);
+      if (!target) return;
+      const fromHost = from !== null && this.links.get(from)?.info.role === "HOST";
+      if (target.by !== from && !fromHost && from !== null) return;
+      this.board = this.board.filter((s) => s.id !== op.id);
+    } else if (op.op === "clear") {
+      this.board = [];
+    } else if (op.op === "sync") {
+      const known = new Set(this.board.map((s) => s.id));
+      const fresh = op.strokes.filter((s) => !known.has(s.id)).map((s) => ({ ...s, by: from }));
+      this.board = [...this.board, ...fresh].slice(-BOARD_MAX_STROKES);
+    } else if (op.op === "allow") {
+      this.boardStudentsMayDraw = op.students;
+    }
+    this.boardVersion += 1;
+    this.onChange();
+  }
+
+  /** The teacher's browser gives newcomers the board so far, in batches under the signal size. */
+  private sendBoardHistory(to: string): void {
+    if (this.self.role !== "HOST") return;
+    const strokes = this.board.map(({ by: _by, ...s }) => s);
+    const batches: BoardStroke[][] = [];
+    let batch: BoardStroke[] = [];
+    let size = 0;
+    for (const s of strokes) {
+      const weight = 20 + s.points.length * 14;
+      if (batch.length >= 50 || size + weight > 15_000) {
+        batches.push(batch);
+        batch = [];
+        size = 0;
+      }
+      batch.push(s);
+      size += weight;
+    }
+    batches.push(batch);
+    batches.forEach((b, i) =>
+      this.send(to, "board", { op: "sync", strokes: b, done: i === batches.length - 1 }),
+    );
+    this.send(to, "board", { op: "allow", students: this.boardStudentsMayDraw });
   }
 
   /** Teacher only: asks a question with 2-6 answers; any open poll closes. */
@@ -486,7 +586,16 @@ export class CallEngine {
     for (const p of peers) {
       const link = this.links.get(p.id);
       if (link) link.info = p;
-      else this.addPeer(p);
+      else {
+        this.addPeer(p);
+        if (this.self.role === "HOST" && (this.board.length > 0 || this.boardStudentsMayDraw)) {
+          this.boardNewcomers.add(p.id);
+        }
+      }
+    }
+    for (const id of this.boardNewcomers) {
+      if (this.links.has(id)) this.sendBoardHistory(id);
+      this.boardNewcomers.delete(id);
     }
     this.tuneBitrates();
   }
@@ -609,6 +718,18 @@ export class CallEngine {
           this.loweredBy = { name: link.info.displayName, at: Date.now() };
           this.setHand(false);
         }
+      } else if (kind === "board") {
+        const parsed = boardOpSchema.safeParse(payload);
+        if (!parsed.success) return;
+        const op = parsed.data;
+        // Only the teacher clears the board, lets students draw or sends history.
+        if (
+          (op.op === "clear" || op.op === "allow" || op.op === "sync") &&
+          link.info.role !== "HOST"
+        ) {
+          return;
+        }
+        this.applyBoard(op, from);
       } else if (kind === "react") {
         const reaction = (payload as { reaction?: unknown } | null)?.reaction;
         if (typeof reaction !== "string" || !REACTIONS.includes(reaction as Reaction)) return;
