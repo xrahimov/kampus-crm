@@ -316,6 +316,11 @@ export const videoIntegrationSchema = z.object({
   maxParticipants: z.coerce.number().int().min(2).max(30).default(12),
   /** Lesson recordings older than this are deleted with their file; 0 keeps them forever. */
   recordingKeepDays: z.coerce.number().int().min(0).max(3650).default(90),
+  /**
+   * Attendance from a call (online-lessons B1): a student online at least this many
+   * minutes counts as present; joining more than this many minutes late is noted.
+   */
+  attendanceMinutes: z.coerce.number().int().min(1).max(120).default(10),
 });
 
 /**

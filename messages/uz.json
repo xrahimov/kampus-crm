@@ -488,7 +488,8 @@
     "studentLoginExpired": "Kirish juda uzoq davom etdi yoki boshqa brauzerda boshlangan. Qayta urinib ko‘ring.",
     "studentLoginFailed": "Telegram kirishni tasdiqlamadi. Qayta urinib ko‘ring.",
     "studentLinkExpired": "Bu kirish havolasi ishlatilgan yoki muddati o‘tgan. Botdan yangisini so‘rang.",
-    "studentLoginOff": "Bu o‘quv markazida Telegram orqali kirish hali sozlanmagan."
+    "studentLoginOff": "Bu o‘quv markazida Telegram orqali kirish hali sozlanmagan.",
+    "callWithoutLesson": "Bu qo‘ng‘iroq darsga bog‘lanmagan."
   },
   "validation": {
     "phone": "+998 90 123 45 67 ko‘rinishida raqam kiriting.",
@@ -4396,7 +4397,8 @@
         "turnCredential": "TURN parol",
         "turnSecret": "TURN umumiy kaliti (login va parol o‘rniga)",
         "maxParticipants": "Bir qo‘ng‘iroqdagi eng ko‘p odam",
-        "recordingKeepDays": "Dars yozuvlarini saqlash muddati (kun)"
+        "recordingKeepDays": "Dars yozuvlarini saqlash muddati (kun)",
+        "attendanceMinutes": "“Keldi” hisoblanishi uchun onlayn daqiqalar"
       },
       "hint": "Bepul ommaviy STUN serverlar bilan sozlamasiz ishlaydi. Ba’zi mobil va ofis tarmoqlari to‘g‘ridan-to‘g‘ri qo‘ng‘iroqlarni to‘sadi; ular uchun TURN relay qo‘shing (masalan Cloudflare Calls TURN, Metered yoki o‘z coturn serveringiz).",
       "retentionHint": "Bundan eski yozuvlar har kecha video fayli bilan birga o'chiriladi, shunda server diski to'lib qolmaydi. 0 — doimiy saqlash."
@@ -5065,7 +5067,8 @@
       "starting": "Boshlanmoqda…",
       "links": "O‘quvchilar havolalari",
       "last": "Oxirgi video dars {date}: {count, plural, =0 {o‘quvchilar qo‘shilmadi} other {{count} o‘quvchi qo‘shildi}}",
-      "minutes": "{count} daq"
+      "minutes": "{count} daq",
+      "attendance": "Qo‘ng‘iroqdan davomat"
     },
     "links": {
       "title": "O‘quvchilarning video dars havolalari",
@@ -5082,6 +5085,17 @@
       "sending": "Yuborilmoqda…",
       "sendSms": "SMS yuborish",
       "smsResult": "Yuborildi {sent}, xato {failed}, raqamsiz o‘tkazib yuborildi {skipped}."
+    },
+    "attendance": {
+      "title": "Video darsdan davomat",
+      "description": "Kamida {minutes} daqiqa onlayn bo‘lgan o‘quvchilar “keldi”, qolganlar “kelmadi” deb taklif qilinadi. Noto‘g‘risini o‘zgartirib, belgilarni darsga qo‘llang.",
+      "noLesson": "Bu qo‘ng‘iroq darsga bog‘lanmagan, shuning uchun davomatni yozib bo‘lmaydi.",
+      "minutes": "{count} daqiqa onlayn",
+      "notInCall": "Qo‘ng‘iroqda bo‘lmagan",
+      "late": "{count} daqiqa kech qo‘shilgan",
+      "already": "belgilangan: {status}",
+      "apply": "Darsga qo‘llash",
+      "applying": "Qo‘llanmoqda…"
     }
   },
   "help": {
