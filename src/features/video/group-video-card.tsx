@@ -1,6 +1,6 @@
 "use client";
 
-import { Link2, Video } from "lucide-react";
+import { ClipboardCheck, Link2, Video } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useEffect, useState } from "react";
 
@@ -14,6 +14,7 @@ import { APP_TIME_ZONE } from "@/lib/dates";
 import { useDateFormat } from "@/lib/use-date-format";
 import type { GroupVideoDto, VideoRoomDto } from "@/server/services/video/video.service";
 
+import { CallAttendanceDialog } from "./call-attendance-dialog";
 import { StudentLinksDialog } from "./student-links-dialog";
 
 const REFRESH_MS = 15_000;
@@ -45,7 +46,8 @@ export function GroupVideoCard({
   const [state, setState] = useState(initial);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [dialog, setDialog] = useState<null | "links" | "end">(null);
+  const [dialog, setDialog] = useState<null | "links" | "end" | "attendance">(null);
+  const [attendanceRoom, setAttendanceRoom] = useState<string | null>(null);
   const room = state.room;
 
   useEffect(() => {
@@ -121,6 +123,19 @@ export function GroupVideoCard({
                   {t("end")}
                 </Button>
               )}
+              {canHost && room.lessonId && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => {
+                    setAttendanceRoom(room.id);
+                    setDialog("attendance");
+                  }}
+                  data-testid="video-attendance-live"
+                >
+                  <ClipboardCheck /> {t("attendance")}
+                </Button>
+              )}
             </div>
           </>
         ) : (
@@ -174,6 +189,20 @@ export function GroupVideoCard({
                 ))}
               </ul>
             )}
+            {canHost && state.lastRoom.lessonId && (
+              <Button
+                variant="outline"
+                size="sm"
+                className="mt-2"
+                onClick={() => {
+                  setAttendanceRoom(state.lastRoom!.id);
+                  setDialog("attendance");
+                }}
+                data-testid="video-attendance"
+              >
+                <ClipboardCheck /> {t("attendance")}
+              </Button>
+            )}
           </details>
         )}
       </CardContent>
@@ -184,6 +213,14 @@ export function GroupVideoCard({
           open={dialog === "links"}
           onOpenChange={(open) => setDialog(open ? "links" : null)}
           canSms={canSms}
+        />
+      )}
+      {canHost && attendanceRoom && (
+        <CallAttendanceDialog
+          roomId={attendanceRoom}
+          open={dialog === "attendance"}
+          onOpenChange={(open) => setDialog(open ? "attendance" : null)}
+          onApplied={() => router.refresh()}
         />
       )}
       {room && canHost && (

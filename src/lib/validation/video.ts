@@ -58,3 +58,16 @@ export const videoLinksSmsSchema = z.object({
     .refine((v) => v.includes("{link}"), "validation.linkPlaceholder"),
 });
 export type VideoLinksSmsInput = z.infer<typeof videoLinksSmsSchema>;
+
+/** The teacher's confirmed marks from a call (online-lessons B1). */
+export const callAttendanceSchema = z.object({
+  marks: z
+    .array(
+      z.object({
+        membershipId: idSchema,
+        status: z.enum(["PRESENT", "ABSENT", "EXCUSED"]),
+      }),
+    )
+    .max(200),
+});
+export type CallAttendanceInput = z.infer<typeof callAttendanceSchema>;

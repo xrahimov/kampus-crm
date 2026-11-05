@@ -133,6 +133,16 @@ test.describe("video lessons", () => {
     await teacher.goto(`/en/groups/${groupId}`);
     await expect(teacher.getByTestId("video-start")).toBeVisible();
     await expect(teacher.getByTestId("video-last")).toContainText("1 student joined");
+    // On a lesson day the call belongs to the lesson and proposes its attendance (B1).
+    const last = teacher.getByTestId("video-last");
+    await last.locator("summary").click();
+    if (await last.getByTestId("video-attendance").isVisible()) {
+      await last.getByTestId("video-attendance").click();
+      const dialog = teacher.getByTestId("call-attendance");
+      await expect(dialog).toContainText(first!.fullName);
+      await expect(dialog.getByTestId("call-attendance-row").first()).toBeVisible();
+      await dialog.getByRole("button", { name: "Cancel" }).click();
+    }
 
     await studentContext.close();
     await teacherContext.close();

@@ -67,6 +67,8 @@ export interface GroupVideoDto {
   /** The last call that ended, with the students who came. */
   lastRoom: {
     id: string;
+    /** The lesson the call belonged to; attendance from the call needs one (B1). */
+    lessonId: string | null;
     startedAt: string;
     endedAt: string | null;
     students: Array<{ studentId: string; fullName: string; minutes: number }>;
@@ -132,6 +134,7 @@ interface VideoConfig {
   turnSecret: string;
   maxParticipants: number;
   recordingKeepDays: number;
+  attendanceMinutes: number;
 }
 
 export async function loadVideoConfig(
@@ -153,6 +156,7 @@ export async function loadVideoConfig(
     turnSecret: envRelay ? env.TURN_SECRET! : (c?.turnSecret ?? ""),
     maxParticipants: c?.maxParticipants ?? 12,
     recordingKeepDays: c?.recordingKeepDays ?? 90,
+    attendanceMinutes: c?.attendanceMinutes ?? 10,
   };
 }
 
@@ -293,6 +297,7 @@ async function lastEndedRoom(db: DbClient, groupId: string): Promise<GroupVideoD
   }
   return {
     id: room.id,
+    lessonId: room.lessonId,
     startedAt: room.startedAt.toISOString(),
     endedAt: room.endedAt?.toISOString() ?? null,
     students: [...minutes.entries()]

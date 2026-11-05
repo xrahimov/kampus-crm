@@ -473,6 +473,7 @@ export const uz: HelpContent = {
               ],
             },
             "Kimdir ulana olmasa, uning tarmog‘i to‘g‘ridan-to‘g‘ri qo‘ng‘iroqlarni to‘sayotgan bo‘lishi mumkin; administrator Sozlamalar → Integratsiyalar → Video darslar bo‘limida relay server qo‘sha oladi.",
+            "Darsga tegishli qo‘ng‘iroqdan keyin **Oxirgi video dars** qatorini oching va **Qo‘ng‘iroqdan davomat**ni bosing. Kampus Sozlamalar → Integratsiyalar → Video darslarda belgilangan daqiqa (standart 10) davomida onlayn bo‘lganlarni keldi, qolganlarni kelmadi deb taklif qiladi va kechikib qo‘shilganlarni belgilaydi. Noto‘g‘risini o‘zgartiring va **Darsga qo‘llash**ni bosing; belgilar odatdagi davomat qoidalari bo‘yicha qo‘yiladi.",
           ],
         },
         links: {
@@ -1103,7 +1104,7 @@ export const uz: HelpContent = {
         video: {
           title: "Video darslar",
           body: [
-            "Video darslar ommaviy STUN serverlar orqali sozlamasiz ishlaydi. Ba’zi mobil yoki ofis tarmoqlaridagi o‘quvchilar ulana olmasa, shu yerda TURN relay server qo‘shing (server o‘rnatmasi bittasini o‘z ichiga oladi). Bitta qo‘ng‘iroqda ruxsat etilgan eng ko‘p odam sonini va dars yozuvlari o‘chirilguncha necha kun saqlanishini belgilang.",
+            "Video darslar ommaviy STUN serverlar orqali sozlamasiz ishlaydi. Ba’zi mobil yoki ofis tarmoqlaridagi o‘quvchilar ulana olmasa, shu yerda TURN relay server qo‘shing (server o‘rnatmasi bittasini o‘z ichiga oladi). Bitta qo‘ng‘iroqda ruxsat etilgan eng ko‘p odam sonini va dars yozuvlari o‘chirilguncha necha kun saqlanishini belgilang. **“Keldi” hisoblanishi uchun onlayn daqiqalar** o‘quvchi keldi deb taklif qilinishi uchun qo‘ng‘iroqda qancha bo‘lishi kerakligini belgilaydi.",
           ],
         },
         onlinePayments: {
