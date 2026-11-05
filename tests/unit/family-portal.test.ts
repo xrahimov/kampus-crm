@@ -54,7 +54,7 @@ beforeAll(async () => {
       name: `${TAG} German`,
       description: undefined,
       price: 300_000,
-      durationMonths: 2,
+      durationMonths: 24,
       gradingSystemId: null,
       color: null,
     })

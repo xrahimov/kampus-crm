@@ -59,11 +59,16 @@ export function IntegrationsPage({
           { key: "botUsername" },
           { key: "webhookSecret", secret: true },
           { key: "weeklyReport", type: "boolean" },
+          { key: "loginClientId" },
+          { key: "loginClientSecret", secret: true },
           ...(isSiteOwner ? [{ key: "sharedWithAllCentres", type: "boolean" as const }] : []),
         ]}
         extra={
           <>
             <WebhookHint path="telegram?secret=…" />
+            <p className="text-xs text-muted-foreground" data-testid="telegram-login-hint">
+              {t("TELEGRAM.loginHint", { url: "/api/v1/student-auth/telegram/callback" })}
+            </p>
             {isSiteOwner && (
               <p className="text-xs text-muted-foreground">{t("TELEGRAM.sharedHint")}</p>
             )}

@@ -482,7 +482,13 @@
     "fiscalDisabled": "Fiskal cheklar Sozlamalar → Integratsiyalar bo'limida o'chirilgan.",
     "fiscalIssued": "Bu to'lov uchun fiskal chek allaqachon berilgan.",
     "assistantFailed": "Yordamchi javob bera olmadi.",
-    "assistantRefused": "Yordamchi bu savolga javob berishdan bosh tortdi."
+    "assistantRefused": "Yordamchi bu savolga javob berishdan bosh tortdi.",
+    "studentNotRegistered": "Bu Telegram raqami o‘quv markazida ro‘yxatda yo‘q. Qabulxonadan telefoningizni profilingizga qo‘shishni so‘rang va qayta urinib ko‘ring.",
+    "studentLinkedElsewhere": "Bu profil boshqa Telegram hisobiga ulangan. Avval qabulxonadan uni uzishni so‘rang.",
+    "studentLoginExpired": "Kirish juda uzoq davom etdi yoki boshqa brauzerda boshlangan. Qayta urinib ko‘ring.",
+    "studentLoginFailed": "Telegram kirishni tasdiqlamadi. Qayta urinib ko‘ring.",
+    "studentLinkExpired": "Bu kirish havolasi ishlatilgan yoki muddati o‘tgan. Botdan yangisini so‘rang.",
+    "studentLoginOff": "Bu o‘quv markazida Telegram orqali kirish hali sozlanmagan."
   },
   "validation": {
     "phone": "+998 90 123 45 67 ko‘rinishida raqam kiriting.",
@@ -592,7 +598,8 @@
     "waitlistCourse": "Yozuvdagi kurs guruhini tanlang",
     "inn": "9 raqamli STIR kiriting.",
     "ikpu": "17 raqamli MXIK kodini kiriting.",
-    "digits": "Faqat raqamlar."
+    "digits": "Faqat raqamlar.",
+    "loginClientId": "Client ID — @BotFather bergan raqam."
   },
   "roles": {
     "CEO": "CEO",
@@ -2044,6 +2051,26 @@
       "restoreText": "Ular arxivdan eski guruhlarisiz qaytadi.",
       "smsTitle": "{count} o‘quvchiga SMS",
       "done": "{done} bajarildi, {skipped} o‘tkazib yuborildi."
+    },
+    "access": {
+      "title": "Kampus ilovasiga kirish",
+      "none": "Hozircha bu o‘quvchi sifatida hech kim kirmagan.",
+      "student": "O‘quvchi",
+      "parent": "Ota-ona: {name}",
+      "via": {
+        "PHONE": "Telegram’dagi telefon mos keldi",
+        "CODE": "O‘quvchi sahifasidan ulangan",
+        "STAFF": "Xodim ulagan"
+      },
+      "lastSeen": "oxirgi kirish {date}",
+      "devices": "{count, plural, =0 {chiqqan} other {# qurilma}}",
+      "signOut": "Hamma joydan chiqarish",
+      "unlink": "Kirishni olib tashlash",
+      "hint": "O‘quvchilar va ota-onalar /student sahifasida Telegram orqali kiradi. O‘quvchi yoki ota-ona kartasidagi telefon o‘sha Telegram raqamini kiritadi; hech kim o‘zi ro‘yxatdan o‘ta olmaydi.",
+      "signOutTitle": "{name} barcha qurilmalardan chiqarilsinmi?",
+      "signOutText": "U Telegram orqali qayta kira oladi.",
+      "unlinkTitle": "{name} uchun kirish olib tashlansinmi?",
+      "unlinkText": "Bu Telegram hisobi endi bu o‘quvchini ochmaydi. Telefon mos kelsa, keyingi kirishda yana ulanadi, shuning uchun raqam noto‘g‘ri bo‘lsa avval telefonni o‘zgartiring."
     }
   },
   "payments": {
@@ -4173,7 +4200,12 @@
           "fieldRemove": "Qo'shimcha ma'lumot o'chirildi",
           "parentAdd": "Ota-ona qo'shildi",
           "parentRemove": "Ota-ona o'chirildi",
-          "importArchived": "Arxivdagi o‘quvchi import qilindi"
+          "importArchived": "Arxivdagi o‘quvchi import qilindi",
+          "account": {
+            "link": "Telegram orqali kirish ulandi",
+            "unlink": "Telegram orqali kirish olib tashlandi",
+            "signOut": "O‘quvchi hamma joydan chiqarildi"
+          }
         },
         "teacher": {
           "create": "O'qituvchi yaratildi",
@@ -4308,11 +4340,14 @@
         "webhookSecret": "Webhook maxfiy kaliti",
         "botUsername": "Bot nomi (@ belgisisiz)",
         "weeklyReport": "Yakshanba kuni kechqurun ota-onalarga haftalik hisobot",
-        "sharedWithAllCentres": "Bu serverdagi barcha markazlar uchun umumiy"
+        "sharedWithAllCentres": "Bu serverdagi barcha markazlar uchun umumiy",
+        "loginClientId": "Telegram orqali kirish: Client ID",
+        "loginClientSecret": "Telegram orqali kirish: Client Secret"
       },
       "sharedHint": "Server egasi sifatida bu botni o‘z boti bo‘lmagan barcha markazlarga taklif qilishingiz mumkin: ularning o‘quvchilari o‘z sahifalaridan unga ulanadi, xodimlari unga /id yuboradi, xabarlari u orqali ketadi. O‘z botini kiritgan markaz o‘zinikidan foydalanishda davom etadi.",
       "sharedNote": "Markazingiz serverning umumiy boti @{username} dan foydalanadi: o‘quvchilar shaxsiy sahifalaridan unga ulanadi, xodimlar Bot xabarnoma uchun unga /id yuboradi. O‘zingiznikidan foydalanish uchun yuqorida o‘z botingizni kiriting.",
-      "sharedNoteNoUsername": "Markazingiz serverning umumiy Telegram botidan foydalanadi. O‘zingiznikidan foydalanish uchun yuqorida o‘z botingizni kiriting."
+      "sharedNoteNoUsername": "Markazingiz serverning umumiy Telegram botidan foydalanadi. O‘zingiznikidan foydalanish uchun yuqorida o‘z botingizni kiriting.",
+      "loginHint": "O‘quvchilar va ota-onalar /student sahifasida “Telegram orqali kirish” bilan kiradi. @BotFather’da botni oching → Login Widget, ruxsat etilgan manzillarga sayt manzili va {url} ni qo‘shing, Client ID va Client Secret’ni shu yerga ko‘chiring. Faqat o‘quvchi yoki ota-onada yozilgan telefonlar kira oladi."
     },
     "TELEPHONY": {
       "title": "Telefoniya",
@@ -4931,7 +4966,13 @@
     "leadWelcome": "Assalomu alaykum! Bu {centre}. Yozganingiz uchun rahmat: menejer tez orada shu yerda javob beradi. Qaysi kurs qiziqtirayotganini yozing va telefon raqamingizni qoldiring.",
     "announcement": "📢 {title}\n\n{body}\n\n— {from}",
     "waitlistOffer": "{group} guruhi ochilmoqda: {days} {time}, {date} dan. Joyni band qilish uchun markazga qo‘ng‘iroq qiling.",
-    "certificate": "{org}: “{title}” sertifikatingiz tayyor. Ochish yoki ulashish: {url}"
+    "certificate": "{org}: “{title}” sertifikatingiz tayyor. Ochish yoki ulashish: {url}",
+    "loginShare": "Kampusga kirish uchun pastdagi “Raqamimni yuborish” tugmasini bosing. O‘quv markazi uni profilingizdagi telefon bilan solishtiradi.",
+    "loginShareButton": "Raqamimni yuborish",
+    "loginNotYours": "Iltimos, boshqa kontaktni emas, tugma orqali o‘z raqamingizni yuboring.",
+    "loginUnknown": "Bu raqam o‘quv markazida ro‘yxatda yo‘q. Qabulxonadan uni profilingizga qo‘shishni so‘rang.",
+    "loginLinkedElsewhere": "Profilingiz boshqa Telegram hisobiga ulangan. Avval qabulxonadan uni uzishni so‘rang.",
+    "loginLink": "Kampusni ochish uchun bosing: {url}\nHavola bir marta, 10 daqiqa ishlaydi."
   },
   "video": {
     "title": "Video dars",
@@ -5130,5 +5171,31 @@
     "hint": "«Yozib olish» ni bosing, gapiring, so‘ng «To‘xtatish». 5 daqiqagacha.",
     "unsupported": "Bu brauzer yozib ololmaydi. Telefondan audio fayl biriktiring.",
     "denied": "Mikrofonga ruxsat berilmadi. Brauzerda ruxsat bering va «Yozib olish» ni qayta bosing."
+  },
+  "studentApp": {
+    "title": "Mening Kampusim",
+    "hello": "Salom, {name}",
+    "viaTelegram": "Telegram orqali kirgansiz",
+    "child": "Farzandingiz",
+    "noGroups": "Hozircha guruh yo‘q.",
+    "homeworkTitle": "Bajariladigan uy vazifalari",
+    "homeworkNone": "Hozircha bajariladigan vazifa yo‘q.",
+    "lessonOf": "{date} darsi",
+    "due": "muddat {date}",
+    "returned": "Qaytarilgan",
+    "liveNow": "Dars hozir ketmoqda",
+    "join": "Qo‘shilish",
+    "signOutHint": "Boshqaning telefonidamisiz? Ish tugagach chiqing.",
+    "signOut": "Chiqish",
+    "signOutAll": "Barcha qurilmalardan chiqish",
+    "login": {
+      "title": "Kampusga kirish",
+      "titleAt": "{centre} — kirish",
+      "description": "O‘quvchilar va ota-onalar uchun. Parol kerak emas: Telegram kimligingizni va telefon raqamingizni tasdiqlaydi.",
+      "withTelegram": "Telegram orqali kirish",
+      "withBot": "Telegram bot orqali kirish",
+      "privacy": "Faqat o‘quv markazida o‘quvchi yoki ota-onada yozilgan raqamlar kira oladi. Kampus Telegram parolingiz va xabarlaringizni ko‘rmaydi.",
+      "off": "Bu yerda Telegram orqali kirish hali sozlanmagan. O‘quv markazi yuborgan shaxsiy havoladan foydalaning."
+    }
   }
 }

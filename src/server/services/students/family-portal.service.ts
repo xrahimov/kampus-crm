@@ -1,3 +1,4 @@
+import type { Prisma } from "@/generated/prisma/client";
 import type { MembershipStatus } from "@/lib/validation/groups";
 import { generateToken } from "@/server/auth/tokens";
 import { prisma, type DbClient } from "@/server/db/prisma";
@@ -93,41 +94,59 @@ export async function getFamilyPortal(
       students: {
         where: { isArchived: false },
         orderBy: { fullName: "asc" },
-        select: {
-          id: true,
-          fullName: true,
-          branchId: true,
-          memberships: {
-            where: { status: { in: CURRENT }, group: { status: { not: "ARCHIVED" } } },
-            orderBy: { joinedAt: "asc" },
-            select: {
-              id: true,
-              status: true,
-              videoToken: true,
-              group: {
-                select: {
-                  id: true,
-                  name: true,
-                  branchId: true,
-                  course: { select: { name: true } },
-                  teachers: { select: { user: { select: { fullName: true } } } },
-                },
-              },
-            },
-          },
-        },
+        select: childSelect,
       },
     },
   });
   if (!family) return null;
-  const memberships = family.students.flatMap((s) => s.memberships);
+  const children = await portalChildren(db, family.organizationId, family.students);
+  return { familyName: family.name, organizationName: family.organization.name, children };
+}
+
+/** The students' fields `portalChildren` needs, as `childSelect` reads them. */
+export const childSelect = {
+  id: true,
+  fullName: true,
+  branchId: true,
+  memberships: {
+    where: { status: { in: CURRENT }, group: { status: { not: "ARCHIVED" as const } } },
+    orderBy: { joinedAt: "asc" as const },
+    select: {
+      id: true,
+      status: true,
+      videoToken: true,
+      group: {
+        select: {
+          id: true,
+          name: true,
+          branchId: true,
+          course: { select: { name: true } },
+          teachers: { select: { user: { select: { fullName: true } } } },
+        },
+      },
+    },
+  },
+} satisfies Prisma.StudentSelect;
+
+type ChildRow = Prisma.StudentGetPayload<{ select: typeof childSelect }>;
+
+/**
+ * Each child's current groups with the personal link, next lesson, balance and
+ * unread news; shared by the parents' page and the signed-in student home (A-150).
+ */
+export async function portalChildren(
+  db: DbClient,
+  organizationId: string,
+  students: ChildRow[],
+): Promise<FamilyPortalDto["children"]> {
+  const memberships = students.flatMap((s) => s.memberships);
   const balances = await membershipBalances(
     db,
     memberships.map((m) => m.id),
   );
   const todayDate = isoToDate(today());
   const children: FamilyPortalDto["children"] = [];
-  for (const s of family.students) {
+  for (const s of students) {
     const groups: FamilyPortalGroupDto[] = [];
     for (const m of s.memberships) {
       // Older memberships may still lack a personal link; the parents' page needs one.
@@ -152,7 +171,7 @@ export async function getFamilyPortal(
         }),
         db.announcement.count({
           where: {
-            organizationId: family.organizationId,
+            organizationId,
             OR: [
               { audience: "CENTRE" },
               { audience: "BRANCH", branchId: m.group.branchId },
@@ -184,5 +203,5 @@ export async function getFamilyPortal(
     }
     children.push({ id: s.id, fullName: s.fullName, groups });
   }
-  return { familyName: family.name, organizationName: family.organization.name, children };
+  return children;
 }

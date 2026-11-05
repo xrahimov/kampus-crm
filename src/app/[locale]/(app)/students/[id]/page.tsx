@@ -12,6 +12,7 @@ import { can } from "@/server/rbac/authorize";
 import { getStudentProgress } from "@/server/services/exams/exams.service";
 import { listStudentAdjustments } from "@/server/services/students/adjustments.service";
 import { listStudentPaymentHistory } from "@/server/services/students/history-import.service";
+import { listStudentAccess } from "@/server/services/student-auth/access.service";
 import { getStudentFamily } from "@/server/services/students/families.service";
 import { getPaymentOptions, listPayments } from "@/server/services/students/payments.service";
 import {
@@ -77,6 +78,7 @@ export default async function Page({ params, searchParams }: Props) {
     adjustments,
     legacyPayments,
     family,
+    access,
   ] = await Promise.all([
     listStudentComments(current.actor, id),
     listStudentHistory(current.actor, id, list),
@@ -95,6 +97,7 @@ export default async function Page({ params, searchParams }: Props) {
     listStudentAdjustments(current.actor, id),
     listStudentPaymentHistory(current.actor, id),
     getStudentFamily(current.actor, id),
+    listStudentAccess(current.actor, id),
   ]);
 
   return (
@@ -115,6 +118,7 @@ export default async function Page({ params, searchParams }: Props) {
       paymentOptions={paymentOptions}
       branches={current.branches}
       family={family}
+      access={access}
       can={{
         update: can(current.actor, "students.update"),
         delete: can(current.actor, "students.delete"),

@@ -1086,6 +1086,20 @@ export const uz: HelpContent = {
             "Qurilma maxfiy kalitini va necha daqiqa kechikish hisoblanishini belgilang hamda terminallarni webhook ga yo‘naltiring. Har bir IN va OUT hodisasi o‘sha telefon raqamli xodim uchun kirish yoki chiqish belgisiga aylanadi. Hisobotlar → Xodimlar davomati kunlik, haftalik va oylik davomatni ko‘rsatadi hamda har bir kishining ish jadvalini belgilash va qo‘lda kirish belgisini kiritish imkonini beradi.",
           ],
         },
+        telegramLogin: {
+          title: "O‘quvchilar Telegram orqali kiradi",
+          body: [
+            "O‘quvchilar va ota-onalar shaxsiy havola o‘rniga **/student** sahifasida **Telegram orqali kirish** bilan kira oladi. Telegram shaxsni va telefonni tasdiqlaydi; Kampus faqat shu telefon markazingizdagi o‘quvchi yoki ota-ona kartasida bo‘lsa kiritadi, shuning uchun hech kim soxta hisob ocha olmaydi.",
+            {
+              steps: [
+                "Telegramda **@BotFather**ni oching, botingizni tanlang va **Login Widget**ni oching.",
+                "Ruxsat etilgan manzillarga saytingiz manzilini hamda manzil va **/api/v1/student-auth/telegram/callback** ni qo‘shing.",
+                "**Client ID** va **Client Secret**ni shu yerdagi Telegram kartasiga ko‘chirib, saqlang.",
+              ],
+            },
+            "Har bir o‘quvchi kartasida **Kampus ilovasiga kirish** bo‘limi bor: kim o‘quvchi yoki ota-ona sifatida kiradi, qanday ulangan, hamma joydan chiqarish va kirishni olib tashlash tugmalari.",
+          ],
+        },
         video: {
           title: "Video darslar",
           body: [
@@ -1197,6 +1211,16 @@ export const uz: HelpContent = {
             "Sahifa sizni ismingiz bilan kutib oladi va guruhingizni, o‘qituvchingizni va to‘rtta raqamni ko‘rsatadi: davomatingiz, o‘rtacha bahongiz, nechta dars o‘tilgani va coinlaringiz.",
             {
               note: "Havola faqat sizniki: u baholaringiz va to‘lovlaringizni ko‘rsatadi. Uni boshqalarga bermang. Yo‘qotib qo‘ysangiz, o‘qituvchingizdan yangisini so‘rang; shunda eskisi ishlamay qoladi.",
+            },
+          ],
+        },
+        signIn: {
+          title: "Telegram orqali kirish",
+          body: [
+            "Havola o‘rniga markazingiz manzilidagi **/student** sahifasida **Telegram orqali kirish** bilan kirishingiz mumkin. Parol kerak emas: Telegram kimligingizni tasdiqlaydi va roziligingiz bilan telefon raqamingizni yuboradi. Bu raqam markazdagi profilingizda (ota-onalar uchun ota-ona kartasida) bo‘lsa, Kampus **Mening Kampusim** sahifasini ochadi: barcha guruhlaringiz, dars ketayotganda **Qo‘shilish** tugmasi bilan keyingi dars, balans va bajarilmagan uy vazifalari. Ota-onalar har bir farzandini ko‘radi.",
+            "Telefonda markaz botini ochib, **Raqamimni yuborish** tugmasini bosib, bot qaytargan kirish havolasini ham bosishingiz mumkin; havola bir marta, o‘n daqiqa ishlaydi.",
+            {
+              note: "Hech kim o‘zi ro‘yxatdan o‘ta olmaydi. Kampus raqamingiz ro‘yxatda yo‘q desa, qabulxonadan Telegram telefoningizni profilingizga yozishni so‘rang. Boshqaning telefonidamisiz? Ish tugagach pastdagi **Chiqish** tugmasini bosing.",
             },
           ],
         },

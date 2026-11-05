@@ -327,6 +327,7 @@ export const HELP_ARTICLES = [
       { id: "overview", screenshot: "integrations" },
       { id: "sms" },
       { id: "telegram", screenshot: "bot-recipients" },
+      { id: "telegramLogin" },
       { id: "amocrm" },
       { id: "telephony" },
       { id: "faceId" },
@@ -363,6 +364,7 @@ export const HELP_ARTICLES = [
     isPublic: true,
     sections: [
       { id: "link", screenshot: "portal" },
+      { id: "signIn" },
       { id: "family" },
       { id: "lesson", screenshot: "portal-lesson" },
       { id: "lessons" },

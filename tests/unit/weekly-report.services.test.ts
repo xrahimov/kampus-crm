@@ -104,6 +104,8 @@ beforeAll(async () => {
     botUsername: `${TAG}_bot`,
     weeklyReport: true,
     sharedWithAllCentres: false,
+    loginClientId: "",
+    loginClientSecret: "",
   });
   const courseId = (
     await createCourse(ceo, {
@@ -357,6 +359,8 @@ describe("the weekly report", () => {
       botUsername: `${TAG}_bot`,
       weeklyReport: false,
       sharedWithAllCentres: false,
+      loginClientId: "",
+      loginClientSecret: "",
     });
     const earlier = shift(sunday, -7);
     await runWeeklyReports(prisma, earlier);

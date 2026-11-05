@@ -107,6 +107,8 @@ beforeAll(async () => {
     botUsername: "kampus_test_bot",
     weeklyReport: true,
     sharedWithAllCentres: false,
+    loginClientId: "",
+    loginClientSecret: "",
   });
   branchId = (await createBranch(ceo, { name: `${TAG} A`, isActive: true })).id;
   ceo.branchIds = await demoBranchIds();

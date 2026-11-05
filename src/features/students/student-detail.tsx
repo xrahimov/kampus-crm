@@ -64,6 +64,7 @@ import type { Page } from "@/lib/validation/common";
 import type { MembershipStatus } from "@/lib/validation/groups";
 import type { AdjustmentDto } from "@/server/services/students/adjustments.service";
 import type { LegacyPaymentDto } from "@/server/services/students/history-import.service";
+import type { StudentAccessDto } from "@/server/services/student-auth/access.service";
 import type { FamilyDto } from "@/server/services/students/families.service";
 import type { PaymentDto, PaymentOptionsDto } from "@/server/services/students/payments.service";
 import type {
@@ -85,6 +86,7 @@ import { CommentDialog } from "./comment-dialog";
 import { SmsTab } from "./sms-tab";
 import { ProgressTab } from "./progress-tab";
 import { TestResultsTab } from "./test-results-tab";
+import { AccessCard } from "./access-card";
 import { FamilyCard } from "./family-card";
 import { GroupCard } from "./group-card";
 import { InstalmentsDialog } from "./instalments-dialog";
@@ -122,6 +124,7 @@ export function StudentDetail({
   paymentOptions,
   branches,
   family,
+  access,
   can,
 }: {
   student: StudentDetailDto;
@@ -140,6 +143,7 @@ export function StudentDetail({
   paymentOptions: PaymentOptionsDto;
   branches: BranchOption[];
   family: FamilyDto | null;
+  access: StudentAccessDto[];
   can: {
     update: boolean;
     delete: boolean;
@@ -341,6 +345,13 @@ export function StudentDetail({
             canEdit={can.update && !student.isArchived}
             canDiscount={can.discounts}
             canSms={can.sms && !student.isArchived}
+            onChanged={refresh}
+          />
+
+          <AccessCard
+            studentId={student.id}
+            access={access}
+            canEdit={can.update}
             onChanged={refresh}
           />
 

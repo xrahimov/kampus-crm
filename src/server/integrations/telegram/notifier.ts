@@ -4,9 +4,11 @@
 /** Bot API `reply_markup`: the buttons under a message, or the order to take them away. */
 export type TelegramReplyMarkup =
   | {
-      keyboard: Array<Array<{ text: string }>>;
+      /** `request_contact` makes the button share the user's own phone number (A-150). */
+      keyboard: Array<Array<{ text: string; request_contact?: boolean }>>;
       resize_keyboard?: boolean;
       is_persistent?: boolean;
+      one_time_keyboard?: boolean;
     }
   | { remove_keyboard: true };
 

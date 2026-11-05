@@ -47,6 +47,8 @@ const telegram = (over: Partial<Parameters<typeof updateIntegration<"TELEGRAM">>
   botUsername: `${TAG}_bot`,
   weeklyReport: true,
   sharedWithAllCentres: false,
+  loginClientId: "",
+  loginClientSecret: "",
   ...over,
 });
 

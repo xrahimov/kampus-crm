@@ -482,7 +482,13 @@
     "fiscalDisabled": "Fiscal receipts are switched off in Settings → Integrations.",
     "fiscalIssued": "The fiscal receipt for this payment has already been issued.",
     "assistantFailed": "The assistant could not answer.",
-    "assistantRefused": "The assistant declined to answer this question."
+    "assistantRefused": "The assistant declined to answer this question.",
+    "studentNotRegistered": "This Telegram number is not registered at the learning centre. Ask the reception to add your phone to your profile, then try again.",
+    "studentLinkedElsewhere": "This profile is already connected to another Telegram account. Ask the reception to unlink it first.",
+    "studentLoginExpired": "The sign-in took too long or was started in another browser. Please try again.",
+    "studentLoginFailed": "Telegram did not confirm the sign-in. Please try again.",
+    "studentLinkExpired": "This sign-in link was already used or has expired. Ask the bot for a new one.",
+    "studentLoginOff": "Sign-in with Telegram is not set up at this learning centre yet."
   },
   "validation": {
     "phone": "Enter a number like +998 90 123 45 67.",
@@ -592,7 +598,8 @@
     "waitlistCourse": "Choose a group of the entry's course",
     "inn": "Enter the 9-digit taxpayer number.",
     "ikpu": "Enter the 17-digit MXIK code.",
-    "digits": "Digits only."
+    "digits": "Digits only.",
+    "loginClientId": "The Client ID is a number from @BotFather."
   },
   "roles": {
     "CEO": "CEO",
@@ -2044,6 +2051,26 @@
       "restoreText": "They come back from the archive without their old groups.",
       "smsTitle": "SMS to {count} students",
       "done": "{done} done, {skipped} skipped."
+    },
+    "access": {
+      "title": "Kampus app sign-in",
+      "none": "Nobody signs in as this student yet.",
+      "student": "Student",
+      "parent": "Parent: {name}",
+      "via": {
+        "PHONE": "Phone matched in Telegram",
+        "CODE": "Connected from the student's page",
+        "STAFF": "Linked by staff"
+      },
+      "lastSeen": "last seen {date}",
+      "devices": "{count, plural, =0 {signed out} one {# device} other {# devices}}",
+      "signOut": "Sign out everywhere",
+      "unlink": "Remove access",
+      "hint": "Students and parents sign in at /student with Telegram. A phone on the student or parent card lets that Telegram number in; nobody can register on their own.",
+      "signOutTitle": "Sign {name} out on every device?",
+      "signOutText": "They can sign in again with Telegram.",
+      "unlinkTitle": "Remove {name}'s access?",
+      "unlinkText": "This Telegram account will no longer open this student. If the phone still matches, it can be linked again at the next sign-in, so change the phone first when the number is wrong."
     }
   },
   "payments": {
@@ -4173,7 +4200,12 @@
           "fieldRemove": "Extra information removed",
           "parentAdd": "Parent added",
           "parentRemove": "Parent removed",
-          "importArchived": "Archived student imported"
+          "importArchived": "Archived student imported",
+          "account": {
+            "link": "Telegram sign-in linked",
+            "unlink": "Telegram sign-in removed",
+            "signOut": "Student signed out everywhere"
+          }
         },
         "teacher": {
           "create": "Teacher created",
@@ -4308,11 +4340,14 @@
         "webhookSecret": "Webhook secret",
         "botUsername": "Bot username (without @)",
         "weeklyReport": "Weekly report to parents on Sunday evening",
-        "sharedWithAllCentres": "Shared with every centre on this server"
+        "sharedWithAllCentres": "Shared with every centre on this server",
+        "loginClientId": "Telegram login: Client ID",
+        "loginClientSecret": "Telegram login: Client Secret"
       },
       "sharedHint": "As the server's owner you can offer this bot to every centre that has not set up a bot of its own: their students connect to it from their pages, their staff send /id to it, and their messages go out through it. A centre that enters its own bot keeps using that one.",
       "sharedNote": "Your centre uses this server's shared bot @{username}: students connect to it from their personal pages and staff send /id to it for Bot notifications. Enter a bot of your own above to use that instead.",
-      "sharedNoteNoUsername": "Your centre uses this server's shared Telegram bot. Enter a bot of your own above to use that instead."
+      "sharedNoteNoUsername": "Your centre uses this server's shared Telegram bot. Enter a bot of your own above to use that instead.",
+      "loginHint": "Students and parents sign in at /student with “Log in with Telegram”. In @BotFather open the bot → Login Widget, add this site's address followed by {url} to the allowed URLs, and copy the Client ID and Client Secret here. Only phones already on a student or parent can sign in."
     },
     "TELEPHONY": {
       "title": "Telephony",
@@ -4931,7 +4966,13 @@
     "leadWelcome": "Hello! This is {centre}. Thank you for writing: a manager will reply here shortly. Tell us which course you are interested in and leave your phone number.",
     "announcement": "📢 {title}\n\n{body}\n\n— {from}",
     "waitlistOffer": "{group} is opening: {days} {time}, from {date}. Call the centre to take your seat.",
-    "certificate": "{org}: your certificate “{title}” is ready. Open or share it here: {url}"
+    "certificate": "{org}: your certificate “{title}” is ready. Open or share it here: {url}",
+    "loginShare": "To sign in to Kampus, tap “Share my number” below. The learning centre checks it against the phone on your profile.",
+    "loginShareButton": "Share my number",
+    "loginNotYours": "Please share your own number with the button, not someone else's contact.",
+    "loginUnknown": "This number is not registered at the learning centre. Ask the reception to add it to your profile.",
+    "loginLinkedElsewhere": "Your profile is already connected to another Telegram account. Ask the reception to unlink it first.",
+    "loginLink": "Tap to open Kampus: {url}\nThe link works once, for 10 minutes."
   },
   "video": {
     "title": "Video lesson",
@@ -5130,5 +5171,31 @@
     "hint": "Press Record, speak, then Stop. Up to 5 minutes.",
     "unsupported": "This browser cannot record. Attach an audio file from your phone instead.",
     "denied": "The microphone was not allowed. Allow it in the browser and press Record again."
+  },
+  "studentApp": {
+    "title": "My Kampus",
+    "hello": "Hello, {name}",
+    "viaTelegram": "Signed in with Telegram",
+    "child": "Your child",
+    "noGroups": "No current groups.",
+    "homeworkTitle": "Homework to do",
+    "homeworkNone": "Nothing to do right now.",
+    "lessonOf": "lesson of {date}",
+    "due": "due {date}",
+    "returned": "Returned",
+    "liveNow": "Lesson is on now",
+    "join": "Join",
+    "signOutHint": "Using someone else's phone? Sign out when you are done.",
+    "signOut": "Sign out",
+    "signOutAll": "Sign out on all devices",
+    "login": {
+      "title": "Sign in to Kampus",
+      "titleAt": "Sign in to {centre}",
+      "description": "For students and parents. No password: Telegram confirms who you are and your phone number.",
+      "withTelegram": "Log in with Telegram",
+      "withBot": "Sign in from the Telegram bot",
+      "privacy": "Only phone numbers the learning centre already has on a student or parent can sign in. Kampus never sees your Telegram password or messages.",
+      "off": "Sign-in with Telegram is not set up here yet. Use the personal link the learning centre sent you."
+    }
   }
 }

@@ -22,6 +22,8 @@ jobs:
       SEED_ADMIN_PHONE: "+998900000001"
       SEED_ADMIN_PASSWORD: "Kampus!2026"
       NEXT_TELEMETRY_DISABLED: "1"
+      # Test-only stand-in for Telegram's login server (A-150); never set on a real server.
+      TELEGRAM_LOGIN_FAKE: "1"
 
     steps:
       - uses: actions/checkout@v4
