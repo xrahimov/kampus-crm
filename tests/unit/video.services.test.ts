@@ -442,6 +442,74 @@ describe("video lessons", () => {
     const studentSees = await sync(student.participantId, student.secret);
     expect(studentSees.poll).toMatchObject({ open: false, counts: [1, 0, 0], voters: null });
 
+    // Breakout rooms (A-156): only the teacher opens them; peers shrink to the same room;
+    // a notice reaches everyone; time up or the teacher's close brings everyone back.
+    const studentOpens2 = await sync(student.participantId, student.secret, {
+      breakout: { rooms: 2, minutes: 10, assign: [{ id: guest.participantId, room: 1 }] },
+    });
+    expect(studentOpens2.breakout).toEqual({ rooms: 0, endsAt: null, mine: null, everyone: null });
+    const opened = await sync(host.participantId, host.secret, {
+      breakout: {
+        rooms: 2,
+        minutes: 10,
+        assign: [
+          { id: student.participantId, room: 1 },
+          { id: guest.participantId, room: 2 },
+        ],
+      },
+    });
+    expect(opened.breakout).toMatchObject({ rooms: 2, mine: null });
+    expect(new Date(opened.breakout.endsAt!).getTime()).toBeGreaterThan(Date.now() + 9 * 60_000);
+    expect(opened.breakout.everyone).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ id: student.participantId, room: 1 }),
+        expect.objectContaining({ id: guest.participantId, room: 2 }),
+      ]),
+    );
+    expect(opened.peers).toHaveLength(0);
+    const inRoomOne = await sync(student.participantId, student.secret);
+    expect(inRoomOne.breakout).toMatchObject({ rooms: 2, mine: 1, everyone: null });
+    expect(inRoomOne.peers).toHaveLength(0);
+    // The teacher drops in on room 1 and is the student's only peer there.
+    const visiting = await sync(host.participantId, host.secret, {
+      breakout: { rooms: 2, assign: [{ id: host.participantId, room: 1 }] },
+      signals: [{ to: "ignored", kind: "notice", payload: { text: "Two minutes left" } }],
+    });
+    expect(visiting.breakout.mine).toBe(1);
+    expect(visiting.peers.map((p) => p.id)).toEqual([student.participantId]);
+    const studentNotice = await sync(student.participantId, student.secret);
+    expect(studentNotice.peers.map((p) => p.id)).toEqual([host.participantId]);
+    expect(studentNotice.signals.map((x) => x.kind)).toContain("notice");
+    const guestNotice = await sync(guest.participantId, guest.secret);
+    expect(guestNotice.signals.map((x) => x.kind)).toContain("notice");
+    // A student's notice is dropped.
+    await sync(student.participantId, student.secret, {
+      signals: [{ to: host.participantId, kind: "notice", payload: { text: "Hi" } }],
+    });
+    expect(
+      (await sync(host.participantId, host.secret, { after: visiting.signals.at(-1)?.id })).signals,
+    ).toEqual([]);
+    // Time up: the next sync closes the rooms for everyone.
+    await prisma.videoRoom.update({
+      where: { id: roomId },
+      data: { breakoutEndsAt: new Date(Date.now() - 1000) },
+    });
+    const backTogether = await sync(guest.participantId, guest.secret);
+    expect(backTogether.breakout).toMatchObject({ rooms: 0, mine: null });
+    expect(backTogether.peers.map((p) => p.id).sort()).toEqual(
+      [host.participantId, student.participantId].sort(),
+    );
+    // The teacher's explicit close does the same.
+    await sync(host.participantId, host.secret, {
+      breakout: { rooms: 2, minutes: null, assign: [] },
+    });
+    expect((await sync(host.participantId, host.secret)).breakout.endsAt).toBeNull();
+    const closedRooms = await sync(host.participantId, host.secret, {
+      breakout: { rooms: 0, assign: [] },
+    });
+    expect(closedRooms.breakout.rooms).toBe(0);
+    expect(closedRooms.peers).toHaveLength(2);
+
     await expect(sync(host.participantId, "wrong-secret-wrong-secret")).rejects.toMatchObject({
       code: "FORBIDDEN",
     });

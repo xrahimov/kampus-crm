@@ -1,6 +1,7 @@
 import {
   BOARD_MAX_STROKES,
   boardOpSchema,
+  NOTICE_MAX_LENGTH,
   PACE_REACTIONS,
   REACTIONS,
   type BoardOp,
@@ -10,7 +11,13 @@ import {
   type VideoSyncInput,
 } from "@/lib/validation/video";
 import type { PollDto } from "@/server/services/video/video-polls.service";
-import type { JoinDto, PeerDto, StageDto, SyncDto } from "@/server/services/video/video.service";
+import type {
+  BreakoutDto,
+  JoinDto,
+  PeerDto,
+  StageDto,
+  SyncDto,
+} from "@/server/services/video/video.service";
 
 /*
  * The browser side of a video lesson: one RTCPeerConnection per other
@@ -132,6 +139,12 @@ export class CallEngine {
   private boardNewcomers = new Set<string>();
   /** The open poll, else the last closed one (A-153). */
   poll: PollDto | null = null;
+  /** Breakout rooms as the server last reported them (A-156). */
+  breakout: BreakoutDto = { rooms: 0, endsAt: null, mine: null, everyone: null };
+  /** The teacher's breakout change waiting for the next sync. */
+  private breakoutDraft: NonNullable<VideoSyncInput["breakout"]> | null = null;
+  /** The teacher's latest line to everyone, shown as a banner (A-156). */
+  notice: { text: string; name: string; at: number } | null = null;
   /** Poll ids this browser has already been shown, for the "new poll" badge. */
   private seenPolls = new Set<string>();
   /** A poll action waiting for the next sync. */
@@ -268,6 +281,54 @@ export class CallEngine {
       this.send(link.info.id, "react", { reaction });
     }
     this.pushReaction(null, reaction);
+  }
+
+  /* ----- breakout rooms (A-156) ----------------------------------------------------------- */
+
+  /** Teacher only: opens `rooms` sub-rooms for `minutes` (null = until closed) and seats people. */
+  startBreakout(
+    rooms: number,
+    minutes: number | null,
+    assign: Array<{ id: string; room: number | null }>,
+  ): void {
+    if (this.self.role !== "HOST") return;
+    this.breakoutDraft = { rooms, minutes, assign };
+    this.changed(true);
+  }
+
+  /** Teacher only: moves one person (possibly themselves) to a sub-room or back to the main room. */
+  moveToRoom(id: string, room: number | null): void {
+    if (this.self.role !== "HOST" || this.breakout.rooms === 0) return;
+    const draft = this.breakoutDraft ?? { rooms: this.breakout.rooms, assign: [] };
+    this.breakoutDraft = {
+      ...draft,
+      assign: [...draft.assign.filter((a) => a.id !== id), { id, room }],
+    };
+    this.changed(true);
+  }
+
+  /** Teacher only: closes the sub-rooms; everyone is back together. */
+  endBreakout(): void {
+    if (this.self.role !== "HOST") return;
+    this.breakoutDraft = { rooms: 0, assign: [] };
+    this.changed(true);
+  }
+
+  /** Teacher only: a line everyone sees, whichever room they are in. */
+  sendNotice(text: string): void {
+    if (this.self.role !== "HOST") return;
+    const clean = text.trim().slice(0, NOTICE_MAX_LENGTH);
+    if (!clean) return;
+    // `to` is ignored for notices: the server fans them out to everyone online.
+    this.send(this.self.participantId, "notice", { text: clean, name: this.self.displayName });
+    this.notice = { text: clean, name: this.self.displayName, at: Date.now() };
+    this.onChange();
+  }
+
+  dismissNotice(): void {
+    if (!this.notice) return;
+    this.notice = null;
+    this.onChange();
   }
 
   /* ----- whiteboard (A-155) --------------------------------------------------------------- */
@@ -512,6 +573,7 @@ export class CallEngine {
     const signals = this.outbox.splice(0, 100);
     const sentStage = this.stageDraft;
     const sentPoll = this.pollAction;
+    const sentBreakout = this.breakoutDraft;
     let result: SyncDto;
     try {
       const response = await fetch(`/api/v1/video/peers/${this.self.participantId}/sync`, {
@@ -524,6 +586,7 @@ export class CallEngine {
           state: this.media,
           ...(sentStage ? { room: sentStage } : {}),
           ...(sentPoll ? { poll: sentPoll } : {}),
+          ...(sentBreakout ? { breakout: sentBreakout } : {}),
         }),
       });
       if (response.status === 403 || response.status === 404) {
@@ -554,6 +617,8 @@ export class CallEngine {
     // The server applied the change this poll carried (or dropped a spotlight on someone gone).
     if (sentStage && this.stageDraft === sentStage) this.stageDraft = null;
     if (sentPoll && this.pollAction === sentPoll) this.pollAction = null;
+    if (sentBreakout && this.breakoutDraft === sentBreakout) this.breakoutDraft = null;
+    this.breakout = result.breakout;
     // A vote still on its way keeps showing as chosen.
     this.poll =
       result.poll && this.pollAction?.action === "vote" && this.pollAction.pollId === result.poll.id
@@ -677,6 +742,21 @@ export class CallEngine {
   }
 
   private async handleSignal(from: string, kind: SignalKind, payload: unknown): Promise<void> {
+    if (kind === "notice") {
+      // Only the teacher may send a notice (the server enforces it), and it reaches people in
+      // other breakout rooms too, who have no link to the teacher right now.
+      const body = payload as { text?: unknown; name?: unknown } | null;
+      if (typeof body?.text !== "string" || !body.text.trim()) return;
+      const clean = body.text.slice(0, NOTICE_MAX_LENGTH);
+      const name =
+        typeof body.name === "string" && body.name
+          ? body.name
+          : (this.links.get(from)?.info.displayName ?? "");
+      this.notice = { text: clean, name, at: Date.now() };
+      this.chat.push({ id: ++this.chatSeq, from, name, text: clean, at: new Date() });
+      this.unread += 1;
+      return;
+    }
     const link = this.links.get(from);
     if (!link) return;
     const pc = link.pc;

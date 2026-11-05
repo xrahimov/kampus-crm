@@ -5066,7 +5066,11 @@
       "pollAsk": "O‘qituvchi so‘rayapti: {question} Javob berish uchun bosing.",
       "lesson": "Dars",
       "boardOn": "Doskani ochish",
-      "boardOff": "Doskani yopish"
+      "boardOff": "Doskani yopish",
+      "breakout": "Xonalar",
+      "breakoutMain": "Kichik xonalar ochiq ({rooms}); siz asosiy xonadasiz.",
+      "breakoutIn": "Siz {number}-xonadasiz. Vaqt tugaganda o‘qituvchi hammani qaytaradi.",
+      "noticeFrom": "{name}:"
     },
     "done": {
       "left": "Siz darsdan chiqdingiz.",
@@ -5187,6 +5191,25 @@
       "saving": "Saqlanmoqda…",
       "saved": "Guruh materiallariga saqlandi",
       "saveFailed": "Saqlab bo‘lmadi"
+    },
+    "breakout": {
+      "intro": "O‘quvchilarni guruh ishi uchun kichik xonalarga bo‘ling. Mehmonlar siz bilan asosiy xonada qoladi; istalgan xonaga kirishingiz mumkin.",
+      "rooms": "Xonalar",
+      "minutes": "Vaqt",
+      "min": "{count} daqiqa",
+      "untilClosed": "Men yopgunimcha",
+      "start": "{rooms} xona ochish",
+      "noStudents": "Qo‘ng‘iroqda hali o‘quvchilar yo‘q.",
+      "mainRoom": "Asosiy xona",
+      "room": "{number}-xona",
+      "youAreHere": "siz shu yerdasiz",
+      "visit": "O‘tish",
+      "moveTo": "{name}ni xonaga o‘tkazish",
+      "notice": "Hammaga xabar",
+      "noticePlaceholder": "Barcha xonalarga xabar…",
+      "sendNotice": "Hammaga yuborish",
+      "end": "Xonalarni yopish va hammani qaytarish",
+      "hint": "Xonadagilar faqat bir-birini ko‘radi va eshitadi. {role} asosiy xonada qoladi."
     }
   },
   "help": {
