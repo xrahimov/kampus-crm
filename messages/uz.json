@@ -5063,7 +5063,8 @@
       "paceFaster": "{count} tezroq",
       "poll": "So‘rovnoma",
       "pollNew": "Yangi so‘rovnoma",
-      "pollAsk": "O‘qituvchi so‘rayapti: {question} Javob berish uchun bosing."
+      "pollAsk": "O‘qituvchi so‘rayapti: {question} Javob berish uchun bosing.",
+      "lesson": "Dars"
     },
     "done": {
       "left": "Siz darsdan chiqdingiz.",
@@ -5141,6 +5142,33 @@
       "addOption": "Javob qo‘shish",
       "ask": "Hammadan so‘rash",
       "cancel": "Bekor qilish"
+    },
+    "lesson": {
+      "loading": "Yuklanmoqda…",
+      "failed": "Dars ma’lumotlari yuklanmadi.",
+      "retry": "Qayta urinish",
+      "refresh": "Yangilash",
+      "lessonOf": "{date}, {time} darsi",
+      "noLesson": "Bu qo‘ng‘iroq darsga bog‘lanmagan",
+      "topic": "Mavzu",
+      "topicPlaceholder": "Bugungi mavzu",
+      "noTopic": "Mavzu hali kiritilmagan",
+      "setTopic": "Mavzuni kiritish",
+      "save": "Saqlash",
+      "lessonFile": "Dars fayli",
+      "materials": "Materiallar",
+      "manage": "Guruh sahifasida boshqarish",
+      "general": "butun guruh",
+      "noMaterials": "Bu dars yoki guruh uchun materiallar yo‘q.",
+      "homework": "Uy vazifasi",
+      "setHomework": "Uy vazifasi berish",
+      "noHomework": "Bu dars uchun uy vazifasi hali yo‘q.",
+      "noLessonHomework": "Uy vazifasi darsga tegishli; berish uchun qo‘ng‘iroqni dars kunida boshlang.",
+      "due": "Muddat: {date}",
+      "link": "Havola",
+      "file": "Fayl",
+      "speaking": "Og‘zaki topshiriq: yozuv bilan javob bering",
+      "studentHint": "Materiallar yangi oynada ochiladi. Uy vazifasini darsdan keyin shaxsiy sahifangizdan topshiring."
     }
   },
   "help": {

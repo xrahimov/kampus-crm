@@ -14,6 +14,10 @@ import { videoLinksSmsSchema, videoSyncSchema } from "@/lib/validation/video";
 import { prisma } from "@/server/db/prisma";
 import type { Actor } from "@/server/rbac/authorize";
 import { createGroup } from "@/server/services/groups/groups.service";
+import { updateLesson } from "@/server/services/groups/lessons.service";
+import { setHomework } from "@/server/services/homework/homework.service";
+import { addMaterial } from "@/server/services/materials/materials.service";
+import { getCallLesson } from "@/server/services/video/call-lesson.service";
 import { addMember } from "@/server/services/groups/memberships.service";
 import {
   getIntegration,
@@ -485,6 +489,52 @@ describe("video lessons", () => {
     expect((await getClassPage(tokenOne))?.roomId).toBeNull();
     await expect(joinVideoRoomAsStudent(tokenOne)).rejects.toMatchObject({ code: "CONFLICT" });
     await expect(joinVideoRoomAsStaff(teacher, roomId)).rejects.toMatchObject({ code: "CONFLICT" });
+  });
+
+  it("shows the lesson beside the call: topic, materials and homework (A-154)", async () => {
+    const lesson = await prisma.lesson.findFirstOrThrow({
+      where: { groupId: groupA },
+      orderBy: { date: "asc" },
+    });
+    await updateLesson(teacher, lesson.id, { topic: "Past simple" });
+    await setHomework(teacher, lesson.id, {
+      text: "Exercise 3",
+      linkUrl: null,
+      attachmentUrl: "/api/v1/files/hw/sheet.pdf",
+      speaking: false,
+      dueDate: null,
+    });
+    await addMaterial(teacher, groupA, {
+      lessonId: null,
+      kind: "LINK",
+      title: "Grammar site",
+      url: "https://example.com/grammar",
+    });
+    const room = await startVideoRoom(teacher, groupA, { lessonId: lesson.id });
+    const host = await joinVideoRoomAsStaff(teacher, room.id);
+    const student = await joinVideoRoomAsStudent(tokenOne);
+    await expect(
+      getCallLesson(host.participantId, "wrong-secret-wrong-secret"),
+    ).rejects.toMatchObject({ code: "FORBIDDEN" });
+    const forHost = await getCallLesson(host.participantId, host.secret);
+    expect(forHost.lesson).toMatchObject({ id: lesson.id, topic: "Past simple" });
+    expect(forHost.homework).toMatchObject({
+      text: "Exercise 3",
+      attachmentUrl: "/api/v1/files/hw/sheet.pdf",
+    });
+    expect(forHost.materials).toEqual([
+      expect.objectContaining({ title: "Grammar site", general: true, kind: "LINK" }),
+    ]);
+    // The student's files go through their personal link.
+    const forStudent = await getCallLesson(student.participantId, student.secret);
+    expect(forStudent.homework?.attachmentUrl).toBe(
+      `/api/v1/public/class/${tokenOne}/files/hw/sheet.pdf`,
+    );
+    expect(forStudent.lesson?.topic).toBe("Past simple");
+    await endVideoRoom(teacher, room.id);
+    await expect(getCallLesson(host.participantId, host.secret)).rejects.toMatchObject({
+      code: "CONFLICT",
+    });
   });
 
   it("ends a call by itself 150 minutes after it started", async () => {
