@@ -11,19 +11,26 @@ async function signIn(page: Page, phone: string) {
   await expect(page).toHaveURL(/\/en\/(dashboard|today)/);
 }
 
-/** Telegram's consent screen, played by the test: back to Kampus with a code naming this person. */
-async function fakeTelegram(page: Page, person: { id: string; name: string; phone: string }) {
-  await page.route("https://oauth.telegram.org/**", async (route) => {
-    const url = new URL(route.request().url());
-    const back = new URL(url.searchParams.get("redirect_uri")!);
-    back.searchParams.set("state", url.searchParams.get("state")!);
-    const claims = { id: person.id, name: person.name, phone_number: person.phone };
-    back.searchParams.set(
-      "code",
-      `fake.${Buffer.from(JSON.stringify(claims)).toString("base64url")}`,
-    );
-    await route.fulfill({ status: 302, headers: { location: back.toString() } });
-  });
+/**
+ * Telegram's consent screen, played by the test without leaving Kampus: the
+ * login button's start URL answers with a redirect to Telegram; the test reads
+ * it and comes back to Kampus' callback with a code naming this person (the
+ * server's fake provider, TELEGRAM_LOGIN_FAKE=1, turns the code into claims).
+ */
+async function telegramLogin(page: Page, person: { id: string; name: string; phone: string }) {
+  const start = await page.getByTestId("student-login-telegram").getAttribute("href");
+  const res = await page.request.get(start!, { maxRedirects: 0 });
+  expect(res.status()).toBe(303);
+  const auth = new URL(res.headers()["location"]!);
+  expect(auth.origin).toBe("https://oauth.telegram.org");
+  const back = new URL(auth.searchParams.get("redirect_uri")!);
+  back.searchParams.set("state", auth.searchParams.get("state")!);
+  const claims = { id: person.id, name: person.name, phone_number: person.phone };
+  back.searchParams.set(
+    "code",
+    `fake.${Buffer.from(JSON.stringify(claims)).toString("base64url")}`,
+  );
+  await page.goto(back.toString());
 }
 
 test.describe("student sign-in with Telegram (A-150)", () => {
@@ -79,9 +86,8 @@ test.describe("student sign-in with Telegram (A-150)", () => {
 
     // A stranger's Telegram number gets nowhere, and no account appears.
     const stranger = await (await browser.newContext()).newPage();
-    await fakeTelegram(stranger, { id: `8${stamp}`, name: "Stranger", phone: "998000000009" });
     await stranger.goto("/en/student/login");
-    await stranger.getByTestId("student-login-telegram").click();
+    await telegramLogin(stranger, { id: `8${stamp}`, name: "Stranger", phone: "998000000009" });
     await expect(stranger).toHaveURL(/\/en\/student\/login\?error=studentNotRegistered/);
     await expect(stranger.getByTestId("student-login-error")).toContainText("not registered");
     await stranger.goto("/en/student");
@@ -90,9 +96,9 @@ test.describe("student sign-in with Telegram (A-150)", () => {
     // The student signs in and lands on their home with the group.
     const studentContext = await browser.newContext();
     const student = await studentContext.newPage();
-    await fakeTelegram(student, { id: `7${stamp}`, name: "Lola", phone: phone.slice(1) });
+    const lola = { id: `7${stamp}`, name: "Lola", phone: phone.slice(1) };
     await student.goto("/en/student/login");
-    await student.getByTestId("student-login-telegram").click();
+    await telegramLogin(student, lola);
     await expect(student).toHaveURL(/\/en\/student$/);
     await expect(student.getByTestId("student-home-name")).toContainText("Lola");
     const profile = student.getByTestId("student-profile");
@@ -119,7 +125,7 @@ test.describe("student sign-in with Telegram (A-150)", () => {
     await expect(student).toHaveURL(/\/en\/student\/login/);
 
     // Signing in again works; the student signs out themselves.
-    await student.getByTestId("student-login-telegram").click();
+    await telegramLogin(student, lola);
     await expect(student).toHaveURL(/\/en\/student$/);
     await student.getByTestId("student-sign-out").click();
     await expect(student).toHaveURL(/\/en\/student\/login/);
