@@ -172,14 +172,66 @@ test.describe("course syllabus (A-137)", () => {
     await studentPage.reload();
     await studentPage.getByTestId("portal-tab-course").click();
     await expect(portalTopics.nth(1)).toHaveAttribute("data-open", "true");
-    await portalTopics.nth(1).locator("summary").click();
+    // The first topic with content unfolds by itself; a click on the summary would fold it.
+    const unfold = async () => {
+      const details = portalTopics.nth(1).locator("details");
+      if ((await details.getAttribute("open")) === null) await details.locator("summary").click();
+      await expect(details).toHaveAttribute("open", "");
+    };
+    await unfold();
     await expect(portalTopics.nth(1).getByTestId("topic-block")).toHaveCount(2);
     await expect(portalTopics.nth(1)).toContainText("Hello and goodbye.");
     await expect(portalTopics.nth(1).getByTestId("topic-youtube")).toHaveAttribute(
       "src",
       /youtube-nocookie\.com\/embed\/dQw4w9WgXcQ/,
     );
+
+    // A self-check exercise on the topic (A-158): the office writes two items, the student does them.
+    await page.getByTestId("syllabus-content").nth(1).click();
+    await expect(content).toBeVisible();
+    await content.getByTestId("exercise-new").click();
+    const exercise = page.getByTestId("exercise-dialog");
+    await expect(exercise).toBeVisible();
+    await exercise.getByTestId("ex-title").fill("Greetings check");
+    await exercise.getByTestId("ex-prompt").fill("Which one is a greeting?");
+    await exercise.getByTestId("ex-options").fill("Hello\nTable");
+    await exercise.getByTestId("ex-correct").getByLabel("Hello").click();
+    await exercise.getByTestId("ex-add").click();
+    await expect(exercise.getByTestId("ex-item")).toHaveCount(1);
+    await exercise.getByTestId("ex-kind").click();
+    await page.getByRole("option", { name: "Short answer" }).click();
+    await exercise.getByTestId("ex-prompt").fill("Translate: salom");
+    await exercise.getByTestId("ex-key").fill("hello\nhi");
+    await exercise.getByTestId("ex-add").click();
+    await expect(exercise.getByTestId("ex-item")).toHaveCount(2);
+    await exercise.getByRole("button", { name: "Save" }).click();
+    await expect(exercise).toBeHidden();
+    await expect(content.getByTestId("exercise-row")).toHaveCount(1);
+    await content.getByRole("button", { name: "Cancel" }).click();
+    await expect(content).toBeHidden();
+
+    await studentPage.reload();
+    await studentPage.getByTestId("portal-tab-course").click();
+    await unfold();
+    const practice = portalTopics.nth(1).getByTestId("portal-exercise");
+    await expect(practice).toContainText("Greetings check");
+    await practice.getByTestId("exercise-start").click();
+    const form = practice.getByTestId("exercise-form");
+    await form.getByLabel("Hello").click();
+    await form.getByTestId("exercise-short").fill(" HELLO ");
+    await form.getByTestId("exercise-submit").click();
+    await expect(practice.getByTestId("exercise-score")).toHaveText("2 of 2 (100 %)");
+    await expect(practice.getByTestId("exercise-item-result")).toHaveCount(2);
+    await practice.getByTestId("exercise-done").click();
+    await expect(practice.getByTestId("portal-exercise-best")).toContainText("2/2");
     await studentPage.close();
+
+    // The teacher sees the result on the exercise.
+    await page.getByTestId("syllabus-content").nth(1).click();
+    await content.getByTestId("exercise-edit").click();
+    await expect(exercise.getByTestId("ex-result-row")).toContainText("2/2 (100 %)");
+    await exercise.getByRole("button", { name: "Cancel" }).click();
+    await content.getByRole("button", { name: "Cancel" }).click();
 
     // Today offers the next topic on the group's lesson of the day; "Use it" takes it.
     await page.goto("/en/today");

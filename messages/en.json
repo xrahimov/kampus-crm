@@ -489,7 +489,8 @@
     "studentLoginFailed": "Telegram did not confirm the sign-in. Please try again.",
     "studentLinkExpired": "This sign-in link was already used or has expired. Ask the bot for a new one.",
     "studentLoginOff": "Sign-in with Telegram is not set up at this learning centre yet.",
-    "callWithoutLesson": "This call is not tied to a lesson."
+    "callWithoutLesson": "This call is not tied to a lesson.",
+    "topicLocked": "This topic is not open to you yet"
   },
   "validation": {
     "phone": "Enter a number like +998 90 123 45 67.",
@@ -601,7 +602,8 @@
     "ikpu": "Enter the 17-digit MXIK code.",
     "digits": "Digits only.",
     "loginClientId": "The Client ID is a number from @BotFather.",
-    "videoUrl": "Paste a YouTube link or upload a video file"
+    "videoUrl": "Paste a YouTube link or upload a video file",
+    "gapCount": "One answer line per gap (___) in the sentence"
   },
   "roles": {
     "CEO": "CEO",
@@ -1585,7 +1587,9 @@
       "speakingHint": "Students record their answer on their page; you listen and can reply with your voice.",
       "speakingBadge": "Speaking",
       "voiceReply": "Voice reply",
-      "currentVoiceReply": "Your current reply"
+      "currentVoiceReply": "Your current reply",
+      "exercises": "Exercises",
+      "exercisesTitle": "Exercises for the homework of {date}"
     },
     "materials": {
       "intro": "Files, links and lesson recordings. Students open them from their personal link.",
@@ -4962,6 +4966,27 @@
       "opensOn": "Opens on {date}",
       "open": "Open",
       "download": "Download"
+    },
+    "exercises": {
+      "items": "{count} items",
+      "best": "Best: {score}/{max} ({percent} %)",
+      "start": "Practise",
+      "again": "Try again",
+      "check": "Check",
+      "cancel": "Cancel",
+      "score": "{score} of {max} ({percent} %)",
+      "right": "Right",
+      "wrong": "Wrong",
+      "key": "Answer",
+      "partial": "{points} of {max} right",
+      "close": "Done",
+      "true": "True",
+      "false": "False",
+      "gap": "Gap {number}",
+      "matchFor": "Match for {left}",
+      "up": "Move up",
+      "down": "Move down",
+      "yourAnswer": "Your answer"
     }
   },
   "telegramBot": {
@@ -5372,5 +5397,56 @@
       "privacy": "Only phone numbers the learning centre already has on a student or parent can sign in. Kampus never sees your Telegram password or messages.",
       "off": "Sign-in with Telegram is not set up here yet. Use the personal link the learning centre sent you."
     }
+  },
+  "exercises": {
+    "heading": "Self-check exercises",
+    "new": "New exercise",
+    "loading": "Loading…",
+    "empty": "No exercises yet.",
+    "summary": "{items} items · {attempted} tried",
+    "edit": "Edit",
+    "delete": "Delete",
+    "deleteTitle": "Delete this exercise?",
+    "deleteText": "Students' attempts at it are removed too.",
+    "newTitle": "New exercise",
+    "editTitle": "Edit exercise",
+    "hint": "Students do the exercise from their page as often as they like; Kampus checks it at once and keeps the best go.",
+    "title": "Title",
+    "kind": "Type",
+    "kinds": {
+      "CHOICE": "Multiple choice",
+      "TRUE_FALSE": "True or false",
+      "GAP": "Fill the gap",
+      "MATCH": "Match",
+      "ORDER": "Put in order",
+      "SHORT": "Short answer"
+    },
+    "kindHints": {
+      "CHOICE": "One option per line; tick the right one or several.",
+      "TRUE_FALSE": "A statement the student judges.",
+      "GAP": "Write {mark} where a gap goes; below, one line per gap with the accepted answers separated by |.",
+      "MATCH": "One pair per line as left = right; the right side is shuffled for the student.",
+      "ORDER": "The pieces in the right order, one per line; the student gets them shuffled.",
+      "SHORT": "Accepted answers, one per line; case and spaces do not matter."
+    },
+    "prompt": "Question or sentence",
+    "options": "Options (one per line)",
+    "tickCorrect": "Tick the right option(s).",
+    "true": "True",
+    "false": "False",
+    "keyLabels": {
+      "GAP": "Answers, one line per gap",
+      "MATCH": "Pairs, left = right",
+      "ORDER": "Pieces in the right order",
+      "SHORT": "Accepted answers"
+    },
+    "addItem": "Add an item",
+    "addToList": "Add to the list",
+    "moveUp": "Move up",
+    "moveDown": "Move down",
+    "remove": "Remove",
+    "results": "Results",
+    "noResults": "Nobody has tried it yet.",
+    "bestOf": "{score}/{max} ({percent} %) · {attempts} go(s)"
   }
 }

@@ -1,6 +1,16 @@
 "use client";
 
-import { Check, ExternalLink, Mic, Paperclip, Pencil, Plus, Trash2, Undo2 } from "lucide-react";
+import {
+  Check,
+  ExternalLink,
+  ListChecks,
+  Mic,
+  Paperclip,
+  Pencil,
+  Plus,
+  Trash2,
+  Undo2,
+} from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useState, useTransition } from "react";
 
@@ -31,6 +41,7 @@ import type {
   HomeworkSubmissionDto,
 } from "@/server/services/homework/homework.service";
 
+import { ExercisesDialog } from "@/features/exercises/exercises-dialog";
 import { AttachmentField } from "./attachment-field";
 import { AudioPlayer, isAudioUrl } from "./audio-player";
 import { AudioRecorder } from "./audio-recorder";
@@ -134,6 +145,7 @@ function HomeworkCard({
 }) {
   const t = useTranslations("groups.homework");
   const [reviewing, setReviewing] = useState<HomeworkSubmissionDto | null>(null);
+  const [exercises, setExercises] = useState(false);
   const answered = homework.submissions.filter((s) => s.status !== null).length;
   const accepted = homework.submissions.filter((s) => s.status === "ACCEPTED").length;
 
@@ -159,17 +171,33 @@ function HomeworkCard({
             </span>
           </div>
         </div>
-        {canSet && (
-          <div className="flex gap-1">
+        <div className="flex gap-1">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => setExercises(true)}
+            data-testid="homework-exercises"
+          >
+            <ListChecks /> {t("exercises")}
+          </Button>
+          {canSet && (
             <Button variant="ghost" size="sm" onClick={onEdit} aria-label={t("edit")}>
               <Pencil />
             </Button>
+          )}
+          {canSet && (
             <Button variant="ghost" size="sm" onClick={onDelete} aria-label={t("delete")}>
               <Trash2 />
             </Button>
-          </div>
-        )}
+          )}
+        </div>
       </header>
+      <ExercisesDialog
+        open={exercises}
+        onOpenChange={setExercises}
+        anchor={{ homeworkId: homework.id }}
+        title={t("exercisesTitle", { date: date(homework.lessonDate) })}
+      />
       <div className="space-y-2 px-4 py-3 text-sm">
         <p className="whitespace-pre-wrap">{homework.text}</p>
         <div className="flex flex-wrap gap-3 text-xs">

@@ -489,7 +489,8 @@
     "studentLoginFailed": "Telegram kirishni tasdiqlamadi. Qayta urinib ko‘ring.",
     "studentLinkExpired": "Bu kirish havolasi ishlatilgan yoki muddati o‘tgan. Botdan yangisini so‘rang.",
     "studentLoginOff": "Bu o‘quv markazida Telegram orqali kirish hali sozlanmagan.",
-    "callWithoutLesson": "Bu qo‘ng‘iroq darsga bog‘lanmagan."
+    "callWithoutLesson": "Bu qo‘ng‘iroq darsga bog‘lanmagan.",
+    "topicLocked": "Bu mavzu sizga hali ochilmagan"
   },
   "validation": {
     "phone": "+998 90 123 45 67 ko‘rinishida raqam kiriting.",
@@ -601,7 +602,8 @@
     "ikpu": "17 raqamli MXIK kodini kiriting.",
     "digits": "Faqat raqamlar.",
     "loginClientId": "Client ID — @BotFather bergan raqam.",
-    "videoUrl": "YouTube havolasini qo‘ying yoki video fayl yuklang"
+    "videoUrl": "YouTube havolasini qo‘ying yoki video fayl yuklang",
+    "gapCount": "Gapdagi har bir bo‘shliq (___) uchun bir javob qatori"
   },
   "roles": {
     "CEO": "CEO",
@@ -1585,7 +1587,9 @@
       "speakingHint": "O‘quvchilar javobini o‘z sahifasida ovozli yozib oladi; siz eshitasiz va ovoz bilan javob bera olasiz.",
       "speakingBadge": "Og‘zaki",
       "voiceReply": "Ovozli javob",
-      "currentVoiceReply": "Joriy javobingiz"
+      "currentVoiceReply": "Joriy javobingiz",
+      "exercises": "Mashqlar",
+      "exercisesTitle": "{date} uy vazifasi mashqlari"
     },
     "materials": {
       "intro": "Fayllar, havolalar va dars yozuvlari. O‘quvchilar ularni shaxsiy havolasi orqali ochadi.",
@@ -4962,6 +4966,27 @@
       "opensOn": "{date} ochiladi",
       "open": "Ochish",
       "download": "Yuklab olish"
+    },
+    "exercises": {
+      "items": "{count} topshiriq",
+      "best": "Eng yaxshi: {score}/{max} ({percent} %)",
+      "start": "Bajarish",
+      "again": "Yana bajarish",
+      "check": "Tekshirish",
+      "cancel": "Bekor qilish",
+      "score": "{max} dan {score} ({percent} %)",
+      "right": "To‘g‘ri",
+      "wrong": "Noto‘g‘ri",
+      "key": "Javob",
+      "partial": "{max} dan {points} to‘g‘ri",
+      "close": "Tayyor",
+      "true": "To‘g‘ri",
+      "false": "Noto‘g‘ri",
+      "gap": "{number}-bo‘shliq",
+      "matchFor": "{left} uchun juftlik",
+      "up": "Yuqoriga",
+      "down": "Pastga",
+      "yourAnswer": "Javobingiz"
     }
   },
   "telegramBot": {
@@ -5372,5 +5397,56 @@
       "privacy": "Faqat o‘quv markazida o‘quvchi yoki ota-onada yozilgan raqamlar kira oladi. Kampus Telegram parolingiz va xabarlaringizni ko‘rmaydi.",
       "off": "Bu yerda Telegram orqali kirish hali sozlanmagan. O‘quv markazi yuborgan shaxsiy havoladan foydalaning."
     }
+  },
+  "exercises": {
+    "heading": "O‘z-o‘zini tekshirish mashqlari",
+    "new": "Yangi mashq",
+    "loading": "Yuklanmoqda…",
+    "empty": "Hali mashqlar yo‘q.",
+    "summary": "{items} topshiriq · {attempted} kishi bajardi",
+    "edit": "Tahrirlash",
+    "delete": "O‘chirish",
+    "deleteTitle": "Bu mashq o‘chirilsinmi?",
+    "deleteText": "O‘quvchilarning urinishlari ham o‘chadi.",
+    "newTitle": "Yangi mashq",
+    "editTitle": "Mashqni tahrirlash",
+    "hint": "O‘quvchilar mashqni o‘z sahifasidan istagancha bajaradi; Kampus darhol tekshiradi va eng yaxshi natijani saqlaydi.",
+    "title": "Nomi",
+    "kind": "Turi",
+    "kinds": {
+      "CHOICE": "Variant tanlash",
+      "TRUE_FALSE": "To‘g‘ri yoki noto‘g‘ri",
+      "GAP": "Bo‘shliqni to‘ldirish",
+      "MATCH": "Moslashtirish",
+      "ORDER": "Tartiblash",
+      "SHORT": "Qisqa javob"
+    },
+    "kindHints": {
+      "CHOICE": "Har qatorda bir variant; to‘g‘risini (yoki bir nechtasini) belgilang.",
+      "TRUE_FALSE": "O‘quvchi baholaydigan fikr.",
+      "GAP": "Bo‘shliq o‘rniga {mark} yozing; pastda har bir bo‘shliq uchun bir qator, qabul qilinadigan javoblar | bilan ajratilgan.",
+      "MATCH": "Har qatorda bir juftlik: chap = o‘ng; o‘quvchiga o‘ng tomon aralashtirib beriladi.",
+      "ORDER": "Qismlar to‘g‘ri tartibda, har qatorda bitta; o‘quvchiga aralashtirib beriladi.",
+      "SHORT": "Qabul qilinadigan javoblar, har qatorda bitta; katta-kichik harf va bo‘shliqlar ahamiyatsiz."
+    },
+    "prompt": "Savol yoki gap",
+    "options": "Variantlar (har qatorda bitta)",
+    "tickCorrect": "To‘g‘ri variant(lar)ni belgilang.",
+    "true": "To‘g‘ri",
+    "false": "Noto‘g‘ri",
+    "keyLabels": {
+      "GAP": "Javoblar, har bir bo‘shliq uchun bir qator",
+      "MATCH": "Juftliklar, chap = o‘ng",
+      "ORDER": "Qismlar to‘g‘ri tartibda",
+      "SHORT": "Qabul qilinadigan javoblar"
+    },
+    "addItem": "Topshiriq qo‘shish",
+    "addToList": "Ro‘yxatga qo‘shish",
+    "moveUp": "Yuqoriga",
+    "moveDown": "Pastga",
+    "remove": "Olib tashlash",
+    "results": "Natijalar",
+    "noResults": "Hali hech kim bajarmagan.",
+    "bestOf": "{score}/{max} ({percent} %) · {attempts} urinish"
   }
 }
