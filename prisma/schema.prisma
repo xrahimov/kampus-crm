@@ -2696,6 +2696,7 @@ model VideoRoom {
   startedBy    User               @relation("videoRoomStarter", fields: [startedById], references: [id])
   participants VideoParticipant[]
   signals      VideoSignal[]
+  polls        VideoPoll[]
 
   @@index([groupId, status])
   @@index([lessonId])
@@ -2904,4 +2905,37 @@ model WaitlistEntry {
 
   @@index([branchId, courseId, status, createdAt])
   @@index([phone])
+}
+
+/// A question the teacher asks during a video lesson (A-153). One is open at a
+/// time per room; results stay with the call, and so with its lesson.
+model VideoPoll {
+  id        String    @id @default(cuid())
+  roomId    String
+  question  String
+  /// The answer choices, 2 to 6 strings.
+  options   Json
+  createdAt DateTime  @default(now())
+  closedAt  DateTime?
+
+  room  VideoRoom       @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  votes VideoPollVote[]
+
+  @@index([roomId, createdAt])
+}
+
+/// One student's answer; a student may change it while the poll is open.
+model VideoPollVote {
+  id          String   @id @default(cuid())
+  pollId      String
+  /// The student id (or the participant id for a guest), so a rejoin keeps one vote.
+  voterKey    String
+  studentId   String?
+  displayName String
+  option      Int
+  updatedAt   DateTime @updatedAt
+
+  poll VideoPoll @relation(fields: [pollId], references: [id], onDelete: Cascade)
+
+  @@unique([pollId, voterKey])
 }

@@ -1,6 +1,7 @@
 "use client";
 
 import {
+  ChartBar,
   Circle,
   Focus,
   Hand,
@@ -27,11 +28,12 @@ import { PACE_REACTIONS, REACTIONS, type Reaction } from "@/lib/validation/video
 import { cn } from "@/lib/utils";
 
 import { CHAT_MAX_LENGTH, type CallEngine, type RemotePeer } from "./call-engine";
+import { PollPanel } from "./poll-panel";
 import { CallRecorder, recordingMimeType, uploadRecording } from "./recorder";
 import { VideoTile } from "./video-tile";
 
 const SELF = "self";
-type Panel = "people" | "chat" | null;
+type Panel = "people" | "chat" | "poll" | null;
 
 /** How each reaction looks on a picture. */
 export const REACTION_EMOJI: Record<Reaction, string> = {
@@ -135,10 +137,14 @@ export function CallRoom({
   const reactions = engine.activeReactions();
   const pace = isStudent ? null : engine.paceTally();
 
-  // Chat lines count as read while the panel is open.
+  // Chat lines count as read while the panel is open; so does a poll.
   useEffect(() => {
     if (panel === "chat") engine.markChatRead();
   }, [engine, panel, engine.unread]);
+  const pollKey = engine.poll ? `${engine.poll.id}:${engine.poll.open}` : null;
+  useEffect(() => {
+    if (panel === "poll") engine.markPollSeen();
+  }, [engine, panel, pollKey]);
 
   const mutedNotice = mutedBy && noticeShownFor !== mutedBy.at ? mutedBy.name : null;
   useEffect(() => {
@@ -309,6 +315,23 @@ export function CallRoom({
               </span>
             )}
           </HeaderButton>
+          {(isHost || engine.poll) && (
+            <HeaderButton
+              active={panel === "poll"}
+              onClick={() => togglePanel("poll")}
+              testId="toggle-poll"
+            >
+              <ChartBar className="size-4" />
+              <span className="hidden sm:inline">{t("poll")}</span>
+              {engine.pollUnseen && panel !== "poll" && (
+                <span
+                  className="size-2 rounded-full bg-amber-400"
+                  aria-label={t("pollNew")}
+                  data-testid="poll-unseen"
+                />
+              )}
+            </HeaderButton>
+          )}
           <HeaderButton
             active={panel === "chat"}
             onClick={() => togglePanel("chat")}
@@ -358,6 +381,16 @@ export function CallRoom({
         </p>
       )}
 
+      {isStudent && engine.poll?.open && engine.pollUnseen && panel !== "poll" && (
+        <button
+          type="button"
+          onClick={() => setPanel("poll")}
+          className="mx-4 mb-2 rounded-md bg-amber-400 px-3 py-2 text-center text-sm font-medium text-sidebar hover:bg-amber-300"
+          data-testid="poll-notice"
+        >
+          {t("pollAsk", { question: engine.poll.question })}
+        </button>
+      )}
       {loweredNotice && (
         <p
           className="mx-4 mb-2 rounded-md bg-sidebar-muted px-3 py-2 text-center text-sm text-white"
@@ -506,6 +539,8 @@ export function CallRoom({
                   ))}
                 </ul>
               </div>
+            ) : panel === "poll" ? (
+              <PollPanel engine={engine} />
             ) : (
               <ChatPanel engine={engine} />
             )}
