@@ -600,7 +600,8 @@
     "inn": "9 raqamli STIR kiriting.",
     "ikpu": "17 raqamli MXIK kodini kiriting.",
     "digits": "Faqat raqamlar.",
-    "loginClientId": "Client ID — @BotFather bergan raqam."
+    "loginClientId": "Client ID — @BotFather bergan raqam.",
+    "videoUrl": "YouTube havolasini qo‘ying yoki video fayl yuklang"
   },
   "roles": {
     "CEO": "CEO",
@@ -1623,6 +1624,40 @@
         "done": "O‘tildi",
         "next": "Keyingi",
         "planned": "Rejada"
+      },
+      "content": {
+        "button": "Kontent ({count})",
+        "openNow": "O‘quvchilarga ochiq",
+        "release": "O‘quvchilar qachon oladi",
+        "fromDate": "Shu kundan ochish",
+        "modes": {
+          "lesson": "Darsdan keyin",
+          "now": "Hozir ochiq",
+          "date": "Sanadan boshlab"
+        },
+        "title": "Kontent: {topic}",
+        "loading": "Yuklanmoqda…",
+        "hint": "O‘quvchilar bu mavzu bo‘yicha o‘qiydigan, ko‘radigan va yuklab oladigan narsalar, tartib bilan. Kurs uchun bir marta yoziladi; har bir guruh mavzuni o‘tgan darsdan keyin yoki siz ochganda oladi.",
+        "readOnly": "O‘quvchilar bu mavzu bo‘yicha oladigan narsalar. Kurs o‘qituvchilari va ofis o‘zgartira oladi.",
+        "empty": "Hali kontent yo‘q.",
+        "add": "Blok qo‘shish",
+        "addBlock": "Ro‘yxatga qo‘shish",
+        "kind": "Turi",
+        "kinds": {
+          "TEXT": "Matn",
+          "VIDEO": "Video",
+          "FILE": "Fayl",
+          "LINK": "Havola"
+        },
+        "blockTitle": "Sarlavha",
+        "text": "Matn",
+        "url": "Havola",
+        "youtube": "YouTube havolasi (yoki pastda fayl yuklang)",
+        "videoFile": "Video fayl (mp4 yoki webm, 20 MB gacha)",
+        "file": "Fayl",
+        "moveUp": "Yuqoriga",
+        "moveDown": "Pastga",
+        "remove": "Olib tashlash"
       }
     },
     "waitlist": {
@@ -4755,7 +4790,8 @@
       "homework": "Uy vazifasi",
       "materials": "Materiallar",
       "announcements": "Yangiliklar",
-      "tests": "Testlar"
+      "tests": "Testlar",
+      "course": "Kurs"
     },
     "tests": {
       "empty": "Guruhingiz uchun hali testlar yo‘q.",
@@ -4916,6 +4952,16 @@
       "nextPayment": "keyingi to‘lov {date}",
       "open": "Sahifani ochish",
       "footer": "Bu sahifa faqat oilangiz uchun. Havolani boshqalarga bermang; tarqalsa markaz yangisini beradi."
+    },
+    "course": {
+      "empty": "Kursda hali mavzular yo‘q.",
+      "progress": "{course}: {total} mavzudan {open} tasi ochiq",
+      "coveredOn": "{date} darsi",
+      "noContent": "Materiallar yo‘q",
+      "locked": "Darsdan keyin ochiladi",
+      "opensOn": "{date} ochiladi",
+      "open": "Ochish",
+      "download": "Yuklab olish"
     }
   },
   "telegramBot": {

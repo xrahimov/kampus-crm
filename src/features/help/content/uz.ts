@@ -332,6 +332,7 @@ export const uz: HelpContent = {
           title: "Yorliqlar nima uchun",
           body: [
             "**Davomat** va **Baho**: har bir yorliqda bir oy, qatorlarda o‘quvchilar va ustunlarda darslar. **Uy vazifasi** va **Materiallar**: o‘quvchilar shaxsiy sahifasida ko‘radigan narsalar. **Dastur**: kurs mavzulari tartib bilan, guruh qaysilarini o‘tgani va keyingisi qaysi. **Test** va **Bilim tahlili**: guruhga berilgan testlar va o‘quvchilar mavzular bo‘yicha qanday natija ko‘rsatgani. **Imtihonlar**: guruh imtihonlari, qo‘shish tugmasi bilan. **Chegirmalar**: o‘quvchi uchun bir necha oyga pasaytirilgan oylik narx. **Coinlar**: reyting va coin berish. **Izohlar**: alohida o‘quvchilar haqida eslatmalar. **Eslatmalar**: guruh haqida eslatmalar. **Guruh tarixi**: har bir o‘zgarish, kim va qachon qilgani.",
+            "**Dastur** o‘quvchilar mustaqil o‘rganadigan dars kontentini ham saqlaydi (mavzudagi **Kontent**): matn, YouTube yoki yuklangan video, fayllar va havolalar, kurs uchun bir marta yoziladi. O‘quvchilar mavzuni uni o‘tgan darsdan keyin oladi; qatordagi tanlov uni faqat shu guruh uchun oldinroq ochadi (hozir yoki sanadan boshlab).",
             "O‘qituvchining davomat, baho, uy vazifasi, materiallar va coinlar bilan ishlashi “Guruhga dars berish” da bosqichma-bosqich tasvirlangan.",
           ],
         },
@@ -1276,6 +1277,12 @@ export const uz: HelpContent = {
           title: "Materiallar",
           body: [
             "**Materiallar** yorlig‘ida o‘qituvchi ulashgan narsalar turadi: fayllar, havolalar va video darslar yozuvlari. Ko‘rish uchun **Ochish** ni, nusxasini saqlab qolish uchun **Yuklab olish** ni bosing. Yozuvlar cheklangan muddat saqlanadi.",
+          ],
+        },
+        course: {
+          title: "Kurs",
+          body: [
+            "**Kurs** bo‘limida kursingiz mavzulari tartib bilan turadi. Mavzu uni o‘tgan darsdan keyin yoki o‘qituvchi oldinroq ochganda ochiladi; qulf hali ochilmaganini va belgilangan bo‘lsa ochilish kunini ko‘rsatadi. Ochiq mavzu o‘qituvchi tayyorlagan narsalarni ko‘rsatadi: o‘qish uchun matn, video, yuklab olish uchun fayllar va havolalar.",
           ],
         },
         money: {
