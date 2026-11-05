@@ -24,6 +24,7 @@ export const SIGNAL_KINDS = [
   "mute",
   "lower",
   "react",
+  "board",
 ] as const;
 export type SignalKind = (typeof SIGNAL_KINDS)[number];
 
@@ -96,6 +97,8 @@ export const videoSyncSchema = z.object({
     .object({
       spotlight: z.string().min(1).max(64).nullable(),
       focus: z.boolean(),
+      /** The shared whiteboard is shown on everyone's stage (A-155). */
+      board: z.boolean().default(false),
     })
     .optional(),
 });
@@ -124,3 +127,43 @@ export const callAttendanceSchema = z.object({
     .max(200),
 });
 export type CallAttendanceInput = z.infer<typeof callAttendanceSchema>;
+
+/* ----- whiteboard (A-155) ----- */
+
+/** Pen colours offered on the whiteboard; the first is the default. */
+export const BOARD_COLORS = ["#111827", "#dc2626", "#2563eb", "#16a34a", "#f59e0b"] as const;
+export const BOARD_WIDTHS = [2, 4, 8] as const;
+/** Points per stroke; a long drag is split into several strokes by the browser. */
+export const BOARD_STROKE_MAX_POINTS = 400;
+/** Strokes kept on a board; the oldest fall away beyond this. */
+export const BOARD_MAX_STROKES = 2000;
+
+/** One pen stroke in board coordinates (0-1 of the board's width and height). */
+export const boardStrokeSchema = z.object({
+  id: z.string().min(1).max(40),
+  color: z.string().regex(/^#[0-9a-f]{6}$/i),
+  width: z.number().min(1).max(40),
+  /** true for the eraser: drawn in the background colour. */
+  erase: z.boolean().default(false),
+  points: z
+    .array(z.tuple([z.number().min(0).max(1), z.number().min(0).max(1)]))
+    .min(1)
+    .max(BOARD_STROKE_MAX_POINTS),
+});
+export type BoardStroke = z.infer<typeof boardStrokeSchema>;
+
+/** Messages about the board between browsers. */
+export const boardOpSchema = z.discriminatedUnion("op", [
+  z.object({ op: z.literal("stroke"), stroke: boardStrokeSchema }),
+  z.object({ op: z.literal("undo"), id: z.string().min(1).max(40) }),
+  z.object({ op: z.literal("clear") }),
+  /** Teacher → a newcomer: the strokes so far, in batches. */
+  z.object({
+    op: z.literal("sync"),
+    strokes: z.array(boardStrokeSchema).max(50),
+    done: z.boolean(),
+  }),
+  /** Teacher → everyone: whether students may draw. */
+  z.object({ op: z.literal("allow"), students: z.boolean() }),
+]);
+export type BoardOp = z.infer<typeof boardOpSchema>;

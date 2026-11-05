@@ -146,6 +146,25 @@ test.describe("video lessons", () => {
     await expect(teacher.getByTestId("react-slower")).toHaveCount(0);
     await teacher.getByTestId("toggle-reactions").click();
 
+    // The whiteboard takes everyone's stage; students draw only when allowed (A-155).
+    await teacher.getByTestId("toggle-board").click();
+    await expect(teacher.getByTestId("whiteboard")).toBeVisible({ timeout: 10_000 });
+    await expect(student.getByTestId("whiteboard")).toBeVisible({ timeout: 10_000 });
+    await expect(student.getByTestId("board-eraser")).toHaveCount(0);
+    const canvas = teacher.getByTestId("board-canvas");
+    const box = (await canvas.boundingBox())!;
+    await teacher.mouse.move(box.x + box.width * 0.2, box.y + box.height * 0.3);
+    await teacher.mouse.down();
+    await teacher.mouse.move(box.x + box.width * 0.6, box.y + box.height * 0.6, { steps: 8 });
+    await teacher.mouse.up();
+    await expect(teacher.getByTestId("board-undo")).toBeEnabled();
+    await teacher.getByTestId("board-students-draw").click();
+    await expect(student.getByTestId("board-eraser")).toBeVisible({ timeout: 10_000 });
+    await teacher.getByTestId("board-save").click();
+    await expect(teacher.getByTestId("board-save")).toContainText("Saved", { timeout: 15_000 });
+    await teacher.getByTestId("toggle-board").click();
+    await expect(student.getByTestId("whiteboard")).toHaveCount(0, { timeout: 10_000 });
+
     // The lesson panel: the teacher sets today's topic, the student reads it (A-154).
     await teacher.getByTestId("toggle-lesson").click();
     const lessonPanel = teacher.getByTestId("lesson-panel");
@@ -226,6 +245,9 @@ test.describe("video lessons", () => {
     const last = teacher.getByTestId("video-last");
     await last.locator("summary").click();
     await expect(last.getByTestId("video-polls")).toContainText("Ready for the test?");
+    // The saved board is a material of the group.
+    await teacher.goto(`/en/groups/${groupId}?tab=materials`);
+    await expect(teacher.getByText(/Whiteboard ·/).first()).toBeVisible();
     if (await last.getByTestId("video-attendance").isVisible()) {
       await last.getByTestId("video-attendance").click();
       const dialog = teacher.getByTestId("call-attendance");

@@ -470,6 +470,7 @@ export const en: HelpContent = {
               ],
             },
             "If someone cannot connect, their network may block direct calls; the administrator can add a relay server under Settings → Integrations → Video lessons.",
+            "**Whiteboard** (the pen button) puts a shared board on everyone's screen: draw with a pen or eraser, let students draw when you want them to, undo and clear, and **Save to materials** keeps a picture of the board under the lesson.",
             "**Lesson** opens a side panel with today's topic, the materials and the homework while the call runs; you can set the topic there, and students open the materials in a new tab.",
             "**Poll**: ask a quick question with 2-6 answers. Students tap an answer and can change it; you see the counts and who chose what as they come in, students see the result once you close the poll. Results stay under the last video lesson on the group page.",
             "Students can raise a hand; the order shows as a number on their picture and under **People** → **Raised hands**, where you can lower a hand. The star next to a name shows that person large on everyone's screen. **Focus mode** (the frame button) lets students see only you, the person you show and a shared screen; they still hear each other. Everyone can send reactions; students can also tell you **slower** or **faster**, which only you see as a count at the top.",

@@ -369,22 +369,30 @@ describe("video lessons", () => {
     expect(still.handRaisedAt).toBe(raisedAt); // keeps its place while the hand stays up
     // A student cannot set the stage or lower hands; reactions go through.
     const notHost = await sync(student.participantId, student.secret, {
-      room: { spotlight: student.participantId, focus: true },
+      room: { spotlight: student.participantId, focus: true, board: false },
       signals: [
         { to: guest.participantId, kind: "lower", payload: null },
         { to: guest.participantId, kind: "react", payload: { reaction: "clap" } },
       ],
     });
-    expect(notHost.stage).toEqual({ spotlight: null, focus: false });
+    expect(notHost.stage).toEqual({ spotlight: null, focus: false, board: false });
     const hostStage = await sync(host.participantId, host.secret, {
-      room: { spotlight: student.participantId, focus: true },
+      room: { spotlight: student.participantId, focus: true, board: false },
       signals: [{ to: student.participantId, kind: "lower", payload: null }],
     });
-    expect(hostStage.stage).toEqual({ spotlight: student.participantId, focus: true });
+    expect(hostStage.stage).toEqual({
+      spotlight: student.participantId,
+      focus: true,
+      board: false,
+    });
     const studentView = await sync(student.participantId, student.secret, {
       state: { audio: true, video: false, screen: false, hand: false },
     });
-    expect(studentView.stage).toEqual({ spotlight: student.participantId, focus: true });
+    expect(studentView.stage).toEqual({
+      spotlight: student.participantId,
+      focus: true,
+      board: false,
+    });
     expect(studentView.handRaisedAt).toBeNull();
     expect(studentView.signals.map((s) => [s.from, s.kind])).toEqual([
       [host.participantId, "lower"],
@@ -395,9 +403,9 @@ describe("video lessons", () => {
     await sync(guest.participantId, guest.secret, { after: guestReacts.signals[0]!.id });
     // A spotlight on someone not in the room is dropped.
     const stray = await sync(host.participantId, host.secret, {
-      room: { spotlight: "not-in-this-room", focus: false },
+      room: { spotlight: "not-in-this-room", focus: false, board: false },
     });
-    expect(stray.stage).toEqual({ spotlight: null, focus: false });
+    expect(stray.stage).toEqual({ spotlight: null, focus: false, board: false });
 
     // Polls (A-153): the teacher asks, the student answers, counts stay hidden until closed.
     const studentOpens = await sync(student.participantId, student.secret, {

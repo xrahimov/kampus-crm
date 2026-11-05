@@ -128,6 +128,8 @@ export interface StageDto {
   spotlight: string | null;
   /** Students see only the teacher, the spotlight and whoever shares a screen. */
   focus: boolean;
+  /** The shared whiteboard is on everyone's stage (A-155). */
+  board: boolean;
 }
 
 export interface SyncDto {
@@ -651,7 +653,14 @@ export async function syncVideoPeer(
     where: { id: participantId },
     include: {
       room: {
-        select: { id: true, status: true, startedAt: true, spotlightId: true, focusMode: true },
+        select: {
+          id: true,
+          status: true,
+          startedAt: true,
+          spotlightId: true,
+          focusMode: true,
+          boardOpen: true,
+        },
       },
     },
   });
@@ -660,7 +669,7 @@ export async function syncVideoPeer(
     status,
     peers: [],
     signals: [],
-    stage: { spotlight: null, focus: false },
+    stage: { spotlight: null, focus: false, board: false },
     handRaisedAt: null,
     poll: null,
   });
@@ -693,19 +702,27 @@ export async function syncVideoPeer(
   const peerIds = new Set(peers.map((p) => p.id));
 
   // Only the teacher sets the stage; a spotlight on someone who left falls away.
-  let stage: StageDto = { spotlight: me.room.spotlightId, focus: me.room.focusMode };
+  let stage: StageDto = {
+    spotlight: me.room.spotlightId,
+    focus: me.room.focusMode,
+    board: me.room.boardOpen,
+  };
   if (input.room && me.role === "HOST") {
     const spotlight =
       input.room.spotlight && (input.room.spotlight === me.id || peerIds.has(input.room.spotlight))
         ? input.room.spotlight
         : null;
-    if (spotlight !== me.room.spotlightId || input.room.focus !== me.room.focusMode) {
+    if (
+      spotlight !== me.room.spotlightId ||
+      input.room.focus !== me.room.focusMode ||
+      input.room.board !== me.room.boardOpen
+    ) {
       await db.videoRoom.update({
         where: { id: me.roomId },
-        data: { spotlightId: spotlight, focusMode: input.room.focus },
+        data: { spotlightId: spotlight, focusMode: input.room.focus, boardOpen: input.room.board },
       });
     }
-    stage = { spotlight, focus: input.room.focus };
+    stage = { spotlight, focus: input.room.focus, board: input.room.board };
   }
   if (stage.spotlight && stage.spotlight !== me.id && !peerIds.has(stage.spotlight)) {
     stage = { ...stage, spotlight: null };
