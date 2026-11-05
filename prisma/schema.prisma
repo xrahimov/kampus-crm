@@ -201,6 +201,7 @@ model User {
   videoRoomsStarted   VideoRoom[]          @relation("videoRoomStarter")
   videoPeers          VideoParticipant[]
   homeworkSet         Homework[]           @relation("homeworkAuthor")
+  exercisesWritten    Exercise[]           @relation("exerciseAuthor")
   homeworkChecked     HomeworkSubmission[] @relation("homeworkChecker")
   materialsAdded      LessonMaterial[]     @relation("materialAuthor")
   adjustmentsMade     BalanceAdjustment[]  @relation("adjustmentAuthor")
@@ -508,9 +509,10 @@ model CourseTopic {
   updatedAt DateTime @updatedAt
 
   course   Course              @relation(fields: [courseId], references: [id], onDelete: Cascade)
-  lessons  Lesson[]
-  blocks   CourseTopicBlock[]
-  releases GroupTopicRelease[]
+  lessons   Lesson[]
+  blocks    CourseTopicBlock[]
+  releases  GroupTopicRelease[]
+  exercises Exercise[]
 
   @@index([courseId, sortOrder])
 }
@@ -557,6 +559,45 @@ model GroupTopicRelease {
   topic CourseTopic @relation(fields: [topicId], references: [id], onDelete: Cascade)
 
   @@unique([groupId, topicId])
+}
+
+/// Self-check exercises (A-158, online-lessons item C2): on a syllabus topic
+/// (for every group of the course) or on one group's homework. `items` holds
+/// the questions with their answer keys, in the shape of `exerciseItemSchema`.
+model Exercise {
+  id          String   @id @default(cuid())
+  topicId     String?
+  homeworkId  String?
+  title       String
+  items       Json
+  createdById String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  topic     CourseTopic?      @relation(fields: [topicId], references: [id], onDelete: Cascade)
+  homework  Homework?         @relation(fields: [homeworkId], references: [id], onDelete: Cascade)
+  createdBy User?             @relation("exerciseAuthor", fields: [createdById], references: [id], onDelete: SetNull)
+  attempts  ExerciseAttempt[]
+
+  @@index([topicId])
+  @@index([homeworkId])
+}
+
+/// One go at an exercise by one student; several are allowed, the best counts.
+model ExerciseAttempt {
+  id           String   @id @default(cuid())
+  exerciseId   String
+  membershipId String
+  answers      Json
+  score        Int
+  maxScore     Int
+  submittedAt  DateTime @default(now())
+
+  exercise   Exercise        @relation(fields: [exerciseId], references: [id], onDelete: Cascade)
+  membership GroupMembership @relation(fields: [membershipId], references: [id], onDelete: Cascade)
+
+  @@index([exerciseId, membershipId])
+  @@index([membershipId, submittedAt])
 }
 
 /// "Xonalar": per branch, with a seat capacity.
@@ -1003,6 +1044,7 @@ model GroupMembership {
   instalments      Instalment[]
   absenceCases     AbsenceCase[]
   portalTestStarts PortalTestStart[]
+  exerciseAttempts ExerciseAttempt[]
 
   @@unique([groupId, studentId])
   @@index([studentId])
@@ -1087,6 +1129,7 @@ model Homework {
   group       Group                @relation(fields: [groupId], references: [id], onDelete: Cascade)
   createdBy   User?                @relation("homeworkAuthor", fields: [createdById], references: [id], onDelete: SetNull)
   submissions HomeworkSubmission[]
+  exercises   Exercise[]
 
   @@index([groupId])
 }

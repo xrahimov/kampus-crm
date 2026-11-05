@@ -284,7 +284,7 @@ export function PortalPage({
 
             {course && course.total > 0 && (
               <TabsContent value="course">
-                <PortalCourseTab course={course} />
+                <PortalCourseTab token={token} course={course} />
               </TabsContent>
             )}
             <TabsContent value="materials">

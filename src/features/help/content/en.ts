@@ -330,6 +330,7 @@ export const en: HelpContent = {
           body: [
             "**Attendance** and **Grades**: a month per tab, students in rows and lessons in columns. **Homework** and **Materials**: what students see on their personal page. **Syllabus**: the course's topics in order, which ones this group has covered and which comes next. **Tests** and **Knowledge analysis**: tests given to the group and how students did by topic. **Exams**: the group's exams, with a button to add one. **Discounts**: a lower monthly price for a student for a number of months. **Coins**: the ranking and giving coins. **Comments**: notes about individual students. **Notes**: notes about the group. **History**: every change, who made it and when.",
             "**Syllabus** also carries the lesson content students study by themselves (**Content** on a topic): text, a YouTube video or an uploaded video, files and links, written once for the course. Students get a topic after the lesson that covers it; the selector on the row opens it earlier (now or from a date) for this group only.",
+            "**Self-check exercises** live on a topic (under **Content**) or on a homework (**Exercises** on the card): multiple choice, true or false, fill the gap, match, put in order and short answer, each with its key. Students do them from their page as often as they like, Kampus checks them at once and keeps the best go, and you see who tried and how it went.",
             "The teacher's view of attendance, grades, homework, materials and coins is described step by step in “Teaching a group”.",
           ],
         },
@@ -1279,6 +1280,7 @@ export const en: HelpContent = {
           title: "Course",
           body: [
             "The **Course** tab lists the topics of your course in order. A topic opens after the lesson that covers it, or earlier when the teacher opens it; a lock shows when it is not open yet and the day it opens if one is set. An open topic unfolds into what the teacher prepared: text to read, a video to watch, files to download and links.",
+            "Under a topic's content you may find **exercises**: press **Practise**, answer and press **Check**. Kampus marks each item at once and shows the right answer where you were wrong; you can try again as often as you like, and your best go is kept. Homework can carry exercises too.",
           ],
         },
         money: {
