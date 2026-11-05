@@ -2,7 +2,12 @@ import { createHmac } from "node:crypto";
 
 import type { Prisma, VideoPeerRole, VideoRoomStatus } from "@/generated/prisma/client";
 import { DEFAULT_STUN_URLS } from "@/lib/validation/integrations";
-import type { StartVideoInput, VideoLinksSmsInput, VideoSyncInput } from "@/lib/validation/video";
+import {
+  HOST_SIGNAL_KINDS,
+  type StartVideoInput,
+  type VideoLinksSmsInput,
+  type VideoSyncInput,
+} from "@/lib/validation/video";
 import { recordAudit } from "@/server/audit/audit";
 import { generateToken, safeEqual, sha256 } from "@/server/auth/tokens";
 import { prisma, type DbClient } from "@/server/db/prisma";
@@ -101,6 +106,16 @@ export interface PeerDto {
   role: VideoPeerRole;
   joinedAt: string;
   media: { audio: boolean; video: boolean; screen: boolean; hand?: boolean } | null;
+  /** When the raised hand went up (server time), for the hand queue; null when down. */
+  handRaisedAt: string | null;
+}
+
+/** What the teacher set for everyone's screen (A-152). */
+export interface StageDto {
+  /** A participant shown large on every screen, or null. */
+  spotlight: string | null;
+  /** Students see only the teacher, the spotlight and whoever shares a screen. */
+  focus: boolean;
 }
 
 export interface SyncDto {
@@ -108,6 +123,9 @@ export interface SyncDto {
   status: "LIVE" | "ENDED" | "GONE";
   peers: PeerDto[];
   signals: Array<{ id: number; from: string; kind: string; payload: unknown }>;
+  stage: StageDto;
+  /** This browser's own raised-hand time, for its place in the queue. */
+  handRaisedAt: string | null;
 }
 
 export interface ClassPageDto {
@@ -609,33 +627,70 @@ export async function syncVideoPeer(
 ): Promise<SyncDto> {
   const me = await db.videoParticipant.findUnique({
     where: { id: participantId },
-    include: { room: { select: { id: true, status: true, startedAt: true } } },
+    include: {
+      room: {
+        select: { id: true, status: true, startedAt: true, spotlightId: true, focusMode: true },
+      },
+    },
   });
   if (!me || !safeEqual(sha256(input.secret), me.secretHash)) throw AppError.forbidden();
-  if (await closeIfOverTime(db, me.room)) return { status: "ENDED", peers: [], signals: [] };
+  const gone = (status: "ENDED" | "GONE"): SyncDto => ({
+    status,
+    peers: [],
+    signals: [],
+    stage: { spotlight: null, focus: false },
+    handRaisedAt: null,
+  });
+  if (await closeIfOverTime(db, me.room)) return gone("ENDED");
   // Left already, or replaced by the same person's newer tab.
-  if (me.leftAt) return { status: "GONE", peers: [], signals: [] };
+  if (me.leftAt) return gone("GONE");
   const now = new Date();
+  // The queue keeps the moment the hand went up; lowering it clears the place.
+  const handRaisedAt = input.state
+    ? input.state.hand
+      ? (me.handRaisedAt ?? now)
+      : null
+    : me.handRaisedAt;
   await db.videoParticipant.update({
     where: { id: me.id },
     data: {
       lastSeenAt: now,
       ...(input.leave ? { leftAt: now } : {}),
-      ...(input.state ? { media: input.state } : {}),
+      ...(input.state ? { media: input.state, handRaisedAt } : {}),
     },
   });
   if (input.leave) {
     await db.videoSignal.deleteMany({
       where: { roomId: me.roomId, OR: [{ toId: me.id }, { fromId: me.id }] },
     });
-    return { status: "GONE", peers: [], signals: [] };
+    return gone("GONE");
   }
 
   const peers = (await onlinePeers(db, me.roomId, now)).filter((p) => p.id !== me.id);
   const peerIds = new Set(peers.map((p) => p.id));
-  // Only the teacher may switch other people's microphones off.
+
+  // Only the teacher sets the stage; a spotlight on someone who left falls away.
+  let stage: StageDto = { spotlight: me.room.spotlightId, focus: me.room.focusMode };
+  if (input.room && me.role === "HOST") {
+    const spotlight =
+      input.room.spotlight && (input.room.spotlight === me.id || peerIds.has(input.room.spotlight))
+        ? input.room.spotlight
+        : null;
+    if (spotlight !== me.room.spotlightId || input.room.focus !== me.room.focusMode) {
+      await db.videoRoom.update({
+        where: { id: me.roomId },
+        data: { spotlightId: spotlight, focusMode: input.room.focus },
+      });
+    }
+    stage = { spotlight, focus: input.room.focus };
+  }
+  if (stage.spotlight && stage.spotlight !== me.id && !peerIds.has(stage.spotlight)) {
+    stage = { ...stage, spotlight: null };
+  }
+
+  // Only the teacher may switch other people's microphones off or lower their hands.
   const outgoing = input.signals.filter(
-    (s) => peerIds.has(s.to) && (s.kind !== "mute" || me.role === "HOST"),
+    (s) => peerIds.has(s.to) && (!HOST_SIGNAL_KINDS.includes(s.kind) || me.role === "HOST"),
   );
   if (outgoing.length > 0) {
     await db.videoSignal.createMany({
@@ -664,8 +719,11 @@ export async function syncVideoPeer(
       role: p.role,
       joinedAt: p.joinedAt.toISOString(),
       media: (p.media as PeerDto["media"]) ?? null,
+      handRaisedAt: p.handRaisedAt?.toISOString() ?? null,
     })),
     signals: incoming.map((s) => ({ id: s.id, from: s.fromId, kind: s.kind, payload: s.payload })),
+    stage,
+    handRaisedAt: handRaisedAt?.toISOString() ?? null,
   };
 }
 

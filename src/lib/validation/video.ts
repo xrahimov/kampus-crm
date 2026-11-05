@@ -12,10 +12,28 @@ export type StartVideoInput = z.infer<typeof startVideoSchema>;
 
 /**
  * Messages one browser sends another through the server: the WebRTC handshake,
- * plus in-call chat lines and the teacher's "mute" request.
+ * plus in-call chat lines, the teacher's "mute" and "lower hand" requests and
+ * reactions (A-152).
  */
-export const SIGNAL_KINDS = ["offer", "answer", "candidate", "restart", "chat", "mute"] as const;
+export const SIGNAL_KINDS = [
+  "offer",
+  "answer",
+  "candidate",
+  "restart",
+  "chat",
+  "mute",
+  "lower",
+  "react",
+] as const;
 export type SignalKind = (typeof SIGNAL_KINDS)[number];
+
+/** Signals only the teacher (HOST) may send; the server drops anyone else's. */
+export const HOST_SIGNAL_KINDS: readonly SignalKind[] = ["mute", "lower"];
+
+/** Reactions everyone sees on the sender's picture; "slower"/"faster" go to the teacher only. */
+export const REACTIONS = ["like", "clap", "heart", "laugh", "wow", "slower", "faster"] as const;
+export type Reaction = (typeof REACTIONS)[number];
+export const PACE_REACTIONS: readonly Reaction[] = ["slower", "faster"];
 
 export const videoSyncSchema = z.object({
   secret: z.string().min(16).max(200),
@@ -43,6 +61,13 @@ export const videoSyncSchema = z.object({
       video: z.boolean(),
       screen: z.boolean().default(false),
       hand: z.boolean().default(false),
+    })
+    .optional(),
+  /** The teacher's stage for everyone: spotlight (a participant id or null) and focus mode. */
+  room: z
+    .object({
+      spotlight: z.string().min(1).max(64).nullable(),
+      focus: z.boolean(),
     })
     .optional(),
 });

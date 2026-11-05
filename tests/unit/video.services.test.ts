@@ -354,6 +354,47 @@ describe("video lessons", () => {
     await sync(host.participantId, host.secret, { after: hostInbox.signals[0]!.id });
     await sync(guest.participantId, guest.secret, { after: guestInbox.signals[0]!.id });
 
+    // Hand queue, stage and teacher-only signals (A-152).
+    expect(got.peers.find((p) => p.id === student.participantId)?.handRaisedAt).toEqual(
+      expect.any(String),
+    );
+    const raisedAt = got.peers.find((p) => p.id === student.participantId)!.handRaisedAt;
+    const still = await sync(student.participantId, student.secret, {
+      state: { audio: true, video: false, screen: false, hand: true },
+    });
+    expect(still.handRaisedAt).toBe(raisedAt); // keeps its place while the hand stays up
+    // A student cannot set the stage or lower hands; reactions go through.
+    const notHost = await sync(student.participantId, student.secret, {
+      room: { spotlight: student.participantId, focus: true },
+      signals: [
+        { to: guest.participantId, kind: "lower", payload: null },
+        { to: guest.participantId, kind: "react", payload: { reaction: "clap" } },
+      ],
+    });
+    expect(notHost.stage).toEqual({ spotlight: null, focus: false });
+    const hostStage = await sync(host.participantId, host.secret, {
+      room: { spotlight: student.participantId, focus: true },
+      signals: [{ to: student.participantId, kind: "lower", payload: null }],
+    });
+    expect(hostStage.stage).toEqual({ spotlight: student.participantId, focus: true });
+    const studentView = await sync(student.participantId, student.secret, {
+      state: { audio: true, video: false, screen: false, hand: false },
+    });
+    expect(studentView.stage).toEqual({ spotlight: student.participantId, focus: true });
+    expect(studentView.handRaisedAt).toBeNull();
+    expect(studentView.signals.map((s) => [s.from, s.kind])).toEqual([
+      [host.participantId, "lower"],
+    ]);
+    await sync(student.participantId, student.secret, { after: studentView.signals[0]!.id });
+    const guestReacts = await sync(guest.participantId, guest.secret);
+    expect(guestReacts.signals.map((s) => s.kind)).toEqual(["react"]);
+    await sync(guest.participantId, guest.secret, { after: guestReacts.signals[0]!.id });
+    // A spotlight on someone not in the room is dropped.
+    const stray = await sync(host.participantId, host.secret, {
+      room: { spotlight: "not-in-this-room", focus: false },
+    });
+    expect(stray.stage).toEqual({ spotlight: null, focus: false });
+
     await expect(sync(host.participantId, "wrong-secret-wrong-secret")).rejects.toMatchObject({
       code: "FORBIDDEN",
     });

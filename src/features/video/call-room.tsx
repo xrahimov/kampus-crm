@@ -2,6 +2,7 @@
 
 import {
   Circle,
+  Focus,
   Hand,
   MessageSquare,
   Mic,
@@ -10,7 +11,9 @@ import {
   MonitorX,
   PhoneOff,
   SendHorizontal,
+  SmilePlus,
   Square,
+  Star,
   Users,
   Video,
   VideoOff,
@@ -20,6 +23,7 @@ import { useFormatter, useTranslations } from "next-intl";
 import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 
 import { ConfirmDialog } from "@/components/data/confirm-dialog";
+import { PACE_REACTIONS, REACTIONS, type Reaction } from "@/lib/validation/video";
 import { cn } from "@/lib/utils";
 
 import { CHAT_MAX_LENGTH, type CallEngine, type RemotePeer } from "./call-engine";
@@ -28,6 +32,17 @@ import { VideoTile } from "./video-tile";
 
 const SELF = "self";
 type Panel = "people" | "chat" | null;
+
+/** How each reaction looks on a picture. */
+export const REACTION_EMOJI: Record<Reaction, string> = {
+  like: "👍",
+  clap: "👏",
+  heart: "❤️",
+  laugh: "😂",
+  wow: "😮",
+  slower: "🐢",
+  faster: "🐇",
+};
 
 /**
  * The call screen: a stage for the teacher (or whoever shares a screen, or the
@@ -50,6 +65,8 @@ export function CallRoom({
   const [panel, setPanel] = useState<Panel>(null);
   // The teacher's "mute" shows a notice for a few seconds (keyed by when it came).
   const [noticeShownFor, setNoticeShownFor] = useState<number | null>(null);
+  const [lowerShownFor, setLowerShownFor] = useState<number | null>(null);
+  const [reactionsOpen, setReactionsOpen] = useState(false);
   const canShare =
     typeof navigator !== "undefined" && Boolean(navigator.mediaDevices?.getDisplayMedia);
   const [recorder, setRecorder] = useState<CallRecorder | null>(null);
@@ -111,7 +128,12 @@ export function CallRoom({
   const self = engine.self;
   const media = engine.media;
   const isHost = self.role === "HOST";
+  const isStudent = self.role === "STUDENT";
   const mutedBy = engine.mutedBy;
+  const loweredBy = engine.loweredBy;
+  const stage = engine.currentStage;
+  const reactions = engine.activeReactions();
+  const pace = isStudent ? null : engine.paceTally();
 
   // Chat lines count as read while the panel is open.
   useEffect(() => {
@@ -125,6 +147,13 @@ export function CallRoom({
     return () => clearTimeout(timer);
   }, [mutedBy]);
 
+  const loweredNotice = loweredBy && lowerShownFor !== loweredBy.at ? loweredBy.name : null;
+  useEffect(() => {
+    if (!loweredBy) return;
+    const timer = setTimeout(() => setLowerShownFor(loweredBy.at), 6000);
+    return () => clearTimeout(timer);
+  }, [loweredBy]);
+
   const togglePanel = (next: Exclude<Panel, null>) =>
     setPanel((cur) => (cur === next ? null : next));
   const hasAudio = engine.localStream.getAudioTracks().length > 0;
@@ -132,15 +161,44 @@ export function CallRoom({
 
   const sharer = peers.find((p) => p.media?.screen)?.id ?? (media.screen ? SELF : null);
   const host = peers.find((p) => p.role === "HOST")?.id ?? null;
+  // The teacher's spotlight, as a tile id here (the teacher may spotlight themselves).
+  const spotlightId =
+    stage.spotlight === self.participantId
+      ? SELF
+      : peers.some((p) => p.id === stage.spotlight)
+        ? stage.spotlight
+        : null;
+  // Focus mode: students see only the teacher, the spotlight, a shared screen and themselves.
+  const focusHides = (p: RemotePeer) =>
+    isStudent && stage.focus && p.role === "STUDENT" && p.id !== spotlightId && p.id !== sharer;
+  const hidden = new Set(peers.filter(focusHides).map((p) => p.id));
   const pinnedId =
-    pinned && (pinned === SELF || peers.some((p) => p.id === pinned)) ? pinned : null;
+    pinned && (pinned === SELF || peers.some((p) => p.id === pinned && !hidden.has(p.id)))
+      ? pinned
+      : null;
   // Students watch the teacher; teachers and guests see everyone unless someone leads.
-  const stageId = pinnedId ?? sharer ?? (self.role === "STUDENT" ? host : null) ?? null;
+  const stageId = pinnedId ?? spotlightId ?? sharer ?? (isStudent ? host : null) ?? null;
+
+  // Raised hands in the order they went up; this browser's own hand takes its place too.
+  const handQueue = [
+    ...peers
+      .filter((p) => p.media?.hand)
+      .map((p) => ({ id: p.id, name: p.displayName, at: p.handRaisedAt ?? p.joinedAt })),
+    ...(media.hand
+      ? [{ id: SELF, name: self.displayName, at: engine.handRaisedAt ?? new Date().toISOString() }]
+      : []),
+  ].sort((a, b) => a.at.localeCompare(b.at));
+  const handPlace = (id: string) => handQueue.findIndex((h) => h.id === id) + 1;
 
   const statusText = (p: RemotePeer): string | null => {
     if (p.connection === "connected") return null;
     if (p.connection === "failed") return t("failed");
     return t("connecting");
+  };
+
+  const reactionOf = (from: string | null) => {
+    const r = reactions.get(from);
+    return r ? { key: r.seq, emoji: REACTION_EMOJI[r.reaction] } : undefined;
   };
 
   const tile = (id: string, big: boolean) => {
@@ -157,6 +215,9 @@ export function CallRoom({
           videoOn={media.video || media.screen}
           screen={media.screen}
           hand={media.hand}
+          handPlace={media.hand ? handPlace(SELF) : undefined}
+          reaction={reactionOf(null)}
+          spotlight={spotlightId === SELF}
           pinned={pinnedId === SELF}
           onPin={togglePin}
           className={big ? "size-full" : "aspect-video"}
@@ -175,6 +236,9 @@ export function CallRoom({
         videoOn={(p.media?.video ?? true) || Boolean(p.media?.screen)}
         screen={Boolean(p.media?.screen)}
         hand={Boolean(p.media?.hand)}
+        handPlace={p.media?.hand ? handPlace(p.id) : undefined}
+        reaction={reactionOf(p.id)}
+        spotlight={spotlightId === p.id}
         status={statusText(p)}
         pinned={pinnedId === p.id}
         onPin={togglePin}
@@ -183,7 +247,7 @@ export function CallRoom({
     );
   };
 
-  const everyone = [SELF, ...peers.map((p) => p.id)];
+  const everyone = [SELF, ...peers.filter((p) => !hidden.has(p.id)).map((p) => p.id)];
   const others = everyone.filter((id) => id !== stageId);
   const gridCols =
     everyone.length <= 1
@@ -209,6 +273,24 @@ export function CallRoom({
           </p>
         </div>
         <div className="flex items-center gap-1">
+          {pace && pace.slower + pace.faster > 0 && (
+            <span
+              className="flex items-center gap-2 rounded-md bg-sidebar-muted px-2.5 py-1 text-xs text-white"
+              title={t("paceTitle")}
+              data-testid="pace-tally"
+            >
+              {pace.slower > 0 && (
+                <span>
+                  {REACTION_EMOJI.slower} {t("paceSlower", { count: pace.slower })}
+                </span>
+              )}
+              {pace.faster > 0 && (
+                <span>
+                  {REACTION_EMOJI.faster} {t("paceFaster", { count: pace.faster })}
+                </span>
+              )}
+            </span>
+          )}
           <HeaderButton
             active={panel === "people"}
             onClick={() => togglePanel("people")}
@@ -216,8 +298,15 @@ export function CallRoom({
           >
             <Users className="size-4" />
             <span className="hidden sm:inline">{t("people")}</span>
-            {peers.some((p) => p.media?.hand) && (
-              <Hand className="size-3.5 text-amber-400" aria-label={t("handRaised")} />
+            {handQueue.length > 0 && (
+              <span
+                className="flex items-center gap-0.5 text-xs text-amber-400"
+                aria-label={t("handRaised")}
+                data-testid="hand-count"
+              >
+                <Hand className="size-3.5" />
+                {handQueue.length}
+              </span>
             )}
           </HeaderButton>
           <HeaderButton
@@ -269,6 +358,33 @@ export function CallRoom({
         </p>
       )}
 
+      {loweredNotice && (
+        <p
+          className="mx-4 mb-2 rounded-md bg-sidebar-muted px-3 py-2 text-center text-sm text-white"
+          role="status"
+          data-testid="lowered-notice"
+        >
+          {t("loweredBy", { name: loweredNotice })}
+        </p>
+      )}
+      {stage.focus && (
+        <p
+          className="mx-4 mb-2 flex items-center justify-center gap-2 rounded-md bg-sidebar-muted px-3 py-2 text-center text-sm text-white"
+          role="status"
+          data-testid="focus-notice"
+        >
+          <Focus className="size-4 shrink-0" aria-hidden />
+          {isStudent ? t("focusStudent") : t("focusTeacher")}
+        </p>
+      )}
+
+      {/* Students hidden by focus mode are still heard. */}
+      {peers
+        .filter((p) => hidden.has(p.id))
+        .map((p) => (
+          <PeerAudio key={p.id} stream={p.stream} />
+        ))}
+
       <div className="flex min-h-0 flex-1 gap-3 px-3 pb-3 sm:px-4">
         <main className="min-h-0 min-w-0 flex-1">
           {stageId ? (
@@ -299,39 +415,97 @@ export function CallRoom({
         {panel && (
           <SidePanel title={t(panel)} onClose={() => setPanel(null)} testId={`${panel}-panel`}>
             {panel === "people" ? (
-              <ul className="space-y-1.5 text-sm">
-                <li className="flex items-center justify-between gap-2 text-white">
-                  <span className="flex min-w-0 items-center gap-1.5">
-                    {media.hand && <Hand className="size-3.5 shrink-0 text-amber-400" />}
-                    <span className="truncate">{t("you", { name: self.displayName })}</span>
-                  </span>
-                  <RoleMark role={self.role} />
-                </li>
-                {peers.map((p) => (
-                  <li key={p.id} className="flex items-center justify-between gap-2">
+              <div className="space-y-4 text-sm">
+                {handQueue.length > 0 && (
+                  <section data-testid="hand-queue">
+                    <h3 className="mb-1.5 flex items-center gap-1.5 text-xs font-semibold tracking-wide text-amber-400 uppercase">
+                      <Hand className="size-3.5" /> {t("handQueue")}
+                    </h3>
+                    <ol className="space-y-1">
+                      {handQueue.map((h, i) => (
+                        <li
+                          key={h.id}
+                          className="flex items-center justify-between gap-2"
+                          data-testid="hand-queue-item"
+                        >
+                          <span className="flex min-w-0 items-center gap-2">
+                            <span className="grid size-5 shrink-0 place-items-center rounded-full bg-amber-400 text-xs font-semibold text-sidebar">
+                              {i + 1}
+                            </span>
+                            <span className={cn("truncate", h.id === SELF && "text-white")}>
+                              {h.id === SELF ? t("you", { name: h.name }) : h.name}
+                            </span>
+                          </span>
+                          {isHost && h.id !== SELF && (
+                            <PanelButton
+                              onClick={() => engine.lowerHand(h.id)}
+                              label={t("lowerHandFor", { name: h.name })}
+                              testId="lower-hand"
+                            >
+                              <Hand className="size-3.5" />
+                            </PanelButton>
+                          )}
+                        </li>
+                      ))}
+                    </ol>
+                  </section>
+                )}
+                <ul className="space-y-1.5">
+                  <li className="flex items-center justify-between gap-2 text-white">
                     <span className="flex min-w-0 items-center gap-1.5">
-                      {p.media?.hand && <Hand className="size-3.5 shrink-0 text-amber-400" />}
-                      {p.media && !p.media.audio && <MicOff className="size-3.5 shrink-0" />}
-                      <span className="truncate">{p.displayName}</span>
+                      {media.hand && <Hand className="size-3.5 shrink-0 text-amber-400" />}
+                      <span className="truncate">{t("you", { name: self.displayName })}</span>
                     </span>
                     <span className="flex shrink-0 items-center gap-1.5">
-                      <RoleMark role={p.role} />
-                      {isHost && p.role !== "HOST" && (p.media?.audio ?? true) && (
-                        <button
-                          type="button"
-                          onClick={() => engine.mutePeers([p.id])}
-                          aria-label={t("mutePerson", { name: p.displayName })}
-                          title={t("mutePerson", { name: p.displayName })}
-                          data-testid="mute-peer"
-                          className="grid size-7 place-items-center rounded-md hover:bg-sidebar hover:text-white focus-visible:outline-2 focus-visible:outline-sidebar-active"
-                        >
-                          <MicOff className="size-3.5" />
-                        </button>
+                      <RoleMark role={self.role} />
+                      {isHost && (
+                        <SpotlightButton
+                          on={spotlightId === SELF}
+                          name={self.displayName}
+                          onClick={() =>
+                            engine.setStage({
+                              spotlight: spotlightId === SELF ? null : self.participantId,
+                            })
+                          }
+                        />
                       )}
                     </span>
                   </li>
-                ))}
-              </ul>
+                  {peers.map((p) => (
+                    <li key={p.id} className="flex items-center justify-between gap-2">
+                      <span className="flex min-w-0 items-center gap-1.5">
+                        {p.media?.hand && <Hand className="size-3.5 shrink-0 text-amber-400" />}
+                        {p.media && !p.media.audio && <MicOff className="size-3.5 shrink-0" />}
+                        <span className="truncate">{p.displayName}</span>
+                      </span>
+                      <span className="flex shrink-0 items-center gap-1.5">
+                        <RoleMark role={p.role} />
+                        {isHost && (
+                          <SpotlightButton
+                            on={spotlightId === p.id}
+                            name={p.displayName}
+                            onClick={() =>
+                              engine.setStage({ spotlight: spotlightId === p.id ? null : p.id })
+                            }
+                          />
+                        )}
+                        {isHost && p.role !== "HOST" && (p.media?.audio ?? true) && (
+                          <button
+                            type="button"
+                            onClick={() => engine.mutePeers([p.id])}
+                            aria-label={t("mutePerson", { name: p.displayName })}
+                            title={t("mutePerson", { name: p.displayName })}
+                            data-testid="mute-peer"
+                            className="grid size-7 place-items-center rounded-md hover:bg-sidebar hover:text-white focus-visible:outline-2 focus-visible:outline-sidebar-active"
+                          >
+                            <MicOff className="size-3.5" />
+                          </button>
+                        )}
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
             ) : (
               <ChatPanel engine={engine} />
             )}
@@ -367,6 +541,54 @@ export function CallRoom({
         >
           <Hand />
         </ControlButton>
+        <div className="relative">
+          <ControlButton
+            active={!reactionsOpen}
+            onClick={() => setReactionsOpen((v) => !v)}
+            label={t("reactions")}
+            testId="toggle-reactions"
+          >
+            <SmilePlus />
+          </ControlButton>
+          {reactionsOpen && (
+            <div
+              className="absolute bottom-full left-1/2 z-20 mb-2 flex -translate-x-1/2 gap-1 rounded-full bg-sidebar-muted p-1.5 shadow-lg"
+              role="toolbar"
+              aria-label={t("reactions")}
+              data-testid="reactions"
+            >
+              {REACTIONS.filter((r) => isStudent || !PACE_REACTIONS.includes(r)).map((r) => (
+                <button
+                  key={r}
+                  type="button"
+                  onClick={() => {
+                    engine.react(r);
+                    setReactionsOpen(false);
+                  }}
+                  aria-label={t(`reaction.${r}`)}
+                  title={t(`reaction.${r}`)}
+                  data-testid={`react-${r}`}
+                  className={cn(
+                    "grid size-9 place-items-center rounded-full text-xl hover:bg-sidebar focus-visible:outline-2 focus-visible:outline-sidebar-active",
+                    PACE_REACTIONS.includes(r) && "ml-1 border-l border-sidebar pl-1",
+                  )}
+                >
+                  <span aria-hidden>{REACTION_EMOJI[r]}</span>
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+        {isHost && (
+          <ControlButton
+            active={!stage.focus}
+            onClick={() => engine.setStage({ focus: !stage.focus })}
+            label={stage.focus ? t("focusOff") : t("focusOn")}
+            testId="toggle-focus"
+          >
+            <Focus />
+          </ControlButton>
+        )}
         {isHost && peers.length > 0 && (
           <ControlButton
             active
@@ -568,6 +790,72 @@ function ChatPanel({ engine }: { engine: CallEngine }) {
         </button>
       </form>
     </>
+  );
+}
+
+/** Plays a person's sound when their picture is not shown (focus mode). */
+function PeerAudio({ stream }: { stream: MediaStream }) {
+  const ref = useRef<HTMLAudioElement>(null);
+  const audioId = stream.getAudioTracks()[0]?.id ?? null;
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    if (el.srcObject !== stream) el.srcObject = stream;
+    void el.play().catch(() => undefined);
+  }, [stream, audioId]);
+  return <audio ref={ref} autoPlay className="hidden" />;
+}
+
+function PanelButton({
+  onClick,
+  label,
+  testId,
+  pressed,
+  children,
+}: {
+  onClick: () => void;
+  label: string;
+  testId: string;
+  pressed?: boolean;
+  children: React.ReactNode;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      aria-label={label}
+      aria-pressed={pressed}
+      title={label}
+      data-testid={testId}
+      className={cn(
+        "grid size-7 place-items-center rounded-md hover:bg-sidebar hover:text-white focus-visible:outline-2 focus-visible:outline-sidebar-active",
+        pressed && "text-amber-400",
+      )}
+    >
+      {children}
+    </button>
+  );
+}
+
+function SpotlightButton({
+  on,
+  name,
+  onClick,
+}: {
+  on: boolean;
+  name: string;
+  onClick: () => void;
+}) {
+  const t = useTranslations("video.room");
+  return (
+    <PanelButton
+      onClick={onClick}
+      pressed={on}
+      label={on ? t("unspotlight", { name }) : t("spotlight", { name })}
+      testId="spotlight"
+    >
+      <Star className={cn("size-3.5", on && "fill-current")} />
+    </PanelButton>
   );
 }
 

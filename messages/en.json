@@ -5037,7 +5037,31 @@
       "recordingSaved": "The recording is saved under the group's materials.",
       "recordingFailed": "The recording could not be saved.",
       "recordingUnsupported": "This browser cannot record.",
-      "leaveWhileRecording": "The recording is still being saved."
+      "leaveWhileRecording": "The recording is still being saved.",
+      "handQueue": "Raised hands",
+      "handPlace": "Hand raised, number {place} in the queue",
+      "lowerHandFor": "Lower {name}'s hand",
+      "loweredBy": "{name} lowered your hand.",
+      "spotlight": "Show {name} large to everyone",
+      "unspotlight": "Stop showing {name} to everyone",
+      "spotlighted": "Shown to everyone",
+      "focusOn": "Focus mode: students see only you",
+      "focusOff": "Turn focus mode off",
+      "focusTeacher": "Focus mode is on: students see only you, the person you show to everyone and a shared screen. They still hear each other.",
+      "focusStudent": "The teacher turned on focus mode: you see only the teacher.",
+      "reactions": "Reactions",
+      "reaction": {
+        "like": "Thumbs up",
+        "clap": "Clap",
+        "heart": "Heart",
+        "laugh": "Laugh",
+        "wow": "Wow",
+        "slower": "Slower, please (only the teacher sees this)",
+        "faster": "Faster, please (only the teacher sees this)"
+      },
+      "paceTitle": "Students asking for a different pace in the last minute",
+      "paceSlower": "{count} slower",
+      "paceFaster": "{count} faster"
     },
     "done": {
       "left": "You left the lesson.",

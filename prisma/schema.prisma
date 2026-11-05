@@ -2686,6 +2686,10 @@ model VideoRoom {
   startedById String
   startedAt   DateTime        @default(now())
   endedAt     DateTime?
+  /// Who the teacher put on everyone's stage (a participant id) and whether students see
+  /// only the teacher (focus mode); set from the host's browser (A-152).
+  spotlightId String?
+  focusMode   Boolean         @default(false)
 
   group        Group              @relation(fields: [groupId], references: [id], onDelete: Cascade)
   lesson       Lesson?            @relation(fields: [lessonId], references: [id], onDelete: SetNull)
@@ -2700,18 +2704,20 @@ model VideoRoom {
 /// One browser in a room. Its id is the peer id other browsers address; the
 /// secret (stored hashed) proves the browser owns it.
 model VideoParticipant {
-  id          String        @id @default(cuid())
-  roomId      String
-  role        VideoPeerRole
-  userId      String?
-  studentId   String?
-  displayName String
-  secretHash  String
+  id           String        @id @default(cuid())
+  roomId       String
+  role         VideoPeerRole
+  userId       String?
+  studentId    String?
+  displayName  String
+  secretHash   String
   /// Last reported { audio, video, screen } switches, for the icons others see.
-  media       Json?
-  joinedAt    DateTime      @default(now())
-  lastSeenAt  DateTime      @default(now())
-  leftAt      DateTime?
+  media        Json?
+  /// When the current raised hand went up, for the order of the hand queue (A-152).
+  handRaisedAt DateTime?
+  joinedAt     DateTime      @default(now())
+  lastSeenAt   DateTime      @default(now())
+  leftAt       DateTime?
 
   room    VideoRoom @relation(fields: [roomId], references: [id], onDelete: Cascade)
   user    User?     @relation(fields: [userId], references: [id], onDelete: Cascade)
