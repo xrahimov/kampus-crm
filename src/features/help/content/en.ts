@@ -470,6 +470,7 @@ export const en: HelpContent = {
               ],
             },
             "If someone cannot connect, their network may block direct calls; the administrator can add a relay server under Settings → Integrations → Video lessons.",
+            "After a call that belongs to a lesson, open the **Last video lesson** line and press **Attendance from the call**. Kampus proposes present for everyone who was online at least the minutes set in Settings → Integrations → Video lessons (10 by default) and absent for the rest, and notes late joins. Change what is wrong and press **Apply to the lesson**; the marks go through the usual attendance rules.",
           ],
         },
         links: {
@@ -1099,7 +1100,7 @@ export const en: HelpContent = {
         video: {
           title: "Video lessons",
           body: [
-            "Video lessons work without setup over public STUN servers. If students on some mobile or office networks cannot connect, add a TURN relay server here (the server deployment ships one). Set the most people allowed in one call and how many days to keep lesson recordings before they are deleted.",
+            "Video lessons work without setup over public STUN servers. If students on some mobile or office networks cannot connect, add a TURN relay server here (the server deployment ships one). Set the most people allowed in one call and how many days to keep lesson recordings before they are deleted. **Minutes online to count as present** sets how long a student must be in the call to be proposed as present.",
           ],
         },
         onlinePayments: {

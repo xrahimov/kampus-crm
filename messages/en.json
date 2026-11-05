@@ -488,7 +488,8 @@
     "studentLoginExpired": "The sign-in took too long or was started in another browser. Please try again.",
     "studentLoginFailed": "Telegram did not confirm the sign-in. Please try again.",
     "studentLinkExpired": "This sign-in link was already used or has expired. Ask the bot for a new one.",
-    "studentLoginOff": "Sign-in with Telegram is not set up at this learning centre yet."
+    "studentLoginOff": "Sign-in with Telegram is not set up at this learning centre yet.",
+    "callWithoutLesson": "This call is not tied to a lesson."
   },
   "validation": {
     "phone": "Enter a number like +998 90 123 45 67.",
@@ -4396,7 +4397,8 @@
         "turnCredential": "TURN password",
         "turnSecret": "TURN shared secret (instead of username and password)",
         "maxParticipants": "Most people in one call",
-        "recordingKeepDays": "Keep lesson recordings for (days)"
+        "recordingKeepDays": "Keep lesson recordings for (days)",
+        "attendanceMinutes": "Minutes online to count as present"
       },
       "hint": "Works without setup using free public STUN servers. Some mobile and office networks block direct calls; for those, add a TURN relay (for example Cloudflare Calls TURN, Metered or your own coturn).",
       "retentionHint": "Recordings older than this are deleted every night, together with their video file, to keep the server's disk from filling up. 0 keeps them forever."
@@ -5065,7 +5067,8 @@
       "starting": "Starting…",
       "links": "Students' links",
       "last": "Last video lesson {date}: {count, plural, =0 {no students joined} one {# student joined} other {# students joined}}",
-      "minutes": "{count} min"
+      "minutes": "{count} min",
+      "attendance": "Attendance from the call"
     },
     "links": {
       "title": "Students' video lesson links",
@@ -5082,6 +5085,17 @@
       "sending": "Sending…",
       "sendSms": "Send SMS",
       "smsResult": "Sent {sent}, failed {failed}, skipped {skipped} without a phone number."
+    },
+    "attendance": {
+      "title": "Attendance from the video lesson",
+      "description": "Students online for at least {minutes} minutes are proposed as present, the others as absent. Change what is wrong, then apply the marks to the lesson.",
+      "noLesson": "This call is not tied to a lesson, so its attendance cannot be written anywhere.",
+      "minutes": "{count, plural, one {# minute online} other {# minutes online}}",
+      "notInCall": "Not in the call",
+      "late": "joined {count} min late",
+      "already": "marked {status}",
+      "apply": "Apply to the lesson",
+      "applying": "Applying…"
     }
   },
   "help": {
