@@ -37,8 +37,9 @@ export const GET = route<undefined, Params>(
   },
 );
 
+/** The service decides who may add: `groups.update`, or a teacher adding a new student (A-61). */
 export const POST = route<typeof addMemberSchema._output, Params>(
-  { permission: "groups.update", body: addMemberSchema },
+  { permission: "groups.view", body: addMemberSchema },
   async ({ current, body, params }) =>
     json(await addMember(current.actor, params.id, body), { status: 201 }),
 );

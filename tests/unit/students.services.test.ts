@@ -53,6 +53,7 @@ import {
   setBlacklisted,
   setCustomField,
   updateStudent,
+  canCreateStudents,
 } from "@/server/services/students/students.service";
 
 const RUN = String(Date.now() % 100_000).padStart(5, "0");
@@ -532,7 +533,30 @@ describe("students", () => {
     await updateOrgSettings(ceo, { ...settings, teacherCanAddStudents: true });
     const carl = await createStudent(teacher, studentInput("Carl", 14));
     expect(carl.fullName).toBe(`${TAG} Carl`);
+    // From the group page too: a new student into the teacher's own group, never an existing one.
     await updateOrgSettings(ceo, { ...settings, teacherCanAddStudents: false });
+    await expect(
+      addMember(teacher, groupA, {
+        newStudent: { fullName: `${TAG} Dana` },
+        joinedAt: "2026-10-01",
+        status: "ACTIVE",
+      }),
+    ).rejects.toMatchObject({ code: "FORBIDDEN" });
+    await updateOrgSettings(ceo, { ...settings, teacherCanAddStudents: true });
+    expect(await canCreateStudents(teacher)).toBe(true);
+    const dana = await addMember(teacher, groupA, {
+      newStudent: { fullName: `${TAG} Dana` },
+      joinedAt: "2026-10-01",
+      status: "ACTIVE",
+    });
+    expect(dana.fullName).toBe(`${TAG} Dana`);
+    await expect(
+      addMember(teacher, groupA, { studentId: carl.id, joinedAt: "2026-10-01", status: "ACTIVE" }),
+    ).rejects.toMatchObject({ code: "FORBIDDEN" });
+    // The teacher's drawer offers only the teacher's groups.
+    expect((await getStudentOptions(teacher)).groups.map((g) => g.id)).toEqual([groupA]);
+    await updateOrgSettings(ceo, { ...settings, teacherCanAddStudents: false });
+    expect(await canCreateStudents(teacher)).toBe(false);
     await expect(getStudentOptions(cashier)).resolves.toMatchObject({
       paymentMethods: expect.arrayContaining([expect.objectContaining({ id: methodId })]),
     });

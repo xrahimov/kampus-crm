@@ -22,7 +22,13 @@ import { prisma, type DbClient } from "@/server/db/prisma";
 import { AppError } from "@/server/errors/app-error";
 import type { ParsedList } from "@/server/http/list-query";
 import { authorize, authorizeBranch, branchScope, type Actor } from "@/server/rbac/authorize";
-import { findGroupInScope, ownGroupsOnly, today } from "@/server/services/groups/shared";
+import {
+  findGroupInScope,
+  groupScope,
+  ownGroupsOnly,
+  today,
+} from "@/server/services/groups/shared";
+import { canCreateStudents } from "@/server/services/students/create-access";
 import {
   dateToIso,
   decimalToNumber,
@@ -35,6 +41,8 @@ import { membershipBalances, type MembershipBalance } from "./balances";
 import { addMonthsIso, monthStart } from "./fees";
 
 /* Students (EXP §6). The group side of a membership lives in groups/memberships.service. */
+
+export { canCreateStudents } from "@/server/services/students/create-access";
 
 export interface StudentGroupDto {
   membershipId: string;
@@ -520,8 +528,9 @@ export async function getStudentOptions(
       select: { id: true, name: true, branchId: true },
       orderBy: { name: "asc" },
     }),
+    // A teacher's new student can only go into the teacher's own groups (A-52).
     db.group.findMany({
-      where: { ...scope, status: { not: "ARCHIVED" } },
+      where: { ...groupScope(actor), status: { not: "ARCHIVED" } },
       select: {
         id: true,
         name: true,
@@ -591,15 +600,7 @@ async function studentData(input: StudentUpdateInput) {
 
 /** Teachers may create students only when the org switch allows it (EXP §8, A-61). */
 async function authorizeCreate(actor: Actor, db: DbClient) {
-  if (ownGroupsOnly(actor)) {
-    const settings = await db.orgSettings.findFirst({
-      where: { organizationId: actor.organizationId },
-      select: { teacherCanAddStudents: true },
-    });
-    if (!settings?.teacherCanAddStudents) throw AppError.forbidden();
-    return;
-  }
-  authorize(actor, "students.create");
+  if (!(await canCreateStudents(actor, db))) throw AppError.forbidden();
 }
 
 export async function createStudent(

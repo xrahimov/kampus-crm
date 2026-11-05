@@ -24,7 +24,7 @@ import { listMembers } from "@/server/services/groups/memberships.service";
 import { getGroupFormOptions } from "@/server/services/groups/options.service";
 import { listGroupDiscounts } from "@/server/services/students/discounts.service";
 import { getPaymentOptions } from "@/server/services/students/payments.service";
-import { listGroupComments } from "@/server/services/students/students.service";
+import { canCreateStudents, listGroupComments } from "@/server/services/students/students.service";
 import {
   getGroupKnowledge,
   getTestOptions,
@@ -165,7 +165,7 @@ export default async function Page({ params, searchParams }: Props) {
         update: can(current.actor, "groups.update"),
         delete: can(current.actor, "groups.delete"),
         mark: can(current.actor, "groups.attendance.mark"),
-        createStudent: can(current.actor, "students.create"),
+        createStudent: await canCreateStudents(current.actor),
         pay: can(current.actor, "payments.create"),
         discount: can(current.actor, "discounts.give"),
         comment: can(current.actor, "students.view"),

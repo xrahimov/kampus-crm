@@ -7,7 +7,11 @@ import { StudentsPage } from "@/features/students/students-page";
 import { STUDENT_SORT_FIELDS, studentFilterSchema } from "@/lib/validation/students";
 import { requireCurrentUser } from "@/server/auth/current-user";
 import { can, canAccessAllBranches } from "@/server/rbac/authorize";
-import { getStudentOptions, listStudents } from "@/server/services/students/students.service";
+import {
+  canCreateStudents,
+  getStudentOptions,
+  listStudents,
+} from "@/server/services/students/students.service";
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations("students");
@@ -58,7 +62,7 @@ export default async function Page({
       activeBranchId={current.actor.activeBranchId}
       allBranches={canAccessAllBranches(current.actor)}
       can={{
-        create: can(current.actor, "students.create"),
+        create: await canCreateStudents(current.actor),
         update: can(current.actor, "students.update"),
         delete: can(current.actor, "students.delete"),
         blacklist: can(current.actor, "students.blacklist"),

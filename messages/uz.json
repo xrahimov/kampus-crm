@@ -1500,7 +1500,8 @@
       "transfer": "Boshqa guruhga ko‘chirish",
       "toLead": "Lidlarga qaytarish",
       "sms": "Xabar (SMS)",
-      "importExcel": "Excel orqali qo'shish"
+      "importExcel": "Excel orqali qo'shish",
+      "addNew": "Yangi o‘quvchi qo‘shish"
     },
     "notes": {
       "newNote": "Eslatma qo'shish",
