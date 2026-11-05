@@ -10,6 +10,7 @@ import { prisma, type DbClient } from "@/server/db/prisma";
 import { AppError } from "@/server/errors/app-error";
 import { enqueue } from "@/server/jobs/queue";
 import { telegramConfigFor } from "@/server/services/integrations/integrations.service";
+import { linkAccountByCode } from "@/server/services/student-auth/student-auth.service";
 import { appOriginForGroup } from "@/server/services/settings/domains.service";
 import { isoToDate, organizationOfBranch } from "@/server/services/settings/shared";
 import { classLink, membershipByToken } from "@/server/services/video/video.service";
@@ -88,7 +89,13 @@ export type BotMessageKind =
   | "absentPresent"
   | "absentNoLesson"
   | "absentComment"
-  | "announcement";
+  | "announcement"
+  | "loginShare"
+  | "loginShareButton"
+  | "loginNotYours"
+  | "loginUnknown"
+  | "loginLinkedElsewhere"
+  | "loginLink";
 
 /** Narrows Telegram's language_code to a language the bot speaks. */
 export function botLocale(languageCode: string | undefined | null): BotLocale {
@@ -185,7 +192,10 @@ export async function handleStudentCommand(
   message: {
     chatId: string;
     text: string;
+    fromId?: string | null;
     firstName?: string | null;
+    lastName?: string | null;
+    username?: string | null;
     languageCode?: string | null;
   },
 ): Promise<string | null> {
@@ -197,9 +207,36 @@ export async function handleStudentCommand(
         telegramCode: start[1]!,
         ...(organizationId ? { branch: { organizationId } } : {}),
       },
-      select: { id: true, fullName: true, isArchived: true },
+      select: {
+        id: true,
+        fullName: true,
+        isArchived: true,
+        branchId: true,
+        branch: { select: { organizationId: true } },
+      },
     });
     if (!student || student.isArchived) return botText(locale, "unknownCode");
+    // The same Telegram user may now sign in to Kampus as this student (A-150).
+    if (message.fromId) {
+      const fromId = message.fromId;
+      await db.$transaction((tx) =>
+        linkAccountByCode(
+          tx,
+          {
+            telegramUserId: fromId,
+            name:
+              [message.firstName, message.lastName].filter(Boolean).join(" ").trim() || "Telegram",
+            username: message.username ?? null,
+            photoUrl: null,
+          },
+          {
+            id: student.id,
+            branchId: student.branchId,
+            organizationId: student.branch.organizationId,
+          },
+        ),
+      );
+    }
     await db.studentTelegramChat.upsert({
       where: { chatId: message.chatId },
       create: {

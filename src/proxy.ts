@@ -45,7 +45,11 @@ export function proxy(request: NextRequest) {
   const { locale, rest } = stripLocale(pathname);
   const hasSession = request.cookies.has(SESSION_COOKIE);
   const isPublic = PUBLIC_PATHS.has(rest);
-  const isOpen = PUBLIC_PREFIXES.some((prefix) => rest.startsWith(prefix));
+  // The student area has its own sign-in (A-150); "/students" is staff's and stays closed.
+  const isOpen =
+    PUBLIC_PREFIXES.some((prefix) => rest.startsWith(prefix)) ||
+    rest === "/student" ||
+    rest.startsWith("/student/");
 
   // On a centre's own address the root is open to visitors: it is the centre's public
   // page (A-121), or the page sends them to sign in when there is none.

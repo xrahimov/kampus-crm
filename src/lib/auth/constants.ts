@@ -11,3 +11,8 @@ export const SESSION_TOUCH_INTERVAL_MS = 5 * 60 * 1000;
 /** Login rate limiting: 5 failures in 15 minutes locks for 15 minutes. */
 export const LOGIN_MAX_FAILURES = 5;
 export const LOGIN_WINDOW_MS = 15 * 60 * 1000;
+
+/** A signed-in student's or parent's session (A-150), separate from the staff session. */
+export const STUDENT_SESSION_COOKIE = "kampus_student";
+/** The Telegram login's state, verifier and nonce while the browser is away at Telegram. */
+export const STUDENT_LOGIN_STATE_COOKIE = "kampus_tg_login";

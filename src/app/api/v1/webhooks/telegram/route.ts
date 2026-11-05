@@ -9,6 +9,7 @@ import {
 } from "@/server/services/integrations/integrations.service";
 
 import { receiveTelegramLeadMessage } from "@/server/services/leads/inbox.service";
+import { handleBotLogin } from "@/server/services/student-auth/bot-login.service";
 import { handleBotUpdate } from "@/server/services/telegram/bot-commands.service";
 
 import { presentedSecret } from "../_secret";
@@ -20,6 +21,7 @@ const update = z.object({
       message_id: z.union([z.number(), z.string()]).optional(),
       from: z
         .object({
+          id: z.union([z.number(), z.string()]).optional(),
           first_name: z.string().optional(),
           last_name: z.string().optional(),
           username: z.string().optional(),
@@ -27,6 +29,13 @@ const update = z.object({
         })
         .optional(),
       text: z.string().optional(),
+      /** Sent by the "Share my number" button of the sign-in flow (A-150). */
+      contact: z
+        .object({
+          phone_number: z.string(),
+          user_id: z.union([z.number(), z.string()]).optional(),
+        })
+        .optional(),
     })
     .optional(),
 });
@@ -46,14 +55,40 @@ export const POST = route<z.output<typeof update>>(
   async ({ request, body }) => {
     const organizationId = await assertWebhookSecret(prisma, "TELEGRAM", presentedSecret(request));
     const message = body.message;
-    if (!message?.text) return json({ ok: true });
+    if (!message?.text && !message?.contact) return json({ ok: true });
     const chatId = String(message.chat.id);
     // The site owner's shared bot serves every centre: route by the chat, not the bot (A-135).
     const shared = await isSharedTelegramBot(prisma, organizationId);
+    const fromId = message.from?.id === undefined ? null : String(message.from.id);
+    // Students and parents signing in from the bot (A-150).
+    const login = await handleBotLogin(prisma, shared ? null : organizationId, {
+      chatId,
+      text: message.text ?? null,
+      fromId,
+      firstName: message.from?.first_name ?? null,
+      lastName: message.from?.last_name ?? null,
+      username: message.from?.username ?? null,
+      languageCode: message.from?.language_code ?? null,
+      contact: message.contact
+        ? {
+            phoneNumber: message.contact.phone_number,
+            userId: message.contact.user_id === undefined ? null : String(message.contact.user_id),
+          }
+        : null,
+    });
+    if (login) {
+      const notifier = await getTelegramNotifier(prisma, organizationId);
+      await notifier.sendMessage(chatId, login.text, { replyMarkup: login.replyMarkup });
+      return json({ ok: true });
+    }
+    if (!message.text) return json({ ok: true });
     const reply = await handleBotUpdate(prisma, shared ? null : organizationId, {
       chatId,
       text: message.text,
+      fromId,
       firstName: message.from?.first_name ?? null,
+      lastName: message.from?.last_name ?? null,
+      username: message.from?.username ?? null,
       languageCode: message.from?.language_code ?? null,
     });
     if (reply) {

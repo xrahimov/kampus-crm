@@ -12,7 +12,9 @@ async function signIn(page: Page, phone: string) {
 }
 
 /** The calendar day in Tashkent (UTC+5), which is what the lessons are dated in. */
-const todayTashkent = () => new Date(Date.now() + 5 * 60 * 60 * 1000).toISOString().slice(0, 10);
+// The absence rules count lessons before the server's today(), which is the UTC date; a
+// Tashkent date here made the test fail every evening from 19:00 UTC.
+const serverToday = () => new Date().toISOString().slice(0, 10);
 const shift = (iso: string, days: number) => {
   const d = new Date(`${iso}T00:00:00Z`);
   d.setUTCDate(d.getUTCDate() + days);
@@ -33,7 +35,7 @@ test.describe("absence follow-up", () => {
       "x-csrf-token": cookies.find((c) => c.name === "kampus_csrf")?.value ?? "",
       "content-type": "application/json",
     };
-    const today = todayTashkent();
+    const today = serverToday();
     const stamp = String(Date.now());
     const name = `E2E Absent ${stamp}`;
 

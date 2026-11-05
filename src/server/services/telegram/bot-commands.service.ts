@@ -313,7 +313,10 @@ export async function handleBotUpdate(
   message: {
     chatId: string;
     text: string;
+    fromId?: string | null;
     firstName?: string | null;
+    lastName?: string | null;
+    username?: string | null;
     languageCode?: string | null;
   },
 ): Promise<BotReply | null> {

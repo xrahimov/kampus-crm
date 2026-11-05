@@ -804,6 +804,7 @@ model Student {
   debtCases         DebtCase[]
   absenceCases      AbsenceCase[]
   announcementReads AnnouncementRead[]
+  accountLinks      StudentAccountLink[]
 
   waitlist WaitlistEntry[]
 
@@ -817,6 +818,88 @@ model Student {
 
 /// A Telegram chat (the student's own, or a parent's) that hears about the
 /// student's lessons, homework and payments (A-103). Linked from the portal.
+/// A student's or parent's own sign-in to Kampus (A-150): one per Telegram user, made
+/// only when a Telegram login matches a student or parent the centre already has.
+/// No password exists; Telegram proves the person and their phone number.
+model StudentAccount {
+  id             String    @id @default(cuid())
+  /// Telegram's numeric user id, the same in the login token and in bot updates.
+  telegramUserId String    @unique
+  /// The Telegram-verified phone, +998… when Uzbek; null when only a link code matched.
+  phone          String?
+  name           String
+  username       String?
+  photoUrl       String?
+  locale         String    @default("uz")
+  createdAt      DateTime  @default(now())
+  lastSeenAt     DateTime?
+
+  links    StudentAccountLink[]
+  sessions StudentSession[]
+  tickets  StudentLoginTicket[]
+}
+
+enum StudentLinkVia {
+  /// The Telegram-verified phone equals the student's or parent's phone.
+  PHONE
+  /// The chat opened the student's own connect link (A-103) from their page.
+  CODE
+  /// A staff member linked it by hand.
+  STAFF
+}
+
+/// What a signed-in account may see: one student (their own record) or one parent
+/// record (a parent of that student). Several centres may each hold a link (A-150).
+model StudentAccountLink {
+  id             String         @id @default(cuid())
+  accountId      String
+  /// One Telegram account per student record; a second needs staff to unlink the first.
+  studentId      String?        @unique
+  parentId       String?        @unique
+  organizationId String
+  via            StudentLinkVia
+  linkedById     String?
+  createdAt      DateTime       @default(now())
+
+  account StudentAccount @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  student Student?       @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  parent  Parent?        @relation(fields: [parentId], references: [id], onDelete: Cascade)
+
+  @@index([accountId])
+  @@index([organizationId])
+}
+
+/// A signed-in student or parent on one device (cookie kampus_student, A-150).
+model StudentSession {
+  id         String   @id @default(cuid())
+  accountId  String
+  tokenHash  String   @unique
+  ip         String?
+  userAgent  String?
+  expiresAt  DateTime
+  lastSeenAt DateTime @default(now())
+  createdAt  DateTime @default(now())
+
+  account StudentAccount @relation(fields: [accountId], references: [id], onDelete: Cascade)
+
+  @@index([accountId])
+  @@index([expiresAt])
+}
+
+/// A one-time sign-in link the bot sends after the person shared their number (A-150).
+model StudentLoginTicket {
+  id        String    @id @default(cuid())
+  accountId String
+  tokenHash String    @unique
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  account StudentAccount @relation(fields: [accountId], references: [id], onDelete: Cascade)
+
+  @@index([accountId])
+}
+
 model StudentTelegramChat {
   id        String   @id @default(cuid())
   studentId String
@@ -1032,7 +1115,8 @@ model Parent {
   phone     String
   createdAt DateTime @default(now())
 
-  student Student @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  student      Student              @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  accountLinks StudentAccountLink[]
 
   @@index([studentId])
 }

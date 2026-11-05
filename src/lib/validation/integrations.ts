@@ -241,6 +241,16 @@ export const telegramIntegrationSchema = z.object({
    * of its own. The service drops the flag for anyone else.
    */
   sharedWithAllCentres: z.boolean().default(false),
+  /**
+   * "Log in with Telegram" for students and parents (A-150): BotFather → the bot →
+   * Login Widget shows the Client ID and Client Secret.
+   */
+  loginClientId: z
+    .string()
+    .trim()
+    .regex(/^[0-9]{0,20}$/, "validation.loginClientId")
+    .default(""),
+  loginClientSecret: secret.default(""),
 });
 /** The four fields of the reference's AmoCRM page (EXP §8). */
 export const amoCrmIntegrationSchema = z.object({

@@ -1082,6 +1082,20 @@ export const en: HelpContent = {
             "Set the device secret and how many minutes count as late, and point the terminals at the webhook. Each IN and OUT event becomes a check-in or check-out for the staff member with that phone number. Reports → Staff attendance shows daily, weekly and monthly attendance and lets you set each person's work schedule and enter a manual check-in.",
           ],
         },
+        telegramLogin: {
+          title: "Students sign in with Telegram",
+          body: [
+            "Students and parents can sign in at **/student** with **Log in with Telegram** instead of using their personal links. Telegram confirms the person and their phone; Kampus lets them in only when that phone is on a student or a parent card of your centre, so nobody can make up an account.",
+            {
+              steps: [
+                "In Telegram open **@BotFather**, choose your bot and open **Login Widget**.",
+                "Add your site's address and the address plus **/api/v1/student-auth/telegram/callback** to the allowed URLs.",
+                "Copy the **Client ID** and **Client Secret** into the Telegram card here and save.",
+              ],
+            },
+            "Each student's card shows **Kampus app sign-in**: who signs in as the student or as a parent, how they were linked, and buttons to sign them out everywhere or remove the access.",
+          ],
+        },
         video: {
           title: "Video lessons",
           body: [
@@ -1193,6 +1207,16 @@ export const en: HelpContent = {
             "The page greets you by name and shows your group, your teacher and four numbers: your attendance, your average grade, how many lessons were held and your coins.",
             {
               note: "The link is yours alone: it shows your marks and payments. Do not share it. If you lose it, ask your teacher for a new one; the old one then stops working.",
+            },
+          ],
+        },
+        signIn: {
+          title: "Signing in with Telegram",
+          body: [
+            "Instead of the link you can sign in at **/student** on your centre's address with **Log in with Telegram**. There is no password: Telegram confirms who you are and shares your phone number once you agree. If that number is on your profile at the centre (or on a parent's card, for parents), Kampus opens **My Kampus**: every group of yours, the next lesson with a **Join** button while it runs, your balance and the homework still to do. Parents see each child.",
+            "On a phone you can also open the centre's bot, press **Share my number** and tap the sign-in link it sends back; the link works once, for ten minutes.",
+            {
+              note: "Nobody can register on their own. If Kampus says your number is not registered, ask the reception to put your Telegram phone on your profile. Using someone else's phone? Press **Sign out** at the bottom when you are done.",
             },
           ],
         },

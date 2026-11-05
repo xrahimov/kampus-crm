@@ -108,6 +108,8 @@ beforeAll(async () => {
     botUsername: `${TAG}_bot`,
     weeklyReport: true,
     sharedWithAllCentres: false,
+    loginClientId: "",
+    loginClientSecret: "",
   });
   const courseId = (
     await createCourse(ceo, {

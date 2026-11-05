@@ -36,7 +36,7 @@ import { authorize, type Actor } from "@/server/rbac/authorize";
 /** Fields that never leave the server in clear text. */
 const SECRET_FIELDS: Record<IntegrationProvider, readonly string[]> = {
   SMS: ["password"],
-  TELEGRAM: ["botToken", "webhookSecret"],
+  TELEGRAM: ["botToken", "webhookSecret", "loginClientSecret"],
   AMOCRM: ["secretKey", "authorizationCode", "webhookSecret"],
   TELEPHONY: ["webhookSecret"],
   FACE_ID: ["webhookSecret"],
