@@ -5060,7 +5060,10 @@
       },
       "paceTitle": "So‘nggi daqiqada boshqa sur’at so‘ragan o‘quvchilar",
       "paceSlower": "{count} sekinroq",
-      "paceFaster": "{count} tezroq"
+      "paceFaster": "{count} tezroq",
+      "poll": "So‘rovnoma",
+      "pollNew": "Yangi so‘rovnoma",
+      "pollAsk": "O‘qituvchi so‘rayapti: {question} Javob berish uchun bosing."
     },
     "done": {
       "left": "Siz darsdan chiqdingiz.",
@@ -5091,7 +5094,8 @@
       "links": "O‘quvchilar havolalari",
       "last": "Oxirgi video dars {date}: {count, plural, =0 {o‘quvchilar qo‘shilmadi} other {{count} o‘quvchi qo‘shildi}}",
       "minutes": "{count} daq",
-      "attendance": "Qo‘ng‘iroqdan davomat"
+      "attendance": "Qo‘ng‘iroqdan davomat",
+      "polls": "So‘rovnomalar"
     },
     "links": {
       "title": "O‘quvchilarning video dars havolalari",
@@ -5119,6 +5123,24 @@
       "already": "belgilangan: {status}",
       "apply": "Darsga qo‘llash",
       "applying": "Qo‘llanmoqda…"
+    },
+    "poll": {
+      "none": "Hali so‘rovnoma yo‘q.",
+      "open": "Ochiq so‘rovnoma",
+      "closed": "So‘rovnoma yopildi",
+      "yourAnswer": "Sizning javobingiz",
+      "tapToAnswer": "Javobni bosing. So‘rovnoma yopilganda o‘qituvchi natijalarni ko‘rsatadi.",
+      "canChange": "Javob yuborildi. So‘rovnoma yopilguncha uni o‘zgartirishingiz mumkin.",
+      "answers": "{count, plural, =0 {Javob yo‘q} other {# ta javob}}",
+      "close": "Yopish va natijalarni ko‘rsatish",
+      "new": "Yangi so‘rovnoma",
+      "question": "Savol",
+      "options": "Javoblar",
+      "option": "{number}-javob",
+      "removeOption": "{number}-javobni olib tashlash",
+      "addOption": "Javob qo‘shish",
+      "ask": "Hammadan so‘rash",
+      "cancel": "Bekor qilish"
     }
   },
   "help": {

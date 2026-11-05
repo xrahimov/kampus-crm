@@ -35,6 +35,11 @@ export const REACTIONS = ["like", "clap", "heart", "laugh", "wow", "slower", "fa
 export type Reaction = (typeof REACTIONS)[number];
 export const PACE_REACTIONS: readonly Reaction[] = ["slower", "faster"];
 
+export const POLL_QUESTION_MAX = 200;
+export const POLL_OPTION_MAX = 100;
+export const POLL_MIN_OPTIONS = 2;
+export const POLL_MAX_OPTIONS = 6;
+
 export const videoSyncSchema = z.object({
   secret: z.string().min(16).max(200),
   /** Highest signal id already received; those up to it are deleted. */
@@ -62,6 +67,29 @@ export const videoSyncSchema = z.object({
       screen: z.boolean().default(false),
       hand: z.boolean().default(false),
     })
+    .optional(),
+  /** Poll actions (A-153): the teacher opens or closes one; a student answers. */
+  poll: z
+    .discriminatedUnion("action", [
+      z.object({
+        action: z.literal("open"),
+        question: z.string().trim().min(1).max(POLL_QUESTION_MAX),
+        options: z
+          .array(z.string().trim().min(1).max(POLL_OPTION_MAX))
+          .min(POLL_MIN_OPTIONS)
+          .max(POLL_MAX_OPTIONS),
+      }),
+      z.object({ action: z.literal("close"), pollId: z.string().min(1).max(64) }),
+      z.object({
+        action: z.literal("vote"),
+        pollId: z.string().min(1).max(64),
+        option: z
+          .number()
+          .int()
+          .min(0)
+          .max(POLL_MAX_OPTIONS - 1),
+      }),
+    ])
     .optional(),
   /** The teacher's stage for everyone: spotlight (a participant id or null) and focus mode. */
   room: z

@@ -18,6 +18,13 @@ import { loadIntegrationConfig } from "@/server/services/integrations/integratio
 import { deliverMessage } from "@/server/services/sms/sms.service";
 import { notifyLessonStarted } from "@/server/services/telegram/student-telegram.service";
 import { appOriginForGroup } from "@/server/services/settings/domains.service";
+import {
+  applyPollAction,
+  pollForPeer,
+  pollResults,
+  type PollDto,
+  type PollResultDto,
+} from "@/server/services/video/video-polls.service";
 import { dateToIso, isoToDate, organizationOfBranch } from "@/server/services/settings/shared";
 
 /*
@@ -77,6 +84,8 @@ export interface GroupVideoDto {
     startedAt: string;
     endedAt: string | null;
     students: Array<{ studentId: string; fullName: string; minutes: number }>;
+    /** Polls asked in the call, with their results (A-153). */
+    polls: PollResultDto[];
   } | null;
 }
 
@@ -126,6 +135,8 @@ export interface SyncDto {
   stage: StageDto;
   /** This browser's own raised-hand time, for its place in the queue. */
   handRaisedAt: string | null;
+  /** The open poll, else the last closed one (A-153). */
+  poll: PollDto | null;
 }
 
 export interface ClassPageDto {
@@ -318,6 +329,7 @@ async function lastEndedRoom(db: DbClient, groupId: string): Promise<GroupVideoD
     lessonId: room.lessonId,
     startedAt: room.startedAt.toISOString(),
     endedAt: room.endedAt?.toISOString() ?? null,
+    polls: await pollResults(db, room.id),
     students: [...minutes.entries()]
       .map(([studentId, v]) => ({
         studentId,
@@ -640,6 +652,7 @@ export async function syncVideoPeer(
     signals: [],
     stage: { spotlight: null, focus: false },
     handRaisedAt: null,
+    poll: null,
   });
   if (await closeIfOverTime(db, me.room)) return gone("ENDED");
   // Left already, or replaced by the same person's newer tab.
@@ -688,6 +701,9 @@ export async function syncVideoPeer(
     stage = { ...stage, spotlight: null };
   }
 
+  if (input.poll) await applyPollAction(db, me, input.poll, now);
+  const poll = await pollForPeer(db, me);
+
   // Only the teacher may switch other people's microphones off or lower their hands.
   const outgoing = input.signals.filter(
     (s) => peerIds.has(s.to) && (!HOST_SIGNAL_KINDS.includes(s.kind) || me.role === "HOST"),
@@ -724,6 +740,7 @@ export async function syncVideoPeer(
     signals: incoming.map((s) => ({ id: s.id, from: s.fromId, kind: s.kind, payload: s.payload })),
     stage,
     handRaisedAt: handRaisedAt?.toISOString() ?? null,
+    poll,
   };
 }
 

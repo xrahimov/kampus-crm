@@ -146,6 +146,35 @@ test.describe("video lessons", () => {
     await expect(teacher.getByTestId("react-slower")).toHaveCount(0);
     await teacher.getByTestId("toggle-reactions").click();
 
+    // A poll: the student answers, the teacher sees the count and closes it (A-153).
+    await teacher.getByTestId("toggle-poll").click();
+    // A call left open by an earlier run may already hold a poll.
+    if (await teacher.getByTestId("poll-new").isVisible()) {
+      await teacher.getByTestId("poll-new").click();
+    }
+    await teacher.getByTestId("poll-question-input").fill("Ready for the test?");
+    const optionInputs = teacher.getByTestId("poll-option-input");
+    await optionInputs.nth(0).fill("Yes");
+    await optionInputs.nth(1).fill("Not yet");
+    await teacher.getByTestId("poll-open").click();
+    await expect(teacher.getByTestId("poll-question")).toHaveText("Ready for the test?", {
+      timeout: 10_000,
+    });
+    await expect(student.getByTestId("poll-notice")).toContainText("Ready for the test?", {
+      timeout: 10_000,
+    });
+    await student.getByTestId("poll-notice").click();
+    await student.getByTestId("poll-option").nth(1).click();
+    await expect(student.getByTestId("poll-total")).toContainText("Answer sent", {
+      timeout: 10_000,
+    });
+    await expect(teacher.getByTestId("poll-total")).toContainText("1 answer", { timeout: 10_000 });
+    await teacher.getByTestId("poll-close").click();
+    await expect(student.getByTestId("poll-result").nth(1)).toContainText("1", {
+      timeout: 10_000,
+    });
+    await teacher.getByTestId("toggle-people").click();
+
     // Spotlight and focus mode reach the student's screen.
     await teacher
       .getByTestId("people-panel")
@@ -177,6 +206,7 @@ test.describe("video lessons", () => {
     // On a lesson day the call belongs to the lesson and proposes its attendance (B1).
     const last = teacher.getByTestId("video-last");
     await last.locator("summary").click();
+    await expect(last.getByTestId("video-polls")).toContainText("Ready for the test?");
     if (await last.getByTestId("video-attendance").isVisible()) {
       await last.getByTestId("video-attendance").click();
       const dialog = teacher.getByTestId("call-attendance");

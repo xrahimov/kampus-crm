@@ -5060,7 +5060,10 @@
       },
       "paceTitle": "Students asking for a different pace in the last minute",
       "paceSlower": "{count} slower",
-      "paceFaster": "{count} faster"
+      "paceFaster": "{count} faster",
+      "poll": "Poll",
+      "pollNew": "New poll",
+      "pollAsk": "The teacher asks: {question} Tap to answer."
     },
     "done": {
       "left": "You left the lesson.",
@@ -5091,7 +5094,8 @@
       "links": "Students' links",
       "last": "Last video lesson {date}: {count, plural, =0 {no students joined} one {# student joined} other {# students joined}}",
       "minutes": "{count} min",
-      "attendance": "Attendance from the call"
+      "attendance": "Attendance from the call",
+      "polls": "Polls"
     },
     "links": {
       "title": "Students' video lesson links",
@@ -5119,6 +5123,24 @@
       "already": "marked {status}",
       "apply": "Apply to the lesson",
       "applying": "Applying…"
+    },
+    "poll": {
+      "none": "No poll yet.",
+      "open": "Open poll",
+      "closed": "Poll closed",
+      "yourAnswer": "Your answer",
+      "tapToAnswer": "Tap an answer. The teacher shows the results when the poll closes.",
+      "canChange": "Answer sent. You can change it until the poll closes.",
+      "answers": "{count, plural, =0 {No answers} one {# answer} other {# answers}}",
+      "close": "Close and show results",
+      "new": "New poll",
+      "question": "Question",
+      "options": "Answers",
+      "option": "Answer {number}",
+      "removeOption": "Remove answer {number}",
+      "addOption": "Add an answer",
+      "ask": "Ask everyone",
+      "cancel": "Cancel"
     }
   },
   "help": {
