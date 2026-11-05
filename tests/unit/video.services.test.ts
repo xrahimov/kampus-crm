@@ -395,6 +395,41 @@ describe("video lessons", () => {
     });
     expect(stray.stage).toEqual({ spotlight: null, focus: false });
 
+    // Polls (A-153): the teacher asks, the student answers, counts stay hidden until closed.
+    const studentOpens = await sync(student.participantId, student.secret, {
+      poll: { action: "open", question: "Nope?", options: ["a", "b"] },
+    });
+    expect(studentOpens.poll).toBeNull();
+    const asked = await sync(host.participantId, host.secret, {
+      poll: { action: "open", question: "Ready?", options: ["Yes", "No", "Almost"] },
+    });
+    expect(asked.poll).toMatchObject({ question: "Ready?", open: true, counts: [0, 0, 0] });
+    const pollId = asked.poll!.id;
+    const voted = await sync(student.participantId, student.secret, {
+      poll: { action: "vote", pollId, option: 2 },
+    });
+    expect(voted.poll).toMatchObject({ id: pollId, myVote: 2, counts: null, total: 1 });
+    const changed = await sync(student.participantId, student.secret, {
+      poll: { action: "vote", pollId, option: 0 },
+    });
+    expect(changed.poll).toMatchObject({ myVote: 0, total: 1 });
+    // Staff (and a guest's vote) do not count; a student cannot close.
+    await sync(guest.participantId, guest.secret, { poll: { action: "vote", pollId, option: 1 } });
+    const studentCloses = await sync(student.participantId, student.secret, {
+      poll: { action: "close", pollId },
+    });
+    expect(studentCloses.poll).toMatchObject({ open: true, total: 1 });
+    const closed = await sync(host.participantId, host.secret, {
+      poll: { action: "close", pollId },
+    });
+    expect(closed.poll).toMatchObject({
+      open: false,
+      counts: [1, 0, 0],
+      voters: [{ name: `${TAG} Student One`, option: 0 }],
+    });
+    const studentSees = await sync(student.participantId, student.secret);
+    expect(studentSees.poll).toMatchObject({ open: false, counts: [1, 0, 0], voters: null });
+
     await expect(sync(host.participantId, "wrong-secret-wrong-secret")).rejects.toMatchObject({
       code: "FORBIDDEN",
     });
@@ -443,6 +478,9 @@ describe("video lessons", () => {
     expect(card.lastRoom?.students.map((s) => s.fullName).sort()).toEqual([
       `${TAG} Student One`,
       `${TAG} Student Two`,
+    ]);
+    expect(card.lastRoom?.polls).toEqual([
+      expect.objectContaining({ question: "Ready?", counts: [1, 0, 0], total: 1 }),
     ]);
     expect((await getClassPage(tokenOne))?.roomId).toBeNull();
     await expect(joinVideoRoomAsStudent(tokenOne)).rejects.toMatchObject({ code: "CONFLICT" });

@@ -1,4 +1,11 @@
-import { PACE_REACTIONS, REACTIONS, type Reaction, type SignalKind } from "@/lib/validation/video";
+import {
+  PACE_REACTIONS,
+  REACTIONS,
+  type Reaction,
+  type SignalKind,
+  type VideoSyncInput,
+} from "@/lib/validation/video";
+import type { PollDto } from "@/server/services/video/video-polls.service";
 import type { JoinDto, PeerDto, StageDto, SyncDto } from "@/server/services/video/video.service";
 
 /*
@@ -111,6 +118,12 @@ export class CallEngine {
   reactions: ShownReaction[] = [];
   /** Latest "slower" / "faster" per student, for the teacher. */
   private pace = new Map<string, { reaction: Reaction; at: number }>();
+  /** The open poll, else the last closed one (A-153). */
+  poll: PollDto | null = null;
+  /** Poll ids this browser has already been shown, for the "new poll" badge. */
+  private seenPolls = new Set<string>();
+  /** A poll action waiting for the next sync. */
+  private pollAction: NonNullable<VideoSyncInput["poll"]> | null = null;
   private chatSeq = 0;
   private reactionSeq = 0;
 
@@ -245,6 +258,44 @@ export class CallEngine {
     this.pushReaction(null, reaction);
   }
 
+  /** Teacher only: asks a question with 2-6 answers; any open poll closes. */
+  openPoll(question: string, options: string[]): void {
+    if (this.self.role !== "HOST") return;
+    this.pollAction = { action: "open", question, options };
+    this.changed(true);
+  }
+
+  /** Teacher only: closes the open poll, showing the results to everyone. */
+  closePoll(): void {
+    if (this.self.role !== "HOST" || !this.poll?.open) return;
+    this.pollAction = { action: "close", pollId: this.poll.id };
+    this.changed(true);
+  }
+
+  /** Student: answers the open poll (again to change the answer). */
+  votePoll(option: number): void {
+    if (this.self.role !== "STUDENT" || !this.poll?.open) return;
+    this.pollAction = { action: "vote", pollId: this.poll.id, option };
+    this.poll = { ...this.poll, myVote: option };
+    this.changed(true);
+  }
+
+  /** Whether a poll arrived that this browser has not shown yet. */
+  get pollUnseen(): boolean {
+    return Boolean(this.poll && !this.seenPolls.has(`${this.poll.id}:${this.poll.open}`));
+  }
+
+  markPollSeen(): void {
+    if (!this.poll || !this.pollUnseen) return;
+    this.seenPolls.add(`${this.poll.id}:${this.poll.open}`);
+    this.onChange();
+  }
+
+  /** Whether a poll action is still on its way to the server. */
+  get pollPending(): boolean {
+    return this.pollAction !== null;
+  }
+
   /** Students' latest "slower" / "faster" in the last minute, for the teacher's tally. */
   paceTally(now = Date.now()): { slower: number; faster: number } {
     const tally = { slower: 0, faster: 0 };
@@ -360,6 +411,7 @@ export class CallEngine {
     this.timer = null;
     const signals = this.outbox.splice(0, 100);
     const sentStage = this.stageDraft;
+    const sentPoll = this.pollAction;
     let result: SyncDto;
     try {
       const response = await fetch(`/api/v1/video/peers/${this.self.participantId}/sync`, {
@@ -371,6 +423,7 @@ export class CallEngine {
           signals,
           state: this.media,
           ...(sentStage ? { room: sentStage } : {}),
+          ...(sentPoll ? { poll: sentPoll } : {}),
         }),
       });
       if (response.status === 403 || response.status === 404) {
@@ -400,6 +453,12 @@ export class CallEngine {
     this.stage = result.stage;
     // The server applied the change this poll carried (or dropped a spotlight on someone gone).
     if (sentStage && this.stageDraft === sentStage) this.stageDraft = null;
+    if (sentPoll && this.pollAction === sentPoll) this.pollAction = null;
+    // A vote still on its way keeps showing as chosen.
+    this.poll =
+      result.poll && this.pollAction?.action === "vote" && this.pollAction.pollId === result.poll.id
+        ? { ...result.poll, myVote: this.pollAction.option }
+        : result.poll;
     this.handRaisedAt = result.handRaisedAt;
 
     this.reconcile(result.peers);

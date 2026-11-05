@@ -189,6 +189,26 @@ export function GroupVideoCard({
                 ))}
               </ul>
             )}
+            {state.lastRoom.polls.length > 0 && (
+              <div className="mt-3 space-y-2" data-testid="video-polls">
+                <p className="text-xs font-medium text-muted-foreground">{t("polls")}</p>
+                {state.lastRoom.polls.map((poll) => (
+                  <div key={poll.id} className="rounded-md border p-2" data-testid="video-poll">
+                    <p className="font-medium">{poll.question}</p>
+                    <ul className="mt-1 space-y-0.5">
+                      {poll.options.map((option, i) => (
+                        <li key={i} className="flex justify-between gap-2">
+                          <span className="truncate">{option}</span>
+                          <span className="shrink-0 text-muted-foreground tabular-nums">
+                            {poll.counts[i]}
+                          </span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                ))}
+              </div>
+            )}
             {canHost && state.lastRoom.lessonId && (
               <Button
                 variant="outline"
