@@ -3,6 +3,7 @@ import { createHmac } from "node:crypto";
 import type { Prisma, VideoPeerRole, VideoRoomStatus } from "@/generated/prisma/client";
 import { DEFAULT_STUN_URLS } from "@/lib/validation/integrations";
 import {
+  BROADCAST_SIGNAL_KINDS,
   HOST_SIGNAL_KINDS,
   type StartVideoInput,
   type VideoLinksSmsInput,
@@ -132,9 +133,26 @@ export interface StageDto {
   board: boolean;
 }
 
+/** Breakout rooms as this browser sees them (A-156). */
+export interface BreakoutDto {
+  /** Sub-rooms open right now; 0 = everyone is in the main room. */
+  rooms: number;
+  endsAt: string | null;
+  /** The sub-room this browser is in; null = main room. */
+  mine: number | null;
+  /** Teacher only: everyone online and where they are, to manage the rooms. */
+  everyone: Array<{
+    id: string;
+    displayName: string;
+    role: VideoPeerRole;
+    room: number | null;
+  }> | null;
+}
+
 export interface SyncDto {
   /** GONE: this browser left, or the same person joined again from another tab. */
   status: "LIVE" | "ENDED" | "GONE";
+  /** The people in this browser's room (main or its breakout sub-room). */
   peers: PeerDto[];
   signals: Array<{ id: number; from: string; kind: string; payload: unknown }>;
   stage: StageDto;
@@ -142,6 +160,7 @@ export interface SyncDto {
   handRaisedAt: string | null;
   /** The open poll, else the last closed one (A-153). */
   poll: PollDto | null;
+  breakout: BreakoutDto;
 }
 
 export interface ClassPageDto {
@@ -660,6 +679,8 @@ export async function syncVideoPeer(
           spotlightId: true,
           focusMode: true,
           boardOpen: true,
+          breakoutRooms: true,
+          breakoutEndsAt: true,
         },
       },
     },
@@ -672,6 +693,7 @@ export async function syncVideoPeer(
     stage: { spotlight: null, focus: false, board: false },
     handRaisedAt: null,
     poll: null,
+    breakout: { rooms: 0, endsAt: null, mine: null, everyone: null },
   });
   if (await closeIfOverTime(db, me.room)) return gone("ENDED");
   // Left already, or replaced by the same person's newer tab.
@@ -698,8 +720,72 @@ export async function syncVideoPeer(
     return gone("GONE");
   }
 
-  const peers = (await onlinePeers(db, me.roomId, now)).filter((p) => p.id !== me.id);
+  // Breakout rooms (A-156): time up, or the teacher's new arrangement.
+  let breakoutRooms = me.room.breakoutRooms;
+  let breakoutEndsAt = me.room.breakoutEndsAt;
+  let myRoom = me.breakoutRoom;
+  const closeBreakout = async () => {
+    await db.videoRoom.update({
+      where: { id: me.roomId },
+      data: { breakoutRooms: 0, breakoutEndsAt: null },
+    });
+    await db.videoParticipant.updateMany({
+      where: { roomId: me.roomId },
+      data: { breakoutRoom: null },
+    });
+    breakoutRooms = 0;
+    breakoutEndsAt = null;
+    myRoom = null;
+  };
+  if (breakoutRooms > 0 && breakoutEndsAt && breakoutEndsAt <= now) await closeBreakout();
+  if (input.breakout && me.role === "HOST") {
+    if (input.breakout.rooms === 0) {
+      if (breakoutRooms > 0) await closeBreakout();
+    } else {
+      breakoutRooms = input.breakout.rooms;
+      breakoutEndsAt =
+        input.breakout.minutes === undefined
+          ? breakoutEndsAt
+          : input.breakout.minutes === null
+            ? null
+            : new Date(now.getTime() + input.breakout.minutes * 60_000);
+      await db.videoRoom.update({
+        where: { id: me.roomId },
+        data: { breakoutRooms, breakoutEndsAt },
+      });
+      for (const a of input.breakout.assign) {
+        const room = a.room !== null && a.room <= breakoutRooms ? a.room : null;
+        await db.videoParticipant.updateMany({
+          where: { id: a.id, roomId: me.roomId },
+          data: { breakoutRoom: room },
+        });
+        if (a.id === me.id) myRoom = room;
+      }
+    }
+  }
+  if (breakoutRooms === 0 && myRoom !== null) {
+    await db.videoParticipant.update({ where: { id: me.id }, data: { breakoutRoom: null } });
+    myRoom = null;
+  }
+
+  const online = (await onlinePeers(db, me.roomId, now)).filter((p) => p.id !== me.id);
+  // Only the people in the same (sub-)room are peers; the mesh follows.
+  const peers = online.filter((p) => (breakoutRooms === 0 ? true : p.breakoutRoom === myRoom));
   const peerIds = new Set(peers.map((p) => p.id));
+  const breakout: BreakoutDto = {
+    rooms: breakoutRooms,
+    endsAt: breakoutEndsAt?.toISOString() ?? null,
+    mine: breakoutRooms === 0 ? null : myRoom,
+    everyone:
+      me.role === "HOST"
+        ? online.map((p) => ({
+            id: p.id,
+            displayName: p.displayName,
+            role: p.role,
+            room: breakoutRooms === 0 ? null : p.breakoutRoom,
+          }))
+        : null,
+  };
 
   // Only the teacher sets the stage; a spotlight on someone who left falls away.
   let stage: StageDto = {
@@ -731,10 +817,17 @@ export async function syncVideoPeer(
   if (input.poll) await applyPollAction(db, me, input.poll, now);
   const poll = await pollForPeer(db, me);
 
-  // Only the teacher may switch other people's microphones off or lower their hands.
-  const outgoing = input.signals.filter(
-    (s) => peerIds.has(s.to) && (!HOST_SIGNAL_KINDS.includes(s.kind) || me.role === "HOST"),
-  );
+  // Only the teacher may switch other people's microphones off, lower hands or send notices;
+  // a notice goes to everyone in the call, whichever sub-room they are in.
+  const outgoing = input.signals
+    .filter((s) => !HOST_SIGNAL_KINDS.includes(s.kind) || me.role === "HOST")
+    .flatMap((s) =>
+      BROADCAST_SIGNAL_KINDS.includes(s.kind)
+        ? online.map((p) => ({ ...s, to: p.id }))
+        : peerIds.has(s.to)
+          ? [s]
+          : [],
+    );
   if (outgoing.length > 0) {
     await db.videoSignal.createMany({
       data: outgoing.map((s) => ({
@@ -768,6 +861,7 @@ export async function syncVideoPeer(
     stage,
     handRaisedAt: handRaisedAt?.toISOString() ?? null,
     poll,
+    breakout,
   };
 }
 
