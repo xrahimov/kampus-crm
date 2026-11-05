@@ -1,5 +1,5 @@
-import type { SignalKind } from "@/lib/validation/video";
-import type { JoinDto, PeerDto, SyncDto } from "@/server/services/video/video.service";
+import { PACE_REACTIONS, REACTIONS, type Reaction, type SignalKind } from "@/lib/validation/video";
+import type { JoinDto, PeerDto, StageDto, SyncDto } from "@/server/services/video/video.service";
 
 /*
  * The browser side of a video lesson: one RTCPeerConnection per other
@@ -31,12 +31,26 @@ export interface ChatMessage {
 
 export const CHAT_MAX_LENGTH = 500;
 
+/** How long a reaction floats over a picture. */
+export const REACTION_SHOW_MS = 4000;
+/** How long a student's "slower" / "faster" counts in the teacher's tally. */
+export const PACE_WINDOW_MS = 60_000;
+
+/** A reaction shown on someone's picture; `from` is null for this browser's own. */
+export interface ShownReaction {
+  seq: number;
+  from: string | null;
+  reaction: Reaction;
+  at: number;
+}
+
 export interface RemotePeer {
   id: string;
   displayName: string;
   role: PeerDto["role"];
   joinedAt: string;
   media: MediaState | null;
+  handRaisedAt: string | null;
   stream: MediaStream;
   connection: RTCPeerConnectionState;
 }
@@ -85,7 +99,20 @@ export class CallEngine {
   unread = 0;
   /** Set when the teacher switched this microphone off; the room shows a notice. */
   mutedBy: { name: string; at: number } | null = null;
+  /** Set when the teacher lowered this hand; the room shows a notice. */
+  loweredBy: { name: string; at: number } | null = null;
+  /** The teacher's spotlight and focus mode, as the server last reported them. */
+  stage: StageDto = { spotlight: null, focus: false };
+  /** The teacher's own change, sent on every poll until the server reports it back. */
+  private stageDraft: StageDto | null = null;
+  /** When this browser's hand went up (server time), for its place in the queue. */
+  handRaisedAt: string | null = null;
+  /** Recent reactions, newest last. */
+  reactions: ShownReaction[] = [];
+  /** Latest "slower" / "faster" per student, for the teacher. */
+  private pace = new Map<string, { reaction: Reaction; at: number }>();
   private chatSeq = 0;
+  private reactionSeq = 0;
 
   private listeners = new Set<() => void>();
   /** Bumped on every change; the snapshot for useSyncExternalStore. */
@@ -127,6 +154,7 @@ export class CallEngine {
         role: l.info.role,
         joinedAt: l.info.joinedAt,
         media: l.info.media ? { hand: false, ...l.info.media } : null,
+        handRaisedAt: l.info.handRaisedAt ?? null,
         stream: l.stream,
         connection: l.pc.connectionState,
       }))
@@ -183,6 +211,71 @@ export class CallEngine {
   mutePeers(ids: string[] = [...this.links.keys()]): void {
     if (this.self.role !== "HOST") return;
     for (const id of ids) if (this.links.has(id)) this.send(id, "mute", null);
+  }
+
+  /** Teacher only: asks one person to lower their raised hand. */
+  lowerHand(id: string): void {
+    if (this.self.role !== "HOST" || !this.links.has(id)) return;
+    this.send(id, "lower", null);
+  }
+
+  /** Teacher only: puts one person (or nobody) on everyone's stage and switches focus mode. */
+  setStage(change: Partial<StageDto>): void {
+    if (this.self.role !== "HOST") return;
+    this.stageDraft = { ...(this.stageDraft ?? this.stage), ...change };
+    this.changed(true);
+  }
+
+  /** The stage as this browser should show it: the teacher's draft wins until confirmed. */
+  get currentStage(): StageDto {
+    return this.stageDraft ?? this.stage;
+  }
+
+  /**
+   * Sends a reaction. Everyone sees ordinary ones on the sender's picture;
+   * "slower" and "faster" go only to the teacher and staff.
+   */
+  react(reaction: Reaction): void {
+    if (!REACTIONS.includes(reaction)) return;
+    const pace = PACE_REACTIONS.includes(reaction);
+    for (const link of this.links.values()) {
+      if (pace && link.info.role === "STUDENT") continue;
+      this.send(link.info.id, "react", { reaction });
+    }
+    this.pushReaction(null, reaction);
+  }
+
+  /** Students' latest "slower" / "faster" in the last minute, for the teacher's tally. */
+  paceTally(now = Date.now()): { slower: number; faster: number } {
+    const tally = { slower: 0, faster: 0 };
+    for (const [from, v] of this.pace) {
+      if (now - v.at > PACE_WINDOW_MS || !this.links.has(from)) continue;
+      if (v.reaction === "slower") tally.slower += 1;
+      if (v.reaction === "faster") tally.faster += 1;
+    }
+    return tally;
+  }
+
+  /** Reactions still floating, newest per person. */
+  activeReactions(now = Date.now()): Map<string | null, ShownReaction> {
+    const shown = new Map<string | null, ShownReaction>();
+    for (const r of this.reactions) if (now - r.at < REACTION_SHOW_MS) shown.set(r.from, r);
+    return shown;
+  }
+
+  private pushReaction(from: string | null, reaction: Reaction): void {
+    const at = Date.now();
+    this.reactions = [
+      ...this.reactions.filter((r) => at - r.at < REACTION_SHOW_MS),
+      { seq: ++this.reactionSeq, from, reaction, at },
+    ].slice(-50);
+    if (from && PACE_REACTIONS.includes(reaction)) this.pace.set(from, { reaction, at });
+    // Redraw once the reaction has faded (and once the pace vote has expired).
+    setTimeout(() => this.onChange(), REACTION_SHOW_MS + 50);
+    if (from && PACE_REACTIONS.includes(reaction)) {
+      setTimeout(() => this.onChange(), PACE_WINDOW_MS + 50);
+    }
+    this.onChange();
   }
 
   /** Sends the screen instead of the camera until sharing stops. */
@@ -266,6 +359,7 @@ export class CallEngine {
     if (this.stopped) return;
     this.timer = null;
     const signals = this.outbox.splice(0, 100);
+    const sentStage = this.stageDraft;
     let result: SyncDto;
     try {
       const response = await fetch(`/api/v1/video/peers/${this.self.participantId}/sync`, {
@@ -276,6 +370,7 @@ export class CallEngine {
           after: this.cursor,
           signals,
           state: this.media,
+          ...(sentStage ? { room: sentStage } : {}),
         }),
       });
       if (response.status === 403 || response.status === 404) {
@@ -302,6 +397,10 @@ export class CallEngine {
       return;
     }
     if (this.status === "connecting") this.status = "live";
+    this.stage = result.stage;
+    // The server applied the change this poll carried (or dropped a spotlight on someone gone).
+    if (sentStage && this.stageDraft === sentStage) this.stageDraft = null;
+    this.handRaisedAt = result.handRaisedAt;
 
     this.reconcile(result.peers);
     for (const s of result.signals) {
@@ -446,6 +545,17 @@ export class CallEngine {
           at: new Date(at ?? Date.now()),
         });
         this.unread += 1;
+      } else if (kind === "lower" && link.info.role === "HOST" && this.self.role !== "HOST") {
+        if (this.media.hand) {
+          this.loweredBy = { name: link.info.displayName, at: Date.now() };
+          this.setHand(false);
+        }
+      } else if (kind === "react") {
+        const reaction = (payload as { reaction?: unknown } | null)?.reaction;
+        if (typeof reaction !== "string" || !REACTIONS.includes(reaction as Reaction)) return;
+        // Pace votes are for the teacher; a student's browser ignores them.
+        if (PACE_REACTIONS.includes(reaction as Reaction) && this.self.role === "STUDENT") return;
+        this.pushReaction(from, reaction as Reaction);
       } else if (kind === "mute" && link.info.role === "HOST" && this.self.role !== "HOST") {
         // Only the teacher's request counts (the server also drops others').
         if (this.media.audio) {

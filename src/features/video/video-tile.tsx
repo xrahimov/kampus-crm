@@ -1,6 +1,6 @@
 "use client";
 
-import { Hand, MicOff, MonitorUp, Pin, VideoOff } from "lucide-react";
+import { Hand, MicOff, MonitorUp, Pin, Star, VideoOff } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useEffect, useRef, useState } from "react";
 
@@ -54,6 +54,9 @@ export function VideoTile({
   videoOn,
   screen = false,
   hand = false,
+  handPlace,
+  reaction,
+  spotlight = false,
   status,
   pinned = false,
   onPin,
@@ -67,6 +70,12 @@ export function VideoTile({
   videoOn: boolean;
   screen?: boolean;
   hand?: boolean;
+  /** Place in the raised-hand queue, shown on the hand mark. */
+  handPlace?: number;
+  /** A reaction floating over the picture; the key restarts the animation. */
+  reaction?: { key: number; emoji: string };
+  /** The teacher put this person on everyone's stage. */
+  spotlight?: boolean;
   /** Shown over the picture while the connection is not up. */
   status?: string | null;
   pinned?: boolean;
@@ -124,12 +133,32 @@ export function VideoTile({
       )}
       {hand && (
         <div
-          className="absolute top-2 left-2 grid size-8 place-items-center rounded-md bg-amber-400 text-sidebar shadow"
-          aria-label={t("handRaised")}
+          className="absolute top-2 left-2 flex h-8 min-w-8 items-center justify-center gap-0.5 rounded-md bg-amber-400 px-1.5 text-sm font-semibold text-sidebar shadow"
+          aria-label={handPlace ? t("handPlace", { place: handPlace }) : t("handRaised")}
           role="img"
           data-testid="hand-mark"
         >
           <Hand className="size-4" />
+          {handPlace && <span>{handPlace}</span>}
+        </div>
+      )}
+      {spotlight && (
+        <div
+          className="absolute top-2 left-1/2 flex -translate-x-1/2 items-center gap-1 rounded-md bg-black/55 px-2 py-1 text-xs text-white"
+          data-testid="spotlight-mark"
+        >
+          <Star className="size-3 fill-amber-400 text-amber-400" aria-hidden />
+          {t("spotlighted")}
+        </div>
+      )}
+      {reaction && (
+        <div
+          key={reaction.key}
+          className="pointer-events-none absolute right-3 bottom-10 animate-in text-4xl duration-300 fade-in zoom-in-50 motion-reduce:animate-none sm:text-5xl"
+          aria-hidden
+          data-testid="reaction-mark"
+        >
+          {reaction.emoji}
         </div>
       )}
       {status && (

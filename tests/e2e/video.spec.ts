@@ -120,6 +120,47 @@ test.describe("video lessons", () => {
       "Turn microphone on",
     );
 
+    // Hand queue: the teacher sees the raised hand in order and lowers it (A-152).
+    await expect(teacher.getByTestId("hand-count")).toHaveText("1");
+    await teacher.getByTestId("toggle-people").click();
+    const queue = teacher.getByTestId("hand-queue");
+    await expect(queue.getByTestId("hand-queue-item")).toContainText(first!.fullName);
+    await queue.getByTestId("lower-hand").click();
+    await expect(student.getByTestId("lowered-notice")).toContainText("Demo Teacher", {
+      timeout: 10_000,
+    });
+    await expect(student.getByTestId("toggle-hand")).toHaveAttribute("aria-label", "Raise hand");
+    await expect(teacher.getByTestId("hand-queue")).toHaveCount(0, { timeout: 10_000 });
+
+    // Reactions float on the sender's picture; "slower" reaches only the teacher's tally.
+    await student.getByTestId("toggle-reactions").click();
+    await student.getByTestId("react-clap").click();
+    await expect(teacher.getByTestId("tile-peer").getByTestId("reaction-mark")).toHaveText("👏", {
+      timeout: 10_000,
+    });
+    await student.getByTestId("toggle-reactions").click();
+    await student.getByTestId("react-slower").click();
+    await expect(teacher.getByTestId("pace-tally")).toContainText("1 slower", { timeout: 10_000 });
+    await expect(teacher.getByTestId("toggle-reactions")).toBeVisible();
+    await teacher.getByTestId("toggle-reactions").click();
+    await expect(teacher.getByTestId("react-slower")).toHaveCount(0);
+    await teacher.getByTestId("toggle-reactions").click();
+
+    // Spotlight and focus mode reach the student's screen.
+    await teacher
+      .getByTestId("people-panel")
+      .getByRole("button", { name: `Show ${first!.fullName} large to everyone` })
+      .click();
+    await expect(student.getByTestId("tile-self").getByTestId("spotlight-mark")).toBeVisible({
+      timeout: 10_000,
+    });
+    await teacher.getByTestId("toggle-focus").click();
+    await expect(student.getByTestId("focus-notice")).toContainText("focus mode", {
+      timeout: 10_000,
+    });
+    await teacher.getByTestId("toggle-focus").click();
+    await expect(student.getByTestId("focus-notice")).toHaveCount(0, { timeout: 10_000 });
+
     await teacher.getByTestId("end-call").click();
     await teacher
       .getByRole("alertdialog")
