@@ -5037,7 +5037,31 @@
       "recordingSaved": "Yozuv guruh materiallarida saqlandi.",
       "recordingFailed": "Yozuvni saqlab bo‘lmadi.",
       "recordingUnsupported": "Bu brauzer yozib ololmaydi.",
-      "leaveWhileRecording": "Yozuv hali saqlanmoqda."
+      "leaveWhileRecording": "Yozuv hali saqlanmoqda.",
+      "handQueue": "Ko‘tarilgan qo‘llar",
+      "handPlace": "Qo‘l ko‘tarilgan, navbatda {place}-o‘rinda",
+      "lowerHandFor": "{name}ning qo‘lini tushirish",
+      "loweredBy": "{name} qo‘lingizni tushirdi.",
+      "spotlight": "{name}ni hammaga katta ko‘rsatish",
+      "unspotlight": "{name}ni hammaga ko‘rsatishni to‘xtatish",
+      "spotlighted": "Hammaga ko‘rsatilmoqda",
+      "focusOn": "Diqqat rejimi: o‘quvchilar faqat sizni ko‘radi",
+      "focusOff": "Diqqat rejimini o‘chirish",
+      "focusTeacher": "Diqqat rejimi yoqilgan: o‘quvchilar faqat sizni, hammaga ko‘rsatilgan odamni va ulashilgan ekranni ko‘radi. Bir-birini eshitishda davom etadi.",
+      "focusStudent": "O‘qituvchi diqqat rejimini yoqdi: siz faqat o‘qituvchini ko‘rasiz.",
+      "reactions": "Reaksiyalar",
+      "reaction": {
+        "like": "Yoqdi",
+        "clap": "Qarsak",
+        "heart": "Yurak",
+        "laugh": "Kulgi",
+        "wow": "Voy",
+        "slower": "Sekinroq, iltimos (faqat o‘qituvchi ko‘radi)",
+        "faster": "Tezroq, iltimos (faqat o‘qituvchi ko‘radi)"
+      },
+      "paceTitle": "So‘nggi daqiqada boshqa sur’at so‘ragan o‘quvchilar",
+      "paceSlower": "{count} sekinroq",
+      "paceFaster": "{count} tezroq"
     },
     "done": {
       "left": "Siz darsdan chiqdingiz.",
