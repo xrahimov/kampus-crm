@@ -600,7 +600,8 @@
     "inn": "Enter the 9-digit taxpayer number.",
     "ikpu": "Enter the 17-digit MXIK code.",
     "digits": "Digits only.",
-    "loginClientId": "The Client ID is a number from @BotFather."
+    "loginClientId": "The Client ID is a number from @BotFather.",
+    "videoUrl": "Paste a YouTube link or upload a video file"
   },
   "roles": {
     "CEO": "CEO",
@@ -1624,6 +1625,40 @@
         "done": "Covered",
         "next": "Next",
         "planned": "Planned"
+      },
+      "content": {
+        "button": "Content ({count})",
+        "openNow": "Open to students",
+        "release": "When students get it",
+        "fromDate": "Open from date",
+        "modes": {
+          "lesson": "After the lesson",
+          "now": "Open now",
+          "date": "From a date"
+        },
+        "title": "Content: {topic}",
+        "loading": "Loading…",
+        "hint": "What students read, watch and download for this topic, in order. Written once for the course; each group gets it after the lesson that covers the topic, or when you open it.",
+        "readOnly": "What students get for this topic. Teachers of the course and the office can change it.",
+        "empty": "No content yet.",
+        "add": "Add a block",
+        "addBlock": "Add to the list",
+        "kind": "Type",
+        "kinds": {
+          "TEXT": "Text",
+          "VIDEO": "Video",
+          "FILE": "File",
+          "LINK": "Link"
+        },
+        "blockTitle": "Heading",
+        "text": "Text",
+        "url": "Link",
+        "youtube": "YouTube link (or upload a file below)",
+        "videoFile": "Video file (mp4 or webm, up to 20 MB)",
+        "file": "File",
+        "moveUp": "Move up",
+        "moveDown": "Move down",
+        "remove": "Remove"
       }
     },
     "waitlist": {
@@ -4756,7 +4791,8 @@
       "homework": "Homework",
       "materials": "Materials",
       "announcements": "News",
-      "tests": "Tests"
+      "tests": "Tests",
+      "course": "Course"
     },
     "tests": {
       "empty": "No tests for your group yet.",
@@ -4917,6 +4953,16 @@
       "nextPayment": "next payment {date}",
       "open": "Open page",
       "footer": "This page is for your family only. Keep the link to yourselves; the centre can issue a new one if it gets out."
+    },
+    "course": {
+      "empty": "The course has no topics yet.",
+      "progress": "{course}: {open} of {total} topics open",
+      "coveredOn": "Lesson of {date}",
+      "noContent": "No materials",
+      "locked": "Opens after the lesson",
+      "opensOn": "Opens on {date}",
+      "open": "Open",
+      "download": "Download"
     }
   },
   "telegramBot": {

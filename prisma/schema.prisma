@@ -507,10 +507,56 @@ model CourseTopic {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  course  Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
-  lessons Lesson[]
+  course   Course              @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  lessons  Lesson[]
+  blocks   CourseTopicBlock[]
+  releases GroupTopicRelease[]
 
   @@index([courseId, sortOrder])
+}
+
+enum TopicBlockKind {
+  TEXT
+  VIDEO
+  FILE
+  LINK
+}
+
+/// Lesson content of a syllabus topic (A-157, online-lessons item C1): text,
+/// a video (upload or YouTube link), a file or a link, in reading order.
+model CourseTopicBlock {
+  id        String         @id @default(cuid())
+  topicId   String
+  sortOrder Int
+  kind      TopicBlockKind
+  title     String
+  /// TEXT: the text itself, paragraphs separated by blank lines.
+  body      String?
+  /// VIDEO: `/api/v1/files/<key>` or a YouTube URL; FILE: a stored file; LINK: any https URL.
+  url       String?
+  size      Int?
+  createdAt DateTime       @default(now())
+  updatedAt DateTime       @updatedAt
+
+  topic CourseTopic @relation(fields: [topicId], references: [id], onDelete: Cascade)
+
+  @@index([topicId, sortOrder])
+}
+
+/// When a group's students may open a topic's content (A-157). Without a row
+/// the topic opens once a lesson of the group has covered it.
+model GroupTopicRelease {
+  id        String    @id @default(cuid())
+  groupId   String
+  topicId   String
+  /// null = open now; a date = open from that day.
+  openFrom  DateTime? @db.Date
+  createdAt DateTime  @default(now())
+
+  group Group       @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  topic CourseTopic @relation(fields: [topicId], references: [id], onDelete: Cascade)
+
+  @@unique([groupId, topicId])
 }
 
 /// "Xonalar": per branch, with a seat capacity.
@@ -638,6 +684,7 @@ model Group {
   tests           TestGroup[]
   testAttempts    TestAttempt[]
   videoRooms      VideoRoom[]
+  topicReleases   GroupTopicRelease[]
   homework        Homework[]
   materials       LessonMaterial[]
   absenceCases    AbsenceCase[]

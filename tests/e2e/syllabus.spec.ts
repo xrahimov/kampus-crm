@@ -133,6 +133,54 @@ test.describe("course syllabus (A-137)", () => {
     await expect(page.getByTestId("syllabus-next")).toContainText("Greetings");
     await expect(page.getByTestId("syllabus-topic").first()).toHaveAttribute("data-status", "done");
 
+    // Lesson content on a topic (A-157): the office writes it; the student sees the covered
+    // topic open, the next one locked until the teacher opens it now.
+    await page.goto(`/en/groups/${groupId}?tab=syllabus`);
+    await page.getByTestId("syllabus-content").nth(1).click();
+    const content = page.getByTestId("topic-content-dialog");
+    await expect(content).toBeVisible();
+    await expect(content.getByTestId("topic-content-empty")).toBeVisible();
+    await content.getByTestId("tc-title").fill("Read first");
+    await content.getByTestId("tc-body").fill("Hello and goodbye.");
+    await content.getByTestId("tc-add").click();
+    await content.getByTestId("tc-kind").click();
+    await page.getByRole("option", { name: "Video" }).click();
+    await content.getByTestId("tc-title").fill("Watch");
+    await content.getByTestId("tc-url").fill("https://youtu.be/dQw4w9WgXcQ");
+    await content.getByTestId("tc-add").click();
+    await expect(content.getByTestId("topic-content-block")).toHaveCount(2);
+    await content.getByRole("button", { name: "Save" }).click();
+    await expect(content).toBeHidden();
+    await expect(page.getByTestId("syllabus-content").nth(1)).toContainText("Content (2)");
+    await expect(page.getByTestId("syllabus-open")).toHaveCount(1);
+
+    const links = (await (
+      await page.request.get(`/api/v1/groups/${groupId}/video/links`, { headers })
+    ).json()) as Array<{ token: string }>;
+    const studentPage = await page.context().browser()!.newPage();
+    await studentPage.goto(`/en/class/${links[0]!.token}`);
+    await studentPage.getByTestId("portal-tab-course").click();
+    await expect(studentPage.getByTestId("portal-course-progress")).toContainText("1 of 3");
+    const portalTopics = studentPage.getByTestId("portal-topic");
+    await expect(portalTopics.nth(0)).toHaveAttribute("data-open", "true");
+    await expect(portalTopics.nth(1)).toHaveAttribute("data-open", "false");
+    await expect(portalTopics.nth(1)).toContainText("Opens after the lesson");
+
+    await page.getByTestId("syllabus-release").nth(1).click();
+    await page.getByRole("option", { name: "Open now" }).click();
+    await expect(page.getByTestId("syllabus-open")).toHaveCount(2);
+    await studentPage.reload();
+    await studentPage.getByTestId("portal-tab-course").click();
+    await expect(portalTopics.nth(1)).toHaveAttribute("data-open", "true");
+    await portalTopics.nth(1).locator("summary").click();
+    await expect(portalTopics.nth(1).getByTestId("topic-block")).toHaveCount(2);
+    await expect(portalTopics.nth(1)).toContainText("Hello and goodbye.");
+    await expect(portalTopics.nth(1).getByTestId("topic-youtube")).toHaveAttribute(
+      "src",
+      /youtube-nocookie\.com\/embed\/dQw4w9WgXcQ/,
+    );
+    await studentPage.close();
+
     // Today offers the next topic on the group's lesson of the day; "Use it" takes it.
     await page.goto("/en/today");
     const card = page.getByTestId("today-lesson").filter({ hasText: tag });

@@ -25,6 +25,7 @@ import { useDateFormat } from "@/lib/use-date-format";
 import { useMoneyFormat } from "@/lib/use-money-format";
 
 import { PortalAnnouncementsTab } from "./announcements-tab";
+import { PortalCourseTab } from "./course-tab";
 import { PortalHomeworkTab } from "./homework-tab";
 import { PortalTestsTab } from "./tests-tab";
 import { PortalMaterialsTab } from "./materials-tab";
@@ -36,6 +37,7 @@ import type { PortalAnnouncementDto } from "@/server/services/announcements/anno
 import type { PortalHomeworkDto } from "@/server/services/homework/homework.service";
 import type { PortalCertificateDto } from "@/server/services/students/certificates.service";
 import type { PortalTestDto } from "@/server/services/tests/portal-tests.service";
+import type { PortalCourseDto } from "@/server/services/settings/topic-content.service";
 import type { MaterialDto } from "@/server/services/materials/materials.service";
 import type { PortalPayOptionsDto } from "@/server/services/payments/online-payments.service";
 import type { PortalReferralDto } from "@/server/services/students/referrals.service";
@@ -77,6 +79,7 @@ export function PortalPage({
   announcements,
   certificates = [],
   tests = [],
+  course = null,
   initialTab = "lessons",
 }: {
   token: string;
@@ -92,6 +95,8 @@ export function PortalPage({
   certificates?: PortalCertificateDto[];
   /** The group's tests the student can take or has taken (A-145). */
   tests?: PortalTestDto[];
+  /** The course's topics and the content open to the student (A-157). */
+  course?: PortalCourseDto | null;
   initialTab?: "lessons" | "money";
 }) {
   const t = useTranslations("portal");
@@ -194,6 +199,11 @@ export function PortalPage({
                   </span>
                 )}
               </TabsTrigger>
+              {course && course.total > 0 && (
+                <TabsTrigger value="course" data-testid="portal-tab-course">
+                  {t("tabs.course")}
+                </TabsTrigger>
+              )}
               <TabsTrigger value="materials" data-testid="portal-tab-materials">
                 {t("tabs.materials")}
               </TabsTrigger>
@@ -272,6 +282,11 @@ export function PortalPage({
               <PortalAnnouncementsTab token={token} items={announcements} />
             </TabsContent>
 
+            {course && course.total > 0 && (
+              <TabsContent value="course">
+                <PortalCourseTab course={course} />
+              </TabsContent>
+            )}
             <TabsContent value="materials">
               <PortalMaterialsTab items={materials} />
             </TabsContent>
