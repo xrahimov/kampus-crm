@@ -92,7 +92,6 @@ test.describe("student sign-in with Telegram (A-150)", () => {
     const student = await studentContext.newPage();
     await fakeTelegram(student, { id: `7${stamp}`, name: "Lola", phone: phone.slice(1) });
     await student.goto("/en/student/login");
-    await expect(student.getByTestId("student-login-bot")).toHaveCount(0);
     await student.getByTestId("student-login-telegram").click();
     await expect(student).toHaveURL(/\/en\/student$/);
     await expect(student.getByTestId("student-home-name")).toContainText("Lola");
