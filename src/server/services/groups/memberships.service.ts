@@ -21,6 +21,7 @@ import {
 import { membershipBalances, syncCharges } from "@/server/services/students/balances";
 import { chargedFrom, monthStart } from "@/server/services/students/fees";
 import { applyFamilyDiscount } from "@/server/services/students/families.service";
+import { canCreateStudents } from "@/server/services/students/create-access";
 import { creditReferral } from "@/server/services/students/referrals.service";
 
 import { findGroupInScope, today } from "./shared";
@@ -157,11 +158,14 @@ export async function addMember(
   input: AddMemberInput,
   db: DbClient = prisma,
 ): Promise<MembershipDto> {
-  authorize(actor, "groups.update");
+  // A teacher may add a NEW student to their own group when the centre allows it (A-61);
+  // putting an existing student into a group stays with `groups.update`.
+  const creator = input.newStudent ? await canCreateStudents(actor, db) : false;
+  if (input.newStudent && !creator) throw AppError.forbidden();
+  if (!(input.newStudent && creator)) authorize(actor, "groups.update");
   const group = await findGroupInScope(db, actor, groupId, {});
   if (group.status === "ARCHIVED") throw AppError.conflict("errors.groupArchived");
   let studentId = input.studentId;
-  if (input.newStudent) authorize(actor, "students.create");
   if (studentId) {
     const student = await mustFind(
       db.student.findUnique({ where: { id: studentId } }),

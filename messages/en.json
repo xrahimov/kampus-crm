@@ -1500,7 +1500,8 @@
       "transfer": "Move to another group",
       "toLead": "Return to leads",
       "sms": "Message (SMS)",
-      "importExcel": "Add from Excel"
+      "importExcel": "Add from Excel",
+      "addNew": "Add a new student"
     },
     "notes": {
       "newNote": "Add note",

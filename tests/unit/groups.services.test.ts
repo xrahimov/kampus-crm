@@ -335,10 +335,11 @@ describe("groups", () => {
       });
       secondId = second.id;
       expect((await getGroup(ceo, groupId)).activeStudents).toBe(2);
-      // A teacher without students.create cannot invent students.
+      // A teacher cannot put an existing student into a group (groups.update); adding a new
+      // one depends on the centre's switch, covered in students.services.test.
       await expect(
         addMember(teacherA, groupId, {
-          newStudent: { fullName: "Nope" },
+          studentId: first.studentId,
           joinedAt: "2026-09-01",
           status: "ACTIVE",
         }),

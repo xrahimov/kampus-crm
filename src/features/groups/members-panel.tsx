@@ -161,9 +161,9 @@ export function MembersPanel({
               <FileUp /> {tm("importExcel")}
             </Button>
           )}
-          {canEdit && !groupArchived && (
+          {(canEdit || canCreateStudent) && !groupArchived && (
             <Button size="sm" onClick={() => setAdding(true)} data-testid="add-member">
-              <Plus /> {tm("add")}
+              <Plus /> {canEdit ? tm("add") : tm("addNew")}
             </Button>
           )}
         </div>
@@ -335,6 +335,7 @@ export function MembersPanel({
         open={adding}
         onOpenChange={setAdding}
         canCreateStudent={canCreateStudent}
+        canPickExisting={canEdit}
         onSaved={refresh}
       />
       <BillingFromDialog
@@ -430,12 +431,15 @@ function AddMemberDialog({
   open,
   onOpenChange,
   canCreateStudent,
+  canPickExisting,
   onSaved,
 }: {
   groupId: string;
   open: boolean;
   onOpenChange: (open: boolean) => void;
   canCreateStudent: boolean;
+  /** `groups.update`: may put an existing student in; a teacher may only add a new one (A-61). */
+  canPickExisting: boolean;
   onSaved: () => void;
 }) {
   const t = useTranslations();
@@ -443,7 +447,7 @@ function AddMemberDialog({
   const [search, setSearch] = useState("");
   const [results, setResults] = useState<Candidate[]>([]);
   const [picked, setPicked] = useState<Candidate | null>(null);
-  const [createNew, setCreateNew] = useState(false);
+  const [createNew, setCreateNew] = useState(!canPickExisting);
   const [customPrice, setCustomPrice] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -469,7 +473,7 @@ function AddMemberDialog({
     setSearch("");
     setResults([]);
     setPicked(null);
-    setCreateNew(false);
+    setCreateNew(!canPickExisting);
     setCustomPrice(false);
     setError(null);
     setFields({});
@@ -523,14 +527,14 @@ function AddMemberDialog({
         if (!next) reset();
         onOpenChange(next);
       }}
-      title={tm("add")}
+      title={canPickExisting ? tm("add") : tm("addNew")}
       onSubmit={submit}
       submitting={busy}
       error={error}
       side="right"
       testId="add-member-dialog"
     >
-      {canCreateStudent && (
+      {canCreateStudent && canPickExisting && (
         <div className="flex items-center gap-2">
           <Switch
             id="member-new"
