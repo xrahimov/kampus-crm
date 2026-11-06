@@ -7,6 +7,7 @@ import { TeacherDetail } from "@/features/staff/teacher-detail";
 import { requireCurrentUser } from "@/server/auth/current-user";
 import { isAppError } from "@/server/errors/app-error";
 import { can, canAccessAllBranches } from "@/server/rbac/authorize";
+import { getAvailability } from "@/server/services/staff/availability.service";
 import { listRoles } from "@/server/services/staff/roles.service";
 import { getTeacher } from "@/server/services/staff/teachers.service";
 
@@ -37,7 +38,10 @@ export default async function Page({ params }: Props) {
     if (isAppError(error) && error.code === "FORBIDDEN") return <Forbidden />;
     throw error;
   }
-  const roles = await listRoles(current.actor);
+  const [roles, availability] = await Promise.all([
+    listRoles(current.actor),
+    getAvailability(current.actor, id),
+  ]);
   const branches = canAccessAllBranches(current.actor)
     ? current.branches
     : current.branches.filter((b) => current.actor.branchIds.includes(b.id));
@@ -49,6 +53,7 @@ export default async function Page({ params }: Props) {
       branches={branches}
       selfId={current.user.id}
       canUpdate={can(current.actor, "teachers.update")}
+      availability={availability}
     />
   );
 }

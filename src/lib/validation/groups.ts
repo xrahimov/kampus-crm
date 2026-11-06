@@ -105,6 +105,25 @@ export const lessonMoveSchema = z
   .object({ date: dateOnlySchema, startTime: timeSchema, endTime: timeSchema })
   .refine((s) => s.endTime > s.startTime, { message: "validation.workHours", path: ["endTime"] });
 export type LessonMoveInput = z.output<typeof lessonMoveSchema>;
+/** A teacher's hours open for 1:1 booking (A-169): up to three windows per weekday. */
+export const AVAILABILITY_MAX = 21;
+export const availabilitySchema = z.object({
+  windows: z
+    .array(
+      z
+        .object({
+          weekday: z.coerce.number().int().min(1).max(7),
+          startTime: timeSchema,
+          endTime: timeSchema,
+        })
+        .refine((w) => w.endTime > w.startTime, {
+          message: "validation.workHours",
+          path: ["endTime"],
+        }),
+    )
+    .max(AVAILABILITY_MAX),
+});
+export type AvailabilityInput = z.output<typeof availabilitySchema>;
 export const groupDayOffSchema = z.object({
   date: dateOnlySchema,
   reason: z.string().trim().min(1, "validation.required").max(200, "validation.tooLong"),

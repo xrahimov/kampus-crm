@@ -497,7 +497,8 @@
     "rescheduleOff": "Moving lessons is not available for this group",
     "rescheduleTooLate": "The lesson can no longer be changed",
     "lessonNotOver": "The lesson is not over yet",
-    "ratingAbsent": "A missed lesson cannot be rated"
+    "ratingAbsent": "A missed lesson cannot be rated",
+    "bookingLimit": "You already have the most lessons booked ahead"
   },
   "validation": {
     "phone": "Enter a number like +998 90 123 45 67.",
@@ -614,7 +615,9 @@
     "rubricScores": "Give each criterion a score within its points.",
     "weightsSum": "The weights must add up to 100.",
     "outsideWorkHours": "Outside the centre's working hours",
-    "teacherBusy": "The teacher has another lesson at this time"
+    "teacherBusy": "The teacher has another lesson at this time",
+    "availabilityOverlap": "Hours of one day overlap",
+    "outsideAvailability": "Outside the teacher's booking hours"
   },
   "roles": {
     "CEO": "CEO",
@@ -1144,7 +1147,19 @@
       "role": "Role"
     },
     "noGroups": "No groups yet.",
-    "sms": "Send SMS"
+    "sms": "Send SMS",
+    "availability": {
+      "title": "Hours open for 1:1 booking",
+      "own": "Your students in 1:1 groups book and move lessons inside these hours.",
+      "hint": "Weekly windows in which a student of a 1:1 group may book or move a lesson from their page. Times already taken by other lessons are left out. With no windows, students pick any free time in the centre's hours.",
+      "closed": "not open",
+      "from": "From",
+      "to": "To",
+      "add": "Add hours",
+      "remove": "Remove",
+      "save": "Save hours",
+      "saved": "Saved"
+    }
   },
   "staff": {
     "title": "Staff",
@@ -4997,7 +5012,12 @@
       "reasons": {
         "moved": "moved by you",
         "cancelled": "cancelled by you"
-      }
+      },
+      "bookTitle": "Book an extra lesson",
+      "bookHint": "Pick a free time of your teacher. You can have {left} more booked ahead.",
+      "book": "Choose a time",
+      "noSlots": "No free times in the next two weeks.",
+      "orOwnTime": "Or enter a time yourself:"
     },
     "homework": {
       "empty": "No homework yet.",
@@ -5224,7 +5244,8 @@
     "badgeEarned": "🏅 New badge: {name}. {hint}",
     "streamPost": "📌 {group} · {author}:\n{text}",
     "noShow": "{group}: the teacher has been waiting in the lesson room since {time} for {minutes} minutes. The lesson is marked as missed. Please tell the teacher if you cannot make it next time.",
-    "lessonNote": "{group}: the teacher's note on the lesson of {date}: {text}"
+    "lessonNote": "{group}: the teacher's note on the lesson of {date}: {text}",
+    "lessonBooked": "{group}: a lesson is booked for {date}, {time}."
   },
   "video": {
     "title": "Video lesson",
