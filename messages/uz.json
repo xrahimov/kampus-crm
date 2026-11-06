@@ -55,7 +55,8 @@
     "settings": "Sozlamalar",
     "finance": "Moliya",
     "reports": "Hisobotlar",
-    "announcements": "E‘lonlar"
+    "announcements": "E‘lonlar",
+    "checking": "Tekshirish"
   },
   "auth": {
     "signIn": "Kirish",
@@ -5484,5 +5485,24 @@
     "results": "Natijalar",
     "noResults": "Hali hech kim bajarmagan.",
     "bestOf": "{score}/{max} ({percent} %) · {attempts} urinish"
+  },
+  "checking": {
+    "title": "Tekshirish",
+    "waiting": "{count} ta javob kutmoqda, eng eskisi birinchi",
+    "none": "Sizni hech narsa kutmayapti.",
+    "done": "bu safar {count} ta tekshirildi",
+    "keys": "Tugmalar: J / K – o‘tish, A – qabul, R – qaytarish, Enter – yuborish, Esc – yopish",
+    "emptyTitle": "Hammasi tekshirildi",
+    "emptyHint": "O‘quvchilar sahifasidan yuborgan javoblar shu yerda, eng eskisi birinchi, paydo bo‘ladi.",
+    "sentAt": "{when} yuborildi",
+    "task": "Vazifa",
+    "taskLink": "havola",
+    "noNote": "Bajarildi deb belgilangan, hech narsa yozilmagan.",
+    "attachment": "Ilovani ochish",
+    "accept": "Qabul qilish",
+    "return": "Qaytarish",
+    "returnSend": "Izoh bilan qaytarish",
+    "comment": "O‘quvchi uchun izoh",
+    "commentPlaceholder": "Nimani to‘g‘rilash kerak (ixtiyoriy)"
   }
 }

@@ -11,6 +11,7 @@ import {
   HandCoins,
   House,
   Landmark,
+  ListChecks,
   Megaphone,
   Settings2,
   Sparkles,
@@ -20,6 +21,7 @@ import {
   Wallet,
 } from "lucide-react";
 import { useTranslations } from "next-intl";
+import { useEffect, useState } from "react";
 
 import { Link, usePathname } from "@/i18n/navigation";
 import {
@@ -28,12 +30,14 @@ import {
   MODULES,
   type ModuleKey,
 } from "@/lib/rbac/permissions";
+import { api } from "@/lib/api-client";
 import { cn } from "@/lib/utils";
 
 const MODULE_PATH: Record<ModuleKey, string> = {
   dashboard: "/dashboard",
   assistant: "/assistant",
   today: "/today",
+  checking: "/checking",
   leads: "/leads",
   teachers: "/teachers",
   groups: "/groups",
@@ -53,6 +57,7 @@ const MODULE_ICON: Record<ModuleKey, LucideIcon> = {
   dashboard: House,
   assistant: Sparkles,
   today: CalendarCheck,
+  checking: ListChecks,
   leads: Funnel,
   teachers: GraduationCap,
   groups: Users,
@@ -85,6 +90,7 @@ export function MainNav({
   const pathname = usePathname();
 
   const visible = MODULES.filter((m) => hasPermission(permissions, MODULE_VIEW_PERMISSION[m]));
+  const waiting = useCheckingCount(visible.includes("checking"), pathname);
 
   return (
     <nav aria-label="Main" className="flex-1 overflow-y-auto px-3 py-2">
@@ -115,6 +121,14 @@ export function MainNav({
                   strokeWidth={1.75}
                 />
                 <span className="truncate">{t(module)}</span>
+                {module === "checking" && waiting > 0 && (
+                  <span
+                    className="ml-auto rounded-full bg-sidebar-active px-1.5 text-xs font-medium text-sidebar tabular-nums"
+                    data-testid="nav-checking-count"
+                  >
+                    {waiting > 99 ? "99+" : waiting}
+                  </span>
+                )}
               </Link>
             </li>
           );
@@ -122,4 +136,22 @@ export function MainNav({
       </ul>
     </nav>
   );
+}
+
+/** How many homework answers wait for the teacher; re-read on each page change. */
+function useCheckingCount(enabled: boolean, pathname: string): number {
+  const [count, setCount] = useState(0);
+  useEffect(() => {
+    if (!enabled) return;
+    let live = true;
+    void api<{ count: number }>("/homework/queue?count=1")
+      .then((r) => {
+        if (live) setCount(r.count);
+      })
+      .catch(() => undefined);
+    return () => {
+      live = false;
+    };
+  }, [enabled, pathname]);
+  return count;
 }

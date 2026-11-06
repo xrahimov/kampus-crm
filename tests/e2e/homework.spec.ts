@@ -57,15 +57,28 @@ test.describe("homework", () => {
     await expect(item).toContainText("Sent");
     await expect(item).toContainText("Done, it was about greetings.");
 
-    // The teacher accepts it.
-    await teacher.reload();
-    await teacher.getByTestId("tab-homework").click();
+    // The answer waits in the teacher's checking queue (A-160); the keyboard accepts it.
+    await teacher.goto("/en/checking");
+    const queued = teacher
+      .getByTestId("checking-item")
+      .filter({ hasText: `Read page ${stamp}` })
+      .filter({ hasText: first!.fullName });
+    await expect(queued).toBeVisible();
+    await expect(queued.getByTestId("checking-answer")).toContainText(
+      "Done, it was about greetings.",
+    );
+    await expect(teacher.getByTestId("nav-checking-count").first()).toBeVisible();
+    await queued.click();
+    await expect(queued).toHaveAttribute("data-selected", "true");
+    await teacher.keyboard.press("a");
+    await expect(queued).toHaveCount(0);
+    await expect(teacher.getByTestId("checking-summary")).toContainText("1 checked");
+
+    // The group page shows the verdict.
+    await teacher.goto(`/en/groups/${groupId}?tab=homework`);
     const row = card.getByTestId("homework-row").filter({ hasText: first!.fullName });
-    await expect(row).toContainText("Answered");
-    await expect(card).toContainText("1 of");
-    await row.getByTestId("homework-accept").click();
-    await teacher.getByTestId("review-dialog").getByRole("button", { name: "Accept" }).click();
     await expect(row).toContainText("Accepted");
+    await expect(card).toContainText("1 of");
 
     await student.reload();
     await student.getByTestId("portal-tab-homework").click();

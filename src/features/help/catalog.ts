@@ -160,6 +160,7 @@ export const HELP_ARTICLES = [
       { id: "attendance", screenshot: "attendance" },
       { id: "grades", screenshot: "grades" },
       { id: "homework", screenshot: "homework" },
+      { id: "checking" },
       { id: "materials", screenshot: "materials" },
       { id: "video", screenshot: "video-card" },
       { id: "links", screenshot: "student-links" },

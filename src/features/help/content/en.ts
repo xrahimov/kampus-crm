@@ -454,6 +454,13 @@ export const en: HelpContent = {
             "Students connected to Telegram get a message when homework is set, changed, accepted or returned. When automatic coins for homework are on, an accepted answer gives the coins by itself.",
           ],
         },
+        checking: {
+          title: "The checking queue",
+          body: [
+            "**Checking** in the menu gathers every homework answer waiting for you across your groups, oldest first, with the task and the student's text or recording. The badge on the menu item is the number waiting.",
+            "Work through it from the keyboard: **J** and **K** (or the arrows) move between answers, **A** accepts the selected one, **R** opens the comment box to return it, **Enter** sends the return and **Esc** closes the box. Each verdict notifies the student the way it does from the group page, and an accepted answer earns its coins.",
+          ],
+        },
         materials: {
           title: "Materials",
           body: [
