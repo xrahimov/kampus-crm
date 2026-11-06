@@ -1,8 +1,11 @@
 import type { HomeworkStatus, Prisma } from "@/generated/prisma/client";
-import type {
-  HomeworkInput,
-  HomeworkReviewInput,
-  HomeworkSubmissionInput,
+import {
+  rubricCriterionSchema,
+  type AssignmentInput,
+  type HomeworkInput,
+  type HomeworkReviewInput,
+  type HomeworkSubmissionInput,
+  type RubricCriterion,
 } from "@/lib/validation/groups";
 import { recordAudit } from "@/server/audit/audit";
 import { prisma, type DbClient } from "@/server/db/prisma";
@@ -47,13 +50,21 @@ export interface HomeworkSubmissionDto {
   teacherComment: string | null;
   teacherAudioUrl: string | null;
   checkedByName: string | null;
+  /** Points per rubric criterion and their sum (A-161). */
+  rubricScores: number[] | null;
+  score: number | null;
 }
 
 export interface HomeworkDto {
   id: string;
-  lessonId: string;
-  lessonDate: string;
+  /** Null for a standalone assignment (A-161). */
+  lessonId: string | null;
+  lessonDate: string | null;
   lessonTopic: string | null;
+  title: string | null;
+  rubric: RubricCriterion[];
+  /** The rubric's points in all; null without one. */
+  maxScore: number | null;
   text: string;
   linkUrl: string | null;
   attachmentUrl: string | null;
@@ -75,8 +86,11 @@ export interface GroupHomeworkDto {
 /** What one student sees of a homework through their link. */
 export interface PortalHomeworkDto {
   id: string;
-  lessonDate: string;
+  lessonDate: string | null;
   lessonTopic: string | null;
+  title: string | null;
+  rubric: RubricCriterion[];
+  maxScore: number | null;
   text: string;
   linkUrl: string | null;
   attachmentUrl: string | null;
@@ -91,12 +105,14 @@ export interface PortalHomeworkDto {
     submittedAt: string;
     teacherComment: string | null;
     teacherAudioUrl: string | null;
+    rubricScores: number[] | null;
+    score: number | null;
   } | null;
 }
 
 const include = {
   lesson: { select: { date: true, topic: true } },
-  group: { select: { name: true } },
+  group: { select: { id: true, name: true, branchId: true, status: true } },
   createdBy: { select: { fullName: true } },
   submissions: { include: { checkedBy: { select: { fullName: true } } } },
 } satisfies Prisma.HomeworkInclude;
@@ -104,16 +120,33 @@ type Row = Prisma.HomeworkGetPayload<{ include: typeof include }>;
 
 const MEMBER_STATUSES = ["NEW", "TRIAL", "ACTIVE", "FROZEN"] as const;
 
+/** The stored rubric, or none when the JSON is not what we wrote. */
+export function parseRubric(value: unknown): RubricCriterion[] {
+  const parsed = rubricCriterionSchema.array().safeParse(value);
+  return parsed.success ? parsed.data : [];
+}
+const maxOf = (rubric: RubricCriterion[]): number | null =>
+  rubric.length ? rubric.reduce((sum, c) => sum + c.max, 0) : null;
+const scoresOf = (value: unknown): number[] | null =>
+  Array.isArray(value) && value.every((v) => typeof v === "number") ? (value as number[]) : null;
+/** Lesson homework sorts by its lesson, an assignment by its due date, newest first. */
+const sortKey = (row: { lesson: { date: Date } | null; dueDate: Date | null; createdAt: Date }) =>
+  row.lesson?.date ?? row.dueDate ?? row.createdAt;
+
 function toDto(
   row: Row,
   members: Array<{ id: string; studentId: string; student: { fullName: string } }>,
 ): HomeworkDto {
   const byMembership = new Map(row.submissions.map((s) => [s.membershipId, s]));
+  const rubric = parseRubric(row.rubric);
   return {
     id: row.id,
     lessonId: row.lessonId,
-    lessonDate: dateToIso(row.lesson.date),
-    lessonTopic: row.lesson.topic,
+    lessonDate: row.lesson ? dateToIso(row.lesson.date) : null,
+    lessonTopic: row.lesson?.topic ?? null,
+    title: row.title,
+    rubric,
+    maxScore: maxOf(rubric),
     text: row.text,
     linkUrl: row.linkUrl,
     attachmentUrl: row.attachmentUrl,
@@ -134,6 +167,8 @@ function toDto(
         teacherComment: s?.teacherComment ?? null,
         teacherAudioUrl: s?.teacherAudioUrl ?? null,
         checkedByName: s?.checkedBy?.fullName ?? null,
+        rubricScores: scoresOf(s?.rubricScores),
+        score: s?.score ?? null,
       };
     }),
   };
@@ -155,8 +190,17 @@ async function findLessonInScope(db: DbClient, actor: Actor, lessonId: string) {
 
 async function findHomeworkInScope(db: DbClient, actor: Actor, id: string) {
   const row = await mustFind(db.homework.findUnique({ where: { id }, include }));
-  await findLessonInScope(db, actor, row.lessonId);
+  if (row.lessonId) await findLessonInScope(db, actor, row.lessonId);
+  else await findGroupInScope(db, actor, row.groupId, {});
   return row;
+}
+
+async function membersOf(db: DbClient, groupId: string) {
+  return db.groupMembership.findMany({
+    where: { groupId, status: { in: [...MEMBER_STATUSES] } },
+    select: { id: true, studentId: true, student: { select: { fullName: true } } },
+    orderBy: { student: { fullName: "asc" } },
+  });
 }
 
 /** Group → UY VAZIFASI tab. */
@@ -170,16 +214,8 @@ export async function listGroupHomework(
   const horizon = isoToDate(today());
   horizon.setUTCDate(horizon.getUTCDate() + ASSIGNABLE_DAYS_AHEAD);
   const [rows, members, lessons] = await Promise.all([
-    db.homework.findMany({
-      where: { groupId },
-      include,
-      orderBy: [{ lesson: { date: "desc" } }, { createdAt: "desc" }],
-    }),
-    db.groupMembership.findMany({
-      where: { groupId, status: { in: [...MEMBER_STATUSES] } },
-      select: { id: true, studentId: true, student: { select: { fullName: true } } },
-      orderBy: { student: { fullName: "asc" } },
-    }),
+    db.homework.findMany({ where: { groupId }, include, orderBy: { createdAt: "desc" } }),
+    membersOf(db, groupId),
     db.lesson.findMany({
       where: { groupId, date: { lte: horizon } },
       select: { id: true, date: true, topic: true, homework: { select: { id: true } } },
@@ -187,6 +223,7 @@ export async function listGroupHomework(
       take: 80,
     }),
   ]);
+  rows.sort((a, b) => sortKey(b).getTime() - sortKey(a).getTime());
   return {
     items: rows.map((r) => toDto(r, members)),
     lessons: lessons.map((l) => ({
@@ -245,12 +282,93 @@ export async function setHomework(
     }
     return saved;
   });
-  const members = await db.groupMembership.findMany({
-    where: { groupId: lesson.groupId, status: { in: [...MEMBER_STATUSES] } },
-    select: { id: true, studentId: true, student: { select: { fullName: true } } },
-    orderBy: { student: { fullName: "asc" } },
+  return toDto(row, await membersOf(db, lesson.groupId));
+}
+
+/* ----- standalone assignments (A-161) ----------------------------------------------------- */
+
+const assignmentData = (input: AssignmentInput) => ({
+  title: input.title,
+  text: input.text,
+  linkUrl: input.linkUrl ?? null,
+  attachmentUrl: input.attachmentUrl ?? null,
+  speaking: input.speaking ?? false,
+  dueDate: input.dueDate ? isoToDate(input.dueDate) : null,
+  rubric: input.rubric,
+});
+
+/** A project or essay for the whole group, not tied to a lesson; students answer like homework. */
+export async function createAssignment(
+  actor: Actor,
+  groupId: string,
+  input: AssignmentInput,
+  db: DbClient = prisma,
+): Promise<HomeworkDto> {
+  authorize(actor, "groups.attendance.mark");
+  const group = await findGroupInScope(db, actor, groupId, {});
+  if (group.status === "ARCHIVED") throw AppError.conflict("errors.groupArchived");
+  const row = await db.$transaction(async (tx) => {
+    const saved = await tx.homework.create({
+      data: { ...assignmentData(input), groupId, createdById: actor.userId },
+      include,
+    });
+    await recordAudit(tx, actor, {
+      action: "homework.create",
+      entity: "Homework",
+      entityId: saved.id,
+      after: { title: saved.title, text: saved.text, dueDate: saved.dueDate },
+      branchId: group.branchId,
+    });
+    await notifyHomework(tx, {
+      kind: "assignmentSet",
+      homeworkId: saved.id,
+      groupId,
+      groupName: group.name,
+      lessonDate: saved.dueDate ? dateToIso(saved.dueDate) : null,
+      title: saved.title ?? "",
+      text: saved.text,
+      stamp: saved.updatedAt.toISOString(),
+    });
+    return saved;
   });
-  return toDto(row, members);
+  return toDto(row, await membersOf(db, groupId));
+}
+
+export async function updateAssignment(
+  actor: Actor,
+  id: string,
+  input: AssignmentInput,
+  db: DbClient = prisma,
+): Promise<HomeworkDto> {
+  authorize(actor, "groups.attendance.mark");
+  const before = await findHomeworkInScope(db, actor, id);
+  if (before.lessonId) throw AppError.conflict("errors.notAnAssignment");
+  if (before.group.status === "ARCHIVED") throw AppError.conflict("errors.groupArchived");
+  const row = await db.$transaction(async (tx) => {
+    const saved = await tx.homework.update({ where: { id }, data: assignmentData(input), include });
+    await recordAudit(tx, actor, {
+      action: "homework.update",
+      entity: "Homework",
+      entityId: id,
+      before: { title: before.title, text: before.text, dueDate: before.dueDate },
+      after: { title: saved.title, text: saved.text, dueDate: saved.dueDate },
+      branchId: before.group.branchId,
+    });
+    if (before.text !== saved.text || before.title !== saved.title) {
+      await notifyHomework(tx, {
+        kind: "assignmentChanged",
+        homeworkId: id,
+        groupId: before.groupId,
+        groupName: before.group.name,
+        lessonDate: saved.dueDate ? dateToIso(saved.dueDate) : null,
+        title: saved.title ?? "",
+        text: saved.text,
+        stamp: saved.updatedAt.toISOString(),
+      });
+    }
+    return saved;
+  });
+  return toDto(row, await membersOf(db, before.groupId));
 }
 
 export async function deleteHomework(
@@ -260,10 +378,6 @@ export async function deleteHomework(
 ): Promise<void> {
   authorize(actor, "groups.attendance.mark");
   const row = await findHomeworkInScope(db, actor, id);
-  const lesson = await db.lesson.findUniqueOrThrow({
-    where: { id: row.lessonId },
-    select: { date: true, group: { select: { branchId: true } } },
-  });
   await db.$transaction(async (tx) => {
     // Coins given for accepted answers go with the homework.
     await tx.coinTransaction.deleteMany({
@@ -274,8 +388,12 @@ export async function deleteHomework(
       action: "homework.delete",
       entity: "Homework",
       entityId: id,
-      before: { lessonDate: dateToIso(lesson.date), text: row.text },
-      branchId: lesson.group.branchId,
+      before: {
+        lessonDate: row.lesson ? dateToIso(row.lesson.date) : null,
+        title: row.title,
+        text: row.text,
+      },
+      branchId: row.group.branchId,
     });
   });
 }
@@ -296,6 +414,21 @@ export async function reviewSubmission(
       select: { id: true, studentId: true, groupId: true, group: { select: { branchId: true } } },
     }),
   );
+  // Rubric points (A-161): one per criterion, none above its maximum; absent keeps the earlier ones.
+  const rubric = parseRubric(row.rubric);
+  let scored: { rubricScores: number[]; score: number } | undefined;
+  if (input.rubricScores !== undefined) {
+    if (
+      input.rubricScores.length !== rubric.length ||
+      input.rubricScores.some((v, i) => v > rubric[i]!.max)
+    ) {
+      throw AppError.validation({ rubricScores: ["validation.rubricScores"] });
+    }
+    scored = {
+      rubricScores: input.rubricScores,
+      score: input.rubricScores.reduce((sum, v) => sum + v, 0),
+    };
+  }
   await db.$transaction(async (tx) => {
     const before = await tx.homeworkSubmission.findUnique({
       where: { homeworkId_membershipId: { homeworkId, membershipId } },
@@ -308,6 +441,7 @@ export async function reviewSubmission(
         status: input.status,
         teacherComment: input.teacherComment ?? null,
         teacherAudioUrl: input.teacherAudioUrl ?? null,
+        ...scored,
         checkedById: actor.userId,
         checkedAt: new Date(),
       },
@@ -316,6 +450,7 @@ export async function reviewSubmission(
         // An omitted comment keeps the earlier one; null clears it.
         ...(input.teacherComment !== undefined ? { teacherComment: input.teacherComment } : {}),
         ...(input.teacherAudioUrl !== undefined ? { teacherAudioUrl: input.teacherAudioUrl } : {}),
+        ...scored,
         checkedById: actor.userId,
         checkedAt: new Date(),
       },
@@ -329,11 +464,18 @@ export async function reviewSubmission(
     });
     if (!before || before.status !== input.status) {
       await notifyHomework(tx, {
-        kind: input.status === "ACCEPTED" ? "homeworkAccepted" : "homeworkReturned",
+        kind: row.lesson
+          ? input.status === "ACCEPTED"
+            ? "homeworkAccepted"
+            : "homeworkReturned"
+          : input.status === "ACCEPTED"
+            ? "assignmentAccepted"
+            : "assignmentReturned",
         homeworkId,
         studentId: membership.studentId,
         groupName: row.group.name,
-        lessonDate: dateToIso(row.lesson.date),
+        lessonDate: row.lesson ? dateToIso(row.lesson.date) : null,
+        title: row.title ?? "",
         comment: input.teacherComment ?? null,
         stamp: new Date().toISOString(),
       });
@@ -343,7 +485,11 @@ export async function reviewSubmission(
       entity: "HomeworkSubmission",
       entityId: `${homeworkId}:${membershipId}`,
       before: before ? { status: before.status } : undefined,
-      after: { status: input.status, teacherComment: input.teacherComment ?? null },
+      after: {
+        status: input.status,
+        teacherComment: input.teacherComment ?? null,
+        ...(scored ? { score: scored.score } : {}),
+      },
       branchId: membership.group.branchId,
     });
   });
@@ -370,17 +516,22 @@ export async function listPortalHomework(
       lesson: { select: { date: true, topic: true } },
       submissions: { where: { membershipId: membership.id } },
     },
-    orderBy: [{ lesson: { date: "desc" } }, { createdAt: "desc" }],
+    orderBy: { createdAt: "desc" },
   });
+  rows.sort((a, b) => sortKey(b).getTime() - sortKey(a).getTime());
   const exercises = await portalExerciseSummaries(db, membership.id, {
     homeworkIds: rows.map((r) => r.id),
   });
   return rows.map((r) => {
     const s = r.submissions[0];
+    const rubric = parseRubric(r.rubric);
     return {
       id: r.id,
-      lessonDate: dateToIso(r.lesson.date),
-      lessonTopic: r.lesson.topic,
+      lessonDate: r.lesson ? dateToIso(r.lesson.date) : null,
+      lessonTopic: r.lesson?.topic ?? null,
+      title: r.title,
+      rubric,
+      maxScore: maxOf(rubric),
       text: r.text,
       linkUrl: r.linkUrl,
       attachmentUrl: portalFileUrl(token, r.attachmentUrl),
@@ -395,6 +546,8 @@ export async function listPortalHomework(
             submittedAt: s.submittedAt.toISOString(),
             teacherComment: s.teacherComment,
             teacherAudioUrl: portalFileUrl(token, s.teacherAudioUrl),
+            rubricScores: scoresOf(s.rubricScores),
+            score: s.score,
           }
         : null,
     };

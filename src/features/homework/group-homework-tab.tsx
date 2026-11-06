@@ -2,6 +2,7 @@
 
 import {
   Check,
+  ClipboardList,
   ExternalLink,
   ListChecks,
   Mic,
@@ -35,6 +36,7 @@ import { useRouter } from "@/i18n/navigation";
 import { api, ApiError, uploadFile } from "@/lib/api-client";
 import { parseDateOnly } from "@/lib/dates";
 import { useDateFormat } from "@/lib/use-date-format";
+import type { RubricCriterion } from "@/lib/validation/groups";
 import type {
   GroupHomeworkDto,
   HomeworkDto,
@@ -42,17 +44,30 @@ import type {
 } from "@/server/services/homework/homework.service";
 
 import { ExercisesDialog } from "@/features/exercises/exercises-dialog";
+import { AssignmentDialog } from "./assignment-dialog";
 import { AttachmentField } from "./attachment-field";
 import { AudioPlayer, isAudioUrl } from "./audio-player";
 import { AudioRecorder } from "./audio-recorder";
 
-/** Group → homework tab: one card per homework with every student's answer (A-102). */
-export function GroupHomeworkTab({ data, canSet }: { data: GroupHomeworkDto; canSet: boolean }) {
+/**
+ * Group → homework tab: one card per homework with every student's answer
+ * (A-102), and standalone assignments with a rubric among them (A-161).
+ */
+export function GroupHomeworkTab({
+  data,
+  groupId,
+  canSet,
+}: {
+  data: GroupHomeworkDto;
+  groupId: string;
+  canSet: boolean;
+}) {
   const t = useTranslations("groups.homework");
   const fmt = useDateFormat();
   const router = useRouter();
   const [, startTransition] = useTransition();
   const [editing, setEditing] = useState<HomeworkDto | "new" | null>(null);
+  const [assigning, setAssigning] = useState<HomeworkDto | "new" | null>(null);
   const [deleting, setDeleting] = useState<HomeworkDto | null>(null);
   const [error, setError] = useState<string | null>(null);
   const refresh = () => startTransition(() => router.refresh());
@@ -75,9 +90,19 @@ export function GroupHomeworkTab({ data, canSet }: { data: GroupHomeworkDto; can
       <div className="flex flex-wrap items-center justify-between gap-2">
         <p className="text-sm text-muted-foreground">{t("intro")}</p>
         {canSet && (
-          <Button size="sm" onClick={() => setEditing("new")} data-testid="homework-add">
-            <Plus /> {t("add")}
-          </Button>
+          <div className="flex gap-2">
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => setAssigning("new")}
+              data-testid="assignment-add"
+            >
+              <ClipboardList /> {t("assignment.add")}
+            </Button>
+            <Button size="sm" onClick={() => setEditing("new")} data-testid="homework-add">
+              <Plus /> {t("add")}
+            </Button>
+          </div>
         )}
       </div>
       {error && (
@@ -94,7 +119,7 @@ export function GroupHomeworkTab({ data, canSet }: { data: GroupHomeworkDto; can
               key={hw.id}
               homework={hw}
               canSet={canSet}
-              onEdit={() => setEditing(hw)}
+              onEdit={() => (hw.lessonId ? setEditing(hw) : setAssigning(hw))}
               onDelete={() => setDeleting(hw)}
               onChanged={refresh}
               date={date}
@@ -108,6 +133,13 @@ export function GroupHomeworkTab({ data, canSet }: { data: GroupHomeworkDto; can
         homework={editing === "new" ? null : editing}
         lessons={data.lessons}
         onOpenChange={(open) => !open && setEditing(null)}
+        onSaved={refresh}
+      />
+      <AssignmentDialog
+        open={assigning !== null}
+        groupId={groupId}
+        assignment={assigning === "new" ? null : assigning}
+        onOpenChange={(open) => !open && setAssigning(null)}
         onSaved={refresh}
       />
       <ConfirmDialog
@@ -150,11 +182,22 @@ function HomeworkCard({
   const accepted = homework.submissions.filter((s) => s.status === "ACCEPTED").length;
 
   return (
-    <article className="rounded-lg border" data-testid="homework-card">
+    <article
+      className="rounded-lg border"
+      data-testid="homework-card"
+      data-kind={homework.lessonId ? "lesson" : "assignment"}
+    >
       <header className="flex flex-wrap items-start justify-between gap-2 border-b bg-muted/40 px-4 py-2">
         <div>
-          <div className="font-medium">
-            {t("lessonOf", { date: date(homework.lessonDate) })}
+          <div className="flex flex-wrap items-center gap-2 font-medium">
+            {homework.lessonDate
+              ? t("lessonOf", { date: date(homework.lessonDate) })
+              : homework.title}
+            {!homework.lessonId && (
+              <Badge variant="secondary" data-testid="assignment-badge">
+                <ClipboardList className="size-3" /> {t("assignment.badge")}
+              </Badge>
+            )}
             {homework.lessonTopic && (
               <span className="ml-2 font-normal text-muted-foreground">{homework.lessonTopic}</span>
             )}
@@ -167,6 +210,9 @@ function HomeworkCard({
             )}
             <span>
               {homework.dueDate && <span>{t("due", { date: date(homework.dueDate) })} · </span>}
+              {homework.maxScore !== null && (
+                <span>{t("assignment.outOf", { points: homework.maxScore })} · </span>
+              )}
               {t("progress", { answered, accepted, total: homework.submissions.length })}
             </span>
           </div>
@@ -196,10 +242,15 @@ function HomeworkCard({
         open={exercises}
         onOpenChange={setExercises}
         anchor={{ homeworkId: homework.id }}
-        title={t("exercisesTitle", { date: date(homework.lessonDate) })}
+        title={
+          homework.lessonDate
+            ? t("exercisesTitle", { date: date(homework.lessonDate) })
+            : t("exercisesTitleAssignment", { title: homework.title ?? "" })
+        }
       />
       <div className="space-y-2 px-4 py-3 text-sm">
         <p className="whitespace-pre-wrap">{homework.text}</p>
+        {homework.rubric.length > 0 && <RubricList rubric={homework.rubric} />}
         <div className="flex flex-wrap gap-3 text-xs">
           {homework.linkUrl && (
             <a
@@ -255,6 +306,11 @@ function HomeworkCard({
                     <Paperclip className="size-3" /> {t("file")}
                   </a>
                 ))}
+              {s.score !== null && homework.maxScore !== null && (
+                <span className="text-xs font-medium tabular-nums" data-testid="hw-row-score">
+                  {s.score}/{homework.maxScore}
+                </span>
+              )}
               {s.teacherComment && (
                 <span className="text-xs text-muted-foreground">“{s.teacherComment}”</span>
               )}
@@ -290,6 +346,7 @@ function HomeworkCard({
       <ReviewDialog
         homeworkId={homework.id}
         speaking={homework.speaking}
+        rubric={homework.rubric}
         submission={reviewing}
         onOpenChange={(open) => !open && setReviewing(null)}
         onSaved={onChanged}
@@ -387,7 +444,7 @@ function HomeworkDialog({
             <Input
               id="hw-lesson"
               disabled
-              value={`${fmt(parseDateOnly(homework.lessonDate), { dateStyle: "medium" })}${
+              value={`${fmt(parseDateOnly(homework.lessonDate ?? ""), { dateStyle: "medium" })}${
                 homework.lessonTopic ? ` · ${homework.lessonTopic}` : ""
               }`}
             />
@@ -456,12 +513,14 @@ function HomeworkDialog({
 function ReviewDialog({
   homeworkId,
   speaking,
+  rubric,
   submission,
   onOpenChange,
   onSaved,
 }: {
   homeworkId: string;
   speaking: boolean;
+  rubric: RubricCriterion[];
   submission: HomeworkSubmissionDto | null;
   onOpenChange: (open: boolean) => void;
   onSaved: () => void;
@@ -470,7 +529,16 @@ function ReviewDialog({
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [reply, setReply] = useState<File | null>(null);
+  const [points, setPoints] = useState<number[]>([]);
   const accepting = submission?.status !== "ACCEPTED";
+  const maxScore = rubric.reduce((sum, c) => sum + c.max, 0);
+  // Fresh points each time another answer opens: the stored ones, or zeros.
+  const [seen, setSeen] = useState<string | null>(null);
+  const key = submission ? submission.membershipId : null;
+  if (key !== seen) {
+    setSeen(key);
+    setPoints(submission?.rubricScores ?? rubric.map(() => 0));
+  }
 
   async function submit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -489,6 +557,7 @@ function ReviewDialog({
           status: accepting ? "ACCEPTED" : "RETURNED",
           teacherComment: String(data.get("teacherComment") ?? "").trim() || null,
           ...(teacherAudioUrl ? { teacherAudioUrl } : {}),
+          ...(rubric.length > 0 ? { rubricScores: points } : {}),
         },
       });
       setReply(null);
@@ -538,6 +607,37 @@ function ReviewDialog({
           <AudioRecorder value={reply} onChange={setReply} testId="reply-recorder" />
         </div>
       )}
+      {rubric.length > 0 && (
+        <fieldset className="space-y-2" data-testid="review-rubric">
+          <legend className="text-sm font-medium">
+            {t("assignment.score", { points: points.reduce((a, b) => a + b, 0), max: maxScore })}
+          </legend>
+          {rubric.map((c, i) => (
+            <div key={i} className="flex items-center gap-2 text-sm">
+              <span className="flex-1">{c.name}</span>
+              <Input
+                type="number"
+                min={0}
+                max={c.max}
+                value={points[i] ?? 0}
+                onChange={(e) =>
+                  setPoints((list) =>
+                    rubric.map((_, j) =>
+                      j === i
+                        ? Math.max(0, Math.min(c.max, Number(e.target.value)))
+                        : (list[j] ?? 0),
+                    ),
+                  )
+                }
+                className="w-20"
+                aria-label={c.name}
+                data-testid="review-points"
+              />
+              <span className="w-10 text-xs text-muted-foreground">/ {c.max}</span>
+            </div>
+          ))}
+        </fieldset>
+      )}
       <div className="space-y-2">
         <Label htmlFor="hw-comment">{t("teacherComment")}</Label>
         <Textarea
@@ -549,5 +649,21 @@ function ReviewDialog({
         />
       </div>
     </FormDialog>
+  );
+}
+
+/** The assignment's criteria and their points, as the students see them too. */
+export function RubricList({ rubric }: { rubric: RubricCriterion[] }) {
+  const t = useTranslations("groups.homework");
+  return (
+    <ul className="divide-y rounded-md border text-xs" data-testid="rubric-list">
+      <li className="bg-muted/40 px-2 py-1 font-medium">{t("assignment.rubric")}</li>
+      {rubric.map((c, i) => (
+        <li key={i} className="flex justify-between gap-2 px-2 py-1">
+          <span>{c.name}</span>
+          <span className="tabular-nums text-muted-foreground">{c.max}</span>
+        </li>
+      ))}
+    </ul>
   );
 }

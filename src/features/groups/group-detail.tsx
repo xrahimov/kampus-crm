@@ -467,7 +467,11 @@ export function GroupDetail({
                 />
               </TabsContent>
               <TabsContent value="homework" className="pt-4">
-                <GroupHomeworkTab data={homework} canSet={can.mark && !archived} />
+                <GroupHomeworkTab
+                  data={homework}
+                  groupId={group.id}
+                  canSet={can.mark && !archived}
+                />
               </TabsContent>
               <TabsContent value="materials" className="pt-4">
                 <GroupMaterialsTab

@@ -1113,8 +1113,13 @@ model LessonMaterial {
 /// through their personal link; the teacher accepts or returns the answer.
 model Homework {
   id            String    @id @default(cuid())
-  lessonId      String    @unique
+  /// Null for a standalone assignment (A-161): a project or essay for the whole group, not one lesson.
+  lessonId      String?   @unique
   groupId       String
+  /// An assignment's name; a lesson's homework has none.
+  title         String?
+  /// Assignment rubric (A-161): `[{ name, max }]`, scored per student on review.
+  rubric        Json?
   text          String
   linkUrl       String?
   attachmentUrl String?
@@ -1125,7 +1130,7 @@ model Homework {
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
 
-  lesson      Lesson               @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+  lesson      Lesson?              @relation(fields: [lessonId], references: [id], onDelete: Cascade)
   group       Group                @relation(fields: [groupId], references: [id], onDelete: Cascade)
   createdBy   User?                @relation("homeworkAuthor", fields: [createdById], references: [id], onDelete: SetNull)
   submissions HomeworkSubmission[]
@@ -1153,6 +1158,9 @@ model HomeworkSubmission {
   teacherComment  String?
   /// The teacher's spoken reply to a speaking task (A-141).
   teacherAudioUrl String?
+  /// Points per rubric criterion and their sum, on an assignment (A-161).
+  rubricScores    Json?
+  score           Int?
 
   homework   Homework        @relation(fields: [homeworkId], references: [id], onDelete: Cascade)
   membership GroupMembership @relation(fields: [membershipId], references: [id], onDelete: Cascade)
