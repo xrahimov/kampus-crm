@@ -20,6 +20,8 @@ export interface CallLessonDto {
     topic: string | null;
     courseTopicTitle: string | null;
     attachmentUrl: string | null;
+    /** The teacher's note to the students (A-168). */
+    studentNote: string | null;
   } | null;
   materials: Array<{
     id: string;
@@ -65,6 +67,7 @@ export async function getCallLesson(
               endTime: true,
               topic: true,
               attachmentUrl: true,
+              studentNote: true,
               courseTopic: { select: { title: true } },
             },
           },
@@ -108,6 +111,7 @@ export async function getCallLesson(
           topic: lesson.topic,
           courseTopicTitle: lesson.courseTopic?.title ?? null,
           attachmentUrl: fileUrl(token, lesson.attachmentUrl),
+          studentNote: lesson.studentNote,
         }
       : null,
     materials: materials.map((m) => ({
