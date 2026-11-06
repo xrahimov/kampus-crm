@@ -17,6 +17,8 @@ import {
   notifyStudents,
   type BotLocale,
 } from "@/server/services/telegram/student-telegram.service";
+import { VOCAB_LEARNED_BOX, VOCAB_STREAK_DAYS } from "@/lib/validation/vocab";
+import { vocabStreak } from "@/server/services/vocab/streak";
 import { membershipByToken } from "@/server/services/video/video.service";
 
 /**
@@ -45,7 +47,7 @@ type Earned = Map<BadgeCode, { groupId: string | null }>;
 /** Which badges the student's record earns right now, from the data itself. */
 async function earnedBadges(db: DbClient, studentId: string): Promise<Earned> {
   const earned: Earned = new Map();
-  const [accepted, attendance, attempts, aceTest, coins] = await Promise.all([
+  const [accepted, attendance, attempts, aceTest, coins, learned, memberships] = await Promise.all([
     db.homeworkSubmission.count({ where: { status: "ACCEPTED", membership: { studentId } } }),
     db.attendance.findMany({
       where: { membership: { studentId }, status: { in: ["PRESENT", "ABSENT"] } },
@@ -69,6 +71,8 @@ async function earnedBadges(db: DbClient, studentId: string): Promise<Earned> {
       _sum: { amount: true },
       where: { studentId, amount: { gt: 0 } },
     }),
+    db.vocabCard.count({ where: { membership: { studentId }, box: { gte: VOCAB_LEARNED_BOX } } }),
+    db.groupMembership.findMany({ where: { studentId }, select: { id: true } }),
   ]);
 
   if (accepted >= 1) earned.set("firstHomework", { groupId: null });
@@ -113,6 +117,13 @@ async function earnedBadges(db: DbClient, studentId: string): Promise<Earned> {
   }
   if (aceTest) earned.set("testAce", { groupId: aceTest.groupId });
   if ((coins._sum.amount ?? 0) >= 100) earned.set("coins100", { groupId: null });
+  if (learned >= 50) earned.set("words50", { groupId: null });
+  for (const m of memberships) {
+    if (earned.has("vocabStreak7")) break;
+    if ((await vocabStreak(db, m.id)) >= VOCAB_STREAK_DAYS) {
+      earned.set("vocabStreak7", { groupId: null });
+    }
+  }
   return earned;
 }
 

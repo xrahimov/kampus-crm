@@ -43,6 +43,7 @@ import type { PortalCertificateDto } from "@/server/services/students/certificat
 import type { PortalTestDto } from "@/server/services/tests/portal-tests.service";
 import type { PortalGradebookDto } from "@/server/services/gradebook/gradebook.service";
 import type { StreamPostDto } from "@/server/services/stream/stream.service";
+import type { PortalVocabDto } from "@/server/services/vocab/vocab.service";
 import type { CourseProgressDto } from "@/server/services/progress/course-progress.service";
 import type { PortalCourseDto } from "@/server/services/settings/topic-content.service";
 import type { MaterialDto } from "@/server/services/materials/materials.service";
@@ -91,6 +92,7 @@ export function PortalPage({
   gradebook = null,
   badges = [],
   stream = [],
+  vocab = null,
   initialTab = "lessons",
 }: {
   token: string;
@@ -116,6 +118,8 @@ export function PortalPage({
   badges?: BadgeDto[];
   /** The group's class stream (A-164). */
   stream?: StreamPostDto[];
+  /** Flashcards (A-165). */
+  vocab?: PortalVocabDto | null;
   initialTab?: "lessons" | "money";
 }) {
   const t = useTranslations("portal");
@@ -324,7 +328,7 @@ export function PortalPage({
 
             {course && course.total > 0 && (
               <TabsContent value="course">
-                <PortalCourseTab token={token} course={course} progress={progress} />
+                <PortalCourseTab token={token} course={course} progress={progress} vocab={vocab} />
               </TabsContent>
             )}
             <TabsContent value="materials">
