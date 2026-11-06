@@ -45,10 +45,22 @@ export async function enqueue(db: DbClient, input: JobInput): Promise<string | n
 
 const MAX_ATTEMPTS = 5;
 
-async function claim(db: DbClient, limit: number): Promise<string[]> {
+export interface RunOptions {
+  /** Claim only these job types (the worker's lane for long video jobs). */
+  types?: readonly string[];
+  /** Leave these job types to another lane. */
+  exclude?: readonly string[];
+}
+
+/** A long job (video transcoding) renews its claim this often, so no one else takes it over. */
+const RENEW_LOCK_MS = 4 * 60_000;
+
+async function claim(db: DbClient, limit: number, options: RunOptions): Promise<string[]> {
   // Only the job types this process can run: another process (the worker, a test
   // file) must not take a job it has no handler for and burn one of its attempts.
-  const types = [...handlers.keys()];
+  const types = [...handlers.keys()].filter(
+    (t) => (!options.types || options.types.includes(t)) && !options.exclude?.includes(t),
+  );
   if (types.length === 0) return [];
   // Claim rows atomically; a crashed worker's RUNNING rows are retried after 10 minutes.
   const rows = await db.$queryRaw<Array<{ id: string }>>`
@@ -73,8 +85,12 @@ export interface RunResult {
 }
 
 /** Runs up to `limit` due jobs once. The worker loops over it; a cron can call it via the API. */
-export async function runDueJobs(limit = 20, db: DbClient = prisma): Promise<RunResult> {
-  const ids = await claim(db, limit);
+export async function runDueJobs(
+  limit = 20,
+  db: DbClient = prisma,
+  options: RunOptions = {},
+): Promise<RunResult> {
+  const ids = await claim(db, limit, options);
   const result: RunResult = { claimed: ids.length, done: 0, failed: 0 };
   for (const id of ids) {
     const job = await db.job.findUnique({ where: { id } });
@@ -82,7 +98,16 @@ export async function runDueJobs(limit = 20, db: DbClient = prisma): Promise<Run
     const handler = handlers.get(job.type);
     try {
       if (!handler) throw new Error(`no handler for job type ${job.type}`);
-      await handler(job.payload, db);
+      const renew = setInterval(() => {
+        db.job
+          .updateMany({ where: { id, status: "RUNNING" }, data: { lockedAt: new Date() } })
+          .catch(() => undefined);
+      }, RENEW_LOCK_MS);
+      try {
+        await handler(job.payload, db);
+      } finally {
+        clearInterval(renew);
+      }
       await db.job.update({
         where: { id },
         data: { status: "DONE", doneAt: new Date(), lastError: null },

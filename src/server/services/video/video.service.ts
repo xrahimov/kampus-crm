@@ -208,6 +208,7 @@ interface VideoConfig {
   turnSecret: string;
   maxParticipants: number;
   recordingKeepDays: number;
+  hlsRecordings: boolean;
   attendanceMinutes: number;
   noShowMinutes: number;
 }
@@ -231,6 +232,7 @@ export async function loadVideoConfig(
     turnSecret: envRelay ? env.TURN_SECRET! : (c?.turnSecret ?? ""),
     maxParticipants: c?.maxParticipants ?? 12,
     recordingKeepDays: c?.recordingKeepDays ?? 90,
+    hlsRecordings: c?.hlsRecordings ?? false,
     attendanceMinutes: c?.attendanceMinutes ?? 10,
     noShowMinutes: c?.noShowMinutes ?? 15,
   };

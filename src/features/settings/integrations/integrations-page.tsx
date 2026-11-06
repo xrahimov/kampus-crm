@@ -102,6 +102,7 @@ export function IntegrationsPage({
           { key: "turnSecret", secret: true },
           { key: "maxParticipants", type: "number" },
           { key: "recordingKeepDays", type: "number" },
+          { key: "hlsRecordings", type: "boolean" },
           { key: "attendanceMinutes", type: "number" },
           { key: "noShowMinutes", type: "number" },
         ]}
@@ -109,6 +110,7 @@ export function IntegrationsPage({
           <>
             <p className="text-xs text-muted-foreground">{t("VIDEO.hint")}</p>
             <p className="text-xs text-muted-foreground">{t("VIDEO.retentionHint")}</p>
+            <p className="text-xs text-muted-foreground">{t("VIDEO.hlsHint")}</p>
           </>
         }
         testId="integration-video"

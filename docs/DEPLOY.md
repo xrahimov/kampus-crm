@@ -163,6 +163,12 @@ the folder off now and then (`scp -r root@<ip>:/opt/kampus/backups .`).
 Lesson recordings are deleted automatically after the number of days set in
 Settings → Integrations → Video lessons (default 90; 0 keeps them forever).
 
+Switching on **Make streaming copies of recordings** in the same card makes the
+`worker` container convert every new recording with ffmpeg (included in its image)
+into 360p and 720p streams for phones and weak connections. Converting takes about
+as long as the lesson on a two-core server and roughly doubles the space a recording
+takes, so leave it off until recordings are watched often.
+
 To restore a dump into a fresh database:
 
 ```bash

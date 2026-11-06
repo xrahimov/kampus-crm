@@ -1093,6 +1093,8 @@ model GroupMembership {
   vocabCards       VocabCard[]
   vocabDays        VocabDay[]
 
+  materialViews MaterialView[]
+
   @@unique([groupId, studentId])
   @@index([studentId])
 }
@@ -1145,15 +1147,40 @@ model LessonMaterial {
   size        Int?
   /// Recordings: length in seconds, as the browser measured it.
   durationSec Int?
+  /// Streaming copy (A-175): storage key of the HLS master playlist once the worker made one.
+  hlsKey      String?
+  /// Every file of the streaming copy (playlists, init segments, media), deleted with the material.
+  hlsKeys     String[]     @default([])
   createdById String?
   createdAt   DateTime     @default(now())
 
-  group     Group   @relation(fields: [groupId], references: [id], onDelete: Cascade)
-  lesson    Lesson? @relation(fields: [lessonId], references: [id], onDelete: SetNull)
-  createdBy User?   @relation("materialAuthor", fields: [createdById], references: [id], onDelete: SetNull)
+  group     Group          @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  lesson    Lesson?        @relation(fields: [lessonId], references: [id], onDelete: SetNull)
+  createdBy User?          @relation("materialAuthor", fields: [createdById], references: [id], onDelete: SetNull)
+  views     MaterialView[]
 
   @@index([groupId, createdAt])
   @@index([lessonId])
+}
+
+/// Where a student stopped in a recording or video (A-175): the player resumes
+/// there on any device, and the teacher sees who has watched.
+model MaterialView {
+  materialId   String
+  membershipId String
+  /// Seconds into the video at the last report.
+  positionSec  Int      @default(0)
+  /// Length the player saw, when known.
+  durationSec  Int?
+  /// Reached at least 90 % of the video once.
+  completed    Boolean  @default(false)
+  updatedAt    DateTime @updatedAt
+
+  material   LessonMaterial  @relation(fields: [materialId], references: [id], onDelete: Cascade)
+  membership GroupMembership @relation(fields: [membershipId], references: [id], onDelete: Cascade)
+
+  @@id([materialId, membershipId])
+  @@index([membershipId])
 }
 
 /// Homework for one lesson (added 2026-10-06, A-102). The student answers

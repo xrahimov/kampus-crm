@@ -21,6 +21,7 @@ import { AttachmentField } from "@/features/homework/attachment-field";
 import { FormDialog } from "@/features/settings/shared/form-dialog";
 import { useRouter } from "@/i18n/navigation";
 import { api, ApiError } from "@/lib/api-client";
+import { VideoPlayer } from "@/features/shared/video-player";
 import { parseDateOnly } from "@/lib/dates";
 import { useDateFormat } from "@/lib/use-date-format";
 import type { GroupMaterialsDto, MaterialDto } from "@/server/services/materials/materials.service";
@@ -158,6 +159,8 @@ export function describeMaterial(
   if (m.durationSec)
     parts.push(t("duration", { minutes: Math.max(1, Math.round(m.durationSec / 60)) }));
   if (m.size) parts.push(t("size", { mb: (m.size / 1024 / 1024).toFixed(1) }));
+  if (m.hlsUrl) parts.push(t("adaptive"));
+  if (m.watched) parts.push(t("watched", m.watched));
   return parts;
 }
 
@@ -189,12 +192,14 @@ function MaterialRow({
         </div>
       </div>
       {m.kind === "RECORDING" && (
-        <video
-          controls
-          preload="metadata"
+        <VideoPlayer
           src={m.url}
-          className="h-20 w-36 rounded-md bg-black"
-          data-testid="material-video"
+          hlsSrc={m.hlsUrl}
+          title={m.title}
+          storageKey={m.id}
+          compact
+          className="w-36"
+          testId="material-video"
         />
       )}
       <a
