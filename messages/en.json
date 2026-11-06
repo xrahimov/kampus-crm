@@ -619,7 +619,8 @@
     "outsideWorkHours": "Outside the centre's working hours",
     "teacherBusy": "The teacher has another lesson at this time",
     "availabilityOverlap": "Hours of one day overlap",
-    "outsideAvailability": "Outside the teacher's booking hours"
+    "outsideAvailability": "Outside the teacher's booking hours",
+    "timeZone": "Unknown time zone. Use a name like Europe/Berlin."
   },
   "roles": {
     "CEO": "CEO",
@@ -1927,7 +1928,9 @@
       "school": "School",
       "schoolPlaceholder": "Choose a school",
       "referredBy": "Invited by",
-      "referredByPlaceholder": "Search a student by name or phone"
+      "referredByPlaceholder": "Search a student by name or phone",
+      "timeZone": "Time zone (students abroad)",
+      "timeZoneHint": "Leave empty for the centre's own time. Lesson times on the student's page and in reminders are shown in this zone, for example Europe/Berlin."
     },
     "genders": {
       "MALE": "Male",
@@ -5035,7 +5038,8 @@
       "bookHint": "Pick a free time of your teacher. You can have {left} more booked ahead.",
       "book": "Choose a time",
       "noSlots": "No free times in the next two weeks.",
-      "orOwnTime": "Or enter a time yourself:"
+      "orOwnTime": "Or enter a time yourself:",
+      "inZone": "Times in your zone, {zone}."
     },
     "homework": {
       "empty": "No homework yet.",
@@ -5214,6 +5218,14 @@
       "on": "Notifications are on",
       "denied": "Notifications are blocked for this site in the browser. Allow them in the browser's site settings to turn them on.",
       "failed": "Could not turn notifications on. Try again later."
+    },
+    "timeZone": {
+      "title": "Your time zone",
+      "centre": "Lesson times are shown in the centre's time, {centre}. If you live elsewhere, set your zone and the times on this page and in reminders will follow it.",
+      "current": "Lesson times are shown in {zone}. The centre runs on {centre}.",
+      "save": "Save",
+      "useDevice": "Use this device's zone ({zone})",
+      "invalid": "Unknown time zone. Pick one from the list, for example Europe/Berlin."
     }
   },
   "telegramBot": {
