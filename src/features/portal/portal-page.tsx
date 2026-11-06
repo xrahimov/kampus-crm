@@ -16,7 +16,6 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { weekdayLabel } from "@/features/groups/weekday";
 import { Link } from "@/i18n/navigation";
 import { CallFlow } from "@/features/video/call-flow";
 import { ApiError, type ApiErrorBody } from "@/lib/api-client";
@@ -31,8 +30,8 @@ import { PortalTestsTab } from "./tests-tab";
 import { PortalMaterialsTab } from "./materials-tab";
 import { PayCard } from "./pay-card";
 import { ReferralCard } from "./referral-card";
+import { PortalScheduleTab } from "./schedule-tab";
 import { TelegramCard } from "./telegram-card";
-import type { Weekday } from "@/lib/validation/groups";
 import type { PortalAnnouncementDto } from "@/server/services/announcements/announcements.service";
 import type { PortalHomeworkDto } from "@/server/services/homework/homework.service";
 import type { PortalCertificateDto } from "@/server/services/students/certificates.service";
@@ -43,6 +42,7 @@ import type { MaterialDto } from "@/server/services/materials/materials.service"
 import type { PortalPayOptionsDto } from "@/server/services/payments/online-payments.service";
 import type { PortalReferralDto } from "@/server/services/students/referrals.service";
 import type { PortalDto } from "@/server/services/portal/portal.service";
+import type { PortalScheduleDto } from "@/server/services/portal/reschedule.service";
 import type { PortalTelegramDto } from "@/server/services/telegram/student-telegram.service";
 import type { ClassPageDto, JoinDto } from "@/server/services/video/video.service";
 
@@ -82,6 +82,7 @@ export function PortalPage({
   tests = [],
   course = null,
   progress = null,
+  schedule,
   initialTab = "lessons",
 }: {
   token: string;
@@ -101,6 +102,8 @@ export function PortalPage({
   course?: PortalCourseDto | null;
   /** Where the student stands in the course (A-159). */
   progress?: CourseProgressDto | null;
+  /** Upcoming lessons and the move/cancel rules (A-166). */
+  schedule: PortalScheduleDto;
   initialTab?: "lessons" | "money";
 }) {
   const t = useTranslations("portal");
@@ -464,23 +467,12 @@ export function PortalPage({
             </TabsContent>
 
             <TabsContent value="schedule">
-              {page.schedule.length === 0 ? (
-                <p className="text-sm text-muted-foreground">{t("schedule.empty")}</p>
-              ) : (
-                <ul className="divide-y text-sm">
-                  {page.schedule.map((s) => (
-                    <li key={s.weekday} className="flex justify-between gap-2 py-2">
-                      <span>{weekdayLabel(fmt, s.weekday as Weekday, "long")}</span>
-                      <span className="tabular-nums">
-                        {s.startTime} – {s.endTime}
-                      </span>
-                    </li>
-                  ))}
-                </ul>
-              )}
-              <p className="mt-3 text-xs text-muted-foreground">
-                {t("schedule.until", { date: date(portal.group.endDate) })}
-              </p>
+              <PortalScheduleTab
+                token={token}
+                weekly={page.schedule}
+                endDate={portal.group.endDate}
+                initial={schedule}
+              />
             </TabsContent>
           </Tabs>
         </CardContent>

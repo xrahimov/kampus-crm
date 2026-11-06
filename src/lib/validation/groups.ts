@@ -104,6 +104,7 @@ export const supportTeachersSchema = z.object({ userIds: z.array(idSchema).max(1
 export const lessonMoveSchema = z
   .object({ date: dateOnlySchema, startTime: timeSchema, endTime: timeSchema })
   .refine((s) => s.endTime > s.startTime, { message: "validation.workHours", path: ["endTime"] });
+export type LessonMoveInput = z.output<typeof lessonMoveSchema>;
 export const groupDayOffSchema = z.object({
   date: dateOnlySchema,
   reason: z.string().trim().min(1, "validation.required").max(200, "validation.tooLong"),

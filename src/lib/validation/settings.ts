@@ -89,6 +89,7 @@ export const ORG_SWITCHES = [
   "bookAnySupportTeacher",
   "groupSupportSessions",
   "showSetupChecklist",
+  "studentReschedule",
 ] as const;
 export type OrgSwitch = (typeof ORG_SWITCHES)[number];
 
@@ -121,6 +122,13 @@ export const orgSettingsSchema = z
       .min(0, "validation.min")
       .max(99_999_999, "validation.max")
       .default(0),
+    /** Hours before a lesson a 1:1 student may still move or cancel it (A-166). */
+    studentRescheduleHours: z.coerce
+      .number()
+      .int("validation.min")
+      .min(1, "validation.min")
+      .max(168, "validation.max")
+      .default(12),
     /** Public page per centre (A-121). */
     publicPage: z.boolean().default(false),
     publicSlug,

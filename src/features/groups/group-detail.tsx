@@ -391,7 +391,9 @@ export function GroupDetail({
                       <li key={d.id} className="flex justify-between gap-2">
                         <span>{date(d.date)}</span>
                         <span className="text-right text-muted-foreground">
-                          {d.reason}
+                          {d.reason.startsWith("@student.")
+                            ? td(`dayOffReasons.${d.reason.slice("@student.".length)}`)
+                            : d.reason}
                           {d.movedTo && (
                             <>
                               {" · "}
