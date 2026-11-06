@@ -4509,7 +4509,8 @@
         "weeklyReport": "Yakshanba kuni kechqurun ota-onalarga haftalik hisobot",
         "sharedWithAllCentres": "Bu serverdagi barcha markazlar uchun umumiy",
         "loginClientId": "Telegram orqali kirish: Client ID",
-        "loginClientSecret": "Telegram orqali kirish: Client Secret"
+        "loginClientSecret": "Telegram orqali kirish: Client Secret",
+        "lessonSummary": "Har bir onlayn darsdan keyin ota-onalarga xulosa"
       },
       "sharedHint": "Server egasi sifatida bu botni o‘z boti bo‘lmagan barcha markazlarga taklif qilishingiz mumkin: ularning o‘quvchilari o‘z sahifalaridan unga ulanadi, xodimlari unga /id yuboradi, xabarlari u orqali ketadi. O‘z botini kiritgan markaz o‘zinikidan foydalanishda davom etadi.",
       "sharedNote": "Markazingiz serverning umumiy boti @{username} dan foydalanadi: o‘quvchilar shaxsiy sahifalaridan unga ulanadi, xodimlar Bot xabarnoma uchun unga /id yuboradi. O‘zingiznikidan foydalanish uchun yuqorida o‘z botingizni kiriting.",
@@ -5257,7 +5258,8 @@
     "chatSent": "✅ {group} chatiga yuborildi.",
     "chatPick": "Bu qaysi guruh uchun? Pastdan tanlang, so‘ng xabaringizni qayta yuboring.",
     "chatPicked": "💬 Endi xabarlaringiz {group} chatiga boradi. Yozing.",
-    "chatFromStudent": "💬 {group} · {student} yozdi:\n{text}\n\nJavob: Kampus → Guruhlar → {group} → Chat."
+    "chatFromStudent": "💬 {group} · {student} yozdi:\n{text}\n\nJavob: Kampus → Guruhlar → {group} → Chat.",
+    "lessonSummary": "📘 {group}, {date} {time}\nMavzu: {topic, select, none {yozilmagan} other {{topic}}}\nDavomat: {attendance, select, PRESENT {keldi ✅} ABSENT {kelmadi ❌} EXCUSED {sababli} other {hali belgilanmagan}}\nUyga vazifa: {homework, select, none {yo‘q} other {{homework}}}{due, select, none {} other { (muddat {due})}}"
   },
   "video": {
     "title": "Video dars",

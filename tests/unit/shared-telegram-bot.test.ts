@@ -46,6 +46,7 @@ const telegram = (over: Partial<Parameters<typeof updateIntegration<"TELEGRAM">>
   webhookSecret: `${TAG}-${over.botUsername ?? "hook"}`,
   botUsername: `${TAG}_bot`,
   weeklyReport: true,
+  lessonSummary: true,
   sharedWithAllCentres: false,
   loginClientId: "",
   loginClientSecret: "",

@@ -4509,7 +4509,8 @@
         "weeklyReport": "Еженедельный отчёт родителям в воскресенье вечером",
         "sharedWithAllCentres": "Общий для всех центров на этом сервере",
         "loginClientId": "Вход через Telegram: Client ID",
-        "loginClientSecret": "Вход через Telegram: Client Secret"
+        "loginClientSecret": "Вход через Telegram: Client Secret",
+        "lessonSummary": "Сводка родителям после каждого онлайн-урока"
       },
       "sharedHint": "Как владелец сервера вы можете предложить этого бота всем центрам, которые не завели своего: их ученики подключаются к нему со своих страниц, их сотрудники отправляют ему /id, их сообщения уходят через него. Центр, указавший своего бота, продолжает пользоваться своим.",
       "sharedNote": "Ваш центр пользуется общим ботом сервера @{username}: ученики подключаются к нему со своих личных страниц, сотрудники отправляют ему /id для Bot-уведомлений. Чтобы пользоваться своим, укажите своего бота выше.",
@@ -5257,7 +5258,8 @@
     "chatSent": "✅ Отправлено в чат группы {group}.",
     "chatPick": "Для какой группы это сообщение? Выберите ниже и отправьте сообщение ещё раз.",
     "chatPicked": "💬 Теперь ваши сообщения идут в чат группы {group}. Пишите.",
-    "chatFromStudent": "💬 {group} · {student} написал(а):\n{text}\n\nОтвет: Kampus → Группы → {group} → Чат."
+    "chatFromStudent": "💬 {group} · {student} написал(а):\n{text}\n\nОтвет: Kampus → Группы → {group} → Чат.",
+    "lessonSummary": "📘 {group}, {date} {time}\nТема: {topic, select, none {не записана} other {{topic}}}\nПосещение: {attendance, select, PRESENT {присутствовал(а) ✅} ABSENT {отсутствовал(а) ❌} EXCUSED {по уважительной причине} other {ещё не отмечено}}\nДомашнее задание: {homework, select, none {нет} other {{homework}}}{due, select, none {} other { (срок {due})}}"
   },
   "video": {
     "title": "Видеоурок",

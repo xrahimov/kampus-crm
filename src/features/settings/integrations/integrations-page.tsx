@@ -59,6 +59,7 @@ export function IntegrationsPage({
           { key: "botUsername" },
           { key: "webhookSecret", secret: true },
           { key: "weeklyReport", type: "boolean" },
+          { key: "lessonSummary", type: "boolean" },
           { key: "loginClientId" },
           { key: "loginClientSecret", secret: true },
           ...(isSiteOwner ? [{ key: "sharedWithAllCentres", type: "boolean" as const }] : []),
