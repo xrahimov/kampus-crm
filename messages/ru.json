@@ -491,7 +491,8 @@
     "studentLinkExpired": "Эта ссылка для входа уже использована или устарела. Попросите у бота новую.",
     "studentLoginOff": "Вход через Telegram в этом учебном центре ещё не настроен.",
     "callWithoutLesson": "Звонок не привязан к уроку.",
-    "topicLocked": "Эта тема вам ещё не открыта"
+    "topicLocked": "Эта тема вам ещё не открыта",
+    "notAnAssignment": "Это домашнее задание относится к уроку; измените его через урок."
   },
   "validation": {
     "phone": "Введите номер в формате +998 90 123 45 67.",
@@ -604,7 +605,8 @@
     "digits": "Только цифры.",
     "loginClientId": "Client ID — это число из @BotFather.",
     "videoUrl": "Вставьте ссылку на YouTube или загрузите видеофайл",
-    "gapCount": "По одной строке ответа на каждый пропуск (___) в предложении"
+    "gapCount": "По одной строке ответа на каждый пропуск (___) в предложении",
+    "rubricScores": "Поставьте по каждому критерию балл в пределах его максимума."
   },
   "roles": {
     "CEO": "CEO",
@@ -1590,7 +1592,25 @@
       "voiceReply": "Голосовой ответ",
       "currentVoiceReply": "Ваш текущий ответ",
       "exercises": "Упражнения",
-      "exercisesTitle": "Упражнения к домашнему заданию от {date}"
+      "exercisesTitle": "Упражнения к домашнему заданию от {date}",
+      "assignment": {
+        "add": "Новое задание",
+        "addTitle": "Новое задание",
+        "editTitle": "Изменить задание",
+        "hint": "Проект или эссе для всей группы, не привязанное к одному уроку. Ученики отвечают со своей страницы как на домашнее задание; при проверке вы ставите баллы по каждому критерию рубрики.",
+        "title": "Название",
+        "badge": "Задание",
+        "rubric": "Рубрика",
+        "rubricHint": "Критерии и баллы за каждый (необязательно, до 10). Ученики видят их до начала работы.",
+        "criterion": "Критерий",
+        "points": "Баллы",
+        "addCriterion": "Добавить критерий",
+        "removeCriterion": "Убрать критерий",
+        "total": "всего {points} баллов",
+        "outOf": "из {points} баллов",
+        "score": "Баллы: {points} из {max}"
+      },
+      "exercisesTitleAssignment": "Упражнения к «{title}»"
     },
     "materials": {
       "intro": "Файлы, ссылки и записи уроков. Ученики открывают их по своей личной ссылке.",
@@ -4921,7 +4941,11 @@
       "recordAnswer": "Запишите ответ",
       "yourRecording": "Ваша запись",
       "teacherVoice": "Ответ преподавателя",
-      "audioFileOptional": "Или прикрепите аудиофайл (необязательно)"
+      "audioFileOptional": "Или прикрепите аудиофайл (необязательно)",
+      "assignment": "Задание",
+      "rubric": "Как оценивается",
+      "outOf": "{points} баллов",
+      "score": "Ваш балл: {points} из {max}"
     },
     "telegram": {
       "title": "Telegram",
@@ -5081,7 +5105,11 @@
     "loginUnknown": "Этот номер не зарегистрирован в учебном центре. Попросите администратора добавить его в профиль.",
     "loginLinkedElsewhere": "Ваш профиль уже привязан к другому аккаунту Telegram. Попросите администратора отвязать его.",
     "loginLink": "Нажмите, чтобы открыть Kampus: {url}\nСсылка работает один раз, 10 минут.",
-    "weeklyProgress": "{group}: курс пройден на {percent}% ({done} из {total} тем){score, select, none {} other {, упражнения в среднем {score}%}}"
+    "weeklyProgress": "{group}: курс пройден на {percent}% ({done} из {total} тем){score, select, none {} other {, упражнения в среднем {score}%}}",
+    "assignmentSet": "{group}: новое задание «{title}»{date, select, none {} other {, срок до {date}}}.\n{text}",
+    "assignmentChanged": "{group}: задание «{title}» изменено.\n{text}",
+    "assignmentAccepted": "{group}: ваше задание «{title}» принято.{comment}",
+    "assignmentReturned": "{group}: ваше задание «{title}» возвращено, посмотрите его ещё раз.{comment}"
   },
   "video": {
     "title": "Видеоурок",

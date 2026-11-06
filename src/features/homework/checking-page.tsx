@@ -198,7 +198,12 @@ export function CheckingPage({ initial }: { initial: CheckingQueueDto }) {
                             {item.groupName}
                           </Link>
                           {" · "}
-                          {fmt(parseDateOnly(item.lessonDate), { day: "numeric", month: "short" })}
+                          {item.lessonDate
+                            ? fmt(parseDateOnly(item.lessonDate), {
+                                day: "numeric",
+                                month: "short",
+                              })
+                            : item.title}
                           {item.lessonTopic ? `, ${item.lessonTopic}` : ""}
                         </span>
                       </p>

@@ -452,6 +452,7 @@ export const en: HelpContent = {
               ],
             },
             "Students connected to Telegram get a message when homework is set, changed, accepted or returned. When automatic coins for homework are on, an accepted answer gives the coins by itself.",
+            "**New assignment** sets a project or essay for the whole group without tying it to a lesson: a name, the task, a due date and a **rubric** of criteria with points. Students answer from their page like homework; when you accept or return the answer you score each criterion, and the student sees the points next to the rubric. Assignments appear in the checking queue too.",
           ],
         },
         checking: {
@@ -1276,6 +1277,7 @@ export const en: HelpContent = {
                 "The teacher accepts the answer or returns it with a comment. A returned task comes back as “to do”; press **Answer again**.",
               ],
             },
+            "An **Assignment** is a bigger task for the whole group, such as a project or an essay, with a due date and a table of what it is scored on. Answer it the same way; once the teacher has checked it you see your points for each line and the total.",
           ],
         },
         materials: {

@@ -26,7 +26,8 @@ export interface StudentHomeGroupDto extends FamilyPortalGroupDto {
 export interface StudentHomeHomeworkDto {
   id: string;
   groupName: string;
-  lessonDate: string;
+  lessonDate: string | null;
+  title: string | null;
   dueDate: string | null;
   text: string;
   returned: boolean;
@@ -80,6 +81,7 @@ export async function getStudentHome(
           id: true,
           groupId: true,
           text: true,
+          title: true,
           dueDate: true,
           lesson: { select: { date: true } },
           group: { select: { name: true } },
@@ -109,7 +111,8 @@ export async function getStudentHome(
       .map((h) => ({
         id: h.id,
         groupName: h.group.name,
-        lessonDate: dateToIso(h.lesson.date),
+        lessonDate: h.lesson ? dateToIso(h.lesson.date) : null,
+        title: h.title,
         dueDate: h.dueDate ? dateToIso(h.dueDate) : null,
         text: h.text.length > 200 ? `${h.text.slice(0, 197)}…` : h.text,
         returned: h.submissions[0]?.status === "RETURNED",

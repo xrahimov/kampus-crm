@@ -207,12 +207,28 @@ export const homeworkSchema = z.object({
 });
 export type HomeworkInput = z.output<typeof homeworkSchema>;
 
+/** One line of an assignment's rubric (A-161). */
+export const rubricCriterionSchema = z.object({
+  name: z.string().trim().min(1, "validation.required").max(120, "validation.tooLong"),
+  max: z.number().int().min(1).max(100),
+});
+export type RubricCriterion = z.infer<typeof rubricCriterionSchema>;
+
+/** A standalone assignment for the whole group: a project or essay with a name, a due date and a rubric (A-161). */
+export const assignmentSchema = homeworkSchema.extend({
+  title: z.string().trim().min(1, "validation.required").max(200, "validation.tooLong"),
+  rubric: z.array(rubricCriterionSchema).max(10).optional().default([]),
+});
+export type AssignmentInput = z.output<typeof assignmentSchema>;
+
 export const HOMEWORK_REVIEW_STATUSES = ["ACCEPTED", "RETURNED"] as const;
 export const homeworkReviewSchema = z.object({
   status: z.enum(HOMEWORK_REVIEW_STATUSES),
   teacherComment: z.string().trim().max(1000, "validation.tooLong").nullable().optional(),
   /** A recorded reply, uploaded first; omitted keeps the earlier one, null clears it. */
   teacherAudioUrl: z.string().max(500).nullable().optional(),
+  /** Points per rubric criterion, in rubric order (A-161); only on an assignment with a rubric. */
+  rubricScores: z.array(z.number().int().min(0)).max(10).optional(),
 });
 export type HomeworkReviewInput = z.output<typeof homeworkReviewSchema>;
 

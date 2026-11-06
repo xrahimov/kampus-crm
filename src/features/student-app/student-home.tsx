@@ -76,7 +76,7 @@ export function StudentHome({ data }: { data: StudentHomeDto }) {
                     <p className="flex flex-wrap items-center gap-2 font-medium">
                       {h.groupName}
                       <span className="font-normal text-muted-foreground">
-                        · {t("lessonOf", { date: short(h.lessonDate) })}
+                        · {h.lessonDate ? t("lessonOf", { date: short(h.lessonDate) }) : h.title}
                       </span>
                       {h.returned && <Badge variant="secondary">{t("returned")}</Badge>}
                       {h.dueDate && (

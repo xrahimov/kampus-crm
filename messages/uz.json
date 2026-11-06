@@ -491,7 +491,8 @@
     "studentLinkExpired": "Bu kirish havolasi ishlatilgan yoki muddati o‘tgan. Botdan yangisini so‘rang.",
     "studentLoginOff": "Bu o‘quv markazida Telegram orqali kirish hali sozlanmagan.",
     "callWithoutLesson": "Bu qo‘ng‘iroq darsga bog‘lanmagan.",
-    "topicLocked": "Bu mavzu sizga hali ochilmagan"
+    "topicLocked": "Bu mavzu sizga hali ochilmagan",
+    "notAnAssignment": "Bu uy vazifasi darsga tegishli; uni darsdan tahrirlang."
   },
   "validation": {
     "phone": "+998 90 123 45 67 ko‘rinishida raqam kiriting.",
@@ -604,7 +605,8 @@
     "digits": "Faqat raqamlar.",
     "loginClientId": "Client ID — @BotFather bergan raqam.",
     "videoUrl": "YouTube havolasini qo‘ying yoki video fayl yuklang",
-    "gapCount": "Gapdagi har bir bo‘shliq (___) uchun bir javob qatori"
+    "gapCount": "Gapdagi har bir bo‘shliq (___) uchun bir javob qatori",
+    "rubricScores": "Har bir mezonga uning balli doirasida ball qo‘ying."
   },
   "roles": {
     "CEO": "CEO",
@@ -1590,7 +1592,25 @@
       "voiceReply": "Ovozli javob",
       "currentVoiceReply": "Joriy javobingiz",
       "exercises": "Mashqlar",
-      "exercisesTitle": "{date} uy vazifasi mashqlari"
+      "exercisesTitle": "{date} uy vazifasi mashqlari",
+      "assignment": {
+        "add": "Yangi topshiriq",
+        "addTitle": "Yangi topshiriq",
+        "editTitle": "Topshiriqni tahrirlash",
+        "hint": "Butun guruh uchun, bitta darsga bog‘lanmagan loyiha yoki insho. O‘quvchilar uy vazifasi kabi o‘z sahifasidan javob beradi; tekshirganda rubrikaning har bir mezoniga ball qo‘yasiz.",
+        "title": "Nomi",
+        "badge": "Topshiriq",
+        "rubric": "Rubrika",
+        "rubricHint": "Mezonlar va har biriga beriladigan ball (ixtiyoriy, 10 tagacha). O‘quvchilar boshlashdan oldin ko‘radi.",
+        "criterion": "Mezon",
+        "points": "Ball",
+        "addCriterion": "Mezon qo‘shish",
+        "removeCriterion": "Mezonni olib tashlash",
+        "total": "jami {points} ball",
+        "outOf": "{points} balldan",
+        "score": "Ball: {max} dan {points}"
+      },
+      "exercisesTitleAssignment": "“{title}” uchun mashqlar"
     },
     "materials": {
       "intro": "Fayllar, havolalar va dars yozuvlari. O‘quvchilar ularni shaxsiy havolasi orqali ochadi.",
@@ -4921,7 +4941,11 @@
       "recordAnswer": "Javobingizni yozib oling",
       "yourRecording": "Sizning yozuvingiz",
       "teacherVoice": "O‘qituvchi javobi",
-      "audioFileOptional": "Yoki audio fayl biriktiring (ixtiyoriy)"
+      "audioFileOptional": "Yoki audio fayl biriktiring (ixtiyoriy)",
+      "assignment": "Topshiriq",
+      "rubric": "Qanday baholanadi",
+      "outOf": "{points} ball",
+      "score": "Sizning balingiz: {max} dan {points}"
     },
     "telegram": {
       "title": "Telegram",
@@ -5081,7 +5105,11 @@
     "loginUnknown": "Bu raqam o‘quv markazida ro‘yxatda yo‘q. Qabulxonadan uni profilingizga qo‘shishni so‘rang.",
     "loginLinkedElsewhere": "Profilingiz boshqa Telegram hisobiga ulangan. Avval qabulxonadan uni uzishni so‘rang.",
     "loginLink": "Kampusni ochish uchun bosing: {url}\nHavola bir marta, 10 daqiqa ishlaydi.",
-    "weeklyProgress": "{group}: kurs {percent}% bajarildi ({total} mavzudan {done} tasi){score, select, none {} other {, mashqlar o‘rtachasi {score}%}}"
+    "weeklyProgress": "{group}: kurs {percent}% bajarildi ({total} mavzudan {done} tasi){score, select, none {} other {, mashqlar o‘rtachasi {score}%}}",
+    "assignmentSet": "{group}: yangi topshiriq – “{title}”{date, select, none {} other {, muddati {date}}}.\n{text}",
+    "assignmentChanged": "{group}: “{title}” topshirig‘i o‘zgartirildi.\n{text}",
+    "assignmentAccepted": "{group}: “{title}” topshirig‘ingiz qabul qilindi.{comment}",
+    "assignmentReturned": "{group}: “{title}” topshirig‘ingiz qaytarildi, qayta ko‘rib chiqing.{comment}"
   },
   "video": {
     "title": "Video dars",

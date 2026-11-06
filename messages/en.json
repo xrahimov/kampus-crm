@@ -491,7 +491,8 @@
     "studentLinkExpired": "This sign-in link was already used or has expired. Ask the bot for a new one.",
     "studentLoginOff": "Sign-in with Telegram is not set up at this learning centre yet.",
     "callWithoutLesson": "This call is not tied to a lesson.",
-    "topicLocked": "This topic is not open to you yet"
+    "topicLocked": "This topic is not open to you yet",
+    "notAnAssignment": "This homework belongs to a lesson; edit it from the lesson."
   },
   "validation": {
     "phone": "Enter a number like +998 90 123 45 67.",
@@ -604,7 +605,8 @@
     "digits": "Digits only.",
     "loginClientId": "The Client ID is a number from @BotFather.",
     "videoUrl": "Paste a YouTube link or upload a video file",
-    "gapCount": "One answer line per gap (___) in the sentence"
+    "gapCount": "One answer line per gap (___) in the sentence",
+    "rubricScores": "Give each criterion a score within its points."
   },
   "roles": {
     "CEO": "CEO",
@@ -1590,7 +1592,25 @@
       "voiceReply": "Voice reply",
       "currentVoiceReply": "Your current reply",
       "exercises": "Exercises",
-      "exercisesTitle": "Exercises for the homework of {date}"
+      "exercisesTitle": "Exercises for the homework of {date}",
+      "assignment": {
+        "add": "New assignment",
+        "addTitle": "New assignment",
+        "editTitle": "Edit the assignment",
+        "hint": "A project or essay for the whole group, not tied to one lesson. Students answer from their page like homework; you score each criterion of the rubric when you check it.",
+        "title": "Name",
+        "badge": "Assignment",
+        "rubric": "Rubric",
+        "rubricHint": "Criteria with the points each is worth (optional, up to 10). Students see them before they start.",
+        "criterion": "Criterion",
+        "points": "Points",
+        "addCriterion": "Add a criterion",
+        "removeCriterion": "Remove the criterion",
+        "total": "{points} points in all",
+        "outOf": "out of {points} points",
+        "score": "Score: {points} of {max}"
+      },
+      "exercisesTitleAssignment": "Exercises for “{title}”"
     },
     "materials": {
       "intro": "Files, links and lesson recordings. Students open them from their personal link.",
@@ -4921,7 +4941,11 @@
       "recordAnswer": "Record your answer",
       "yourRecording": "Your recording",
       "teacherVoice": "Teacher's reply",
-      "audioFileOptional": "Or attach an audio file (optional)"
+      "audioFileOptional": "Or attach an audio file (optional)",
+      "assignment": "Assignment",
+      "rubric": "How it is scored",
+      "outOf": "{points} points",
+      "score": "Your score: {points} of {max}"
     },
     "telegram": {
       "title": "Telegram",
@@ -5081,7 +5105,11 @@
     "loginUnknown": "This number is not registered at the learning centre. Ask the reception to add it to your profile.",
     "loginLinkedElsewhere": "Your profile is already connected to another Telegram account. Ask the reception to unlink it first.",
     "loginLink": "Tap to open Kampus: {url}\nThe link works once, for 10 minutes.",
-    "weeklyProgress": "{group}: course {percent}% complete ({done} of {total} topics){score, select, none {} other {, exercises average {score}%}}"
+    "weeklyProgress": "{group}: course {percent}% complete ({done} of {total} topics){score, select, none {} other {, exercises average {score}%}}",
+    "assignmentSet": "{group}: new assignment “{title}”{date, select, none {} other {, due by {date}}}.\n{text}",
+    "assignmentChanged": "{group}: the assignment “{title}” was changed.\n{text}",
+    "assignmentAccepted": "{group}: your assignment “{title}” was accepted.{comment}",
+    "assignmentReturned": "{group}: your assignment “{title}” was returned, please look at it again.{comment}"
   },
   "video": {
     "title": "Video lesson",
