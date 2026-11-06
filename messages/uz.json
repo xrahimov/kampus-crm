@@ -497,7 +497,8 @@
     "rescheduleOff": "Bu guruh uchun dars ko'chirish mavjud emas",
     "rescheduleTooLate": "Darsni endi o'zgartirib bo'lmaydi",
     "lessonNotOver": "Dars hali tugamagan",
-    "ratingAbsent": "O'tkazib yuborilgan darsga baho qo'yib bo'lmaydi"
+    "ratingAbsent": "O'tkazib yuborilgan darsga baho qo'yib bo'lmaydi",
+    "bookingLimit": "Oldindan band qilingan darslar soni allaqachon eng ko'p"
   },
   "validation": {
     "phone": "+998 90 123 45 67 ko‘rinishida raqam kiriting.",
@@ -614,7 +615,9 @@
     "rubricScores": "Har bir mezonga uning balli doirasida ball qo‘ying.",
     "weightsSum": "Vaznlar yig‘indisi 100 bo‘lishi kerak.",
     "outsideWorkHours": "Markazning ish vaqtidan tashqarida",
-    "teacherBusy": "Bu vaqtda o'qituvchining boshqa darsi bor"
+    "teacherBusy": "Bu vaqtda o'qituvchining boshqa darsi bor",
+    "availabilityOverlap": "Bir kunning soatlari bir-birini qoplaydi",
+    "outsideAvailability": "O'qituvchining band qilish soatlaridan tashqarida"
   },
   "roles": {
     "CEO": "CEO",
@@ -1144,7 +1147,19 @@
       "role": "Rol"
     },
     "noGroups": "Hozircha guruh yo'q.",
-    "sms": "SMS yuborish"
+    "sms": "SMS yuborish",
+    "availability": {
+      "title": "Yakka darslar uchun band qilish soatlari",
+      "own": "Yakka guruhlardagi o'quvchilaringiz darslarni shu soatlar ichida band qiladi va ko'chiradi.",
+      "hint": "Yakka guruh o'quvchisi o'z sahifasidan dars band qilishi yoki ko'chirishi mumkin bo'lgan haftalik vaqt oynalari. Boshqa darslar band qilgan vaqtlar chiqarib tashlanadi. Oynalar bo'lmasa, o'quvchilar markaz ish vaqtidagi istalgan bo'sh vaqtni tanlaydi.",
+      "closed": "yopiq",
+      "from": "Dan",
+      "to": "Gacha",
+      "add": "Soat qo'shish",
+      "remove": "O'chirish",
+      "save": "Soatlarni saqlash",
+      "saved": "Saqlandi"
+    }
   },
   "staff": {
     "title": "Xodimlar",
@@ -4995,7 +5010,12 @@
       "reasons": {
         "moved": "siz ko'chirdingiz",
         "cancelled": "siz bekor qildingiz"
-      }
+      },
+      "bookTitle": "Qo'shimcha dars band qilish",
+      "bookHint": "O'qituvchingizning bo'sh vaqtini tanlang. Oldindan yana {left} ta dars band qilishingiz mumkin.",
+      "book": "Vaqt tanlash",
+      "noSlots": "Keyingi ikki haftada bo'sh vaqt yo'q.",
+      "orOwnTime": "Yoki vaqtni o'zingiz kiriting:"
     },
     "homework": {
       "empty": "Hali vazifalar yo‘q.",
@@ -5209,7 +5229,8 @@
     "badgeEarned": "🏅 Yangi nishon: {name}. {hint}",
     "streamPost": "📌 {group} · {author}:\n{text}",
     "noShow": "{group}: o'qituvchi dars xonasida {time} dan beri {minutes} daqiqa kutdi. Dars \"kelmadi\" deb qo'yildi. Keyingi safar kela olmasangiz, iltimos, o'qituvchiga oldindan ayting.",
-    "lessonNote": "{group}: {date} kungi dars bo'yicha o'qituvchi izohi: {text}"
+    "lessonNote": "{group}: {date} kungi dars bo'yicha o'qituvchi izohi: {text}",
+    "lessonBooked": "{group}: {date}, {time} uchun dars band qilindi."
   },
   "video": {
     "title": "Video dars",

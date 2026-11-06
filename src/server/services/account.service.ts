@@ -7,6 +7,10 @@ import { AppError } from "@/server/errors/app-error";
 import { enqueue } from "@/server/jobs/queue";
 import type { Actor } from "@/server/rbac/authorize";
 import { botText, wallClock } from "@/server/services/telegram/student-telegram.service";
+import {
+  isTeacherUser,
+  type AvailabilityWindowDto,
+} from "@/server/services/staff/availability.service";
 
 /*
  * "My account" (A-124): the signed-in person's own password, second sign-in
@@ -24,6 +28,9 @@ export interface AccountDto {
   telegramLinked: boolean;
   mustChangePassword: boolean;
   passwordChangedAt: string | null;
+  /** For teachers: their hours open for 1:1 booking (A-169); null for everyone else. */
+  availability: AvailabilityWindowDto[] | null;
+  userId: string;
 }
 
 export interface SessionDto {
@@ -46,8 +53,11 @@ export async function getAccount(actor: Actor, db: DbClient = prisma): Promise<A
       mustChangePassword: true,
       passwordChangedAt: true,
       botRecipient: { select: { id: true } },
+      roles: { select: { role: { select: { code: true } } } },
+      availability: { select: { weekday: true, startTime: true, endTime: true } },
     },
   });
+  const teaches = isTeacherUser(user.roles.map((r) => r.role.code));
   return {
     fullName: user.fullName,
     phone: user.phone,
@@ -55,6 +65,12 @@ export async function getAccount(actor: Actor, db: DbClient = prisma): Promise<A
     telegramLinked: user.botRecipient !== null,
     mustChangePassword: user.mustChangePassword,
     passwordChangedAt: user.passwordChangedAt?.toISOString() ?? null,
+    availability: teaches
+      ? [...user.availability].sort(
+          (a, b) => a.weekday - b.weekday || a.startTime.localeCompare(b.startTime),
+        )
+      : null,
+    userId: actor.userId,
   };
 }
 

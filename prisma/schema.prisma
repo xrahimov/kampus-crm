@@ -195,6 +195,7 @@ model User {
   botRecipient        BotRecipient?
   staffCheckIns       StaffAttendance[]
   workSchedules       WorkSchedule[]
+  availability        TeacherAvailability[]
   membershipsClosed   GroupMembership[]    @relation("membershipsClosed")
   testsWritten        Test[]               @relation("testAuthor")
   attemptsEntered     TestAttempt[]        @relation("attemptEnteredBy")
@@ -2665,6 +2666,19 @@ model StaffAttendance {
 }
 
 /// "Ish jadvallari": expected hours per weekday (0 = Sunday … 6 = Saturday); no row = day off.
+/// Hours a teacher is open for 1:1 booking by their students (A-169); several windows per weekday.
+model TeacherAvailability {
+  id        String @id @default(cuid())
+  userId    String
+  weekday   Int
+  startTime String // HH:mm
+  endTime   String // HH:mm
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, weekday])
+}
+
 model WorkSchedule {
   id      String @id @default(cuid())
   userId  String

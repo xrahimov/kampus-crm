@@ -22,6 +22,8 @@ import { api, ApiError } from "@/lib/api-client";
 import { useDateFormat } from "@/lib/use-date-format";
 import type { AccountDto, SessionDto } from "@/server/services/account.service";
 
+import { AvailabilityEditor } from "@/features/staff/availability-editor";
+
 import { PasswordForm } from "./password-form";
 
 /** "My account" (A-124): password, the Telegram sign-in code and the signed-in devices. */
@@ -120,6 +122,18 @@ export function AccountPage({
           </CardContent>
         </Card>
       </div>
+
+      {account.availability && (
+        <Card data-testid="account-availability">
+          <CardHeader>
+            <CardTitle>{t("teachers.availability.title")}</CardTitle>
+            <CardDescription>{t("teachers.availability.own")}</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <AvailabilityEditor userId={account.userId} initial={account.availability} canEdit />
+          </CardContent>
+        </Card>
+      )}
 
       <Card>
         <CardHeader className="flex flex-row flex-wrap items-start justify-between gap-3">

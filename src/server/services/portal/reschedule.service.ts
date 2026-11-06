@@ -4,7 +4,13 @@ import { prisma, type DbClient } from "@/server/db/prisma";
 import { AppError } from "@/server/errors/app-error";
 import { notifyLessonChange, tashkentToday } from "@/server/services/groups/day-off.service";
 import { notifyStaff } from "@/server/services/integrations/bot-recipients.service";
+import {
+  freeSlots,
+  withinAvailability,
+  type FreeSlotDto,
+} from "@/server/services/staff/availability.service";
 import { dateToIso, isoToDate } from "@/server/services/settings/shared";
+import { notifyStudents } from "@/server/services/telegram/student-telegram.service";
 import { membershipByToken } from "@/server/services/video/video.service";
 
 /**
@@ -27,6 +33,11 @@ export interface RescheduleRulesDto {
   hours: number;
   workStart: string;
   workEnd: string;
+  /** The grid step for new times, from the centre's settings (A-169). */
+  stepMinutes: number;
+  /** Extra lessons the student may still book ahead (A-169). */
+  bookingLimit: number;
+  bookedAhead: number;
 }
 
 export interface PortalUpcomingLessonDto {
@@ -55,9 +66,15 @@ export interface PortalScheduleDto {
   upcoming: PortalUpcomingLessonDto[];
   /** Lessons taken off without a new time, from today on; the student may pick one. */
   cancelled: PortalCancelledLessonDto[];
+  /** The teacher keeps booking hours: free slots over the next two weeks (A-169). */
+  hasAvailability: boolean;
+  slots: FreeSlotDto[];
 }
 
 const UPCOMING = 10;
+/** Student-booked extra lessons that may wait ahead at once (A-169). */
+export const BOOKING_LIMIT = 2;
+const SLOT_DAYS = 14;
 const CURRENT = ["NEW", "TRIAL", "ACTIVE"] as const;
 const minutes = (hhmm: string) => Number(hhmm.slice(0, 2)) * 60 + Number(hhmm.slice(3, 5));
 
@@ -69,13 +86,22 @@ export function lessonStart(date: string, startTime: string): Date {
 type Membership = NonNullable<Awaited<ReturnType<typeof membershipByToken>>>;
 
 async function rulesFor(db: DbClient, membership: Membership): Promise<RescheduleRulesDto> {
-  const [branch, members] = await Promise.all([
+  const [branch, members, bookedAhead] = await Promise.all([
     db.branch.findUniqueOrThrow({
       where: { id: membership.group.branchId },
       select: { organization: { select: { id: true, settings: true } } },
     }),
     db.groupMembership.count({
       where: { groupId: membership.groupId, status: { in: [...CURRENT] } },
+    }),
+    // Extra lessons ahead that replace nothing: the student's own bookings (or the office's).
+    db.lesson.count({
+      where: {
+        groupId: membership.groupId,
+        isExtra: true,
+        movedFrom: null,
+        date: { gte: isoToDate(tashkentToday()) },
+      },
     }),
   ]);
   const settings = branch.organization.settings;
@@ -84,6 +110,9 @@ async function rulesFor(db: DbClient, membership: Membership): Promise<Reschedul
     hours: settings?.studentRescheduleHours ?? 12,
     workStart: settings?.workStart ?? "08:00",
     workEnd: settings?.workEnd ?? "20:00",
+    stepMinutes: settings?.scheduleStepMinutes ?? 30,
+    bookingLimit: BOOKING_LIMIT,
+    bookedAhead,
   };
 }
 
@@ -119,6 +148,17 @@ export async function getPortalSchedule(
     }),
   ]);
   const now = Date.now();
+  const free = rules.enabled
+    ? await freeSlots(db, {
+        groupId: membership.groupId,
+        branchId: membership.group.branchId,
+        teacherIds: await teacherIdsOf(db, membership.groupId),
+        from: todayIso,
+        days: SLOT_DAYS,
+        lengthMinutes: lessonLength(membership),
+        stepMinutes: rules.stepMinutes,
+      })
+    : { hasAvailability: false, slots: [] };
   const slotEnd = (startTime: string | null) => {
     if (!startTime) return null;
     const slot = membership.group.slots.find((s) => s.startTime === startTime);
@@ -148,7 +188,20 @@ export async function getPortalSchedule(
           reason: d.reason,
         }))
       : [],
+    hasAvailability: free.hasAvailability,
+    slots: free.slots,
   };
+}
+
+async function teacherIdsOf(db: DbClient, groupId: string): Promise<string[]> {
+  const teachers = await db.groupTeacher.findMany({ where: { groupId }, select: { userId: true } });
+  return teachers.map((t) => t.userId);
+}
+
+/** The group's usual lesson length in minutes, from its first slot (60 without slots). */
+function lessonLength(membership: Membership): number {
+  const slot = membership.group.slots[0];
+  return slot ? minutes(slot.endTime) - minutes(slot.startTime) : 60;
 }
 
 async function requireRules(db: DbClient, membership: Membership): Promise<RescheduleRulesDto> {
@@ -175,10 +228,21 @@ async function assertSlotFree(
     where: { groupId: membership.groupId },
     select: { userId: true },
   });
+  // A teacher who keeps booking hours is booked inside them only (A-169).
+  const inside = await withinAvailability(
+    db,
+    teachers.map((t) => t.userId),
+    moveTo,
+  );
+  if (inside === false) {
+    throw AppError.validation({ startTime: ["validation.outsideAvailability"] });
+  }
   const busy = await db.lesson.findFirst({
     where: {
       id: ignoreLessonId ? { not: ignoreLessonId } : undefined,
       date: isoToDate(moveTo.date),
+      // An archived group's lessons no longer take anyone's time.
+      group: { status: { not: "ARCHIVED" } },
       OR: [
         { groupId: membership.groupId },
         { group: { teachers: { some: { userId: { in: teachers.map((t) => t.userId) } } } } },
@@ -442,6 +506,59 @@ export async function rebookPortalLesson(
       entityId: membership.groupId,
       before: { date: dateToIso(dayOff.date), startTime: dayOff.startTime },
       after: { ...moveTo, studentId: membership.studentId },
+    });
+  });
+  return getPortalSchedule(token, db);
+}
+
+/** The student books an extra lesson at a free time (A-169). */
+export async function bookPortalLesson(
+  token: string,
+  moveTo: LessonMoveInput,
+  db: DbClient = prisma,
+): Promise<PortalScheduleDto | null> {
+  const membership = await membershipByToken(db, token);
+  if (!membership) return null;
+  const rules = await requireRules(db, membership);
+  if (rules.bookedAhead >= rules.bookingLimit) throw AppError.conflict("errors.bookingLimit");
+  await assertSlotFree(db, membership, rules, moveTo, null);
+  await db.$transaction(async (tx) => {
+    const branch = await tx.branch.findUniqueOrThrow({
+      where: { id: membership.group.branchId },
+      select: { organizationId: true },
+    });
+    const lesson = await tx.lesson.create({
+      data: {
+        groupId: membership.groupId,
+        date: isoToDate(moveTo.date),
+        startTime: moveTo.startTime,
+        endTime: moveTo.endTime,
+        isExtra: true,
+      },
+      select: { id: true },
+    });
+    await notifyStudents(tx, {
+      studentIds: [membership.studentId],
+      kind: "lessonBooked",
+      refKey: `booked:${lesson.id}`,
+      values: {
+        group: membership.group.name,
+        date: moveTo.date,
+        time: `${moveTo.startTime}–${moveTo.endTime}`,
+      },
+    });
+    await notifyStaff(tx, {
+      organizationId: branch.organizationId,
+      branchId: membership.group.branchId,
+      text: `Yangi dars band qilindi (o'quvchi): ${membership.student.fullName} — ${membership.group.name}, ${moveTo.date} ${moveTo.startTime}–${moveTo.endTime}`,
+    });
+    await recordAudit(tx, null, {
+      organizationId: branch.organizationId,
+      branchId: membership.group.branchId,
+      action: "lesson.studentBook",
+      entity: "Group",
+      entityId: membership.groupId,
+      after: { ...moveTo, lessonId: lesson.id, studentId: membership.studentId },
     });
   });
   return getPortalSchedule(token, db);
