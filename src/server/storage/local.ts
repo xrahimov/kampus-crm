@@ -6,6 +6,7 @@ import { Readable, Transform } from "node:stream";
 import { pipeline } from "node:stream/promises";
 import type { ReadableStream as NodeReadableStream } from "node:stream/web";
 
+import { S3Storage, s3ConfigFromEnv } from "./s3";
 import { STORAGE_KEY_PATTERN, type Storage, type StoredFile, type StoredRange } from "./storage";
 
 const IMAGE_EXTENSION_BY_TYPE: Record<string, string> = {
@@ -36,7 +37,7 @@ const EXTENSION_BY_TYPE: Record<string, string> = {
   ...IMAGE_EXTENSION_BY_TYPE,
   ...DOCUMENT_EXTENSION_BY_TYPE,
 };
-const TYPE_BY_EXTENSION = Object.fromEntries(
+export const TYPE_BY_EXTENSION = Object.fromEntries(
   Object.entries(EXTENSION_BY_TYPE).map(([type, ext]) => [ext, type]),
 );
 
@@ -152,10 +153,22 @@ export class LocalStorage implements Storage {
 
 const globalForStorage = globalThis as unknown as { storage?: Storage };
 
+/**
+ * The storage the server runs on: object storage when `STORAGE_DRIVER=s3` and
+ * the `S3_*` variables are set (A-174), otherwise the local `UPLOAD_DIR`.
+ */
 export function getStorage(): Storage {
-  // The directory is configuration, not a module to trace; hence the ignore hint for the bundler.
-  globalForStorage.storage ??= new LocalStorage(
-    path.resolve(/*turbopackIgnore: true*/ process.cwd(), process.env.UPLOAD_DIR ?? "uploads"),
-  );
+  if (!globalForStorage.storage) {
+    const s3 = s3ConfigFromEnv();
+    globalForStorage.storage = s3
+      ? new S3Storage(s3)
+      : // The directory is configuration, not a module to trace; hence the ignore hint for the bundler.
+        new LocalStorage(
+          path.resolve(
+            /*turbopackIgnore: true*/ process.cwd(),
+            process.env.UPLOAD_DIR ?? "uploads",
+          ),
+        );
+  }
   return globalForStorage.storage;
 }
