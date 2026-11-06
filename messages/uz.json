@@ -1475,7 +1475,8 @@
         "materials": "Materiallar",
         "syllabus": "Dastur",
         "gradebook": "Baholar jurnali",
-        "stream": "Lenta"
+        "stream": "Lenta",
+        "chat": "Chat"
       },
       "changeTeacherHint": "Yangi o'qituvchining ulushi bugundan hisoblanadi.",
       "notify": "O'quvchilar va ota-onalarga xabar berish (Telegram va SMS)",
@@ -1785,6 +1786,16 @@
         "tests": "Testlar",
         "exams": "Imtihonlar"
       }
+    },
+    "chat": {
+      "empty": "Hali xabar yo‘q. Guruhga yozing: o‘quvchilar o‘z sahifasida va Telegramda ko‘radi.",
+      "placeholder": "Guruhga xabar…",
+      "send": "Yuborish",
+      "sending": "Yuborilmoqda…",
+      "viaTelegram": "Telegram orqali",
+      "hint": "Bu chatni guruhdagi hamma o‘qiydi. O‘quvchilar o‘z sahifasidan yoki botga yozib javob beradi.",
+      "archived": "Guruh arxivlangan; chat faqat o‘qish uchun.",
+      "you": "Siz"
     }
   },
   "timetable": {
@@ -4913,7 +4924,8 @@
       "announcements": "Yangiliklar",
       "tests": "Testlar",
       "course": "Kurs",
-      "stream": "Lenta"
+      "stream": "Lenta",
+      "chat": "Chat"
     },
     "tests": {
       "empty": "Guruhingiz uchun hali testlar yo‘q.",
@@ -5162,6 +5174,16 @@
         "tests": "Testlar",
         "exams": "Imtihonlar"
       }
+    },
+    "chat": {
+      "empty": "Hali xabar yo‘q. O‘qituvchingizga shu yerda yozing; chatni butun guruh ko‘radi.",
+      "teachers": "O‘qituvchilar: {names}",
+      "telegramHint": "Yuqorida Telegramni ulang: o‘qituvchi xabarlari u yerga ham keladi, botdan to‘g‘ridan-to‘g‘ri javob berishingiz mumkin.",
+      "placeholder": "Xabaringiz…",
+      "send": "Yuborish",
+      "sending": "Yuborilmoqda…",
+      "viaTelegram": "Telegram orqali",
+      "you": "Siz"
     }
   },
   "telegramBot": {
@@ -5189,7 +5211,7 @@
     "menuBalance": "Balans",
     "menuPay": "To‘lov",
     "menuAbsent": "Bugun darsga kelmaydi",
-    "menuHint": "«Balans», «To‘lov» yoki «Bugun darsga kelmaydi» deb yozing yoki pastdagi tugmalardan foydalaning.",
+    "menuHint": "«Balans», «To‘lov» yoki «Bugun darsga kelmaydi» deb yozing, pastdagi tugmalardan foydalaning yoki shunchaki yozing: xabaringiz guruh chatiga boradi.",
     "balanceGroup": "{group}: balans {balance}{next, select, none {} other {, keyingi to‘lov {next} gacha}}",
     "balanceDebtGroup": "{group}: qarz {debt}",
     "balanceCoins": "Coinlar: {total}",
@@ -5230,7 +5252,12 @@
     "streamPost": "📌 {group} · {author}:\n{text}",
     "noShow": "{group}: o'qituvchi dars xonasida {time} dan beri {minutes} daqiqa kutdi. Dars \"kelmadi\" deb qo'yildi. Keyingi safar kela olmasangiz, iltimos, o'qituvchiga oldindan ayting.",
     "lessonNote": "{group}: {date} kungi dars bo'yicha o'qituvchi izohi: {text}",
-    "lessonBooked": "{group}: {date}, {time} uchun dars band qilindi."
+    "lessonBooked": "{group}: {date}, {time} uchun dars band qilindi.",
+    "chatMessage": "💬 {group} · {from}:\n{text}\n\nShu yerda javob yozing, o‘qituvchingiz Kampusda ko‘radi.",
+    "chatSent": "✅ {group} chatiga yuborildi.",
+    "chatPick": "Bu qaysi guruh uchun? Pastdan tanlang, so‘ng xabaringizni qayta yuboring.",
+    "chatPicked": "💬 Endi xabarlaringiz {group} chatiga boradi. Yozing.",
+    "chatFromStudent": "💬 {group} · {student} yozdi:\n{text}\n\nJavob: Kampus → Guruhlar → {group} → Chat."
   },
   "video": {
     "title": "Video dars",

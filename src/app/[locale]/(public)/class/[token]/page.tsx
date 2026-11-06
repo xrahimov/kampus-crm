@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { setRequestLocale } from "next-intl/server";
 
 import { PortalPage } from "@/features/portal/portal-page";
+import { getPortalChat } from "@/server/services/chat/group-chat.service";
 import { listPortalAnnouncements } from "@/server/services/announcements/announcements.service";
 import { listPortalHomework } from "@/server/services/homework/homework.service";
 import { listPortalMaterials } from "@/server/services/materials/materials.service";
@@ -57,6 +58,7 @@ export default async function Page({ params, searchParams }: Props) {
     badges,
     stream,
     schedule,
+    chat,
   ] = await Promise.all([
     getClassPage(token),
     getPortal(token),
@@ -74,6 +76,7 @@ export default async function Page({ params, searchParams }: Props) {
     getPortalBadges(token),
     listPortalStream(token),
     getPortalSchedule(token),
+    getPortalChat(token),
   ]);
   if (
     !page ||
@@ -83,7 +86,8 @@ export default async function Page({ params, searchParams }: Props) {
     !materials ||
     !pay ||
     !announcements ||
-    !schedule
+    !schedule ||
+    !chat
   ) {
     notFound();
   }
@@ -99,6 +103,7 @@ export default async function Page({ params, searchParams }: Props) {
         pay={pay}
         referral={referral}
         announcements={announcements}
+        chat={chat}
         certificates={certificates ?? []}
         tests={tests ?? []}
         course={course}
