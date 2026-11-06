@@ -1244,7 +1244,7 @@ export const uz: HelpContent = {
         link: {
           title: "Havolangiz",
           body: [
-            "O‘quv markazingiz sizga SMS orqali yoki o‘qituvchingiz orqali shaxsiy havola beradi. Uni telefon, planshet yoki kompyuterdagi istalgan brauzerda oching; hech narsa o‘rnatish kerak emas va parol yo‘q. Tez topish uchun uni xatcho‘p qilib yoki bosh ekranga saqlab qo‘ying.",
+            "O‘quv markazingiz sizga SMS orqali yoki o‘qituvchingiz orqali shaxsiy havola beradi. Uni telefon, planshet yoki kompyuterdagi istalgan brauzerda oching; hech narsa o‘rnatish kerak emas va parol yo‘q. Tez topish uchun uni xatcho‘p qilib yoki bosh ekranga saqlab qo‘ying: Android’da Chrome sahifa tepasida **O‘rnatish** ni taklif qiladi (yoki menyusida **Bosh ekranga qo‘shish**); iPhone’da Safari’da **Ulashish → Bosh ekranga qo‘shish** dan foydalaning. Belgi **My Kampus** deb nomlanadi, sahifa ilova kabi ochiladi va internet bo‘lmaganda ham oxirgi jadval, uyga vazifa va balansingizni ko‘rsatadi.",
             "Sahifa sizni ismingiz bilan kutib oladi va guruhingizni, o‘qituvchingizni va to‘rtta raqamni ko‘rsatadi: davomatingiz, o‘rtacha bahongiz, nechta dars o‘tilgani va coinlaringiz.",
             {
               note: "Havola faqat sizniki: u baholaringiz va to‘lovlaringizni ko‘rsatadi. Uni boshqalarga bermang. Yo‘qotib qo‘ysangiz, o‘qituvchingizdan yangisini so‘rang; shunda eskisi ishlamay qoladi.",
