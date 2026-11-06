@@ -91,7 +91,7 @@ export function LessonPanel({ engine }: { engine: CallEngine }) {
   const lessonTopic = data.lesson?.topic ?? data.lesson?.courseTopicTitle ?? null;
 
   return (
-    <div className="space-y-4 text-sm" data-testid="lesson-panel">
+    <div className="space-y-4 text-sm" data-testid="lesson-body">
       <section>
         <div className="flex items-center justify-between gap-2">
           <h3 className="text-xs font-semibold tracking-wide uppercase opacity-70">
