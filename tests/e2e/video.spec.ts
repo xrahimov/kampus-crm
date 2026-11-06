@@ -146,6 +146,25 @@ test.describe("video lessons", () => {
     await expect(teacher.getByTestId("react-slower")).toHaveCount(0);
     await teacher.getByTestId("toggle-reactions").click();
 
+    // The lesson panel: the teacher sets today's topic, the student reads it (A-154).
+    await teacher.getByTestId("toggle-lesson").click();
+    const lessonPanel = teacher.getByTestId("lesson-panel");
+    await expect(lessonPanel).toBeVisible({ timeout: 10_000 });
+    if (await lessonPanel.getByTestId("lesson-topic-edit").isVisible()) {
+      await lessonPanel.getByTestId("lesson-topic-edit").click();
+      await lessonPanel.getByTestId("lesson-topic-input").fill("Present perfect");
+      await lessonPanel.getByTestId("lesson-topic-save").click();
+      await expect(lessonPanel.getByTestId("lesson-topic")).toHaveText("Present perfect", {
+        timeout: 10_000,
+      });
+      await student.getByTestId("toggle-lesson").click();
+      await expect(student.getByTestId("lesson-topic")).toHaveText("Present perfect", {
+        timeout: 10_000,
+      });
+      await student.getByTestId("toggle-lesson").click();
+    }
+    await teacher.getByTestId("toggle-lesson").click();
+
     // A poll: the student answers, the teacher sees the count and closes it (A-153).
     await teacher.getByTestId("toggle-poll").click();
     // A call left open by an earlier run may already hold a poll.

@@ -1,6 +1,7 @@
 "use client";
 
 import {
+  BookOpen,
   ChartBar,
   Circle,
   Focus,
@@ -28,12 +29,13 @@ import { PACE_REACTIONS, REACTIONS, type Reaction } from "@/lib/validation/video
 import { cn } from "@/lib/utils";
 
 import { CHAT_MAX_LENGTH, type CallEngine, type RemotePeer } from "./call-engine";
+import { LessonPanel } from "./lesson-panel";
 import { PollPanel } from "./poll-panel";
 import { CallRecorder, recordingMimeType, uploadRecording } from "./recorder";
 import { VideoTile } from "./video-tile";
 
 const SELF = "self";
-type Panel = "people" | "chat" | "poll" | null;
+type Panel = "people" | "chat" | "poll" | "lesson" | null;
 
 /** How each reaction looks on a picture. */
 export const REACTION_EMOJI: Record<Reaction, string> = {
@@ -315,6 +317,14 @@ export function CallRoom({
               </span>
             )}
           </HeaderButton>
+          <HeaderButton
+            active={panel === "lesson"}
+            onClick={() => togglePanel("lesson")}
+            testId="toggle-lesson"
+          >
+            <BookOpen className="size-4" />
+            <span className="hidden sm:inline">{t("lesson")}</span>
+          </HeaderButton>
           {(isHost || engine.poll) && (
             <HeaderButton
               active={panel === "poll"}
@@ -541,6 +551,8 @@ export function CallRoom({
               </div>
             ) : panel === "poll" ? (
               <PollPanel engine={engine} />
+            ) : panel === "lesson" ? (
+              <LessonPanel engine={engine} />
             ) : (
               <ChatPanel engine={engine} />
             )}

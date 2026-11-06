@@ -5064,7 +5064,8 @@
       "paceFaster": "{count} faster",
       "poll": "Poll",
       "pollNew": "New poll",
-      "pollAsk": "The teacher asks: {question} Tap to answer."
+      "pollAsk": "The teacher asks: {question} Tap to answer.",
+      "lesson": "Lesson"
     },
     "done": {
       "left": "You left the lesson.",
@@ -5142,6 +5143,33 @@
       "addOption": "Add an answer",
       "ask": "Ask everyone",
       "cancel": "Cancel"
+    },
+    "lesson": {
+      "loading": "Loading…",
+      "failed": "The lesson details could not be loaded.",
+      "retry": "Try again",
+      "refresh": "Refresh",
+      "lessonOf": "Lesson of {date}, {time}",
+      "noLesson": "This call is not tied to a lesson",
+      "topic": "Topic",
+      "topicPlaceholder": "Today's topic",
+      "noTopic": "No topic set yet",
+      "setTopic": "Set the topic",
+      "save": "Save",
+      "lessonFile": "Lesson file",
+      "materials": "Materials",
+      "manage": "Manage on the group page",
+      "general": "whole group",
+      "noMaterials": "No materials for this lesson or the group.",
+      "homework": "Homework",
+      "setHomework": "Set homework",
+      "noHomework": "No homework for this lesson yet.",
+      "noLessonHomework": "Homework belongs to a lesson; start the call from a lesson day to set one.",
+      "due": "Due {date}",
+      "link": "Link",
+      "file": "File",
+      "speaking": "Speaking task: answer with a recording",
+      "studentHint": "Materials open in a new tab. Hand in homework from your personal page after the lesson."
     }
   },
   "help": {

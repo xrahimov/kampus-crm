@@ -99,6 +99,9 @@ export interface StudentLinkDto {
 
 export interface JoinDto {
   roomId: string;
+  groupId: string;
+  /** The lesson the call belongs to, for the lesson panel (A-154). */
+  lessonId: string | null;
   participantId: string;
   secret: string;
   displayName: string;
@@ -468,7 +471,7 @@ export async function endVideoRoom(
 async function addParticipant(
   db: DbClient,
   config: VideoConfig,
-  room: { id: string; groupName: string },
+  room: { id: string; groupId: string; lessonId: string | null; groupName: string },
   who: { role: VideoPeerRole; displayName: string; userId?: string; studentId?: string },
   canEnd: boolean,
 ): Promise<JoinDto> {
@@ -501,6 +504,8 @@ async function addParticipant(
   });
   return {
     roomId: room.id,
+    groupId: room.groupId,
+    lessonId: room.lessonId,
     participantId: participant.id,
     secret,
     displayName: who.displayName,
@@ -536,7 +541,7 @@ export async function joinVideoRoomAsStaff(
   return addParticipant(
     db,
     config,
-    { id: room.id, groupName: room.group.name },
+    { id: room.id, groupId: room.groupId, lessonId: room.lessonId, groupName: room.group.name },
     { role: host ? "HOST" : "STAFF", displayName: actor.fullName, userId: actor.userId },
     can(actor, "groups.attendance.mark"),
   );
@@ -615,7 +620,12 @@ export async function joinVideoRoomAsStudent(
   return addParticipant(
     db,
     config,
-    { id: live.id, groupName: membership.group.name },
+    {
+      id: live.id,
+      groupId: live.groupId,
+      lessonId: live.lessonId,
+      groupName: membership.group.name,
+    },
     {
       role: "STUDENT",
       displayName: membership.student.fullName,
