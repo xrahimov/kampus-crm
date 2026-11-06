@@ -68,6 +68,8 @@ export function registerJobHandlers(): void {
     const { materialId } = payloadOf<{ materialId: string }>(payload);
     const result = await makeRecordingStream(db, materialId);
     console.log(`[worker] recording ${materialId}: streaming copy ${result}`);
+  });
+
   registerJobHandler("push.send", async (payload, db) => {
     await sendPush(db, payloadOf<Parameters<typeof sendPush>[1]>(payload));
   });
