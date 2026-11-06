@@ -20,6 +20,7 @@ import {
   topicOpen,
 } from "@/server/services/settings/topic-content.service";
 import { dateToIso } from "@/server/services/settings/shared";
+import { checkBadges } from "@/server/services/badges/badges.service";
 import { membershipByToken } from "@/server/services/video/video.service";
 
 /*
@@ -512,6 +513,7 @@ export async function submitPortalExercise(
       maxScore: result.maxScore,
     },
   });
+  await checkBadges(db, membership.student.id);
   const all = [...row.attempts, { score: result.score, maxScore: result.maxScore }];
   return {
     score: result.score,

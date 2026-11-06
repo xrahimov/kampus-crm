@@ -18,6 +18,8 @@ import {
 import { parseDateOnly } from "@/lib/dates";
 import { useDateFormat } from "@/lib/use-date-format";
 import { ProgressMeter } from "@/features/progress/progress-meter";
+import { BadgeList } from "@/features/badges/badge-list";
+import type { BadgeDto } from "@/lib/validation/badges";
 import type { StudentProgressDto } from "@/server/services/exams/exams.service";
 import type { CourseProgressDto } from "@/server/services/progress/course-progress.service";
 
@@ -28,9 +30,11 @@ import type { CourseProgressDto } from "@/server/services/progress/course-progre
 export function ProgressTab({
   progress,
   courses = [],
+  badges = [],
 }: {
   progress: StudentProgressDto;
   courses?: CourseProgressDto[];
+  badges?: BadgeDto[];
 }) {
   const t = useTranslations("students.progress");
   const te = useTranslations("exams");
@@ -194,6 +198,12 @@ export function ProgressTab({
         )}
       </section>
 
+      {badges.length > 0 && (
+        <section className="space-y-2">
+          <h3 className="text-sm font-semibold">{t("badges")}</h3>
+          <BadgeList badges={badges} testId="student-badges" />
+        </section>
+      )}
       <section className="space-y-2">
         <h3 className="text-sm font-semibold">{t("exams")}</h3>
         {progress.exams.length === 0 ? (

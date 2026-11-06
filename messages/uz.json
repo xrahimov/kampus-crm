@@ -2079,7 +2079,8 @@
       "complete": "Bajarildi",
       "topics": "Mavzular",
       "exercises": "Mashqlar",
-      "score": "O‘rtacha ball"
+      "score": "O‘rtacha ball",
+      "badges": "Nishonlar"
     },
     "importBalances": "Boshlang'ich qoldiqlarni import qilish",
     "importBalancesHint": "Har bir o'quvchi va guruh uchun bir qator: oldingi tizimdan kelgan qoldiq. Qarz manfiy son, o'quvchining ortiqcha puli musbat son bilan yoziladi. O'quvchi Kampus ID, telefon yoki aniq ism bo'yicha topiladi; yozishdan oldin mosliklar ko'rsatiladi.",
@@ -5155,7 +5156,8 @@
     "assignmentSet": "{group}: yangi topshiriq – “{title}”{date, select, none {} other {, muddati {date}}}.\n{text}",
     "assignmentChanged": "{group}: “{title}” topshirig‘i o‘zgartirildi.\n{text}",
     "assignmentAccepted": "{group}: “{title}” topshirig‘ingiz qabul qilindi.{comment}",
-    "assignmentReturned": "{group}: “{title}” topshirig‘ingiz qaytarildi, qayta ko‘rib chiqing.{comment}"
+    "assignmentReturned": "{group}: “{title}” topshirig‘ingiz qaytarildi, qayta ko‘rib chiqing.{comment}",
+    "badgeEarned": "🏅 Yangi nishon: {name}. {hint}"
   },
   "video": {
     "title": "Video dars",
@@ -5577,5 +5579,44 @@
     "returnSend": "Izoh bilan qaytarish",
     "comment": "O‘quvchi uchun izoh",
     "commentPlaceholder": "Nimani to‘g‘rilash kerak (ixtiyoriy)"
+  },
+  "badges": {
+    "title": "Nishonlar",
+    "count": "{total} tadan {earned} tasi olingan",
+    "earned": "{date} olingan",
+    "items": {
+      "firstHomework": {
+        "name": "Birinchi uy vazifasi",
+        "hint": "Uy vazifasini topshiring va u qabul qilinsin."
+      },
+      "homework10": {
+        "name": "10 uy vazifasi",
+        "hint": "O‘nta qabul qilingan uy vazifasi."
+      },
+      "streak10": {
+        "name": "10 dars ketma-ket",
+        "hint": "O‘nta darsga ketma-ket, birortasini qoldirmay qatnashing."
+      },
+      "perfectMonth": {
+        "name": "Mukammal oy",
+        "hint": "Kamida {count} dars bo‘lgan oyning har bir darsiga qatnashing."
+      },
+      "exercises10": {
+        "name": "10 mashq",
+        "hint": "O‘nta turli mashqni bajaring."
+      },
+      "exerciseAce": {
+        "name": "Benuqson mashq",
+        "hint": "Bir mashqning hamma javobini to‘g‘ri bering."
+      },
+      "testAce": {
+        "name": "Test ustasi",
+        "hint": "Testda 90% yoki undan ko‘proq ball oling."
+      },
+      "coins100": {
+        "name": "100 coin",
+        "hint": "Jami 100 coin to‘plang."
+      }
+    }
   }
 }

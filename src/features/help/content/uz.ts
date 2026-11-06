@@ -503,6 +503,7 @@ export const uz: HelpContent = {
           title: "Coin berish",
           body: [
             "Coinlar o‘quvchilarni rag‘batlantiradi hamda reyting va marketplace ga asos bo‘ladi. **Coinlar** yorlig‘ida **Coin berish** ni bosing, o‘quvchini va markaz sozlagan ro‘yxatdan sababni tanlang; har bir sababning maksimumi bor. Davomat, uy vazifasi, test natijalari va tug‘ilgan kun uchun avtomatik coinlarni administrator sozlaydi va sizdan hech narsa talab qilmaydi.",
+            "Talabalar coinlardan tashqari **nishonlar** ham to‘plashadi: birinchi qabul qilingan uy vazifasi, o‘nta uy vazifasi, ketma-ket o‘nta darsga qatnashish, mukammal oy, o‘nta mashq, benuqson mashq, 90 % va undan yuqori test, 100 coin. Ular yozuvlar shunga yetishi bilan avtomatik beriladi, talabaning sahifasida va profilining Progress yorlig‘ida ko‘rinadi va Telegramiga xabar qilinadi.",
           ],
         },
         tests: {
@@ -1324,6 +1325,7 @@ export const uz: HelpContent = {
           title: "Natijalar",
           body: [
             "**Natijalar** yorlig‘i imtihonlaringiz va testlaringizni sana, ball va o‘tgan-o‘tmaganingiz bilan ko‘rsatadi. “Hali baholanmagan” deb belgilangan natijalar o‘qituvchi ularni kiritganda yangilanadi.",
+            "Ko‘rsatkichlaringiz ostida **Nishonlar** olgan yutuqlaringizni sana bilan, hali ochilmaganlarini esa ularni olish sharti bilan ko‘rsatadi. Yangi nishon haqida Telegramingizga ham xabar keladi.",
             "Natijalar yuqorisida **Bahoyingiz** kurs bo‘yicha yakuniy bahoyingizni va u nimadan tashkil topganini ko‘rsatadi: dars baholari, uy vazifasi, mashqlar, testlar va imtihonlar o‘rtachasi, har biri o‘z vazni bilan. Hali bo‘sh qismlar hisobga olinmaydi.",
           ],
         },

@@ -11,6 +11,7 @@ import { recordAudit } from "@/server/audit/audit";
 import { prisma, type DbClient } from "@/server/db/prisma";
 import { AppError } from "@/server/errors/app-error";
 import { authorize, type Actor } from "@/server/rbac/authorize";
+import { checkBadges } from "@/server/services/badges/badges.service";
 import { awardAutoCoins } from "@/server/services/coins/coins.service";
 import { findGroupInScope, ownGroupsOnly, today } from "@/server/services/groups/shared";
 import { dateToIso, isoToDate, mustFind } from "@/server/services/settings/shared";
@@ -462,6 +463,7 @@ export async function reviewSubmission(
       refKey: `homework:${homeworkId}:${membershipId}`,
       revoke: input.status !== "ACCEPTED",
     });
+    if (input.status === "ACCEPTED") await checkBadges(tx, membership.studentId);
     if (!before || before.status !== input.status) {
       await notifyHomework(tx, {
         kind: row.lesson
