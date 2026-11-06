@@ -462,6 +462,13 @@ export const en: HelpContent = {
             "Work through it from the keyboard: **J** and **K** (or the arrows) move between answers, **A** accepts the selected one, **R** opens the comment box to return it, **Enter** sends the return and **Esc** closes the box. Each verdict notifies the student the way it does from the group page, and an accepted answer earns its coins.",
           ],
         },
+        chat: {
+          title: "Chat with the group",
+          body: [
+            "The **Chat** tab on the group page is a thread between you, the office and the group's students. Write a reminder or answer a question; students read it on their page and, when they have connected Telegram, as a message from the bot. Everyone in the group sees the whole chat, so keep personal matters to a comment or a call.",
+            "A student answers from their page or simply by writing to the bot: the message lands in this chat marked **via Telegram**, and teachers who receive the centre's bot notifications get a copy in Telegram. Open the tab to mark the chat read; an archived group's chat stays readable but nobody can write.",
+          ],
+        },
         materials: {
           title: "Materials",
           body: [
@@ -1278,6 +1285,13 @@ export const en: HelpContent = {
               ],
             },
             "An **Assignment** is a bigger task for the whole group, such as a project or an essay, with a due date and a table of what it is scored on. Answer it the same way; once the teacher has checked it you see your points for each line and the total.",
+          ],
+        },
+        chat: {
+          title: "Chat with your teacher",
+          body: [
+            "The **Chat** tab is the group's conversation with the teacher; the number on the tab is how many messages you have not read. Write your question and press **Send** (Enter sends, Shift+Enter makes a new line). The whole group sees the chat, so write what everyone may read.",
+            "With Telegram connected, the teacher's messages also arrive from the bot, and you can answer right there: anything you write to the bot that is not one of its commands goes into the chat. If you are in several groups, the bot asks once which group you mean and offers them as buttons; afterwards your messages go to the group whose teacher wrote last, until you pick another.",
           ],
         },
         materials: {

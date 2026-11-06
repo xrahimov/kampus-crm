@@ -51,8 +51,10 @@ import type { GroupFormOptions } from "@/server/services/groups/options.service"
 import type { PaymentOptionsDto } from "@/server/services/students/payments.service";
 import type { DiscountDto } from "@/server/services/students/discounts.service";
 import type { StudentCommentDto } from "@/server/services/students/students.service";
+import type { GroupChatDto } from "@/server/services/chat/group-chat.service";
 
 import { AttendanceGrid } from "./attendance-grid";
+import { GroupChatTab } from "./chat-tab";
 import { CommentsTab } from "./comments-tab";
 import { DiscountsTab } from "./discounts-tab";
 import { GradesGrid } from "./grades-grid";
@@ -86,6 +88,7 @@ const TABS = [
   "attendance",
   "grades",
   "homework",
+  "chat",
   "materials",
   "syllabus",
   "tests",
@@ -119,6 +122,7 @@ export function GroupDetail({
   coinReasons,
   video,
   homework,
+  chat,
   materials,
   paymentOptions,
   options,
@@ -148,6 +152,7 @@ export function GroupDetail({
   coinReasons: CoinReasonDto[];
   video: GroupVideoDto;
   homework: GroupHomeworkDto;
+  chat: GroupChatDto;
   materials: GroupMaterialsDto;
   paymentOptions: PaymentOptionsDto;
   options: GroupFormOptions;
@@ -472,6 +477,9 @@ export function GroupDetail({
                   groupId={group.id}
                   canSet={can.mark && !archived}
                 />
+              </TabsContent>
+              <TabsContent value="chat" className="pt-4">
+                <GroupChatTab groupId={group.id} initial={chat} canWrite={!archived} />
               </TabsContent>
               <TabsContent value="materials" className="pt-4">
                 <GroupMaterialsTab

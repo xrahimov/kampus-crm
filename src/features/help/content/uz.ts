@@ -465,6 +465,13 @@ export const uz: HelpContent = {
             "Klaviaturadan ishlang: **J** va **K** (yoki strelkalar) javoblar orasida o‘tadi, **A** tanlanganini qabul qiladi, **R** qaytarish uchun izoh oynasini ochadi, **Enter** qaytarishni yuboradi, **Esc** oynani yopadi. Har bir qaror o‘quvchiga guruh sahifasidagidek xabar beradi, qabul qilingan javob coin olib keladi.",
           ],
         },
+        chat: {
+          title: "Guruh bilan chat",
+          body: [
+            "Guruh sahifasidagi **Chat** yorlig‘i siz, ofis va guruh o‘quvchilari o‘rtasidagi suhbat. Eslatma yozing yoki savolga javob bering; o‘quvchilar buni o‘z sahifasida, Telegramni ulaganlar esa botdan xabar sifatida ham o‘qiydi. Chatni guruhdagi hamma ko‘radi, shuning uchun shaxsiy masalalarni izoh yoki qo‘ng‘iroqqa qoldiring.",
+            "O‘quvchi o‘z sahifasidan yoki shunchaki botga yozib javob beradi: xabar shu chatga **Telegram orqali** belgisi bilan tushadi, markaz botining xabarnomalarini oladigan o‘qituvchilarga nusxasi Telegramga keladi. Yorliqni ochish chatni o‘qilgan deb belgilaydi; arxivlangan guruh chati o‘qiladi, lekin hech kim yoza olmaydi.",
+          ],
+        },
         materials: {
           title: "Materiallar",
           body: [
@@ -1282,6 +1289,13 @@ export const uz: HelpContent = {
               ],
             },
             "**Topshiriq** – butun guruh uchun kattaroq vazifa, masalan loyiha yoki insho, muddati va nimaga qarab baholanishi jadvali bilan. Unga ham shu tarzda javob bering; o‘qituvchi tekshirgach har bir qator uchun ballingizni va jamini ko‘rasiz.",
+          ],
+        },
+        chat: {
+          title: "O‘qituvchi bilan chat",
+          body: [
+            "**Chat** yorlig‘i guruhning o‘qituvchi bilan suhbati; yorliqdagi raqam o‘qilmagan xabarlar soni. Savolingizni yozib **Yuborish** ni bosing (Enter yuboradi, Shift+Enter yangi qator ochadi). Chatni butun guruh ko‘radi, shuning uchun hamma o‘qishi mumkin bo‘lgan narsani yozing.",
+            "Telegram ulangan bo‘lsa, o‘qituvchi xabarlari botdan ham keladi va javobni shu yerda yozishingiz mumkin: botga yozgan va uning buyrug‘i bo‘lmagan har qanday xabar chatga tushadi. Bir nechta guruhda bo‘lsangiz, bot qaysi guruhni nazarda tutganingizni bir marta so‘raydi va ularni tugma sifatida taklif qiladi; keyin xabarlaringiz, boshqasini tanlamaguningizcha, o‘qituvchisi oxirgi yozgan guruhga boradi.",
           ],
         },
         materials: {

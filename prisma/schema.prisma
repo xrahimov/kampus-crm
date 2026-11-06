@@ -210,7 +210,9 @@ model User {
   absenceContacts     AbsenceContact[]     @relation("absenceContactAuthor")
   announcements       Announcement[]       @relation("announcementAuthor")
 
-  leadMessagesSent LeadMessage[] @relation("leadMessageAuthor")
+  leadMessagesSent LeadMessage[]      @relation("leadMessageAuthor")
+  chatMessages     GroupChatMessage[] @relation("chatAuthor")
+  chatReads        GroupChatRead[]
 
   @@index([organizationId])
 }
@@ -508,7 +510,7 @@ model CourseTopic {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  course   Course              @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  course    Course              @relation(fields: [courseId], references: [id], onDelete: Cascade)
   lessons   Lesson[]
   blocks    CourseTopicBlock[]
   releases  GroupTopicRelease[]
@@ -728,6 +730,8 @@ model Group {
   topicReleases   GroupTopicRelease[]
   homework        Homework[]
   materials       LessonMaterial[]
+  chatMessages    GroupChatMessage[]
+  chatReads       GroupChatRead[]
   absenceCases    AbsenceCase[]
   announcements   Announcement[]
   trials          TrialBooking[]
@@ -989,14 +993,17 @@ model StudentLoginTicket {
 }
 
 model StudentTelegramChat {
-  id        String   @id @default(cuid())
-  studentId String
-  chatId    String   @unique
+  id          String   @id @default(cuid())
+  studentId   String
+  chatId      String   @unique
   /// Telegram first name, so the portal can say whose phone is connected.
-  name      String?
+  name        String?
   /// Telegram language_code narrowed to uz / ru / en; messages go out in it.
-  locale    String   @default("uz")
-  linkedAt  DateTime @default(now())
+  locale      String   @default("uz")
+  linkedAt    DateTime @default(now())
+  /// The group chat (A-170) a plain message from this Telegram chat goes to: the
+  /// group whose teacher wrote last, or the one the student picked with a button.
+  chatGroupId String?
 
   student Student @relation(fields: [studentId], references: [id], onDelete: Cascade)
 
@@ -1012,6 +1019,8 @@ model GroupMembership {
   leftAt      DateTime?        @db.Date
   customPrice Decimal?         @db.Decimal(15, 2)
   note        String?
+  /// When the student last opened the group chat (A-170); messages after it are unread.
+  chatReadAt  DateTime?
   /// First day the student is charged: when the membership became ACTIVE (A-10).
   activatedAt DateTime?        @db.Date
   /// Charged from this day instead when set (A-110): a member carried over from
@@ -1040,6 +1049,7 @@ model GroupMembership {
   payments         Payment[]
   onlinePayments   OnlinePayment[]
   homework         HomeworkSubmission[]
+  chatMessages     GroupChatMessage[]
   adjustments      BalanceAdjustment[]
   instalments      Instalment[]
   absenceCases     AbsenceCase[]
@@ -1745,6 +1755,44 @@ model LeadColumn {
 enum LeadChannel {
   TELEGRAM
   INSTAGRAM
+}
+
+enum ChatSource {
+  WEB
+  TELEGRAM
+}
+
+/// One message in a group's chat between its teachers and students (A-170).
+/// Staff write from the group page or the call, students from their page or,
+/// mirrored, from the Telegram bot.
+model GroupChatMessage {
+  id           String     @id @default(cuid())
+  groupId      String
+  /// The staff author; null for a student's message.
+  userId       String?
+  /// The student author's membership; null for a staff message.
+  membershipId String?
+  text         String
+  source       ChatSource @default(WEB)
+  createdAt    DateTime   @default(now())
+
+  group      Group            @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  user       User?            @relation("chatAuthor", fields: [userId], references: [id], onDelete: SetNull)
+  membership GroupMembership? @relation(fields: [membershipId], references: [id], onDelete: Cascade)
+
+  @@index([groupId, createdAt])
+}
+
+/// When a staff member last opened a group's chat (A-170).
+model GroupChatRead {
+  groupId String
+  userId  String
+  readAt  DateTime @default(now())
+
+  group Group @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([groupId, userId])
 }
 
 enum LeadMessageDirection {

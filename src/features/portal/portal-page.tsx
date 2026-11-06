@@ -25,6 +25,7 @@ import { useDateFormat } from "@/lib/use-date-format";
 import { useMoneyFormat } from "@/lib/use-money-format";
 
 import { PortalAnnouncementsTab } from "./announcements-tab";
+import { PortalChatTab } from "./chat-tab";
 import { PortalCourseTab } from "./course-tab";
 import { PortalHomeworkTab } from "./homework-tab";
 import { PortalTestsTab } from "./tests-tab";
@@ -34,6 +35,7 @@ import { ReferralCard } from "./referral-card";
 import { TelegramCard } from "./telegram-card";
 import type { Weekday } from "@/lib/validation/groups";
 import type { PortalAnnouncementDto } from "@/server/services/announcements/announcements.service";
+import type { PortalChatDto } from "@/server/services/chat/group-chat.service";
 import type { PortalHomeworkDto } from "@/server/services/homework/homework.service";
 import type { PortalCertificateDto } from "@/server/services/students/certificates.service";
 import type { PortalTestDto } from "@/server/services/tests/portal-tests.service";
@@ -78,6 +80,7 @@ export function PortalPage({
   pay,
   referral,
   announcements,
+  chat,
   certificates = [],
   tests = [],
   course = null,
@@ -93,6 +96,7 @@ export function PortalPage({
   pay: PortalPayOptionsDto;
   referral: PortalReferralDto | null;
   announcements: PortalAnnouncementDto[];
+  chat: PortalChatDto;
   /** The student's certificates of graduation (A-140), with their public links. */
   certificates?: PortalCertificateDto[];
   /** The group's tests the student can take or has taken (A-145). */
@@ -208,6 +212,17 @@ export function PortalPage({
                   {t("tabs.course")}
                 </TabsTrigger>
               )}
+              <TabsTrigger value="chat" data-testid="portal-tab-chat">
+                {t("tabs.chat")}
+                {chat.unread > 0 && (
+                  <span
+                    className="rounded-full bg-primary px-1.5 text-[10px] text-primary-foreground"
+                    data-testid="portal-chat-unread"
+                  >
+                    {chat.unread}
+                  </span>
+                )}
+              </TabsTrigger>
               <TabsTrigger value="materials" data-testid="portal-tab-materials">
                 {t("tabs.materials")}
               </TabsTrigger>
@@ -284,6 +299,14 @@ export function PortalPage({
 
             <TabsContent value="announcements">
               <PortalAnnouncementsTab token={token} items={announcements} />
+            </TabsContent>
+
+            <TabsContent value="chat">
+              <PortalChatTab
+                token={token}
+                initial={chat}
+                telegramLinked={telegram.chats.length > 0}
+              />
             </TabsContent>
 
             {course && course.total > 0 && (
