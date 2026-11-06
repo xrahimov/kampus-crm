@@ -5507,6 +5507,12 @@
       "withBot": "Sign in from the Telegram bot",
       "privacy": "Only phone numbers the learning centre already has on a student or parent can sign in. Kampus never sees your Telegram password or messages.",
       "off": "Sign-in with Telegram is not set up here yet. Use the personal link the learning centre sent you."
+    },
+    "shell": {
+      "offline": "You are offline. This is the page as it was the last time you opened it; it refreshes when the connection is back.",
+      "installHint": "Add My Kampus to your home screen: your lessons, homework and payments one tap away, even offline.",
+      "install": "Install",
+      "later": "Not now"
     }
   },
   "exercises": {
