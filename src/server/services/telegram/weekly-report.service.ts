@@ -2,6 +2,10 @@ import { formatMoneyUz } from "@/lib/dates";
 import type { DbClient } from "@/server/db/prisma";
 import { studentBalance } from "@/server/services/coins/coins.service";
 import { telegramConfigFor } from "@/server/services/integrations/integrations.service";
+import {
+  progressSummary,
+  type CourseProgressSummary,
+} from "@/server/services/progress/course-progress.service";
 import { dateToIso, isoToDate } from "@/server/services/settings/shared";
 import { membershipBalances } from "@/server/services/students/balances";
 
@@ -41,6 +45,8 @@ export interface WeeklyGroupReport {
   grades: string[];
   homeworkSet: number;
   homeworkDone: number;
+  /** Where the student stands in the course after this week (A-159). */
+  progress: CourseProgressSummary | null;
 }
 
 export interface WeeklyReport {
@@ -74,7 +80,7 @@ export async function buildWeeklyReport(
 ): Promise<WeeklyReport | null> {
   const memberships = await db.groupMembership.findMany({
     where: { studentId: student.id, status: { in: ["NEW", "TRIAL", "ACTIVE"] } },
-    select: { id: true, groupId: true, group: { select: { name: true } } },
+    select: { id: true, groupId: true, joinedAt: true, group: { select: { name: true } } },
     orderBy: { group: { name: "asc" } },
   });
   if (memberships.length === 0) return null;
@@ -106,6 +112,8 @@ export async function buildWeeklyReport(
     },
     orderBy: [{ date: "asc" }, { startTime: "asc" }],
   });
+  const progress = new Map<string, CourseProgressSummary | null>();
+  for (const m of memberships) progress.set(m.id, await progressSummary(db, m));
   const groups: WeeklyGroupReport[] = memberships.map((m) => {
     const own = lessons.filter((l) => l.groupId === m.groupId);
     const report: WeeklyGroupReport = {
@@ -117,6 +125,7 @@ export async function buildWeeklyReport(
       grades: [],
       homeworkSet: 0,
       homeworkDone: 0,
+      progress: progress.get(m.id) ?? null,
     };
     for (const lesson of own) {
       const mark = lesson.attendances.find((a) => a.membershipId === m.id)?.status;
@@ -196,6 +205,17 @@ export function weeklyReportText(locale: BotLocale, report: WeeklyReport): strin
             homework: g.homeworkSet > 0 ? `${g.homeworkDone}/${g.homeworkSet}` : "none",
           }),
     );
+    if (g.progress) {
+      lines.push(
+        botText(locale, "weeklyProgress", {
+          group: g.group,
+          percent: g.progress.percent ?? 0,
+          done: g.progress.topicsComplete,
+          total: g.progress.topicsTotal,
+          score: g.progress.scorePercent === null ? "none" : String(g.progress.scorePercent),
+        }),
+      );
+    }
   }
   if (report.coinsEarned > 0 || report.coinsTotal > 0) {
     lines.push(

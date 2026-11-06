@@ -10,6 +10,7 @@ import { isAppError } from "@/server/errors/app-error";
 import { can, canAccessAllBranches } from "@/server/rbac/authorize";
 import { listCoinReasons, listGroupCoins } from "@/server/services/coins/coins.service";
 import { getExamOptions, listGroupExams } from "@/server/services/exams/exams.service";
+import { getGroupProgress } from "@/server/services/progress/course-progress.service";
 import { listGroupDaysOff } from "@/server/services/groups/day-off.service";
 import {
   getGroup,
@@ -98,6 +99,7 @@ export default async function Page({ params, searchParams }: Props) {
     homework,
     materials,
     syllabus,
+    progress,
   ] = await Promise.all([
     getMonthGrid(current.actor, id, month),
     listMembers(current.actor, id, { archived: str(sp.archived) === "1" }),
@@ -132,6 +134,7 @@ export default async function Page({ params, searchParams }: Props) {
     listGroupHomework(current.actor, id),
     listGroupMaterials(current.actor, id),
     getGroupSyllabus(current.actor, id),
+    getGroupProgress(current.actor, id),
   ]);
 
   return (
@@ -142,6 +145,7 @@ export default async function Page({ params, searchParams }: Props) {
       daysOff={daysOff}
       notes={notes}
       syllabus={syllabus}
+      progress={progress}
       history={history}
       discounts={discounts}
       comments={comments}

@@ -7,6 +7,10 @@ import { authorize, type Actor } from "@/server/rbac/authorize";
 import { today } from "@/server/services/groups/shared";
 import { appOriginFor } from "@/server/services/settings/domains.service";
 import { dateToIso, isoToDate, mustFind } from "@/server/services/settings/shared";
+import {
+  progressSummary,
+  type CourseProgressSummary,
+} from "@/server/services/progress/course-progress.service";
 import { membershipBalances } from "@/server/services/students/balances";
 
 /*
@@ -31,6 +35,8 @@ export interface FamilyPortalGroupDto {
   balance: number;
   nextPaymentDate: string | null;
   unreadNews: number;
+  /** How far the child is through the course (A-159); null without a syllabus. */
+  progress: CourseProgressSummary | null;
 }
 
 export interface FamilyPortalDto {
@@ -115,6 +121,7 @@ export const childSelect = {
       id: true,
       status: true,
       videoToken: true,
+      joinedAt: true,
       group: {
         select: {
           id: true,
@@ -163,7 +170,7 @@ export async function portalChildren(
         });
         token = row.videoToken!;
       }
-      const [nextLesson, unreadNews] = await Promise.all([
+      const [nextLesson, unreadNews, progress] = await Promise.all([
         db.lesson.findFirst({
           where: { groupId: m.group.id, date: { gte: todayDate } },
           orderBy: [{ date: "asc" }, { startTime: "asc" }],
@@ -180,6 +187,7 @@ export async function portalChildren(
             reads: { none: { studentId: s.id } },
           },
         }),
+        progressSummary(db, { id: m.id, groupId: m.group.id, joinedAt: m.joinedAt }),
       ]);
       const balance = balances.get(m.id);
       groups.push({
@@ -198,6 +206,7 @@ export async function portalChildren(
           : null,
         balance: balance?.balance ?? 0,
         nextPaymentDate: balance?.nextPaymentDate ?? null,
+        progress,
         unreadNews,
       });
     }

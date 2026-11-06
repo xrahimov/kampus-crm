@@ -293,6 +293,7 @@ describe("the weekly report", () => {
         grades: ["4", "4.5"],
         homeworkSet: 2,
         homeworkDone: 1,
+        progress: null,
       },
     ]);
     const en = weeklyReportText("en", report!).split("\n");
