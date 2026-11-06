@@ -5205,6 +5205,15 @@
       "sending": "Sending…",
       "viaTelegram": "via Telegram",
       "you": "You"
+    },
+    "push": {
+      "title": "Notifications on this device",
+      "intro": "Lesson reminders, homework, materials, messages and payments come to this phone or computer even when the page is closed. Works best in the installed My Kampus app.",
+      "enable": "Turn on notifications",
+      "disable": "Turn off",
+      "on": "Notifications are on",
+      "denied": "Notifications are blocked for this site in the browser. Allow them in the browser's site settings to turn them on.",
+      "failed": "Could not turn notifications on. Try again later."
     }
   },
   "telegramBot": {

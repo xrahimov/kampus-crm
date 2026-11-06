@@ -37,6 +37,7 @@ import { PayCard } from "./pay-card";
 import { LessonRatingCell } from "./lesson-rating";
 import { ReferralCard } from "./referral-card";
 import { PortalScheduleTab } from "./schedule-tab";
+import { PushCard } from "./push-card";
 import { TelegramCard } from "./telegram-card";
 import type { PortalAnnouncementDto } from "@/server/services/announcements/announcements.service";
 import type { PortalChatDto } from "@/server/services/chat/group-chat.service";
@@ -227,6 +228,7 @@ export function PortalPage({
       )}
 
       <TelegramCard token={token} initial={telegram} />
+      <PushCard token={token} />
       {referral && <ReferralCard referral={referral} />}
 
       <Card>
