@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { PortalExercises } from "@/features/exercises/exercise-runner";
 import { ATTACHMENT_ACCEPT } from "@/features/homework/attachment-field";
 import { AudioPlayer, isAudioUrl } from "@/features/homework/audio-player";
 import { AudioRecorder } from "@/features/homework/audio-recorder";
@@ -198,6 +199,11 @@ function HomeworkItem({
             )}
           </div>
         )}
+        <PortalExercises
+          token={token}
+          items={homework.exercises}
+          onChanged={() => void onChanged()}
+        />
         {canAnswer && !open && (
           <Button variant="outline" size="sm" onClick={() => setOpen(true)} data-testid="hw-answer">
             <Send /> {s ? t("answerAgain") : t("answer")}

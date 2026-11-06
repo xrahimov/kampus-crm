@@ -6,6 +6,10 @@ import { AppError } from "@/server/errors/app-error";
 import { authorize, can, type Actor } from "@/server/rbac/authorize";
 import { findGroupInScope, groupScope, today } from "@/server/services/groups/shared";
 import { dateToIso, isoToDate, mustFind } from "@/server/services/settings/shared";
+import {
+  portalExerciseSummaries,
+  type PortalExerciseSummaryDto,
+} from "@/server/services/exercises/exercises.service";
 import { membershipByToken } from "@/server/services/video/video.service";
 import { getStorage } from "@/server/storage/local";
 
@@ -58,6 +62,8 @@ export interface PortalTopicDto {
   coveredOn: string | null;
   /** The day a locked topic opens, when the teacher set one. */
   opensOn: string | null;
+  /** Self-check exercises on the topic, with the student's best go (A-158); empty while locked. */
+  exercises: PortalExerciseSummaryDto[];
 }
 
 export interface PortalCourseDto {
@@ -287,6 +293,9 @@ export async function listPortalCourse(
   }
   const releaseByTopic = new Map(releases.map((r) => [r.topicId, releaseOf(r)]));
   const now = today();
+  const exercises = await portalExerciseSummaries(db, membership.id, {
+    topicIds: topics.map((t) => t.id),
+  });
   const rows: PortalTopicDto[] = topics.map((t) => {
     const release = releaseByTopic.get(t.id) ?? releaseOf(null);
     const coveredOn = covered.get(t.id) ?? null;
@@ -308,6 +317,7 @@ export async function listPortalCourse(
         : [],
       coveredOn,
       opensOn: !open && release.mode === "date" ? release.date : null,
+      exercises: open ? (exercises.get(t.id) ?? []) : [],
     };
   });
   return {

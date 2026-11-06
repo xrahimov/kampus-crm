@@ -4,13 +4,14 @@ import { ChevronDown, Lock } from "lucide-react";
 import { useTranslations } from "next-intl";
 
 import { Badge } from "@/components/ui/badge";
+import { PortalExercises } from "@/features/exercises/exercise-runner";
 import { TopicBlockView } from "@/features/topics/topic-block-view";
 import { parseDateOnly } from "@/lib/dates";
 import { useDateFormat } from "@/lib/use-date-format";
 import type { PortalCourseDto } from "@/server/services/settings/topic-content.service";
 
 /** The course's topics on the student's page: open ones unfold into their content (A-157). */
-export function PortalCourseTab({ course }: { course: PortalCourseDto }) {
+export function PortalCourseTab({ token, course }: { token: string; course: PortalCourseDto }) {
   const t = useTranslations("portal.course");
   const fmt = useDateFormat();
   const date = (iso: string) => fmt(parseDateOnly(iso), { day: "numeric", month: "short" });
@@ -18,7 +19,9 @@ export function PortalCourseTab({ course }: { course: PortalCourseDto }) {
   if (course.total === 0) {
     return <p className="text-sm text-muted-foreground">{t("empty")}</p>;
   }
-  const firstOpen = course.topics.find((x) => x.open && x.blocks.length > 0)?.id;
+  const firstOpen = course.topics.find(
+    (x) => x.open && (x.blocks.length > 0 || x.exercises.length > 0),
+  )?.id;
   return (
     <div className="space-y-3" data-testid="portal-course">
       <p className="text-sm text-muted-foreground" data-testid="portal-course-progress">
@@ -39,13 +42,13 @@ export function PortalCourseTab({ course }: { course: PortalCourseDto }) {
                       {t("coveredOn", { date: date(topic.coveredOn) })}
                     </span>
                   )}
-                  {topic.blocks.length === 0 ? (
+                  {topic.blocks.length === 0 && topic.exercises.length === 0 ? (
                     <Badge variant="outline">{t("noContent")}</Badge>
                   ) : (
                     <ChevronDown className="size-4 text-muted-foreground transition-transform group-open:rotate-180" />
                   )}
                 </summary>
-                {topic.blocks.length > 0 && (
+                {(topic.blocks.length > 0 || topic.exercises.length > 0) && (
                   <div
                     className="space-y-4 border-t bg-muted/30 px-3 py-3"
                     data-testid="portal-topic-content"
@@ -53,6 +56,7 @@ export function PortalCourseTab({ course }: { course: PortalCourseDto }) {
                     {topic.blocks.map((b) => (
                       <TopicBlockView key={b.id} block={b} />
                     ))}
+                    <PortalExercises token={token} items={topic.exercises} />
                   </div>
                 )}
               </details>

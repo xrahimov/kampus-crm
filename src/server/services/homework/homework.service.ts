@@ -12,6 +12,10 @@ import { awardAutoCoins } from "@/server/services/coins/coins.service";
 import { findGroupInScope, ownGroupsOnly, today } from "@/server/services/groups/shared";
 import { dateToIso, isoToDate, mustFind } from "@/server/services/settings/shared";
 import { notifyHomework } from "@/server/services/telegram/student-telegram.service";
+import {
+  portalExerciseSummaries,
+  type PortalExerciseSummaryDto,
+} from "@/server/services/exercises/exercises.service";
 import { portalTopicFileAllowed } from "@/server/services/settings/topic-content.service";
 import { membershipByToken } from "@/server/services/video/video.service";
 import { STORAGE_KEY_PATTERN } from "@/server/storage/storage";
@@ -78,6 +82,8 @@ export interface PortalHomeworkDto {
   attachmentUrl: string | null;
   dueDate: string | null;
   speaking: boolean;
+  /** Self-check exercises on the task, with the student's best go (A-158). */
+  exercises: PortalExerciseSummaryDto[];
   submission: {
     status: HomeworkStatus;
     note: string | null;
@@ -366,6 +372,9 @@ export async function listPortalHomework(
     },
     orderBy: [{ lesson: { date: "desc" } }, { createdAt: "desc" }],
   });
+  const exercises = await portalExerciseSummaries(db, membership.id, {
+    homeworkIds: rows.map((r) => r.id),
+  });
   return rows.map((r) => {
     const s = r.submissions[0];
     return {
@@ -377,6 +386,7 @@ export async function listPortalHomework(
       attachmentUrl: portalFileUrl(token, r.attachmentUrl),
       dueDate: r.dueDate ? dateToIso(r.dueDate) : null,
       speaking: r.speaking,
+      exercises: exercises.get(r.id) ?? [],
       submission: s
         ? {
             status: s.status,
