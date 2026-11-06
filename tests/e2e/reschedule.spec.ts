@@ -51,12 +51,30 @@ test.describe("students move their own 1:1 lessons (A-166)", () => {
     });
     expect(saved.ok()).toBe(true);
 
+    let teacherId = "";
+    let groupId = "";
     try {
-      // A 1:1 group meeting every day at 07:00 with its only student.
+      // A 1:1 group meeting every day at 07:00 with its only student, taught by the seeded teacher,
+      // who is open for booking every afternoon (A-169).
       const demo = (await (
         await page.request.get("/api/v1/groups?q=GE-Morning", { headers })
       ).json()) as { items: Array<{ name: string; branchId: string }> };
       const branchId = demo.items.find((g) => g.name === "GE-Morning A1")!.branchId;
+      const teachers = (await (
+        await page.request.get("/api/v1/teachers?tab=teachers&q=%2B998900000004", { headers })
+      ).json()) as { items: Array<{ id: string; phone: string }> };
+      teacherId = teachers.items.find((t) => t.phone === "+998900000004")!.id;
+      const hours = await page.request.put(`/api/v1/teachers/${teacherId}/availability`, {
+        headers,
+        data: {
+          windows: [1, 2, 3, 4, 5, 6, 7].map((weekday) => ({
+            weekday,
+            startTime: "14:00",
+            endTime: "16:00",
+          })),
+        },
+      });
+      expect(hours.ok()).toBe(true);
       const course = await page.request.post("/api/v1/courses", {
         headers,
         data: { branchId, name: tag, price: 100000, durationMonths: 1, gradingSystemId: null },
@@ -77,14 +95,16 @@ test.describe("students move their own 1:1 lessons (A-166)", () => {
             endTime: "07:45",
             roomId: null,
           })),
-          teachers: [],
+          teachers: [{ userId: teacherId, role: "MAIN", shareType: "PERCENT", shareValue: 40 }],
+          // An earlier run's group may still meet at 07:00 with the same teacher.
+          ignoreClashes: true,
           startDate: today,
           endDate: null,
           status: "ACTIVE",
         },
       });
       expect(group.status()).toBe(201);
-      const groupId = ((await group.json()) as { id: string }).id;
+      groupId = ((await group.json()) as { id: string }).id;
       const student = await page.request.post("/api/v1/students", {
         headers,
         data: {
@@ -117,6 +137,20 @@ test.describe("students move their own 1:1 lessons (A-166)", () => {
       await expect(picker).toBeHidden();
       await expect(lessonOn(shift(today, 2))).toContainText("15:00–15:45");
 
+      // Booking an extra lesson from the teacher's free afternoons (A-169).
+      await expect(studentPage.getByTestId("portal-booking")).toContainText("2 more");
+      const slot = studentPage.getByTestId("portal-book-slot").first();
+      const slotDate = (await slot.getAttribute("data-date"))!;
+      const slotTime = (await slot.getAttribute("data-time"))!;
+      expect(slotTime >= "14:00" && slotTime < "16:00").toBe(true);
+      await slot.click();
+      await expect(
+        studentPage.locator(`[data-testid="portal-upcoming-lesson"][data-date="${slotDate}"]`, {
+          hasText: slotTime,
+        }),
+      ).toBeVisible();
+      await expect(studentPage.getByTestId("portal-booking")).toContainText("1 more");
+
       // Cancelling leaves the lesson waiting for a new time.
       await lessonOn(shift(today, 3)).getByTestId("portal-cancel").click();
       await expect(lessonOn(shift(today, 3))).toHaveCount(0);
@@ -131,7 +165,21 @@ test.describe("students move their own 1:1 lessons (A-166)", () => {
       const daysOff = page.getByTestId("group-days-off");
       await expect(daysOff).toContainText("Moved by the student");
       await expect(daysOff).toContainText("Cancelled by the student");
+
+      // The teacher's page shows the booking hours the office set.
+      await page.goto(`/en/teachers/${teacherId}`);
+      await expect(
+        page.getByTestId("availability-day-1").getByTestId("availability-start"),
+      ).toHaveValue("14:00");
     } finally {
+      // Archived, so the teacher's 07:00 is free for the next run.
+      if (groupId) await page.request.delete(`/api/v1/groups/${groupId}`, { headers });
+      if (teacherId) {
+        await page.request.put(`/api/v1/teachers/${teacherId}/availability`, {
+          headers,
+          data: { windows: [] },
+        });
+      }
       await page.request.put("/api/v1/settings/org", {
         headers,
         data: {

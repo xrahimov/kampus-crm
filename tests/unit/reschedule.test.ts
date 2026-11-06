@@ -14,12 +14,14 @@ import { createGroup } from "@/server/services/groups/groups.service";
 import {
   STUDENT_CANCELLED,
   STUDENT_MOVED,
+  bookPortalLesson,
   cancelPortalLesson,
   getPortalSchedule,
   movePortalLesson,
   rebookPortalLesson,
 } from "@/server/services/portal/reschedule.service";
 import { createBranch } from "@/server/services/settings/branches.service";
+import { setAvailability } from "@/server/services/staff/availability.service";
 import { createCourse } from "@/server/services/settings/courses.service";
 import { getOrgSettings, updateOrgSettings } from "@/server/services/settings/org-settings.service";
 import { isoToDate } from "@/server/services/settings/shared";
@@ -208,6 +210,67 @@ describe("students move their 1:1 lessons (A-166)", () => {
     }))!;
     expect(again.upcoming.find((l) => l.date === day(2))).toMatchObject({ startTime: "16:00" });
     expect((await dayOffOn(day(2)))!.movedToLessonId).toBe(moved.id);
+  });
+
+  it("offers the teacher's free slots and books extra lessons inside them (A-169)", async () => {
+    // No windows yet: the student types any time, and no slot list is shown.
+    expect((await getPortalSchedule(token))!).toMatchObject({ hasAvailability: false, slots: [] });
+
+    // The CEO may set a teacher's hours; the teacher sets their own.
+    await setAvailability(ceo, teacher.userId, {
+      windows: [{ weekday: 1, startTime: "09:00", endTime: "12:00" }],
+    });
+    await expect(
+      setAvailability(teacher, teacher.userId, {
+        windows: [
+          { weekday: 1, startTime: "14:00", endTime: "18:00" },
+          { weekday: 1, startTime: "17:00", endTime: "19:00" },
+        ],
+      }),
+    ).rejects.toMatchObject({ fields: { windows: ["validation.availabilityOverlap"] } });
+    const saved = await setAvailability(teacher, teacher.userId, {
+      windows: [1, 2, 3, 4, 5, 6, 7].map((weekday) => ({
+        weekday,
+        startTime: "14:00",
+        endTime: "18:00",
+      })),
+    });
+    expect(saved).toHaveLength(7);
+
+    const schedule = (await getPortalSchedule(token))!;
+    expect(schedule.hasAvailability).toBe(true);
+    expect(schedule.rules).toMatchObject({ bookingLimit: 2, bookedAhead: 0 });
+    expect(schedule.slots.length).toBeGreaterThan(0);
+    // Lessons are 90 minutes; every slot sits inside the windows and off the moved lesson.
+    for (const s of schedule.slots) {
+      expect(s.startTime >= "14:00" && s.endTime <= "18:00").toBe(true);
+    }
+    const dayTwo = schedule.slots.filter((s) => s.date === day(2)).map((s) => s.startTime);
+    expect(dayTwo).not.toContain("16:00");
+    expect(dayTwo).not.toContain("15:00");
+
+    // Outside the windows is refused even when free.
+    await expect(
+      bookPortalLesson(token, { date: day(3), startTime: "12:00", endTime: "13:30" }),
+    ).rejects.toMatchObject({ fields: { startTime: ["validation.outsideAvailability"] } });
+
+    const first = schedule.slots[0]!;
+    const booked = (await bookPortalLesson(token, first))!;
+    expect(booked.rules.bookedAhead).toBe(1);
+    expect(
+      booked.upcoming.some((l) => l.date === first.date && l.startTime === first.startTime),
+    ).toBe(true);
+    expect(booked.slots.some((s) => s.date === first.date && s.startTime === first.startTime)).toBe(
+      false,
+    );
+    const second = booked.slots.find((s) => s.date !== first.date)!;
+    const again = (await bookPortalLesson(token, second))!;
+    expect(again.rules.bookedAhead).toBe(2);
+    await expect(bookPortalLesson(token, again.slots[0]!)).rejects.toMatchObject({
+      status: 409,
+      message: "errors.bookingLimit",
+    });
+    await setAvailability(teacher, teacher.userId, { windows: [] });
   });
 
   it("cancels a lesson, lets the student rebook it, and refuses once the window closed", async () => {

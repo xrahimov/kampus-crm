@@ -1,6 +1,6 @@
 "use client";
 
-import { CalendarClock, CalendarX2 } from "lucide-react";
+import { CalendarClock, CalendarPlus, CalendarX2 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useState } from "react";
 
@@ -16,6 +16,7 @@ import type {
   PortalScheduleDto,
   PortalUpcomingLessonDto,
 } from "@/server/services/portal/reschedule.service";
+import type { FreeSlotDto } from "@/server/services/staff/availability.service";
 
 const minutes = (hhmm: string) => Number(hhmm.slice(0, 2)) * 60 + Number(hhmm.slice(3, 5));
 const hhmm = (m: number) =>
@@ -41,6 +42,7 @@ export function PortalScheduleTab({
   const fmt = useDateFormat();
   const [data, setData] = useState(initial);
   const [picking, setPicking] = useState<
+    | { kind: "book"; length: number }
     | { kind: "move"; lesson: PortalUpcomingLessonDto }
     | { kind: "rebook"; dayOffId: string; length: number }
     | null
@@ -150,6 +152,49 @@ export function PortalScheduleTab({
         </section>
       )}
 
+      {data.rules.enabled && (
+        <section className="space-y-2" data-testid="portal-booking">
+          <h3 className="flex items-center gap-2 text-sm font-medium">
+            <CalendarPlus className="size-4" aria-hidden /> {t("bookTitle")}
+          </h3>
+          <p className="text-xs text-muted-foreground">
+            {t("bookHint", { left: Math.max(0, data.rules.bookingLimit - data.rules.bookedAhead) })}
+          </p>
+          {data.rules.bookedAhead < data.rules.bookingLimit &&
+            !(picking?.kind === "book") &&
+            (data.hasAvailability ? (
+              data.slots.length > 0 ? (
+                <SlotList
+                  slots={data.slots}
+                  busy={busy}
+                  onPick={(slot) => void call(`${base}/book`, slot)}
+                  testId="portal-book-slot"
+                />
+              ) : (
+                <p className="text-sm text-muted-foreground" data-testid="portal-no-slots">
+                  {t("noSlots")}
+                </p>
+              )
+            ) : (
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() =>
+                  setPicking({
+                    kind: "book",
+                    length: weekly[0]
+                      ? minutes(weekly[0].endTime) - minutes(weekly[0].startTime)
+                      : 60,
+                  })
+                }
+                data-testid="portal-book"
+              >
+                {t("book")}
+              </Button>
+            ))}
+        </section>
+      )}
+
       {data.upcoming.length > 0 && (
         <section className="space-y-2" data-testid="portal-upcoming">
           <h3 className="flex items-center gap-2 text-sm font-medium">
@@ -222,6 +267,7 @@ export function PortalScheduleTab({
               ? { date: picking.lesson.date, startTime: picking.lesson.startTime }
               : { date: "", startTime: weekly[0]?.startTime ?? "10:00" }
           }
+          slots={data.hasAvailability ? data.slots : null}
           onCancel={() => {
             setPicking(null);
             setError(null);
@@ -230,7 +276,9 @@ export function PortalScheduleTab({
             void call(
               picking.kind === "move"
                 ? `${base}/${picking.lesson.id}/move`
-                : `${base}/rebook/${picking.dayOffId}`,
+                : picking.kind === "rebook"
+                  ? `${base}/rebook/${picking.dayOffId}`
+                  : `${base}/book`,
               moveTo,
             )
           }
@@ -245,11 +293,56 @@ export function PortalScheduleTab({
   );
 }
 
+/** Free slots as buttons, grouped by day (A-169). */
+function SlotList({
+  slots,
+  busy,
+  onPick,
+  testId,
+}: {
+  slots: FreeSlotDto[];
+  busy: boolean;
+  onPick: (slot: FreeSlotDto) => void;
+  testId: string;
+}) {
+  const fmt = useDateFormat();
+  const days = [...new Set(slots.map((s) => s.date))];
+  return (
+    <ul className="space-y-2" data-testid={`${testId}s`}>
+      {days.map((date) => (
+        <li key={date} className="flex flex-wrap items-center gap-1.5 text-sm">
+          <span className="w-20 text-xs text-muted-foreground">
+            {fmt(parseDateOnly(date), { weekday: "short", day: "numeric", month: "short" })}
+          </span>
+          {slots
+            .filter((s) => s.date === date)
+            .map((s) => (
+              <Button
+                key={s.startTime}
+                size="sm"
+                variant="outline"
+                className="h-7 px-2 text-xs tabular-nums"
+                disabled={busy}
+                onClick={() => onPick(s)}
+                data-testid={testId}
+                data-date={s.date}
+                data-time={s.startTime}
+              >
+                {s.startTime}
+              </Button>
+            ))}
+        </li>
+      ))}
+    </ul>
+  );
+}
+
 function PickTime({
   busy,
   error,
   length,
   initial,
+  slots,
   onCancel,
   onPick,
 }: {
@@ -258,6 +351,8 @@ function PickTime({
   /** Lesson length in minutes; the end time follows the start. */
   length: number;
   initial: { date: string; startTime: string };
+  /** The teacher's free slots when they keep booking hours; a tap picks one (A-169). */
+  slots: FreeSlotDto[] | null;
   onCancel: () => void;
   onPick: (moveTo: { date: string; startTime: string; endTime: string }) => void;
 }) {
@@ -276,6 +371,28 @@ function PickTime({
       }}
     >
       <p className="font-medium">{t("pickTitle")}</p>
+      {slots && slots.length > 0 && (
+        <>
+          <SlotList
+            slots={slots}
+            busy={busy}
+            onPick={(s) =>
+              onPick({
+                date: s.date,
+                startTime: s.startTime,
+                endTime: hhmm(minutes(s.startTime) + length),
+              })
+            }
+            testId="portal-pick-slot"
+          />
+          <p className="text-xs text-muted-foreground">{t("orOwnTime")}</p>
+        </>
+      )}
+      {slots && slots.length === 0 && (
+        <p className="text-xs text-muted-foreground" data-testid="portal-no-slots">
+          {t("noSlots")}
+        </p>
+      )}
       <div className="flex flex-wrap gap-3">
         <div className="space-y-1">
           <Label htmlFor="pick-date">{t("newDate")}</Label>

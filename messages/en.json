@@ -492,7 +492,8 @@
     "callWithoutLesson": "This call is not tied to a lesson.",
     "topicLocked": "This topic is not open to you yet",
     "rescheduleOff": "Moving lessons is not available for this group",
-    "rescheduleTooLate": "The lesson can no longer be changed"
+    "rescheduleTooLate": "The lesson can no longer be changed",
+    "bookingLimit": "You already have the most lessons booked ahead"
   },
   "validation": {
     "phone": "Enter a number like +998 90 123 45 67.",
@@ -607,7 +608,9 @@
     "videoUrl": "Paste a YouTube link or upload a video file",
     "gapCount": "One answer line per gap (___) in the sentence",
     "outsideWorkHours": "Outside the centre's working hours",
-    "teacherBusy": "The teacher has another lesson at this time"
+    "teacherBusy": "The teacher has another lesson at this time",
+    "availabilityOverlap": "Hours of one day overlap",
+    "outsideAvailability": "Outside the teacher's booking hours"
   },
   "roles": {
     "CEO": "CEO",
@@ -1127,7 +1130,19 @@
       "role": "Role"
     },
     "noGroups": "No groups yet.",
-    "sms": "Send SMS"
+    "sms": "Send SMS",
+    "availability": {
+      "title": "Hours open for 1:1 booking",
+      "own": "Your students in 1:1 groups book and move lessons inside these hours.",
+      "hint": "Weekly windows in which a student of a 1:1 group may book or move a lesson from their page. Times already taken by other lessons are left out. With no windows, students pick any free time in the centre's hours.",
+      "closed": "not open",
+      "from": "From",
+      "to": "To",
+      "add": "Add hours",
+      "remove": "Remove",
+      "save": "Save hours",
+      "saved": "Saved"
+    }
   },
   "staff": {
     "title": "Staff",
@@ -4926,7 +4941,12 @@
       "reasons": {
         "moved": "moved by you",
         "cancelled": "cancelled by you"
-      }
+      },
+      "bookTitle": "Book an extra lesson",
+      "bookHint": "Pick a free time of your teacher. You can have {left} more booked ahead.",
+      "book": "Choose a time",
+      "noSlots": "No free times in the next two weeks.",
+      "orOwnTime": "Or enter a time yourself:"
     },
     "homework": {
       "empty": "No homework yet.",
@@ -5113,7 +5133,8 @@
     "loginUnknown": "This number is not registered at the learning centre. Ask the reception to add it to your profile.",
     "loginLinkedElsewhere": "Your profile is already connected to another Telegram account. Ask the reception to unlink it first.",
     "loginLink": "Tap to open Kampus: {url}\nThe link works once, for 10 minutes.",
-    "weeklyProgress": "{group}: course {percent}% complete ({done} of {total} topics){score, select, none {} other {, exercises average {score}%}}"
+    "weeklyProgress": "{group}: course {percent}% complete ({done} of {total} topics){score, select, none {} other {, exercises average {score}%}}",
+    "lessonBooked": "{group}: a lesson is booked for {date}, {time}."
   },
   "video": {
     "title": "Video lesson",
