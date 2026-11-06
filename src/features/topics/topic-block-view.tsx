@@ -3,6 +3,7 @@
 import { Download, ExternalLink, FileText, Link2, Type, Video } from "lucide-react";
 import { useTranslations } from "next-intl";
 
+import { VideoPlayer } from "@/features/shared/video-player";
 import { youtubeId } from "@/lib/validation/topic-content";
 import type { TopicBlockDto } from "@/server/services/settings/topic-content.service";
 
@@ -60,12 +61,11 @@ export function TopicBlockView({ block }: { block: TopicBlockDto }) {
             data-testid="topic-youtube"
           />
         ) : block.url ? (
-          <video
-            controls
-            preload="metadata"
+          <VideoPlayer
             src={block.url}
-            className="aspect-video w-full rounded-md bg-black"
-            aria-label={block.title}
+            title={block.title}
+            storageKey={`topic-${block.id}`}
+            testId="topic-video"
           />
         ) : null)}
       {block.kind === "LINK" && block.url && (

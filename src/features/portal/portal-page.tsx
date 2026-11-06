@@ -316,7 +316,7 @@ export function PortalPage({
               </TabsContent>
             )}
             <TabsContent value="materials">
-              <PortalMaterialsTab items={materials} />
+              <PortalMaterialsTab items={materials} token={token} />
             </TabsContent>
 
             {showMoney && (

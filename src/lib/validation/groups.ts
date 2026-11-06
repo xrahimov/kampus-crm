@@ -269,3 +269,19 @@ export const attendanceScanSchema = z.object({
   lessonId: idSchema.optional(),
 });
 export type AttendanceScanInput = z.infer<typeof attendanceScanSchema>;
+
+/** Where the student's player is in a recording (A-175). */
+export const materialProgressSchema = z.object({
+  positionSec: z.coerce
+    .number()
+    .min(0)
+    .max(24 * 60 * 60),
+  durationSec: z.coerce
+    .number()
+    .int()
+    .min(0)
+    .max(24 * 60 * 60)
+    .nullable()
+    .default(null),
+});
+export type MaterialProgressInput = z.infer<typeof materialProgressSchema>;

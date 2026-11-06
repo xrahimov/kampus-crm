@@ -32,9 +32,18 @@ const DOCUMENT_EXTENSION_BY_TYPE: Record<string, string> = {
   "video/mp4": "mp4",
   "video/webm": "webm",
 };
-const EXTENSION_BY_TYPE: Record<string, string> = {
+/** Files of a streaming copy the worker makes (A-175); never uploaded by people. */
+const HLS_EXTENSION_BY_TYPE: Record<string, string> = {
+  "application/vnd.apple.mpegurl": "m3u8",
+  "video/iso.segment": "m4s",
+};
+const UPLOAD_EXTENSION_BY_TYPE: Record<string, string> = {
   ...IMAGE_EXTENSION_BY_TYPE,
   ...DOCUMENT_EXTENSION_BY_TYPE,
+};
+const EXTENSION_BY_TYPE: Record<string, string> = {
+  ...UPLOAD_EXTENSION_BY_TYPE,
+  ...HLS_EXTENSION_BY_TYPE,
 };
 const TYPE_BY_EXTENSION = Object.fromEntries(
   Object.entries(EXTENSION_BY_TYPE).map(([type, ext]) => [ext, type]),
@@ -42,7 +51,7 @@ const TYPE_BY_EXTENSION = Object.fromEntries(
 
 export const IMAGE_TYPES = Object.keys(IMAGE_EXTENSION_BY_TYPE);
 /** Everything an attachment may be: images plus the document types above. */
-export const ATTACHMENT_TYPES = Object.keys(EXTENSION_BY_TYPE);
+export const ATTACHMENT_TYPES = Object.keys(UPLOAD_EXTENSION_BY_TYPE);
 
 /** Builds a key for a new upload; the extension follows the content type. */
 export function newStorageKey(folder: string, contentType: string): string {

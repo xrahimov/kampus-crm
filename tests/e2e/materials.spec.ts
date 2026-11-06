@@ -94,6 +94,19 @@ test.describe("lesson materials", () => {
     const head = await student.request.get(src!, { headers: { Range: "bytes=0-99" } });
     expect(head.status()).toBe(206);
     expect(head.headers()["content-range"]).toMatch(/^bytes 0-99\/\d+$/);
+    // The player remembers the chosen speed (A-175).
+    await student.getByTestId("portal-recording-rate-1_5").click();
+    await expect(student.getByTestId("portal-recording-rate-1_5")).toHaveAttribute(
+      "aria-pressed",
+      "true",
+    );
+    expect(await video.evaluate((v) => (v as HTMLVideoElement).playbackRate)).toBe(1.5);
+    await student.reload();
+    await student.getByTestId("portal-tab-materials").click();
+    await expect(student.getByTestId("portal-recording-rate-1_5").first()).toHaveAttribute(
+      "aria-pressed",
+      "true",
+    );
 
     // Clean up: the link and the recording go.
     for (const title of [`Grammar video ${stamp}`]) {

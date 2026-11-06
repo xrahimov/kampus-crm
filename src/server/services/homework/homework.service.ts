@@ -620,7 +620,9 @@ export async function portalFileAllowed(
       },
     }),
     db.lesson.count({ where: { groupId: membership.groupId, attachmentUrl: url } }),
-    db.lessonMaterial.count({ where: { groupId: membership.groupId, url } }),
+    db.lessonMaterial.count({
+      where: { groupId: membership.groupId, OR: [{ url }, { hlsKeys: { has: key } }] },
+    }),
     portalTopicFileAllowed(db, membership, url),
   ]);
   return homework + own + lesson + material > 0 || topic;

@@ -317,6 +317,12 @@ export const videoIntegrationSchema = z.object({
   /** Lesson recordings older than this are deleted with their file; 0 keeps them forever. */
   recordingKeepDays: z.coerce.number().int().min(0).max(3650).default(90),
   /**
+   * Streaming copies (online-lessons F3, A-175): the worker turns each new recording
+   * into HLS renditions so it plays on phones and adapts to the connection. Costs CPU
+   * on the server, so off until the centre turns it on.
+   */
+  hlsRecordings: z.boolean().default(false),
+  /**
    * Attendance from a call (online-lessons B1): a student online at least this many
    * minutes counts as present; joining more than this many minutes late is noted.
    */

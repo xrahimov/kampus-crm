@@ -1,11 +1,13 @@
 import type { MaterialKind, Prisma } from "@/generated/prisma/client";
-import type { MaterialInput } from "@/lib/validation/groups";
+import type { MaterialInput, MaterialProgressInput } from "@/lib/validation/groups";
 import { recordAudit } from "@/server/audit/audit";
 import { prisma, type DbClient } from "@/server/db/prisma";
 import { AppError } from "@/server/errors/app-error";
+import { enqueue } from "@/server/jobs/queue";
 import { authorize, type Actor } from "@/server/rbac/authorize";
 import { findGroupInScope, ownGroupsOnly, today } from "@/server/services/groups/shared";
 import { dateToIso, isoToDate, mustFind } from "@/server/services/settings/shared";
+import { deleteMaterialFiles } from "@/server/services/materials/hls.service";
 import { notifyMaterial } from "@/server/services/telegram/student-telegram.service";
 import { loadVideoConfig, membershipByToken } from "@/server/services/video/video.service";
 import { getStorage, newStorageKey } from "@/server/storage/local";
@@ -33,6 +35,12 @@ export interface MaterialDto {
   url: string;
   size: number | null;
   durationSec: number | null;
+  /** Streaming copy of a recording (A-175): master playlist URL, once the worker made one. */
+  hlsUrl: string | null;
+  /** Staff: how many students have opened a recording, and how many watched it to the end. */
+  watched: { started: number; finished: number } | null;
+  /** The student's own place in a recording, to continue from (seconds). */
+  resumeSec: number | null;
   createdByName: string | null;
   createdAt: string;
 }
@@ -46,6 +54,7 @@ export interface GroupMaterialsDto {
 const include = {
   lesson: { select: { date: true, topic: true } },
   createdBy: { select: { fullName: true } },
+  views: { select: { membershipId: true, positionSec: true, completed: true } },
 } satisfies Prisma.LessonMaterialInclude;
 type Row = Prisma.LessonMaterialGetPayload<{ include: typeof include }>;
 
@@ -60,6 +69,12 @@ function toDto(row: Row): MaterialDto {
     url: row.url,
     size: row.size,
     durationSec: row.durationSec,
+    hlsUrl: row.hlsKey ? `/api/v1/files/${row.hlsKey}` : null,
+    watched:
+      row.kind === "RECORDING"
+        ? { started: row.views.length, finished: row.views.filter((v) => v.completed).length }
+        : null,
+    resumeSec: null,
     createdByName: row.createdBy?.fullName ?? null,
     createdAt: row.createdAt.toISOString(),
   };
@@ -171,12 +186,7 @@ export async function deleteMaterial(
       branchId: group.branchId,
     });
   });
-  // A recording exists for this one material only; uploaded files may be shared, so they stay.
-  if (row.kind === "RECORDING" && row.url.startsWith("/api/v1/files/")) {
-    await getStorage()
-      .delete(row.url.slice("/api/v1/files/".length))
-      .catch(() => undefined);
-  }
+  await deleteMaterialFiles(getStorage(), row);
 }
 
 const DAY_MS = 24 * 60 * 60 * 1000;
@@ -225,11 +235,7 @@ async function purgeOrganizationRecordings(
         branchId: row.group.branchId,
       });
     });
-    if (row.url.startsWith("/api/v1/files/")) {
-      await getStorage()
-        .delete(row.url.slice("/api/v1/files/".length))
-        .catch(() => undefined);
-    }
+    await deleteMaterialFiles(getStorage(), row);
   }
   return rows.length;
 }
@@ -274,6 +280,11 @@ export async function saveRecording(
     throw error;
   }
   if (stored.size === 0) throw AppError.validation({ file: ["validation.fileRequired"] });
+  const branch = await db.branch.findUniqueOrThrow({
+    where: { id: room.group.branchId },
+    select: { organizationId: true },
+  });
+  const { hlsRecordings } = await loadVideoConfig(db, branch.organizationId);
   const date = room.lesson ? dateToIso(room.lesson.date) : dateToIso(room.startedAt);
   const time = new Intl.DateTimeFormat("en-GB", {
     hour: "2-digit",
@@ -308,6 +319,14 @@ export async function saveRecording(
       kind: row.kind,
       title: row.title,
     });
+    // The worker makes the streaming copy (A-175) when the centre asked for one.
+    if (hlsRecordings) {
+      await enqueue(tx, {
+        type: "recording.hls",
+        payload: { materialId: row.id },
+        uniqueKey: `hls:${row.id}`,
+      });
+    }
     return toDto(row);
   });
 }
@@ -332,6 +351,51 @@ export async function listPortalMaterials(
   return sorted(rows).map((r) => ({
     ...toDto(r),
     url: portalUrl(token, r.url),
+    hlsUrl: r.hlsKey ? portalUrl(token, `/api/v1/files/${r.hlsKey}`) : null,
+    watched: null,
+    resumeSec: r.views.find((v) => v.membershipId === membership.id)?.positionSec ?? null,
     createdByName: null,
   }));
+}
+
+/** Reached this share of the video once and it counts as watched. */
+const WATCHED_SHARE = 0.9;
+
+/**
+ * The student's player reports where it is every little while (A-175), so the
+ * next device continues there and the teacher sees who watched the recording.
+ * Returns false for an unknown link or a material of another group.
+ */
+export async function saveMaterialProgress(
+  token: string,
+  materialId: string,
+  input: MaterialProgressInput,
+  db: DbClient = prisma,
+): Promise<boolean> {
+  const membership = await membershipByToken(db, token);
+  if (!membership) return false;
+  const material = await db.lessonMaterial.findFirst({
+    where: { id: materialId, groupId: membership.groupId, kind: "RECORDING" },
+    select: { id: true, durationSec: true },
+  });
+  if (!material) return false;
+  const duration = input.durationSec ?? material.durationSec ?? null;
+  const positionSec = Math.max(0, Math.round(input.positionSec));
+  const completed = duration !== null && duration > 0 && positionSec >= duration * WATCHED_SHARE;
+  await db.materialView.upsert({
+    where: { materialId_membershipId: { materialId, membershipId: membership.id } },
+    create: {
+      materialId,
+      membershipId: membership.id,
+      positionSec,
+      durationSec: duration,
+      completed,
+    },
+    update: {
+      positionSec,
+      durationSec: duration,
+      ...(completed ? { completed: true } : {}),
+    },
+  });
+  return true;
 }
