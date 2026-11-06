@@ -342,6 +342,7 @@ export const uz: HelpContent = {
           title: "Dam kunlari, o‘qituvchini o‘zgartirish va tugatish",
           body: [
             "**Dam berish** shu guruh uchun bitta sanadagi darsni olib tashlaydi, masalan o‘qituvchining safari uchun, va o‘quvchilar bilan ota-onalarga darhol Telegram va SMS orqali xabar bera oladi (SMS tugmalari Sozlamalar → Umumiy → Avto SMS bo‘limida). Darsni bekor qilish o‘rniga ko‘chirish uchun yangi sana va vaqtni tanlang. Oyning bekor qilingan va ko‘chirilgan darslari davomat jadvali tepasida ro‘yxat bo‘lib chiqadi, dam kunini o‘sha yerda qaytarish mumkin. Filial bo‘yicha bayramlar esa Sozlamalar → Dam olish kunlari bo‘limiga kiritiladi va har bir guruhga amal qiladi.",
+            "Sozlamalar → Umumiy bo'limida **O'quvchilar yakka darslarini o'zlari ko'chirishi yoki bekor qilishi mumkin** yoqilgan bo'lsa, guruhning yagona o'quvchisi kelgusi darsni o'z sahifasidan belgilangan soatlar oldin ko'chirishi yoki bekor qilishi mumkin. Bunday o'zgarishlar shu ro'yxatda **O'quvchi ko'chirdi** yoki **O'quvchi bekor qildi** sifatida ko'rinadi, sizga ham o'quvchilar kabi Telegram orqali xabar beriladi.",
             "**O‘qituvchini o‘zgartirish** ketayotgan o‘qituvchini bugundan boshlab yangisi bilan almashtiradi; yangi o‘qituvchining ish haqi ulushi bugundan, eskisiniki kechagacha hisoblanadi. **Support o‘qituvchilar** davomat qila oladigan va guruhni ko‘ra oladigan, lekin ish haqi ulushi bo‘lmagan qo‘shimcha o‘qituvchilarni biriktiradi.",
             "Kurs tugaganda **Guruhni tugatish** ni bosing: har bir faol o‘quvchi bitiruvchiga aylanadi va qolgan darslar olib tashlanadi. Bitiruvchilar hisoboti ularni ko‘rsatadi. **Arxivlash** tashlab qo‘yilgan guruhni yashiradi; darslari va tarixi saqlanadi. Arxivlangan guruhlar Arxivlangan yorlig‘ida ko‘rinadi.",
             "**Kutish ro‘yxatiga joy taklif qilish** shu filialda guruh kursini kutayotganlarga, guruhdagi bo‘sh joylar soniga qarab, xabar yuboradi va ularni taklif qilingan deb belgilaydi (Lidlar → Kutish ro‘yxati ga qarang).",
@@ -1276,6 +1277,7 @@ export const uz: HelpContent = {
           title: "Darslar va jadval",
           body: [
             "**Darslar** yorlig‘i har bir darsni sanasi, mavzusi, kelgan-kelmaganingiz va bahongiz bilan ko‘rsatadi. **Jadval** yorlig‘i guruhingiz yig‘iladigan kunlar va vaqtlarni hamda guruh qachongacha o‘qishini ko‘rsatadi.",
+            "Agar yakka tartibda o'qisangiz va markazingiz ruxsat bergan bo'lsa, Jadval bo'limida keyingi darslaringiz **Ko'chirish** va **Darsni bekor qilish** tugmalari bilan ko'rinadi. Ular markaz belgilagan soatlar darsgacha qolguncha ishlaydi; keyin dars o'tilgan hisoblanadi. Markazning ish vaqtida, o'qituvchi bo'sh bo'lgan yangi sana va vaqtni tanlang; o'qituvchiga darhol xabar beriladi. O'qituvchi yangi vaqtsiz olib tashlagan dars **Yangi vaqt kutayotgan darslar** ostida chiqadi, u yerda vaqtni o'zingiz tanlaysiz.",
           ],
         },
         homework: {

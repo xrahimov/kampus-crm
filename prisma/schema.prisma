@@ -383,6 +383,10 @@ model OrgSettings {
   autoCoins                  Boolean @default(false)
   /// The setup checklist on the home page (A-128); hidden by its button or this switch.
   showSetupChecklist         Boolean @default(true)
+  /// Students of 1:1 groups may move or cancel their lessons from their page (A-166).
+  studentReschedule          Boolean @default(false)
+  /// How many hours before the lesson a student may still move or cancel it (A-166).
+  studentRescheduleHours     Int     @default(12)
 
   workStart           String @default("08:00") // HH:mm, schedule grid start
   workEnd             String @default("20:00") // HH:mm, schedule grid end

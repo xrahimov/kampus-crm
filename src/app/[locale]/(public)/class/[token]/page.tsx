@@ -11,6 +11,7 @@ import { getPortal } from "@/server/services/portal/portal.service";
 import { getPortalBadges } from "@/server/services/badges/badges.service";
 import { getPortalGradebook } from "@/server/services/gradebook/gradebook.service";
 import { listPortalStream } from "@/server/services/stream/stream.service";
+import { getPortalSchedule } from "@/server/services/portal/reschedule.service";
 import { getPortalProgress } from "@/server/services/progress/course-progress.service";
 import { listPortalCourse } from "@/server/services/settings/topic-content.service";
 import { listPortalCertificates } from "@/server/services/students/certificates.service";
@@ -55,6 +56,7 @@ export default async function Page({ params, searchParams }: Props) {
     gradebook,
     badges,
     stream,
+    schedule,
   ] = await Promise.all([
     getClassPage(token),
     getPortal(token),
@@ -71,8 +73,18 @@ export default async function Page({ params, searchParams }: Props) {
     getPortalGradebook(token),
     getPortalBadges(token),
     listPortalStream(token),
+    getPortalSchedule(token),
   ]);
-  if (!page || !portal || !homework || !telegram || !materials || !pay || !announcements) {
+  if (
+    !page ||
+    !portal ||
+    !homework ||
+    !telegram ||
+    !materials ||
+    !pay ||
+    !announcements ||
+    !schedule
+  ) {
     notFound();
   }
   return (
@@ -94,6 +106,7 @@ export default async function Page({ params, searchParams }: Props) {
         gradebook={gradebook}
         badges={badges ?? []}
         stream={stream ?? []}
+        schedule={schedule}
         initialTab={paid ? "money" : "lessons"}
       />
     </div>

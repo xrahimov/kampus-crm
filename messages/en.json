@@ -493,7 +493,9 @@
     "callWithoutLesson": "This call is not tied to a lesson.",
     "topicLocked": "This topic is not open to you yet",
     "notAnAssignment": "This homework belongs to a lesson; edit it from the lesson.",
-    "streamLocked": "Comments on this post are closed."
+    "streamLocked": "Comments on this post are closed.",
+    "rescheduleOff": "Moving lessons is not available for this group",
+    "rescheduleTooLate": "The lesson can no longer be changed"
   },
   "validation": {
     "phone": "Enter a number like +998 90 123 45 67.",
@@ -608,7 +610,9 @@
     "videoUrl": "Paste a YouTube link or upload a video file",
     "gapCount": "One answer line per gap (___) in the sentence",
     "rubricScores": "Give each criterion a score within its points.",
-    "weightsSum": "The weights must add up to 100."
+    "weightsSum": "The weights must add up to 100.",
+    "outsideWorkHours": "Outside the centre's working hours",
+    "teacherBusy": "The teacher has another lesson at this time"
   },
   "roles": {
     "CEO": "CEO",
@@ -807,6 +811,12 @@
         "publicInstagram": "Instagram (username or link)",
         "publicTelegram": "Telegram (username or link)",
         "open": "Open the page"
+      },
+      "reschedule": {
+        "title": "Students moving lessons",
+        "hint": "Applies to groups with one student. The student moves or cancels a lesson from their page up to this many hours before it starts; later it stays and counts as held.",
+        "hours": "Notice before the lesson",
+        "unit": "hours"
       }
     },
     "switches": {
@@ -823,7 +833,8 @@
       "teacherCanAddStudents": "Teachers can add students",
       "bookAnySupportTeacher": "Students may book any support teacher",
       "groupSupportSessions": "Allow group support sessions",
-      "showSetupChecklist": "Show the setup checklist on the home page"
+      "showSetupChecklist": "Show the setup checklist on the home page",
+      "studentReschedule": "Students may move or cancel their own 1:1 lessons"
     },
     "switchHints": {
       "adminActionsNeedApproval": "Refunds, discounts, deletions and payment edits by admins wait for the CEO.",
@@ -1455,7 +1466,11 @@
       "newDate": "New date",
       "newStart": "Start",
       "newEnd": "End",
-      "movedTo": "moved to {date}, {start}–{end}"
+      "movedTo": "moved to {date}, {start}–{end}",
+      "dayOffReasons": {
+        "moved": "Moved by the student",
+        "cancelled": "Cancelled by the student"
+      }
     },
     "attendance": {
       "PRESENT": "Present",
@@ -4950,7 +4965,24 @@
     },
     "schedule": {
       "empty": "The group has no fixed lesson times.",
-      "until": "The group runs until {date}."
+      "until": "The group runs until {date}.",
+      "upcomingTitle": "Next lessons",
+      "rule": "You can move or cancel a lesson up to {hours} hours before it starts.",
+      "move": "Move",
+      "cancel": "Cancel lesson",
+      "tooLate": "Changes closed on {deadline}",
+      "cancelledTitle": "Lessons waiting for a new time",
+      "pickTime": "Pick a new time",
+      "pickTitle": "New time",
+      "newDate": "Date",
+      "newTime": "Starts",
+      "ends": "Ends",
+      "pickHint": "Within the centre's working hours, when the teacher is free. The teacher is told right away.",
+      "confirm": "Confirm",
+      "reasons": {
+        "moved": "moved by you",
+        "cancelled": "cancelled by you"
+      }
     },
     "homework": {
       "empty": "No homework yet.",

@@ -239,6 +239,35 @@ export function OrgForm({
             </div>
           </fieldset>
 
+          <fieldset className="space-y-3" data-testid="reschedule-settings">
+            <legend className="text-sm font-medium">
+              {t("settings.general.reschedule.title")}
+            </legend>
+            <p className="text-xs text-muted-foreground">{t("settings.general.reschedule.hint")}</p>
+            <div className="space-y-2">
+              <Label htmlFor="reschedule-hours">{t("settings.general.reschedule.hours")}</Label>
+              <div className="flex items-center gap-2">
+                <Input
+                  id="reschedule-hours"
+                  type="number"
+                  min={1}
+                  max={168}
+                  className="w-28"
+                  aria-invalid={!!errors.studentRescheduleHours}
+                  data-testid="reschedule-hours"
+                  {...form.register("studentRescheduleHours")}
+                />
+                <span className="text-sm text-muted-foreground">
+                  {t("settings.general.reschedule.unit")}
+                </span>
+              </div>
+              <FieldError
+                id="reschedule-hours-error"
+                message={errors.studentRescheduleHours?.message}
+              />
+            </div>
+          </fieldset>
+
           <fieldset className="space-y-3" data-testid="public-page">
             <legend className="text-sm font-medium">
               {t("settings.general.publicPage.title")}
