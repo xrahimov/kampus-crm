@@ -13,6 +13,11 @@ import { addMember } from "@/server/services/groups/memberships.service";
 import { getPortal } from "@/server/services/portal/portal.service";
 import { createBranch } from "@/server/services/settings/branches.service";
 import { createCourse } from "@/server/services/settings/courses.service";
+import { getMonthGrid, updateLesson } from "@/server/services/groups/lessons.service";
+import {
+  listLessonRatings,
+  ratePortalLesson,
+} from "@/server/services/portal/lesson-rating.service";
 import { listStudentLinks } from "@/server/services/video/video.service";
 import { DEMO_ORG_ID, demoBranchIds } from "./support/tenant";
 
@@ -44,6 +49,8 @@ let groupId: string;
 let membershipOne: string;
 let membershipTwo: string;
 let tokenOne: string;
+let firstLessonId: string;
+let secondLessonId: string;
 
 beforeAll(async () => {
   const teacherRole = await prisma.role.findFirstOrThrow({ where: { code: "TEACHER" } });
@@ -124,6 +131,8 @@ beforeAll(async () => {
   });
   expect(lessons).toHaveLength(2);
   const [first, second] = lessons as [(typeof lessons)[0], (typeof lessons)[0]];
+  firstLessonId = first.id;
+  secondLessonId = second.id;
   await prisma.attendance.createMany({
     data: [
       { lessonId: first.id, membershipId: membershipOne, status: "PRESENT" },
@@ -197,6 +206,52 @@ describe("student portal", () => {
     // Student two has two PRESENT marks and a 5; none of that reaches student one's page.
     expect(portal!.lessons.filter((l) => l.grade === 5)).toHaveLength(0);
     expect(portal!.lessons.filter((l) => l.attendance === "PRESENT")).toHaveLength(1);
+  });
+
+  it("shows the teacher's note and takes the student's rating of a past lesson (A-168)", async () => {
+    await updateLesson(teacher, firstLessonId, { studentNote: "Review unit 3" });
+    let portal = (await getPortal(tokenOne))!;
+    const first = portal.lessons.find((l) => l.id === firstLessonId)!;
+    expect(first).toMatchObject({ studentNote: "Review unit 3", rating: null, canRate: true });
+    // Absent that day: no rating; not held yet: no rating.
+    expect(portal.lessons.find((l) => l.id === secondLessonId)!.canRate).toBe(false);
+    await expect(
+      ratePortalLesson(tokenOne, secondLessonId, { rating: 5, comment: null }),
+    ).rejects.toMatchObject({ status: 409, message: "errors.ratingAbsent" });
+    // A lesson on a later day is never over yet, whatever the time of day the test runs.
+    const upcoming = await prisma.lesson.findFirstOrThrow({
+      where: { groupId, date: { gt: new Date() } },
+      orderBy: { date: "asc" },
+      select: { id: true },
+    });
+    await expect(
+      ratePortalLesson(tokenOne, upcoming.id, { rating: 5, comment: null }),
+    ).rejects.toMatchObject({ status: 409, message: "errors.lessonNotOver" });
+
+    expect(
+      await ratePortalLesson(tokenOne, firstLessonId, { rating: 5, comment: "Great" }),
+    ).toEqual({ lessonId: firstLessonId, rating: 5, comment: "Great" });
+    // Changing one's mind keeps one row.
+    await ratePortalLesson(tokenOne, firstLessonId, { rating: 4, comment: "Good" });
+    portal = (await getPortal(tokenOne))!;
+    expect(portal.lessons.find((l) => l.id === firstLessonId)!.rating).toEqual({
+      rating: 4,
+      comment: "Good",
+    });
+    const staff = await listLessonRatings(teacher, firstLessonId);
+    expect(staff.average).toBe(4);
+    expect(staff.rows).toHaveLength(1);
+    expect(staff.rows[0]).toMatchObject({
+      fullName: `${TAG} Student One`,
+      rating: 4,
+      comment: "Good",
+    });
+    const month = portal.lessons.find((l) => l.id === firstLessonId)!.date.slice(0, 7);
+    const grid = await getMonthGrid(teacher, groupId, month);
+    expect(grid.lessons.find((l) => l.id === firstLessonId)).toMatchObject({
+      studentNote: "Review unit 3",
+      rating: { average: 4, count: 1 },
+    });
   });
 
   it("is gone with the link", async () => {

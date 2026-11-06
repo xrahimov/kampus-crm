@@ -23,6 +23,8 @@ export function LessonPanel({ engine }: { engine: CallEngine }) {
   const [editing, setEditing] = useState(false);
   const [topic, setTopic] = useState("");
   const [saving, setSaving] = useState(false);
+  const [editingNote, setEditingNote] = useState(false);
+  const [note, setNote] = useState("");
   const isHost = engine.self.role === "HOST";
   const isStudent = engine.self.role === "STUDENT";
 
@@ -53,6 +55,23 @@ export function LessonPanel({ engine }: { engine: CallEngine }) {
       alive = false;
     };
   }, [engine, reloads]);
+
+  const saveNote = async () => {
+    if (!data?.lesson) return;
+    setSaving(true);
+    try {
+      await api(`/lessons/${data.lesson.id}`, {
+        method: "PATCH",
+        body: { studentNote: note.trim() || null },
+      });
+      setEditingNote(false);
+      load();
+    } catch {
+      setError(true);
+    } finally {
+      setSaving(false);
+    }
+  };
 
   const saveTopic = async () => {
     if (!data?.lesson) return;
@@ -179,6 +198,79 @@ export function LessonPanel({ engine }: { engine: CallEngine }) {
               >
                 <FileText className="size-3.5" /> {t("lessonFile")}
               </a>
+            )}
+            {/* The teacher's note to the students about this lesson (A-168). */}
+            {(isHost || data.lesson.studentNote) && (
+              <div className="mt-2 border-t border-sidebar pt-2" data-testid="lesson-note-block">
+                {editingNote ? (
+                  <form
+                    className="space-y-1.5"
+                    onSubmit={(e) => {
+                      e.preventDefault();
+                      void saveNote();
+                    }}
+                  >
+                    <textarea
+                      value={note}
+                      onChange={(e) => setNote(e.target.value)}
+                      maxLength={1000}
+                      rows={3}
+                      aria-label={t("studentNote")}
+                      placeholder={t("studentNotePlaceholder")}
+                      autoFocus
+                      className="w-full rounded-md border border-sidebar bg-sidebar px-2.5 py-1.5 text-sm text-white placeholder:text-sidebar-foreground/60 focus-visible:outline-2 focus-visible:outline-sidebar-active"
+                      data-testid="lesson-note-input"
+                    />
+                    <div className="flex gap-1.5">
+                      <button
+                        type="submit"
+                        disabled={saving}
+                        className="rounded-md bg-sidebar-active px-3 py-1.5 text-sm text-white hover:bg-sidebar-active/80 disabled:opacity-50"
+                        data-testid="lesson-note-save"
+                      >
+                        {t("save")}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setEditingNote(false)}
+                        className="rounded-md px-3 py-1.5 text-sm hover:bg-sidebar"
+                      >
+                        {t("cancel")}
+                      </button>
+                    </div>
+                  </form>
+                ) : (
+                  <div className="flex items-start justify-between gap-2">
+                    <p className="text-xs">
+                      <span className="font-semibold tracking-wide uppercase opacity-70">
+                        {t("studentNote")}
+                      </span>
+                      <br />
+                      <span
+                        className={cn("text-sm", !data.lesson.studentNote && "opacity-60")}
+                        data-testid="lesson-note"
+                      >
+                        {data.lesson.studentNote ?? t("noNote")}
+                      </span>
+                    </p>
+                    {isHost && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setNote(data.lesson?.studentNote ?? "");
+                          setEditingNote(true);
+                        }}
+                        aria-label={t("editNote")}
+                        title={t("editNote")}
+                        className="grid size-7 shrink-0 place-items-center rounded-md hover:bg-sidebar"
+                        data-testid="lesson-note-edit"
+                      >
+                        <Pencil className="size-3.5" />
+                      </button>
+                    )}
+                  </div>
+                )}
+              </div>
             )}
           </div>
         )}

@@ -6,6 +6,7 @@ import { dateToIso, decimalToNumber, isoToDate } from "@/server/services/setting
 import { nextTopicForGroup } from "@/server/services/settings/syllabus.service";
 import { membershipBalances } from "@/server/services/students/balances";
 import { membershipByToken } from "@/server/services/video/video.service";
+import { canRateLesson } from "@/server/services/portal/lesson-rating.service";
 
 /*
  * The student portal behind a membership's personal link (/class/<token>).
@@ -27,13 +28,22 @@ export interface PortalLessonDto {
   attendance: AttendanceStatus | null;
   grade: number | null;
   gradeComment: string | null;
+  /** The teacher's note to the students about this lesson (A-168). */
+  studentNote: string | null;
+  /** This student's rating of the lesson, when given (A-168). */
+  rating: { rating: number; comment: string | null } | null;
+  /** The lesson is over and the student was not absent, so they may rate it. */
+  canRate: boolean;
 }
 
 export interface PortalDto {
   student: { fullName: string; coins: number };
   group: { name: string; courseName: string; teachers: string[]; endDate: string };
   /** The next scheduled lesson from today on, if the group still has one. */
-  nextLesson: Omit<PortalLessonDto, "attendance" | "grade" | "gradeComment"> | null;
+  nextLesson: Omit<
+    PortalLessonDto,
+    "attendance" | "grade" | "gradeComment" | "studentNote" | "rating" | "canRate"
+  > | null;
   /** Past lessons, newest first. */
   lessons: PortalLessonDto[];
   stats: {
@@ -106,7 +116,12 @@ export async function getPortal(token: string, db: DbClient = prisma): Promise<P
           endTime: true,
           topic: true,
           courseTopicId: true,
+          studentNote: true,
           courseTopic: { select: { title: true } },
+          ratings: {
+            where: { membershipId: membership.id },
+            select: { rating: true, comment: true },
+          },
         },
       }),
       db.lesson.findFirst({
@@ -197,6 +212,12 @@ export async function getPortal(token: string, db: DbClient = prisma): Promise<P
       attendance: attendanceByLesson.get(l.id) ?? null,
       grade: grade ? decimalToNumber(grade.score) : null,
       gradeComment: grade?.comment ?? null,
+      studentNote: l.studentNote,
+      rating: l.ratings[0] ?? null,
+      canRate: canRateLesson(
+        { date: dateToIso(l.date), endTime: l.endTime },
+        attendanceByLesson.get(l.id) ?? null,
+      ),
     };
   });
 

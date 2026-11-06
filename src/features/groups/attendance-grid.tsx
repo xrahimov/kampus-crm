@@ -2,13 +2,14 @@
 
 import { Paperclip, Plus, Undo2 } from "lucide-react";
 import { useTranslations } from "next-intl";
-import { useState, useTransition } from "react";
+import { useEffect, useState, useTransition } from "react";
 
 import { EmptyState } from "@/components/data/empty-state";
 import { FieldError } from "@/components/data/field-error";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import { FormDialog } from "@/features/settings/shared/form-dialog";
 import { useRouter } from "@/i18n/navigation";
 import { api, ApiError } from "@/lib/api-client";
@@ -17,6 +18,7 @@ import { cn } from "@/lib/utils";
 import type { AttendanceStatus } from "@/lib/validation/groups";
 import { useDateFormat } from "@/lib/use-date-format";
 import type { MonthGridDto } from "@/server/services/groups/lessons.service";
+import type { LessonRatingsDto } from "@/server/services/portal/lesson-rating.service";
 import type { CourseTopicDto } from "@/server/services/settings/syllabus.service";
 
 import { ExcelLink } from "@/features/shared/excel-link";
@@ -207,6 +209,14 @@ export function AttendanceGrid({
                         </span>
                       )}
                       {l.attachmentUrl && <Paperclip className="ml-0.5 inline size-3" />}
+                      {l.rating.count > 0 && (
+                        <span
+                          className="ml-1 text-[10px] text-amber-600 tabular-nums"
+                          data-testid="lesson-rating-avg"
+                        >
+                          ★{l.rating.average}
+                        </span>
+                      )}
                     </button>
                   </th>
                 ))}
@@ -385,6 +395,7 @@ function TopicDialog({
             ? { courseTopicId: String(data.get("courseTopicId") ?? "") || null }
             : {}),
           attachmentUrl: String(data.get("attachmentUrl") ?? "").trim() || null,
+          studentNote: String(data.get("studentNote") ?? "").trim() || null,
         },
       });
       onOpenChange(false);
@@ -441,6 +452,63 @@ function TopicDialog({
           key={`a-${lesson?.id}`}
         />
       </div>
+      <div className="space-y-2">
+        <Label htmlFor="student-note">{t("studentNote")}</Label>
+        <Textarea
+          id="student-note"
+          name="studentNote"
+          rows={3}
+          maxLength={1000}
+          defaultValue={lesson?.studentNote ?? ""}
+          key={`n-${lesson?.id}`}
+          data-testid="lesson-student-note"
+        />
+        <p className="text-xs text-muted-foreground">{t("studentNoteHint")}</p>
+      </div>
+      {lesson && lesson.rating.count > 0 && <LessonRatings lessonId={lesson.id} />}
     </FormDialog>
+  );
+}
+
+/** The students' ratings of the lesson, for the dialog (A-168). */
+function LessonRatings({ lessonId }: { lessonId: string }) {
+  const t = useTranslations("groups.attendance");
+  const fmt = useDateFormat();
+  const [data, setData] = useState<LessonRatingsDto | null>(null);
+  useEffect(() => {
+    let alive = true;
+    api<LessonRatingsDto>(`/lessons/${lessonId}/ratings`)
+      .then((d) => alive && setData(d))
+      .catch(() => alive && setData(null));
+    return () => {
+      alive = false;
+    };
+  }, [lessonId]);
+  if (!data) return null;
+  return (
+    <div className="space-y-1 rounded-md border p-3 text-sm" data-testid="lesson-ratings">
+      <p className="font-medium">
+        {t("ratings")} <span className="text-amber-600 tabular-nums">★{data.average}</span>{" "}
+        <span className="text-xs text-muted-foreground">({data.rows.length})</span>
+      </p>
+      <ul className="divide-y">
+        {data.rows.map((r) => (
+          <li
+            key={r.membershipId}
+            className="flex flex-wrap justify-between gap-2 py-1"
+            data-testid="lesson-rating-row"
+          >
+            <span>
+              {r.fullName}
+              {r.comment && <span className="ml-2 text-xs text-muted-foreground">{r.comment}</span>}
+            </span>
+            <span className="text-xs text-muted-foreground tabular-nums">
+              <span className="text-amber-600">{"★".repeat(r.rating)}</span>{" "}
+              {fmt(new Date(r.at), { day: "numeric", month: "short" })}
+            </span>
+          </li>
+        ))}
+      </ul>
+    </div>
   );
 }
