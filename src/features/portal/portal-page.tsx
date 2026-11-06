@@ -40,8 +40,6 @@ import { PortalScheduleTab } from "./schedule-tab";
 import { PushCard } from "./push-card";
 import { TelegramCard } from "./telegram-card";
 import { TimeZoneCard } from "./time-zone-card";
-
-import { TimeZoneCard } from "./time-zone-card";
 import type { PortalAnnouncementDto } from "@/server/services/announcements/announcements.service";
 import type { PortalChatDto } from "@/server/services/chat/group-chat.service";
 import type { PortalHomeworkDto } from "@/server/services/homework/homework.service";
