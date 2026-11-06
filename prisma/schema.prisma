@@ -726,6 +726,7 @@ model Group {
   coins           CoinTransaction[]
   tests           TestGroup[]
   testAttempts    TestAttempt[]
+  badges          StudentBadge[]
   videoRooms      VideoRoom[]
   topicReleases   GroupTopicRelease[]
   homework        Homework[]
@@ -890,6 +891,7 @@ model Student {
   callLogs          CallLog[]
   videoPeers        VideoParticipant[]
   telegramChats     StudentTelegramChat[]
+  badges            StudentBadge[]
   adjustments       BalanceAdjustment[]
   debtCases         DebtCase[]
   absenceCases      AbsenceCase[]
@@ -2221,6 +2223,22 @@ model CoinTransaction {
 
   @@index([studentId, createdAt])
   @@index([groupId])
+}
+
+/// A badge a student earned (A-163): `code` names one of the fixed badges in
+/// badges.service.ts; a badge is earned once per student and never taken back.
+model StudentBadge {
+  id        String   @id @default(cuid())
+  studentId String
+  code      String
+  /// The group the badge was earned in, when it is tied to one (streaks, a perfect month).
+  groupId   String?
+  earnedAt  DateTime @default(now())
+
+  student Student @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  group   Group?  @relation(fields: [groupId], references: [id], onDelete: SetNull)
+
+  @@unique([studentId, code])
 }
 
 model ProductCategory {

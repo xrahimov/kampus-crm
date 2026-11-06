@@ -1,6 +1,7 @@
 import type { Prisma } from "@/generated/prisma/client";
 import type { AttendanceStatus, MembershipStatus } from "@/lib/validation/groups";
 import { recordAudit } from "@/server/audit/audit";
+import { checkBadges } from "@/server/services/badges/badges.service";
 import { awardAutoCoins } from "@/server/services/coins/coins.service";
 import { assignNextTopic } from "@/server/services/settings/syllabus.service";
 import { queueAutoSms } from "@/server/services/sms/auto-sms.service";
@@ -342,6 +343,8 @@ export async function markAttendance(
         }
       }
     }
+    // Streaks and perfect months (A-163) follow the marks.
+    for (const studentId of new Set(studentOf.values())) await checkBadges(tx, studentId);
     await recordAudit(tx, actor, {
       action: "attendance.mark",
       entity: "Lesson",

@@ -27,6 +27,8 @@ import { useMoneyFormat } from "@/lib/use-money-format";
 import { PortalAnnouncementsTab } from "./announcements-tab";
 import { PortalCourseTab } from "./course-tab";
 import { PortalGradebookCard } from "./gradebook-card";
+import { BadgeList } from "@/features/badges/badge-list";
+import type { BadgeDto } from "@/lib/validation/badges";
 import { PortalHomeworkTab } from "./homework-tab";
 import { PortalTestsTab } from "./tests-tab";
 import { PortalMaterialsTab } from "./materials-tab";
@@ -85,6 +87,7 @@ export function PortalPage({
   course = null,
   progress = null,
   gradebook = null,
+  badges = [],
   initialTab = "lessons",
 }: {
   token: string;
@@ -106,10 +109,13 @@ export function PortalPage({
   progress?: CourseProgressDto | null;
   /** Categories, weights and the final grade (A-162). */
   gradebook?: PortalGradebookDto | null;
+  /** Achievements on top of coins (A-163). */
+  badges?: BadgeDto[];
   initialTab?: "lessons" | "money";
 }) {
   const t = useTranslations("portal");
   const tc = useTranslations("video.class");
+  const tb = useTranslations("badges");
   const th = useTranslations("help");
   const fmt = useDateFormat();
   const money = useMoneyFormat();
@@ -191,6 +197,17 @@ export function PortalPage({
         <Stat label={t("stats.lessons")} value={String(portal.stats.lessonsHeld)} />
         <Stat label={t("stats.coins")} value={String(portal.student.coins)} />
       </div>
+
+      {badges.length > 0 && (
+        <Card data-testid="portal-badges">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-base">{tb("title")}</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <BadgeList badges={badges} testId="portal-badge-list" />
+          </CardContent>
+        </Card>
+      )}
 
       <TelegramCard token={token} initial={telegram} />
       {referral && <ReferralCard referral={referral} />}

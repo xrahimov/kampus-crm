@@ -299,10 +299,14 @@ describe("Telegram for students", () => {
     sent = await mine(before);
     expect(sent).toHaveLength(6);
     expect(sent[4]!.text).toContain("Nochmal");
-    // Accepting after returning is a change; accepting again is not.
+    // Accepting after returning is a change; accepting again is not. The first
+    // accepted homework also earns the "first homework" badge (A-163), announced once per chat.
     await reviewSubmission(teacher, hw.id, membershipOne, { status: "ACCEPTED" });
     await reviewSubmission(teacher, hw.id, membershipOne, { status: "ACCEPTED" });
-    expect(await mine(before)).toHaveLength(8);
+    sent = await mine(before);
+    const badges = sent.filter((m) => m.text.includes("🏅"));
+    expect(badges).toHaveLength(2);
+    expect(sent).toHaveLength(10);
   });
 
   it("sends the join link when the call starts", async () => {
