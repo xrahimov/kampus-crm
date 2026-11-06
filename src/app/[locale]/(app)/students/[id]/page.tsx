@@ -10,6 +10,7 @@ import { isAppError } from "@/server/errors/app-error";
 import { qrSvg } from "@/server/qr/qr";
 import { can } from "@/server/rbac/authorize";
 import { getStudentProgress } from "@/server/services/exams/exams.service";
+import { listStudentBadges } from "@/server/services/badges/badges.service";
 import { listStudentCourseProgress } from "@/server/services/progress/course-progress.service";
 import { listStudentAdjustments } from "@/server/services/students/adjustments.service";
 import { listStudentPaymentHistory } from "@/server/services/students/history-import.service";
@@ -81,6 +82,7 @@ export default async function Page({ params, searchParams }: Props) {
     family,
     access,
     courseProgress,
+    badges,
   ] = await Promise.all([
     listStudentComments(current.actor, id),
     listStudentHistory(current.actor, id, list),
@@ -101,6 +103,7 @@ export default async function Page({ params, searchParams }: Props) {
     getStudentFamily(current.actor, id),
     listStudentAccess(current.actor, id),
     listStudentCourseProgress(current.actor, id),
+    listStudentBadges(current.actor, id),
   ]);
 
   return (
@@ -114,6 +117,7 @@ export default async function Page({ params, searchParams }: Props) {
       paymentGroupId={paymentGroupId}
       progress={progress}
       courseProgress={courseProgress}
+      badges={badges}
       testResults={testResults}
       sms={sms}
       calls={calls}

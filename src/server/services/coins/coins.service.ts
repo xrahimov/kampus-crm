@@ -8,6 +8,7 @@ import type {
 } from "@/lib/validation/coins";
 import { COIN_EVENTS } from "@/lib/validation/coins";
 import { recordAudit } from "@/server/audit/audit";
+import { checkBadges } from "@/server/services/badges/badges.service";
 import { prisma, type DbClient } from "@/server/db/prisma";
 import { AppError } from "@/server/errors/app-error";
 import { authorize, authorizeAny, branchScope, can, type Actor } from "@/server/rbac/authorize";
@@ -340,6 +341,7 @@ export async function giveCoins(
       entityId: input.studentId,
       after: { amount: input.amount, reason: reason.name, groupId },
     });
+    await checkBadges(tx, input.studentId);
     return txToDto(row);
   });
 }

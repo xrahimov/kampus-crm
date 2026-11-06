@@ -75,6 +75,7 @@ import type {
 } from "@/server/services/students/students.service";
 
 import type { StudentProgressDto } from "@/server/services/exams/exams.service";
+import type { BadgeDto } from "@/lib/validation/badges";
 import type { CourseProgressDto } from "@/server/services/progress/course-progress.service";
 import type { StudentTestResultsDto } from "@/server/services/tests/tests.service";
 
@@ -118,6 +119,7 @@ export function StudentDetail({
   paymentGroupId,
   progress,
   courseProgress,
+  badges,
   testResults,
   sms,
   calls,
@@ -138,6 +140,7 @@ export function StudentDetail({
   paymentGroupId: string | null;
   progress: StudentProgressDto;
   courseProgress: CourseProgressDto[];
+  badges: BadgeDto[];
   testResults: StudentTestResultsDto;
   sms: SmsLogRowDto[];
   calls: CallDto[];
@@ -470,7 +473,7 @@ export function StudentDetail({
                 </TabsContent>
 
                 <TabsContent value="progress" className="pt-4">
-                  <ProgressTab progress={progress} courses={courseProgress} />
+                  <ProgressTab progress={progress} courses={courseProgress} badges={badges} />
                 </TabsContent>
                 <TabsContent value="testResults" className="pt-4">
                   <TestResultsTab studentId={student.id} initial={testResults} />

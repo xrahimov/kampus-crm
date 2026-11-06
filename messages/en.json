@@ -2080,7 +2080,8 @@
       "complete": "Complete",
       "topics": "Topics",
       "exercises": "Exercises",
-      "score": "Avg score"
+      "score": "Avg score",
+      "badges": "Badges"
     },
     "importBalances": "Import opening balances",
     "importBalancesHint": "One row per student and group with the balance they bring from the previous system: a debt is a negative number, money the student has is positive. Students are found by Kampus ID, phone or exact name; a preview shows the matches before anything is written.",
@@ -5156,7 +5157,8 @@
     "assignmentSet": "{group}: new assignment “{title}”{date, select, none {} other {, due by {date}}}.\n{text}",
     "assignmentChanged": "{group}: the assignment “{title}” was changed.\n{text}",
     "assignmentAccepted": "{group}: your assignment “{title}” was accepted.{comment}",
-    "assignmentReturned": "{group}: your assignment “{title}” was returned, please look at it again.{comment}"
+    "assignmentReturned": "{group}: your assignment “{title}” was returned, please look at it again.{comment}",
+    "badgeEarned": "🏅 New badge: {name}. {hint}"
   },
   "video": {
     "title": "Video lesson",
@@ -5578,5 +5580,44 @@
     "returnSend": "Return with the comment",
     "comment": "Comment for the student",
     "commentPlaceholder": "What to fix (optional)"
+  },
+  "badges": {
+    "title": "Badges",
+    "count": "{earned} of {total} earned",
+    "earned": "Earned {date}",
+    "items": {
+      "firstHomework": {
+        "name": "First homework",
+        "hint": "Hand in a homework and have it accepted."
+      },
+      "homework10": {
+        "name": "10 homeworks",
+        "hint": "Ten accepted homeworks."
+      },
+      "streak10": {
+        "name": "10-lesson streak",
+        "hint": "Attend ten lessons in a row without missing one."
+      },
+      "perfectMonth": {
+        "name": "Perfect month",
+        "hint": "Attend every lesson of a month with at least {count} lessons."
+      },
+      "exercises10": {
+        "name": "10 exercises",
+        "hint": "Do ten different exercises."
+      },
+      "exerciseAce": {
+        "name": "Flawless exercise",
+        "hint": "Get every answer of an exercise right."
+      },
+      "testAce": {
+        "name": "Test ace",
+        "hint": "Score 90% or more on a test."
+      },
+      "coins100": {
+        "name": "100 coins",
+        "hint": "Earn 100 coins in all."
+      }
+    }
   }
 }

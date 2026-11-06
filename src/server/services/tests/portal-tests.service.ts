@@ -3,6 +3,7 @@ import type { PortalTestAttemptInput } from "@/lib/validation/tests";
 import { recordAudit } from "@/server/audit/audit";
 import { prisma, type DbClient } from "@/server/db/prisma";
 import { AppError } from "@/server/errors/app-error";
+import { checkBadges } from "@/server/services/badges/badges.service";
 import { awardAutoCoins } from "@/server/services/coins/coins.service";
 import { today } from "@/server/services/groups/shared";
 import { dateToIso, decimalToNumber } from "@/server/services/settings/shared";
@@ -256,6 +257,7 @@ export async function submitPortalAttempt(
       });
       coins = awarded?.amount ?? 0;
     }
+    await checkBadges(tx, studentId);
     await recordAudit(tx, null, {
       organizationId: test.organizationId,
       branchId: membership.group.branchId,

@@ -500,6 +500,7 @@ export const en: HelpContent = {
           title: "Giving coins",
           body: [
             "Coins reward students and feed the ranking and the marketplace. On the **Coins** tab press **Give coins**, pick the student and a reason from the list the centre set up; each reason has a maximum. Automatic coins for attendance, homework, test results and birthdays are set by the administrator and need nothing from you.",
+            "Students also collect **badges** on top of coins: first accepted homework, ten homeworks, a ten-lesson attendance streak, a perfect month, ten exercises, a flawless exercise, a test at 90 % or more, and 100 coins. They are awarded automatically as soon as the record earns them, shown on the student's page and in their profile's Progress tab, and announced on their Telegram.",
           ],
         },
         tests: {
@@ -1320,6 +1321,7 @@ export const en: HelpContent = {
           title: "Results",
           body: [
             "The **Results** tab lists your exams and tests with the date, score and whether you passed. Results marked “not graded yet” will update when the teacher enters them.",
+            "Under your figures, **Badges** shows the achievements you have earned, with the date, and the ones still locked with what it takes to get them. A new badge is also announced on your Telegram.",
             "At the top of Results, **Your grade** shows your final grade for the course and how it is made up: the average of your lesson grades, homework, exercises, tests and exams, each with its weight. Parts that have nothing in them yet are not counted.",
           ],
         },

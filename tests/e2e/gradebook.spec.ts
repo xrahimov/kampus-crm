@@ -26,6 +26,16 @@ test.describe("gradebook (A-162)", () => {
     await page.getByRole("menuitem", { name: "Edit" }).click();
     const dialog = page.getByTestId("course-dialog");
     await expect(dialog).toBeVisible();
+    // Start from the defaults whatever an earlier run left behind.
+    for (const [key, value] of Object.entries({
+      lessons: 30,
+      homework: 30,
+      exercises: 0,
+      tests: 20,
+      exams: 20,
+    })) {
+      await dialog.getByTestId(`course-weight-${key}`).fill(String(value));
+    }
     await expect(dialog.getByTestId("course-weights-sum")).toHaveText("Total: 100% (must be 100%)");
     await dialog.getByTestId("course-weight-exercises").fill("10");
     await expect(dialog.getByTestId("course-weights-sum")).toHaveText("Total: 110% (must be 100%)");
