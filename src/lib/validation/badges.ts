@@ -8,6 +8,8 @@ export const BADGE_CODES = [
   "exerciseAce",
   "testAce",
   "coins100",
+  "words50",
+  "vocabStreak7",
 ] as const;
 export type BadgeCode = (typeof BADGE_CODES)[number];
 

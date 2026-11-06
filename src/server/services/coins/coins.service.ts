@@ -25,6 +25,8 @@ export const DEFAULT_COIN_RULES: Record<CoinEvent, number> = {
   TEST_RESULT: 20,
   BIRTHDAY: 50,
   REFERRAL: 30,
+  /** Seven days in a row of vocabulary practice (A-165). */
+  VOCAB_STREAK: 15,
 };
 
 export interface CoinRuleDto {
@@ -399,10 +401,11 @@ export async function awardAutoCoins(
     select: { autoCoins: true },
   });
   if (!settings?.autoCoins) return;
-  const rule = await tx.coinRule.findUnique({
+  // An event the centre has never seen in Settings → Coins pays its default until it is set.
+  const rule = (await tx.coinRule.findUnique({
     where: { organizationId_event: { organizationId, event: input.event } },
-  });
-  if (!rule || !rule.isActive || rule.amount <= 0) return;
+  })) ?? { amount: DEFAULT_COIN_RULES[input.event], isActive: true };
+  if (!rule.isActive || rule.amount <= 0) return;
   const existing = await tx.coinTransaction.findUnique({ where: { refKey: input.refKey } });
   if (existing) return;
   await tx.coinTransaction.create({

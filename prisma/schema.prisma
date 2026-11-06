@@ -517,6 +517,7 @@ model CourseTopic {
   blocks    CourseTopicBlock[]
   releases  GroupTopicRelease[]
   exercises Exercise[]
+  words     VocabWord[]
 
   @@index([courseId, sortOrder])
 }
@@ -1053,6 +1054,8 @@ model GroupMembership {
   portalTestStarts PortalTestStart[]
   exerciseAttempts ExerciseAttempt[]
   streamComments   StreamComment[]
+  vocabCards       VocabCard[]
+  vocabDays        VocabDay[]
 
   @@unique([groupId, studentId])
   @@index([studentId])
@@ -2169,6 +2172,8 @@ enum CoinEvent {
   BIRTHDAY
   /// A friend brought by the student joined a group (A-120).
   REFERRAL
+  /// Seven days in a row of vocabulary practice (A-165).
+  VOCAB_STREAK
 }
 
 model CoinRule {
@@ -3028,6 +3033,53 @@ model StreamComment {
   membership GroupMembership? @relation(fields: [membershipId], references: [id], onDelete: Cascade)
 
   @@index([postId, createdAt])
+}
+
+/// Vocabulary trainer (A-165): the words of a syllabus topic, written once for the course.
+model VocabWord {
+  id          String   @id @default(cuid())
+  topicId     String
+  term        String
+  translation String
+  example     String?
+  sortOrder   Int      @default(0)
+  createdAt   DateTime @default(now())
+
+  topic CourseTopic @relation(fields: [topicId], references: [id], onDelete: Cascade)
+  cards VocabCard[]
+
+  @@index([topicId, sortOrder])
+}
+
+/// One student's flashcard for a word: Leitner box 0-5 and when it is due again.
+model VocabCard {
+  id           String   @id @default(cuid())
+  membershipId String
+  wordId       String
+  box          Int      @default(0)
+  dueAt        DateTime @default(now())
+  reviews      Int      @default(0)
+  correct      Int      @default(0)
+  lastAt       DateTime @default(now())
+
+  membership GroupMembership @relation(fields: [membershipId], references: [id], onDelete: Cascade)
+  word       VocabWord       @relation(fields: [wordId], references: [id], onDelete: Cascade)
+
+  @@unique([membershipId, wordId])
+  @@index([membershipId, dueAt])
+}
+
+/// A day the student practised, for streaks (Tashkent calendar day).
+model VocabDay {
+  id           String   @id @default(cuid())
+  membershipId String
+  date         DateTime @db.Date
+  reviewed     Int      @default(0)
+  correct      Int      @default(0)
+
+  membership GroupMembership @relation(fields: [membershipId], references: [id], onDelete: Cascade)
+
+  @@unique([membershipId, date])
 }
 
 /// Waiting list (A-138, round 2 B6): people who want a course for which no

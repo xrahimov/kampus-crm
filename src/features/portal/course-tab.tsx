@@ -11,6 +11,9 @@ import { TopicBlockView } from "@/features/topics/topic-block-view";
 import { parseDateOnly } from "@/lib/dates";
 import { useDateFormat } from "@/lib/use-date-format";
 import type { CourseProgressDto } from "@/server/services/progress/course-progress.service";
+import type { PortalVocabDto } from "@/server/services/vocab/vocab.service";
+
+import { PortalVocabCard } from "./vocab-card";
 import type { PortalCourseDto } from "@/server/services/settings/topic-content.service";
 
 /**
@@ -21,10 +24,13 @@ export function PortalCourseTab({
   token,
   course,
   progress = null,
+  vocab = null,
 }: {
   token: string;
   course: PortalCourseDto;
   progress?: CourseProgressDto | null;
+  /** Flashcards of the open topics (A-165). */
+  vocab?: PortalVocabDto | null;
 }) {
   const t = useTranslations("portal.course");
   const fmt = useDateFormat();
@@ -71,6 +77,7 @@ export function PortalCourseTab({
           </CardContent>
         </Card>
       )}
+      {vocab && <PortalVocabCard token={token} initial={vocab} />}
       <p className="text-sm text-muted-foreground" data-testid="portal-course-progress">
         {t("progress", { open: course.open, total: course.total, course: course.courseName })}
       </p>

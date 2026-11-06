@@ -10,6 +10,7 @@ export const COIN_EVENTS = [
   "TEST_RESULT",
   "BIRTHDAY",
   "REFERRAL",
+  "VOCAB_STREAK",
 ] as const;
 export type CoinEvent = (typeof COIN_EVENTS)[number];
 

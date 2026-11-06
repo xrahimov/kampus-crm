@@ -17,6 +17,7 @@ import {
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { ExercisesPanel } from "@/features/exercises/exercises-panel";
+import { WordsPanel } from "@/features/vocab/words-panel";
 import { AttachmentField } from "@/features/homework/attachment-field";
 import { FormDialog } from "@/features/settings/shared/form-dialog";
 import { BLOCK_ICON, TopicBlockView } from "@/features/topics/topic-block-view";
@@ -230,6 +231,8 @@ export function TopicContentDialog({
           )}
 
           <ExercisesPanel anchor={{ topicId: data.topicId }} />
+
+          <WordsPanel topicId={data.topicId} />
 
           {canEdit && draft.length < TOPIC_BLOCKS_MAX && (
             <fieldset className="space-y-3 rounded-md border border-dashed p-3">

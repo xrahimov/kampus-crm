@@ -2,12 +2,14 @@
 
 import {
   Award,
+  BookOpenText,
   CalendarCheck,
   Coins,
   Dumbbell,
   Flame,
   type LucideIcon,
   Medal,
+  Sparkles,
   Target,
   Trophy,
 } from "lucide-react";
@@ -26,6 +28,8 @@ const ICONS: Record<BadgeCode, LucideIcon> = {
   exerciseAce: Target,
   testAce: Trophy,
   coins100: Coins,
+  words50: BookOpenText,
+  vocabStreak7: Sparkles,
 };
 
 /** Every badge as a tile: earned ones in colour with the date, locked ones greyed with the hint (A-163). */
