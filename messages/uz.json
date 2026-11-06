@@ -4463,7 +4463,8 @@
         "turnSecret": "TURN umumiy kaliti (login va parol o‘rniga)",
         "maxParticipants": "Bir qo‘ng‘iroqdagi eng ko‘p odam",
         "recordingKeepDays": "Dars yozuvlarini saqlash muddati (kun)",
-        "attendanceMinutes": "“Keldi” hisoblanishi uchun onlayn daqiqalar"
+        "attendanceMinutes": "“Keldi” hisoblanishi uchun onlayn daqiqalar",
+        "noShowMinutes": "Yakka darsda o'quvchi kelmaganini yozishdan oldin kutish daqiqalari (0 = o'chiq)"
       },
       "hint": "Bepul ommaviy STUN serverlar bilan sozlamasiz ishlaydi. Ba’zi mobil va ofis tarmoqlari to‘g‘ridan-to‘g‘ri qo‘ng‘iroqlarni to‘sadi; ular uchun TURN relay qo‘shing (masalan Cloudflare Calls TURN, Metered yoki o‘z coturn serveringiz).",
       "retentionHint": "Bundan eski yozuvlar har kecha video fayli bilan birga o'chiriladi, shunda server diski to'lib qolmaydi. 0 — doimiy saqlash."
@@ -5082,7 +5083,8 @@
     "loginUnknown": "Bu raqam o‘quv markazida ro‘yxatda yo‘q. Qabulxonadan uni profilingizga qo‘shishni so‘rang.",
     "loginLinkedElsewhere": "Profilingiz boshqa Telegram hisobiga ulangan. Avval qabulxonadan uni uzishni so‘rang.",
     "loginLink": "Kampusni ochish uchun bosing: {url}\nHavola bir marta, 10 daqiqa ishlaydi.",
-    "weeklyProgress": "{group}: kurs {percent}% bajarildi ({total} mavzudan {done} tasi){score, select, none {} other {, mashqlar o‘rtachasi {score}%}}"
+    "weeklyProgress": "{group}: kurs {percent}% bajarildi ({total} mavzudan {done} tasi){score, select, none {} other {, mashqlar o‘rtachasi {score}%}}",
+    "noShow": "{group}: o'qituvchi dars xonasida {time} dan beri {minutes} daqiqa kutdi. Dars \"kelmadi\" deb qo'yildi. Keyingi safar kela olmasangiz, iltimos, o'qituvchiga oldindan ayting."
   },
   "video": {
     "title": "Video dars",
@@ -5178,7 +5180,8 @@
       "breakout": "Xonalar",
       "breakoutMain": "Kichik xonalar ochiq ({rooms}); siz asosiy xonadasiz.",
       "breakoutIn": "Siz {number}-xonadasiz. Vaqt tugaganda o‘qituvchi hammani qaytaradi.",
-      "noticeFrom": "{name}:"
+      "noticeFrom": "{name}:",
+      "noShow": "O'quvchi qo'shilmadi. \"Kelmadi\" qo'yildi va Telegram orqali xabar berildi; hozir kelsa, dars davomatidan foydalaning."
     },
     "done": {
       "left": "Siz darsdan chiqdingiz.",

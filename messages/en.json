@@ -4463,7 +4463,8 @@
         "turnSecret": "TURN shared secret (instead of username and password)",
         "maxParticipants": "Most people in one call",
         "recordingKeepDays": "Keep lesson recordings for (days)",
-        "attendanceMinutes": "Minutes online to count as present"
+        "attendanceMinutes": "Minutes online to count as present",
+        "noShowMinutes": "Minutes alone before a 1:1 no-show is recorded (0 = off)"
       },
       "hint": "Works without setup using free public STUN servers. Some mobile and office networks block direct calls; for those, add a TURN relay (for example Cloudflare Calls TURN, Metered or your own coturn).",
       "retentionHint": "Recordings older than this are deleted every night, together with their video file, to keep the server's disk from filling up. 0 keeps them forever."
@@ -5082,7 +5083,8 @@
     "loginUnknown": "This number is not registered at the learning centre. Ask the reception to add it to your profile.",
     "loginLinkedElsewhere": "Your profile is already connected to another Telegram account. Ask the reception to unlink it first.",
     "loginLink": "Tap to open Kampus: {url}\nThe link works once, for 10 minutes.",
-    "weeklyProgress": "{group}: course {percent}% complete ({done} of {total} topics){score, select, none {} other {, exercises average {score}%}}"
+    "weeklyProgress": "{group}: course {percent}% complete ({done} of {total} topics){score, select, none {} other {, exercises average {score}%}}",
+    "noShow": "{group}: the teacher has been waiting in the lesson room since {time} for {minutes} minutes. The lesson is marked as missed. Please tell the teacher if you cannot make it next time."
   },
   "video": {
     "title": "Video lesson",
@@ -5178,7 +5180,8 @@
       "breakout": "Rooms",
       "breakoutMain": "Breakout rooms are open ({rooms}); you are in the main room.",
       "breakoutIn": "You are in room {number}. The teacher brings everyone back when the time is up.",
-      "noticeFrom": "{name}:"
+      "noticeFrom": "{name}:",
+      "noShow": "The student has not joined. They were marked absent and told on Telegram; if they come now, use attendance from the call."
     },
     "done": {
       "left": "You left the lesson.",

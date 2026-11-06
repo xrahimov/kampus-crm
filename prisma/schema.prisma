@@ -2785,6 +2785,8 @@ model VideoRoom {
   /// Breakout rooms (A-156): how many sub-rooms are open (0 = none) and when they close by themselves.
   breakoutRooms  Int             @default(0)
   breakoutEndsAt DateTime?
+  /// When the only student of a 1:1 group was marked absent because nobody joined (A-167).
+  noShowAt       DateTime?
 
   group        Group              @relation(fields: [groupId], references: [id], onDelete: Cascade)
   lesson       Lesson?            @relation(fields: [lessonId], references: [id], onDelete: SetNull)

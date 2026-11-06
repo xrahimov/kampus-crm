@@ -27,6 +27,7 @@ import {
   type PollResultDto,
 } from "@/server/services/video/video-polls.service";
 import { dateToIso, isoToDate, organizationOfBranch } from "@/server/services/settings/shared";
+import { checkNoShow } from "@/server/services/video/no-show.service";
 
 /*
  * Video lessons. Browsers talk to each other directly over WebRTC (a full mesh:
@@ -161,6 +162,8 @@ export interface SyncDto {
   /** The open poll, else the last closed one (A-153). */
   poll: PollDto | null;
   breakout: BreakoutDto;
+  /** Set for the teacher once the 1:1 student was marked absent for not joining (A-167). */
+  noShow: string | null;
 }
 
 export interface ClassPageDto {
@@ -188,6 +191,7 @@ interface VideoConfig {
   maxParticipants: number;
   recordingKeepDays: number;
   attendanceMinutes: number;
+  noShowMinutes: number;
 }
 
 export async function loadVideoConfig(
@@ -210,6 +214,7 @@ export async function loadVideoConfig(
     maxParticipants: c?.maxParticipants ?? 12,
     recordingKeepDays: c?.recordingKeepDays ?? 90,
     attendanceMinutes: c?.attendanceMinutes ?? 10,
+    noShowMinutes: c?.noShowMinutes ?? 15,
   };
 }
 
@@ -674,6 +679,9 @@ export async function syncVideoPeer(
       room: {
         select: {
           id: true,
+          groupId: true,
+          lessonId: true,
+          startedById: true,
           status: true,
           startedAt: true,
           spotlightId: true,
@@ -681,6 +689,7 @@ export async function syncVideoPeer(
           boardOpen: true,
           breakoutRooms: true,
           breakoutEndsAt: true,
+          noShowAt: true,
         },
       },
     },
@@ -694,6 +703,7 @@ export async function syncVideoPeer(
     handRaisedAt: null,
     poll: null,
     breakout: { rooms: 0, endsAt: null, mine: null, everyone: null },
+    noShow: null,
   });
   if (await closeIfOverTime(db, me.room)) return gone("ENDED");
   // Left already, or replaced by the same person's newer tab.
@@ -767,6 +777,9 @@ export async function syncVideoPeer(
     await db.videoParticipant.update({ where: { id: me.id }, data: { breakoutRoom: null } });
     myRoom = null;
   }
+
+  // The teacher alone in a 1:1 call long enough: the student is marked absent (A-167).
+  const noShow = me.role === "HOST" ? await checkNoShow(db, me.room, now) : me.room.noShowAt;
 
   const online = (await onlinePeers(db, me.roomId, now)).filter((p) => p.id !== me.id);
   // Only the people in the same (sub-)room are peers; the mesh follows.
@@ -862,6 +875,7 @@ export async function syncVideoPeer(
     handRaisedAt: handRaisedAt?.toISOString() ?? null,
     poll,
     breakout,
+    noShow: noShow?.toISOString() ?? null,
   };
 }
 

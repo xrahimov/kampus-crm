@@ -7,6 +7,7 @@ import {
   Focus,
   Hand,
   LayoutGrid,
+  UserX,
   MessageSquare,
   Mic,
   MicOff,
@@ -418,6 +419,17 @@ export function CallRoom({
           data-testid="muted-notice"
         >
           {t("mutedBy", { name: mutedNotice })}
+        </p>
+      )}
+
+      {engine.noShow && engine.self.role === "HOST" && (
+        <p
+          className="mx-4 mb-2 flex items-center justify-center gap-2 rounded-md bg-amber-600/90 px-3 py-2 text-center text-sm text-white"
+          role="status"
+          data-testid="no-show-bar"
+        >
+          <UserX className="size-4 shrink-0" aria-hidden />
+          {t("noShow")}
         </p>
       )}
 
