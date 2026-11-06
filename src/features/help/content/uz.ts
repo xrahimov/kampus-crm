@@ -466,6 +466,12 @@ export const uz: HelpContent = {
             "Klaviaturadan ishlang: **J** va **K** (yoki strelkalar) javoblar orasida o‘tadi, **A** tanlanganini qabul qiladi, **R** qaytarish uchun izoh oynasini ochadi, **Enter** qaytarishni yuboradi, **Esc** oynani yopadi. Har bir qaror o‘quvchiga guruh sahifasidagidek xabar beradi, qabul qilingan javob coin olib keladi.",
           ],
         },
+        stream: {
+          title: "Guruh lentasi",
+          body: [
+            "**Lenta** yorlig‘i guruhning devori. Darslar orasida guruh bilishi kerak bo‘lgan narsani yozing: nimaga tayyorlanish, havola, eslatma. Doim ko‘rinib turishi kerak bo‘lgan post uchun **Yuqoriga mahkamlash**ni belgilang. Talabalar uni o‘z sahifasida o‘qiydi va izoh qoldira oladi; siz post ostida javob berasiz, izohni o‘chirasiz yoki postga izohlarni yopasiz. Har bir yangi post talabalarning Telegramiga ham boradi.",
+          ],
+        },
         materials: {
           title: "Materiallar",
           body: [
@@ -1327,6 +1333,12 @@ export const uz: HelpContent = {
             "**Natijalar** yorlig‘i imtihonlaringiz va testlaringizni sana, ball va o‘tgan-o‘tmaganingiz bilan ko‘rsatadi. “Hali baholanmagan” deb belgilangan natijalar o‘qituvchi ularni kiritganda yangilanadi.",
             "Ko‘rsatkichlaringiz ostida **Nishonlar** olgan yutuqlaringizni sana bilan, hali ochilmaganlarini esa ularni olish sharti bilan ko‘rsatadi. Yangi nishon haqida Telegramingizga ham xabar keladi.",
             "Natijalar yuqorisida **Bahoyingiz** kurs bo‘yicha yakuniy bahoyingizni va u nimadan tashkil topganini ko‘rsatadi: dars baholari, uy vazifasi, mashqlar, testlar va imtihonlar o‘rtachasi, har biri o‘z vazni bilan. Hali bo‘sh qismlar hisobga olinmaydi.",
+          ],
+        },
+        stream: {
+          title: "Lenta",
+          body: [
+            "**Lenta** yorlig‘i o‘qituvchingizning guruhga yozgan postlarini ko‘rsatadi: yangilari birinchi, mahkamlanganlari yuqorida. Post ostiga **Javob** bilan izoh yozing; o‘z izohingizni o‘chira olasiz. Postda izohlar yopilgani aytilsa, yangisini qo‘shib bo‘lmaydi.",
           ],
         },
         telegram: {
