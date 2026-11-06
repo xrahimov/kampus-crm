@@ -41,6 +41,7 @@ function toDto(
     absenceStreak: settings.absenceStreak,
     absenceSilentDays: settings.absenceSilentDays,
     referralBonus: settings.referralBonus,
+    studentRescheduleHours: settings.studentRescheduleHours,
     publicPage: settings.publicPage,
     publicSlug: settings.publicSlug,
     publicIntro: settings.publicIntro,
@@ -87,6 +88,8 @@ export async function updateOrgSettings(
     absenceSilentDays: input.absenceSilentDays,
     // Referral programme (A-120): the bonus a student earns when a friend they invited joins.
     referralBonus: input.referralBonus,
+    // Self-service rescheduling for 1:1 students (A-166).
+    studentRescheduleHours: input.studentRescheduleHours,
     // Public page (A-121); a field left out keeps its value, "" clears it.
     publicPage: input.publicPage,
     publicSlug: input.publicSlug,

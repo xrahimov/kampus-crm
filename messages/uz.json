@@ -493,7 +493,9 @@
     "callWithoutLesson": "Bu qo‘ng‘iroq darsga bog‘lanmagan.",
     "topicLocked": "Bu mavzu sizga hali ochilmagan",
     "notAnAssignment": "Bu uy vazifasi darsga tegishli; uni darsdan tahrirlang.",
-    "streamLocked": "Bu postga izohlar yopilgan."
+    "streamLocked": "Bu postga izohlar yopilgan.",
+    "rescheduleOff": "Bu guruh uchun dars ko'chirish mavjud emas",
+    "rescheduleTooLate": "Darsni endi o'zgartirib bo'lmaydi"
   },
   "validation": {
     "phone": "+998 90 123 45 67 ko‘rinishida raqam kiriting.",
@@ -608,7 +610,9 @@
     "videoUrl": "YouTube havolasini qo‘ying yoki video fayl yuklang",
     "gapCount": "Gapdagi har bir bo‘shliq (___) uchun bir javob qatori",
     "rubricScores": "Har bir mezonga uning balli doirasida ball qo‘ying.",
-    "weightsSum": "Vaznlar yig‘indisi 100 bo‘lishi kerak."
+    "weightsSum": "Vaznlar yig‘indisi 100 bo‘lishi kerak.",
+    "outsideWorkHours": "Markazning ish vaqtidan tashqarida",
+    "teacherBusy": "Bu vaqtda o'qituvchining boshqa darsi bor"
   },
   "roles": {
     "CEO": "CEO",
@@ -807,6 +811,12 @@
         "publicInstagram": "Instagram (nom yoki havola)",
         "publicTelegram": "Telegram (nom yoki havola)",
         "open": "Sahifani ochish"
+      },
+      "reschedule": {
+        "title": "O'quvchining dars ko'chirishi",
+        "hint": "Bitta o'quvchili guruhlarga tegishli. O'quvchi darsni boshlanishidan shuncha soat oldin o'z sahifasidan ko'chirishi yoki bekor qilishi mumkin; keyinroq dars o'tilgan hisoblanadi.",
+        "hours": "Darsgacha xabar berish muddati",
+        "unit": "soat"
       }
     },
     "switches": {
@@ -823,7 +833,8 @@
       "teacherCanAddStudents": "O‘qituvchi o‘quvchi qo‘sha oladi",
       "bookAnySupportTeacher": "Har qanday support ustozga yozilish",
       "groupSupportSessions": "Guruhli support uchrashuvlariga ruxsat",
-      "showSetupChecklist": "Bosh sahifada markazni sozlash ro‘yxatini ko‘rsatish"
+      "showSetupChecklist": "Bosh sahifada markazni sozlash ro‘yxatini ko‘rsatish",
+      "studentReschedule": "O'quvchilar yakka darslarini o'zlari ko'chirishi yoki bekor qilishi mumkin"
     },
     "switchHints": {
       "adminActionsNeedApproval": "Adminlarning pul qaytarish, chegirma, o‘chirish va to‘lovni tahrirlash amallari CEO tasdig‘ini kutadi.",
@@ -1455,7 +1466,11 @@
       "newDate": "Yangi sana",
       "newStart": "Boshlanishi",
       "newEnd": "Tugashi",
-      "movedTo": "{date}, {start}–{end} ga ko'chirildi"
+      "movedTo": "{date}, {start}–{end} ga ko'chirildi",
+      "dayOffReasons": {
+        "moved": "O'quvchi ko'chirdi",
+        "cancelled": "O'quvchi bekor qildi"
+      }
     },
     "attendance": {
       "PRESENT": "Keldi",
@@ -4952,7 +4967,24 @@
     },
     "schedule": {
       "empty": "Guruhning doimiy dars vaqti yo‘q.",
-      "until": "Guruh {date} gacha o‘qiydi."
+      "until": "Guruh {date} gacha o‘qiydi.",
+      "upcomingTitle": "Keyingi darslar",
+      "rule": "Darsni boshlanishidan {hours} soat oldingacha ko'chirishingiz yoki bekor qilishingiz mumkin.",
+      "move": "Ko'chirish",
+      "cancel": "Darsni bekor qilish",
+      "tooLate": "O'zgartirish {deadline} da yopildi",
+      "cancelledTitle": "Yangi vaqt kutayotgan darslar",
+      "pickTime": "Yangi vaqt tanlash",
+      "pickTitle": "Yangi vaqt",
+      "newDate": "Sana",
+      "newTime": "Boshlanadi",
+      "ends": "Tugaydi",
+      "pickHint": "Markazning ish vaqtida, o'qituvchi bo'sh bo'lganda. O'qituvchiga darhol xabar beriladi.",
+      "confirm": "Tasdiqlash",
+      "reasons": {
+        "moved": "siz ko'chirdingiz",
+        "cancelled": "siz bekor qildingiz"
+      }
     },
     "homework": {
       "empty": "Hali vazifalar yo‘q.",
