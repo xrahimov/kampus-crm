@@ -433,6 +433,7 @@ export const en: HelpContent = {
             {
               note: "Attendance drives the student's attendance percentage, the auto-SMS to parents about an absent child, and the automatic coins for coming to the lesson, when those are switched on.",
             },
+            "When you set a lesson's topic you can also write a **Note for the students**: what was covered, what to review, what to bring. It appears on their pages under that lesson and goes to them on Telegram; in a video lesson the **Lesson** panel has the same note. After a lesson is over, students rate it with one to five stars and may add a line; the average shows beside the lesson's date in the attendance grid and the names and lines open in the same dialog.",
           ],
         },
         grades: {
@@ -1275,6 +1276,7 @@ export const en: HelpContent = {
           body: [
             "The **Lessons** tab lists every lesson with its date, topic, whether you were present and your grade. The **Schedule** tab shows the days and times your group meets and until when the group runs.",
             "If you study one to one and your centre allows it, the Schedule tab also lists your next lessons with **Move** and **Cancel lesson** buttons. They work up to the number of hours before the lesson that the centre set; after that the lesson stays and counts as held. Pick a new date and time inside the centre's working hours when the teacher is free; the teacher is told at once. A lesson the teacher took off without a new time appears under **Lessons waiting for a new time**, where you pick one.",
+            "Once a lesson is over you can rate it with one to five stars in the **Your rating** column and add a line about what went well or not; you can change it later. A missed lesson cannot be rated. The teacher's note about a lesson, when there is one, appears under its topic.",
           ],
         },
         homework: {

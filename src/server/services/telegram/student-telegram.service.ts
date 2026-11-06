@@ -69,6 +69,7 @@ export type BotMessageKind =
   | "lessonMoved"
   | "lessonRestored"
   | "noShow"
+  | "lessonNote"
   | "waitlistOffer"
   | "certificate"
   | "weeklyTitle"
