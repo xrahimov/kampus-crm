@@ -492,7 +492,8 @@
     "studentLoginOff": "Bu o‘quv markazida Telegram orqali kirish hali sozlanmagan.",
     "callWithoutLesson": "Bu qo‘ng‘iroq darsga bog‘lanmagan.",
     "topicLocked": "Bu mavzu sizga hali ochilmagan",
-    "notAnAssignment": "Bu uy vazifasi darsga tegishli; uni darsdan tahrirlang."
+    "notAnAssignment": "Bu uy vazifasi darsga tegishli; uni darsdan tahrirlang.",
+    "streamLocked": "Bu postga izohlar yopilgan."
   },
   "validation": {
     "phone": "+998 90 123 45 67 ko‘rinishida raqam kiriting.",
@@ -1445,7 +1446,8 @@
         "homework": "Uy vazifasi",
         "materials": "Materiallar",
         "syllabus": "Dastur",
-        "gradebook": "Baholar jurnali"
+        "gradebook": "Baholar jurnali",
+        "stream": "Lenta"
       },
       "changeTeacherHint": "Yangi o'qituvchining ulushi bugundan hisoblanadi.",
       "notify": "O'quvchilar va ota-onalarga xabar berish (Telegram va SMS)",
@@ -4873,7 +4875,8 @@
       "materials": "Materiallar",
       "announcements": "Yangiliklar",
       "tests": "Testlar",
-      "course": "Kurs"
+      "course": "Kurs",
+      "stream": "Lenta"
     },
     "tests": {
       "empty": "Guruhingiz uchun hali testlar yo‘q.",
@@ -5157,7 +5160,8 @@
     "assignmentChanged": "{group}: “{title}” topshirig‘i o‘zgartirildi.\n{text}",
     "assignmentAccepted": "{group}: “{title}” topshirig‘ingiz qabul qilindi.{comment}",
     "assignmentReturned": "{group}: “{title}” topshirig‘ingiz qaytarildi, qayta ko‘rib chiqing.{comment}",
-    "badgeEarned": "🏅 Yangi nishon: {name}. {hint}"
+    "badgeEarned": "🏅 Yangi nishon: {name}. {hint}",
+    "streamPost": "📌 {group} · {author}:\n{text}"
   },
   "video": {
     "title": "Video dars",
@@ -5618,5 +5622,25 @@
         "hint": "Jami 100 coin to‘plang."
       }
     }
+  },
+  "stream": {
+    "empty": "Hali postlar yo‘q.",
+    "newPost": "Yangi post",
+    "placeholder": "Guruhga biror narsa yozing: nimaga tayyorlanish, havola, eslatma…",
+    "pinIt": "Yuqoriga mahkamlash",
+    "post": "Joylash",
+    "pinned": "Mahkamlangan",
+    "locked": "Izohlar yopiq",
+    "pin": "Mahkamlash",
+    "unpin": "Mahkamlashni olish",
+    "lock": "Izohlarni yopish",
+    "unlock": "Izohlarni ochish",
+    "staff": "O‘qituvchi",
+    "file": "Fayl",
+    "reply": "Javob",
+    "replyPlaceholder": "Izoh yozing…",
+    "lockedNote": "O‘qituvchi bu postga izohlarni yopdi.",
+    "deleteTitle": "Post o‘chirilsinmi?",
+    "deleteText": "Post va uning ostidagi hamma izohlar guruh uchun yo‘qoladi."
   }
 }

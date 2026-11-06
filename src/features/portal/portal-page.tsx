@@ -27,6 +27,7 @@ import { useMoneyFormat } from "@/lib/use-money-format";
 import { PortalAnnouncementsTab } from "./announcements-tab";
 import { PortalCourseTab } from "./course-tab";
 import { PortalGradebookCard } from "./gradebook-card";
+import { PortalStreamTab } from "./stream-tab";
 import { BadgeList } from "@/features/badges/badge-list";
 import type { BadgeDto } from "@/lib/validation/badges";
 import { PortalHomeworkTab } from "./homework-tab";
@@ -41,6 +42,7 @@ import type { PortalHomeworkDto } from "@/server/services/homework/homework.serv
 import type { PortalCertificateDto } from "@/server/services/students/certificates.service";
 import type { PortalTestDto } from "@/server/services/tests/portal-tests.service";
 import type { PortalGradebookDto } from "@/server/services/gradebook/gradebook.service";
+import type { StreamPostDto } from "@/server/services/stream/stream.service";
 import type { CourseProgressDto } from "@/server/services/progress/course-progress.service";
 import type { PortalCourseDto } from "@/server/services/settings/topic-content.service";
 import type { MaterialDto } from "@/server/services/materials/materials.service";
@@ -88,6 +90,7 @@ export function PortalPage({
   progress = null,
   gradebook = null,
   badges = [],
+  stream = [],
   initialTab = "lessons",
 }: {
   token: string;
@@ -111,6 +114,8 @@ export function PortalPage({
   gradebook?: PortalGradebookDto | null;
   /** Achievements on top of coins (A-163). */
   badges?: BadgeDto[];
+  /** The group's class stream (A-164). */
+  stream?: StreamPostDto[];
   initialTab?: "lessons" | "money";
 }) {
   const t = useTranslations("portal");
@@ -233,6 +238,9 @@ export function PortalPage({
               <TabsTrigger value="materials" data-testid="portal-tab-materials">
                 {t("tabs.materials")}
               </TabsTrigger>
+              <TabsTrigger value="stream" data-testid="portal-tab-stream">
+                {t("tabs.stream")}
+              </TabsTrigger>
               <TabsTrigger value="announcements" data-testid="portal-tab-announcements">
                 {t("tabs.announcements")}
                 {unreadNews > 0 && (
@@ -308,6 +316,10 @@ export function PortalPage({
 
             <TabsContent value="announcements">
               <PortalAnnouncementsTab token={token} items={announcements} />
+            </TabsContent>
+
+            <TabsContent value="stream">
+              <PortalStreamTab token={token} initial={stream} />
             </TabsContent>
 
             {course && course.total > 0 && (

@@ -492,7 +492,8 @@
     "studentLoginOff": "Sign-in with Telegram is not set up at this learning centre yet.",
     "callWithoutLesson": "This call is not tied to a lesson.",
     "topicLocked": "This topic is not open to you yet",
-    "notAnAssignment": "This homework belongs to a lesson; edit it from the lesson."
+    "notAnAssignment": "This homework belongs to a lesson; edit it from the lesson.",
+    "streamLocked": "Comments on this post are closed."
   },
   "validation": {
     "phone": "Enter a number like +998 90 123 45 67.",
@@ -1445,7 +1446,8 @@
         "homework": "Homework",
         "materials": "Materials",
         "syllabus": "Syllabus",
-        "gradebook": "Gradebook"
+        "gradebook": "Gradebook",
+        "stream": "Stream"
       },
       "changeTeacherHint": "The new teacher's share counts from today.",
       "notify": "Tell the students and parents (Telegram and SMS)",
@@ -4873,7 +4875,8 @@
       "materials": "Materials",
       "announcements": "News",
       "tests": "Tests",
-      "course": "Course"
+      "course": "Course",
+      "stream": "Stream"
     },
     "tests": {
       "empty": "No tests for your group yet.",
@@ -5157,7 +5160,8 @@
     "assignmentChanged": "{group}: the assignment “{title}” was changed.\n{text}",
     "assignmentAccepted": "{group}: your assignment “{title}” was accepted.{comment}",
     "assignmentReturned": "{group}: your assignment “{title}” was returned, please look at it again.{comment}",
-    "badgeEarned": "🏅 New badge: {name}. {hint}"
+    "badgeEarned": "🏅 New badge: {name}. {hint}",
+    "streamPost": "📌 {group} · {author}:\n{text}"
   },
   "video": {
     "title": "Video lesson",
@@ -5618,5 +5622,25 @@
         "hint": "Earn 100 coins in all."
       }
     }
+  },
+  "stream": {
+    "empty": "No posts yet.",
+    "newPost": "New post",
+    "placeholder": "Tell the group something: what to prepare, a link, a reminder…",
+    "pinIt": "Pin to the top",
+    "post": "Post",
+    "pinned": "Pinned",
+    "locked": "Comments closed",
+    "pin": "Pin",
+    "unpin": "Unpin",
+    "lock": "Close comments",
+    "unlock": "Open comments",
+    "staff": "Teacher",
+    "file": "File",
+    "reply": "Reply",
+    "replyPlaceholder": "Write a comment…",
+    "lockedNote": "The teacher closed comments on this post.",
+    "deleteTitle": "Delete the post?",
+    "deleteText": "The post and every comment under it will be gone for the group."
   }
 }

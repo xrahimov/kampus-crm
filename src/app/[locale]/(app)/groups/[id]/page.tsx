@@ -12,6 +12,7 @@ import { listCoinReasons, listGroupCoins } from "@/server/services/coins/coins.s
 import { getExamOptions, listGroupExams } from "@/server/services/exams/exams.service";
 import { getGroupGradebook } from "@/server/services/gradebook/gradebook.service";
 import { getGroupProgress } from "@/server/services/progress/course-progress.service";
+import { listGroupStream } from "@/server/services/stream/stream.service";
 import { listGroupDaysOff } from "@/server/services/groups/day-off.service";
 import {
   getGroup,
@@ -102,6 +103,7 @@ export default async function Page({ params, searchParams }: Props) {
     syllabus,
     progress,
     gradebook,
+    stream,
   ] = await Promise.all([
     getMonthGrid(current.actor, id, month),
     listMembers(current.actor, id, { archived: str(sp.archived) === "1" }),
@@ -138,6 +140,7 @@ export default async function Page({ params, searchParams }: Props) {
     getGroupSyllabus(current.actor, id),
     getGroupProgress(current.actor, id),
     getGroupGradebook(current.actor, id),
+    listGroupStream(current.actor, id),
   ]);
 
   return (
@@ -150,6 +153,7 @@ export default async function Page({ params, searchParams }: Props) {
       syllabus={syllabus}
       progress={progress}
       gradebook={gradebook}
+      stream={stream}
       history={history}
       discounts={discounts}
       comments={comments}
