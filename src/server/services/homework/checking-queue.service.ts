@@ -71,7 +71,9 @@ export async function listCheckingQueue(
             text: true,
             linkUrl: true,
             speaking: true,
-            lesson: { select: { date: true, topic: true, courseTopic: { select: { title: true } } } },
+            lesson: {
+              select: { date: true, topic: true, courseTopic: { select: { title: true } } },
+            },
             group: { select: { id: true, name: true } },
           },
         },
