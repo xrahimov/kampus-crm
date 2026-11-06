@@ -86,7 +86,8 @@ export async function listCourses(
     db.course.findMany({
       where,
       include,
-      orderBy: { [query.sort.field]: query.sort.direction },
+      // The id breaks ties, so courses of the same name keep one order between page loads.
+      orderBy: [{ [query.sort.field]: query.sort.direction }, { id: "asc" }],
       skip: query.skip,
       take: query.take,
     }),

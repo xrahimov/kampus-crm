@@ -244,7 +244,9 @@ export async function telegramConfigFor(
   if (!shared?.isEnabled) return null;
   return {
     organizationId: sharedOrganizationId,
-    config: own ? { ...shared, weeklyReport: own.weeklyReport } : shared,
+    config: own
+      ? { ...shared, weeklyReport: own.weeklyReport, lessonSummary: own.lessonSummary }
+      : shared,
   };
 }
 

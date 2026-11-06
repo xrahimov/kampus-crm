@@ -28,6 +28,7 @@ import {
   runWeeklyReports,
   weeklyReportDue,
 } from "@/server/services/telegram/weekly-report.service";
+import { sendLessonSummaries } from "@/server/services/telegram/lesson-summary.service";
 import { deliverMessage } from "@/server/services/sms/sms.service";
 import { dateToIso } from "@/server/services/settings/shared";
 
@@ -42,6 +43,7 @@ export const JOB_TYPES = [
   "telegram.reminders",
   "telegram.weeklyReport",
   "telegram.absenceSummary",
+  "lesson.summary",
   "leads.followUp",
   "amocrm.pushLead",
   "amocrm.importLead",
@@ -97,6 +99,13 @@ export function registerJobHandlers(): void {
     const { date } = payloadOf<{ date?: string }>(payload);
     if (!date) throw new Error("telegram.weeklyReport without date");
     await runWeeklyReports(db, date);
+  });
+
+  // The summary of an online lesson to its students and their parents (A-171).
+  registerJobHandler("lesson.summary", async (payload, db) => {
+    const { roomId } = payloadOf<{ roomId?: string }>(payload);
+    if (!roomId) throw new Error("lesson.summary without roomId");
+    await sendLessonSummaries(db, roomId);
   });
 
   // The Monday morning absence summary for the staff feed (A-125).

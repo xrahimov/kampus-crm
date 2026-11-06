@@ -20,8 +20,13 @@ test.describe("gradebook (A-162)", () => {
     await signIn(page, CEO_PHONE);
 
     // Course dialog: the weights must add up to 100.
-    await page.goto("/en/settings/courses");
-    const row = page.getByTestId("course-row").filter({ hasText: "General English" }).first();
+    await page.goto("/en/settings/courses?q=General%20English");
+    // Each branch has a General English course; GE-Morning A1 is the Central group's.
+    const row = page
+      .getByTestId("course-row")
+      .filter({ hasText: "General English" })
+      .filter({ hasText: "Central" })
+      .first();
     await row.getByRole("button", { name: "Actions for General English" }).click();
     await page.getByRole("menuitem", { name: "Edit" }).click();
     const dialog = page.getByTestId("course-dialog");
@@ -71,7 +76,7 @@ test.describe("gradebook (A-162)", () => {
     await expect(student.getByTestId("portal-gradebook-exercises")).toBeVisible();
 
     // Back to the defaults so other runs start clean.
-    await page.goto("/en/settings/courses");
+    await page.goto("/en/settings/courses?q=General%20English");
     await row.getByRole("button", { name: "Actions for General English" }).click();
     await page.getByRole("menuitem", { name: "Edit" }).click();
     await expect(dialog).toBeVisible();

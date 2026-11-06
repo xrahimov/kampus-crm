@@ -110,7 +110,8 @@ export type BotMessageKind =
   | "chatSent"
   | "chatPick"
   | "chatPicked"
-  | "chatFromStudent";
+  | "chatFromStudent"
+  | "lessonSummary";
 
 /** Narrows Telegram's language_code to a language the bot speaks. */
 export function botLocale(languageCode: string | undefined | null): BotLocale {
