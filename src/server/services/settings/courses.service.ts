@@ -1,5 +1,11 @@
 import type { Page } from "@/lib/validation/common";
-import type { CourseInput, CourseUpdateInput } from "@/lib/validation/settings";
+import { Prisma } from "@/generated/prisma/client";
+import {
+  gradeWeightsSchema,
+  type CourseInput,
+  type CourseUpdateInput,
+  type GradeWeights,
+} from "@/lib/validation/settings";
 import { recordAudit } from "@/server/audit/audit";
 import { prisma, type DbClient } from "@/server/db/prisma";
 import type { ParsedList } from "@/server/http/list-query";
@@ -18,6 +24,8 @@ export interface CourseDto {
   gradingSystemId: string | null;
   gradingSystemName: string | null;
   color: string | null;
+  /** Gradebook weights as stored; null = defaults (A-162). */
+  gradeWeights: GradeWeights | null;
   isArchived: boolean;
 }
 
@@ -49,8 +57,15 @@ function toDto(row: Row): CourseDto {
     gradingSystemId: row.gradingSystemId,
     gradingSystemName: row.gradingSystem?.name ?? null,
     color: row.color,
+    gradeWeights: parseGradeWeights(row.gradeWeights),
     isArchived: row.isArchived,
   };
+}
+
+/** The stored weights, or null when absent or not what we wrote. */
+export function parseGradeWeights(value: unknown): GradeWeights | null {
+  const parsed = gradeWeightsSchema.safeParse(value);
+  return parsed.success ? parsed.data : null;
 }
 
 /** EXP §8 Courses list. Scoped to the actor's branches / active branch. */
@@ -112,6 +127,7 @@ export async function createCourse(
           durationMonths: input.durationMonths,
           gradingSystemId: input.gradingSystemId ?? null,
           color: input.color ?? null,
+          gradeWeights: input.gradeWeights ?? undefined,
         },
         include,
       });
@@ -151,6 +167,7 @@ export async function updateCourse(
           ...(input.durationMonths !== undefined ? { durationMonths: input.durationMonths } : {}),
           ...("gradingSystemId" in input ? { gradingSystemId: input.gradingSystemId ?? null } : {}),
           ...("color" in input ? { color: input.color ?? null } : {}),
+          ...("gradeWeights" in input ? { gradeWeights: input.gradeWeights ?? Prisma.DbNull } : {}),
           ...(input.isArchived !== undefined ? { isArchived: input.isArchived } : {}),
         },
         include,

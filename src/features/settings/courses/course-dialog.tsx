@@ -19,7 +19,11 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { api } from "@/lib/api-client";
 import { applyApiError } from "@/lib/api-errors";
-import { courseSchema } from "@/lib/validation/settings";
+import {
+  courseSchema,
+  DEFAULT_GRADE_WEIGHTS,
+  GRADEBOOK_CATEGORIES,
+} from "@/lib/validation/settings";
 import type { CourseDto } from "@/server/services/settings/courses.service";
 import type { GradingSystemDto } from "@/server/services/settings/grading-systems.service";
 
@@ -60,6 +64,7 @@ export function CourseDialog({
     durationMonths: 1,
     gradingSystemId: null,
     color: DEFAULT_COLOR,
+    gradeWeights: { ...DEFAULT_GRADE_WEIGHTS },
   });
 
   const form = useForm<Input, unknown, Output>({
@@ -79,6 +84,7 @@ export function CourseDialog({
             durationMonths: course.durationMonths,
             gradingSystemId: course.gradingSystemId,
             color: course.color ?? DEFAULT_COLOR,
+            gradeWeights: { ...(course.gradeWeights ?? DEFAULT_GRADE_WEIGHTS) },
           }
         : empty(),
     );
@@ -102,6 +108,10 @@ export function CourseDialog({
   }
 
   const { errors, isSubmitting } = form.formState;
+  const weights = form.watch("gradeWeights");
+  const weightSum = weights
+    ? GRADEBOOK_CATEGORIES.reduce((sum, k) => sum + (Number(weights[k]) || 0), 0)
+    : 0;
   return (
     <FormDialog
       open={open}
@@ -200,6 +210,40 @@ export function CourseDialog({
           <FieldError id="course-color-error" message={errors.color?.message} />
         </div>
       </div>
+      <fieldset className="space-y-2" data-testid="course-weights">
+        <legend className="text-sm font-medium">{t("weights.title")}</legend>
+        <p className="text-xs text-muted-foreground">{t("weights.hint")}</p>
+        <div className="grid grid-cols-2 gap-2 sm:grid-cols-5">
+          {GRADEBOOK_CATEGORIES.map((k) => (
+            <div key={k} className="space-y-1">
+              <Label htmlFor={`course-weight-${k}`} className="text-xs">
+                {t(`weights.${k}`)}
+              </Label>
+              <Input
+                id={`course-weight-${k}`}
+                type="number"
+                inputMode="numeric"
+                min={0}
+                max={100}
+                data-testid={`course-weight-${k}`}
+                {...form.register(`gradeWeights.${k}`)}
+              />
+            </div>
+          ))}
+        </div>
+        <p
+          className={
+            weightSum === 100 ? "text-xs text-muted-foreground" : "text-xs text-destructive"
+          }
+          data-testid="course-weights-sum"
+        >
+          {t("weights.sum", { sum: weightSum })}
+        </p>
+        <FieldError
+          id="course-weights-error"
+          message={errors.gradeWeights?.message ?? errors.gradeWeights?.root?.message}
+        />
+      </fieldset>
       <div className="space-y-2">
         <Label htmlFor="course-description">{t("description")}</Label>
         <Textarea id="course-description" {...form.register("description")} />

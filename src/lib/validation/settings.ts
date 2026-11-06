@@ -222,6 +222,25 @@ export type GradingLevelInput = z.infer<typeof gradingLevelSchema>;
 
 // --- Courses ------------------------------------------------------------------
 
+/** Gradebook categories (A-162): where a student's marks come from. */
+export const GRADEBOOK_CATEGORIES = ["lessons", "homework", "exercises", "tests", "exams"] as const;
+export type GradebookCategory = (typeof GRADEBOOK_CATEGORIES)[number];
+export type GradeWeights = Record<GradebookCategory, number>;
+export const DEFAULT_GRADE_WEIGHTS: GradeWeights = {
+  lessons: 30,
+  homework: 30,
+  exercises: 0,
+  tests: 20,
+  exams: 20,
+};
+const weight = z.coerce.number().int().min(0, "validation.min").max(100, "validation.max");
+export const gradeWeightsSchema = z
+  .object({ lessons: weight, homework: weight, exercises: weight, tests: weight, exams: weight })
+  .refine(
+    (w) => GRADEBOOK_CATEGORIES.reduce((sum, k) => sum + w[k], 0) === 100,
+    "validation.weightsSum",
+  );
+
 export const courseSchema = z.object({
   branchId: idSchema,
   name,
@@ -234,6 +253,8 @@ export const courseSchema = z.object({
     .regex(/^#[0-9a-fA-F]{6}$/, "validation.color")
     .nullable()
     .optional(),
+  /** Gradebook weights (A-162); null keeps the defaults. */
+  gradeWeights: gradeWeightsSchema.nullable().optional(),
 });
 export type CourseInput = z.infer<typeof courseSchema>;
 export const courseUpdateSchema = courseSchema
