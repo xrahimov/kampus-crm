@@ -21,9 +21,11 @@ import type { BranchOption } from "@/features/settings/shared/branch-select";
 import { Link, useRouter } from "@/i18n/navigation";
 import { parseDateOnly } from "@/lib/dates";
 import { useDateFormat } from "@/lib/use-date-format";
+import type { AvailabilityWindowDto } from "@/server/services/staff/availability.service";
 import type { RoleDto } from "@/server/services/staff/roles.service";
 import type { TeacherDetailDto } from "@/server/services/staff/teachers.service";
 
+import { AvailabilityEditor } from "./availability-editor";
 import { roleLabel } from "./role-label";
 import { StaffDialog } from "./staff-dialog";
 
@@ -34,12 +36,15 @@ export function TeacherDetail({
   branches,
   selfId,
   canUpdate,
+  availability,
 }: {
   teacher: TeacherDetailDto;
   roles: RoleDto[];
   branches: BranchOption[];
   selfId: string;
   canUpdate: boolean;
+  /** Hours open for 1:1 booking (A-169). */
+  availability: AvailabilityWindowDto[];
 }) {
   const t = useTranslations();
   const fmt = useDateFormat();
@@ -163,6 +168,19 @@ export function TeacherDetail({
               </TableBody>
             </Table>
           )}
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>{t("teachers.availability.title")}</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <AvailabilityEditor
+            userId={teacher.id}
+            initial={availability}
+            canEdit={(canUpdate || selfId === teacher.id) && !teacher.isArchived}
+          />
         </CardContent>
       </Card>
 
