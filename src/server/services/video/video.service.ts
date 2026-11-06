@@ -27,6 +27,7 @@ import {
   type PollResultDto,
 } from "@/server/services/video/video-polls.service";
 import { dateToIso, isoToDate, organizationOfBranch } from "@/server/services/settings/shared";
+import { scheduleLessonSummary } from "@/server/services/telegram/lesson-summary.service";
 
 /*
  * Video lessons. Browsers talk to each other directly over WebRTC (a full mesh:
@@ -283,12 +284,15 @@ async function toRoomDto(db: DbClient, row: RoomRow): Promise<VideoRoomDto> {
 }
 
 async function closeRoom(db: DbClient, roomId: string, at = new Date()): Promise<void> {
-  await db.videoRoom.updateMany({
+  const closed = await db.videoRoom.updateMany({
     where: { id: roomId, status: "LIVE" },
     data: { status: "ENDED", endedAt: at },
   });
   await db.videoParticipant.updateMany({ where: { roomId, leftAt: null }, data: { leftAt: at } });
   await db.videoSignal.deleteMany({ where: { roomId } });
+  // The lesson summary to students and parents goes out once the teacher has had
+  // time to mark attendance and set homework (A-171).
+  if (closed.count > 0) await scheduleLessonSummary(db, roomId, at);
 }
 
 /** Closes a LIVE room that has run for ROOM_MAX_MS; true when it is (now) over. */

@@ -107,6 +107,7 @@ beforeAll(async () => {
     webhookSecret: `${TAG}-hook`,
     botUsername: `${TAG}_bot`,
     weeklyReport: true,
+    lessonSummary: true,
     sharedWithAllCentres: false,
     loginClientId: "",
     loginClientSecret: "",
