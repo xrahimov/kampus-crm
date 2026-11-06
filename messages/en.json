@@ -606,7 +606,8 @@
     "loginClientId": "The Client ID is a number from @BotFather.",
     "videoUrl": "Paste a YouTube link or upload a video file",
     "gapCount": "One answer line per gap (___) in the sentence",
-    "rubricScores": "Give each criterion a score within its points."
+    "rubricScores": "Give each criterion a score within its points.",
+    "weightsSum": "The weights must add up to 100."
   },
   "roles": {
     "CEO": "CEO",
@@ -890,7 +891,17 @@
       "syllabusTitle": "Syllabus: {name}",
       "syllabusHint": "One topic per line, in teaching order. Each lesson takes the next uncovered topic when attendance is marked.",
       "syllabusTopics": "Topics",
-      "syllabusCount": "{count, plural, =0 {No topics} one {# topic} other {# topics}}"
+      "syllabusCount": "{count, plural, =0 {No topics} one {# topic} other {# topics}}",
+      "weights": {
+        "title": "Grade weights",
+        "hint": "How much each part counts in the final grade on the group's Gradebook tab. The five numbers must add up to 100.",
+        "lessons": "Lessons",
+        "homework": "Homework",
+        "exercises": "Exercises",
+        "tests": "Tests",
+        "exams": "Exams",
+        "sum": "Total: {sum}% (must be 100%)"
+      }
     },
     "rooms": {
       "title": "Rooms",
@@ -1433,7 +1444,8 @@
         "comments": "Comments",
         "homework": "Homework",
         "materials": "Materials",
-        "syllabus": "Syllabus"
+        "syllabus": "Syllabus",
+        "gradebook": "Gradebook"
       },
       "changeTeacherHint": "The new teacher's share counts from today.",
       "notify": "Tell the students and parents (Telegram and SMS)",
@@ -1716,6 +1728,25 @@
       "offer": "{count, plural, =0 {Offer} one {Offer # seat} other {Offer # seats}}",
       "done": "{offered} offered: {sms} SMS sent, {telegram} Telegram messages queued.",
       "noSeats": "People are waiting, but the group has no free seat: every seat is taken or already offered."
+    },
+    "gradebook": {
+      "intro": "Final grade for “{course}”, weighted from lesson grades, homework, exercises, tests and exams.",
+      "scale": "Scale: {name}.",
+      "noScale": "No grading scale is set for the course, so levels are not shown.",
+      "changeWeights": "Change the weights in Settings → Courses.",
+      "empty": "No students in the group.",
+      "student": "Student",
+      "final": "Final",
+      "level": "Level",
+      "weight": "weight {percent}%",
+      "items": "{count, plural, =0 {No items yet} one {# item} other {# items}}",
+      "categories": {
+        "lessons": "Lessons",
+        "homework": "Homework",
+        "exercises": "Exercises",
+        "tests": "Tests",
+        "exams": "Exams"
+      }
     }
   },
   "timetable": {
@@ -5046,6 +5077,21 @@
       "up": "Move up",
       "down": "Move down",
       "yourAnswer": "Your answer"
+    },
+    "gradebook": {
+      "title": "Your grade in {course}",
+      "final": "Final grade",
+      "noGrade": "No grades yet",
+      "none": "—",
+      "weight": "{percent}% of the grade",
+      "hint": "Each part is the average of your results in it; the final grade weighs the parts as the course sets.",
+      "categories": {
+        "lessons": "Lessons",
+        "homework": "Homework",
+        "exercises": "Exercises",
+        "tests": "Tests",
+        "exams": "Exams"
+      }
     }
   },
   "telegramBot": {

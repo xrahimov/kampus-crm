@@ -606,7 +606,8 @@
     "loginClientId": "Client ID — @BotFather bergan raqam.",
     "videoUrl": "YouTube havolasini qo‘ying yoki video fayl yuklang",
     "gapCount": "Gapdagi har bir bo‘shliq (___) uchun bir javob qatori",
-    "rubricScores": "Har bir mezonga uning balli doirasida ball qo‘ying."
+    "rubricScores": "Har bir mezonga uning balli doirasida ball qo‘ying.",
+    "weightsSum": "Vaznlar yig‘indisi 100 bo‘lishi kerak."
   },
   "roles": {
     "CEO": "CEO",
@@ -890,7 +891,17 @@
       "syllabusTitle": "Dastur: {name}",
       "syllabusHint": "Har bir qatorda bir mavzu, o‘qitish tartibida. Davomat belgilanganda har bir dars keyingi o‘tilmagan mavzuni oladi.",
       "syllabusTopics": "Mavzular",
-      "syllabusCount": "{count, plural, =0 {Mavzu yo‘q} one {# mavzu} other {# mavzu}}"
+      "syllabusCount": "{count, plural, =0 {Mavzu yo‘q} one {# mavzu} other {# mavzu}}",
+      "weights": {
+        "title": "Baho vaznlari",
+        "hint": "Guruhning Baholar jurnali bo‘limidagi yakuniy bahoda har bir qismning ulushi. Beshta son yig‘indisi 100 bo‘lishi kerak.",
+        "lessons": "Darslar",
+        "homework": "Uy vazifasi",
+        "exercises": "Mashqlar",
+        "tests": "Testlar",
+        "exams": "Imtihonlar",
+        "sum": "Jami: {sum}% (100% bo‘lishi kerak)"
+      }
     },
     "rooms": {
       "title": "Xonalar",
@@ -1433,7 +1444,8 @@
         "comments": "Izohlar",
         "homework": "Uy vazifasi",
         "materials": "Materiallar",
-        "syllabus": "Dastur"
+        "syllabus": "Dastur",
+        "gradebook": "Baholar jurnali"
       },
       "changeTeacherHint": "Yangi o'qituvchining ulushi bugundan hisoblanadi.",
       "notify": "O'quvchilar va ota-onalarga xabar berish (Telegram va SMS)",
@@ -1716,6 +1728,25 @@
       "offer": "{count, plural, =0 {Taklif qilish} one {# joy taklif qilish} other {# joy taklif qilish}}",
       "done": "Taklif qilindi: {offered}. Yuborilgan SMS: {sms}, navbatdagi Telegram xabarlari: {telegram}.",
       "noSeats": "Odamlar kutmoqda, lekin guruhda bo‘sh joy yo‘q: barcha joylar band yoki allaqachon taklif qilingan."
+    },
+    "gradebook": {
+      "intro": "“{course}” kursi uchun yakuniy baho: dars baholari, uy vazifasi, mashqlar, testlar va imtihonlar vaznlari bo‘yicha.",
+      "scale": "Shkala: {name}.",
+      "noScale": "Kursga baholash shkalasi biriktirilmagan, shu sababli darajalar ko‘rsatilmaydi.",
+      "changeWeights": "Vaznlarni Sozlamalar → Kurslar bo‘limida o‘zgartiring.",
+      "empty": "Guruhda talabalar yo‘q.",
+      "student": "Talaba",
+      "final": "Yakuniy",
+      "level": "Daraja",
+      "weight": "vazn {percent}%",
+      "items": "{count, plural, =0 {Hali yozuvlar yo‘q} one {# yozuv} other {# yozuv}}",
+      "categories": {
+        "lessons": "Darslar",
+        "homework": "Uy vazifasi",
+        "exercises": "Mashqlar",
+        "tests": "Testlar",
+        "exams": "Imtihonlar"
+      }
     }
   },
   "timetable": {
@@ -5046,6 +5077,21 @@
       "up": "Yuqoriga",
       "down": "Pastga",
       "yourAnswer": "Javobingiz"
+    },
+    "gradebook": {
+      "title": "{course} bo‘yicha bahoyingiz",
+      "final": "Yakuniy baho",
+      "noGrade": "Hali baholar yo‘q",
+      "none": "—",
+      "weight": "bahoning {percent}%",
+      "hint": "Har bir qism shu qismdagi natijalaringizning o‘rtachasi; yakuniy baho qismlarni kurs belgilagan vaznlar bo‘yicha hisoblaydi.",
+      "categories": {
+        "lessons": "Darslar",
+        "homework": "Uy vazifasi",
+        "exercises": "Mashqlar",
+        "tests": "Testlar",
+        "exams": "Imtihonlar"
+      }
     }
   },
   "telegramBot": {

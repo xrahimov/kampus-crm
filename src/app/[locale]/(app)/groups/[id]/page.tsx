@@ -10,6 +10,7 @@ import { isAppError } from "@/server/errors/app-error";
 import { can, canAccessAllBranches } from "@/server/rbac/authorize";
 import { listCoinReasons, listGroupCoins } from "@/server/services/coins/coins.service";
 import { getExamOptions, listGroupExams } from "@/server/services/exams/exams.service";
+import { getGroupGradebook } from "@/server/services/gradebook/gradebook.service";
 import { getGroupProgress } from "@/server/services/progress/course-progress.service";
 import { listGroupDaysOff } from "@/server/services/groups/day-off.service";
 import {
@@ -100,6 +101,7 @@ export default async function Page({ params, searchParams }: Props) {
     materials,
     syllabus,
     progress,
+    gradebook,
   ] = await Promise.all([
     getMonthGrid(current.actor, id, month),
     listMembers(current.actor, id, { archived: str(sp.archived) === "1" }),
@@ -135,6 +137,7 @@ export default async function Page({ params, searchParams }: Props) {
     listGroupMaterials(current.actor, id),
     getGroupSyllabus(current.actor, id),
     getGroupProgress(current.actor, id),
+    getGroupGradebook(current.actor, id),
   ]);
 
   return (
@@ -146,6 +149,7 @@ export default async function Page({ params, searchParams }: Props) {
       notes={notes}
       syllabus={syllabus}
       progress={progress}
+      gradebook={gradebook}
       history={history}
       discounts={discounts}
       comments={comments}
@@ -179,6 +183,7 @@ export default async function Page({ params, searchParams }: Props) {
         giveCoins: can(current.actor, "coins.give"),
         manageCoins: can(current.actor, "coins.manage"),
         sms: can(current.actor, "sms.send"),
+        catalog: can(current.actor, "settings.catalog"),
       }}
     />
   );

@@ -482,6 +482,8 @@ model Course {
   durationMonths  Int
   gradingSystemId String?
   color           String? // hex, e.g. #0F766E
+  /// Gradebook weights per category in percent, summing to 100 (A-162); null = the defaults.
+  gradeWeights    Json?
   isArchived      Boolean  @default(false)
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
