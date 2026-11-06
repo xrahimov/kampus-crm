@@ -11,6 +11,7 @@ import {
   MicOff,
   MonitorUp,
   MonitorX,
+  PenLine,
   PhoneOff,
   SendHorizontal,
   SmilePlus,
@@ -31,8 +32,9 @@ import { cn } from "@/lib/utils";
 import { CHAT_MAX_LENGTH, type CallEngine, type RemotePeer } from "./call-engine";
 import { LessonPanel } from "./lesson-panel";
 import { PollPanel } from "./poll-panel";
-import { CallRecorder, recordingMimeType, uploadRecording } from "./recorder";
+import { CallRecorder, recordingMimeType, uploadBoard, uploadRecording } from "./recorder";
 import { VideoTile } from "./video-tile";
+import { Whiteboard } from "./whiteboard";
 
 const SELF = "self";
 type Panel = "people" | "chat" | "poll" | "lesson" | null;
@@ -186,6 +188,9 @@ export function CallRoom({
       : null;
   // Students watch the teacher; teachers and guests see everyone unless someone leads.
   const stageId = pinnedId ?? spotlightId ?? sharer ?? (isStudent ? host : null) ?? null;
+  // The whiteboard takes the stage from everyone (A-155).
+  const BOARD = "board";
+  const stageKey = stage.board ? BOARD : stageId;
 
   // Raised hands in the order they went up; this browser's own hand takes its place too.
   const handQueue = [
@@ -256,7 +261,7 @@ export function CallRoom({
   };
 
   const everyone = [SELF, ...peers.filter((p) => !hidden.has(p.id)).map((p) => p.id)];
-  const others = everyone.filter((id) => id !== stageId);
+  const others = everyone.filter((id) => id !== stageKey);
   const gridCols =
     everyone.length <= 1
       ? "grid-cols-1"
@@ -430,9 +435,18 @@ export function CallRoom({
 
       <div className="flex min-h-0 flex-1 gap-3 px-3 pb-3 sm:px-4">
         <main className="min-h-0 min-w-0 flex-1">
-          {stageId ? (
+          {stageKey ? (
             <div className="flex h-full flex-col gap-3 lg:flex-row">
-              <div className="min-h-0 flex-1">{tile(stageId, true)}</div>
+              <div className="min-h-0 flex-1">
+                {stageKey === BOARD ? (
+                  <Whiteboard
+                    engine={engine}
+                    onSave={isHost ? (png) => uploadBoard(self.roomId, png) : undefined}
+                  />
+                ) : (
+                  tile(stageKey, true)
+                )}
+              </div>
               {others.length > 0 && (
                 <div className="flex shrink-0 gap-3 overflow-x-auto lg:w-56 lg:flex-col lg:overflow-x-visible lg:overflow-y-auto">
                   {others.map((id) => (
@@ -626,6 +640,16 @@ export function CallRoom({
             </div>
           )}
         </div>
+        {isHost && (
+          <ControlButton
+            active={!stage.board}
+            onClick={() => engine.setStage({ board: !stage.board })}
+            label={stage.board ? t("boardOff") : t("boardOn")}
+            testId="toggle-board"
+          >
+            <PenLine />
+          </ControlButton>
+        )}
         {isHost && (
           <ControlButton
             active={!stage.focus}
