@@ -227,6 +227,7 @@ export const en: HelpContent = {
           body: [
             "Many leads want to sit in on one lesson before paying. On the card's menu choose **Book a trial**, pick a group of the lead's branch and the day, and add a note for the teacher if there is one to add. The card then shows a **Trial** badge with the date; the menu offers **Cancel trial** while the visit is still ahead.",
             'On that day the visitor appears on the teacher\'s **Today** page under the group\'s lesson, in a separate "Trial visitors" block with **Came** and **Didn\'t come** buttons. The teacher marks the visit; the office sees the outcome on the card (came, missed) and decides what to do next: a lead that came is added to the group as usual, which closes the trial as "became a student"; one that missed gets a call.',
+            "An online group's visitor gets their own link: next to the **Trial** badge press **Copy the visitor's lesson link** and send it to them (a lead who wrote to the Telegram bot receives it there by itself, and the inbox keeps a copy). On the day of the visit the link opens a small page that lets them into the video lesson as soon as the teacher starts it; joining marks the visit as **Came**. On any other day the page only shows the date and time.",
             "**Reports → Leads** counts the month's trials and shows, per source, how many new leads came in, how many trials they had, how many visitors came and how many became students, so you can see which advertising brings people who actually show up.",
           ],
         },
