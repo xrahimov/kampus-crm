@@ -90,6 +90,7 @@ export const MODULES = [
   "dashboard",
   "assistant",
   "today",
+  "checking",
   "leads",
   "teachers",
   "groups",
@@ -112,6 +113,8 @@ export const MODULE_VIEW_PERMISSION: Record<ModuleKey, Permission> = {
   // Questions over the centre's data, answered within the asker's own permissions (A-149).
   assistant: "dashboard.view",
   today: "groups.view",
+  // Homework answers waiting for a verdict, across the teacher's groups (A-160).
+  checking: "groups.attendance.mark",
 
   leads: "leads.view",
   teachers: "teachers.view",

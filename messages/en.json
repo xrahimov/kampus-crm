@@ -55,7 +55,8 @@
     "settings": "Settings",
     "finance": "Finance",
     "reports": "Reports",
-    "announcements": "Announcements"
+    "announcements": "Announcements",
+    "checking": "Checking"
   },
   "auth": {
     "signIn": "Sign in",
@@ -5484,5 +5485,24 @@
     "results": "Results",
     "noResults": "Nobody has tried it yet.",
     "bestOf": "{score}/{max} ({percent} %) · {attempts} go(s)"
+  },
+  "checking": {
+    "title": "Checking",
+    "waiting": "{count, plural, one {# answer waiting} other {# answers waiting}}, oldest first",
+    "none": "Nothing is waiting for you.",
+    "done": "{count, plural, one {# checked} other {# checked}} this visit",
+    "keys": "Keys: J / K move, A accept, R return, Enter send, Esc close",
+    "emptyTitle": "All caught up",
+    "emptyHint": "Answers your students send from their pages appear here, oldest first.",
+    "sentAt": "sent {when}",
+    "task": "Task",
+    "taskLink": "link",
+    "noNote": "Marked as done, nothing written.",
+    "attachment": "Open the attachment",
+    "accept": "Accept",
+    "return": "Return",
+    "returnSend": "Return with the comment",
+    "comment": "Comment for the student",
+    "commentPlaceholder": "What to fix (optional)"
   }
 }

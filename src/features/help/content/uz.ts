@@ -457,6 +457,13 @@ export const uz: HelpContent = {
             "Telegramga ulangan o‘quvchilar vazifa berilganda, o‘zgartirilganda, qabul qilinganda yoki qaytarilganda xabar oladi. Uy vazifasi uchun avtomatik coinlar yoqilgan bo‘lsa, qabul qilingan javob coinlarni o‘zi beradi.",
           ],
         },
+        checking: {
+          title: "Tekshirish navbati",
+          body: [
+            "Menyudagi **Tekshirish** barcha guruhlaringizdan sizni kutayotgan uy vazifasi javoblarini, eng eskisi birinchi, bir joyga yig‘adi: vazifa va o‘quvchining matni yoki yozuvi. Menyu bandidagi raqam – kutayotgan javoblar soni.",
+            "Klaviaturadan ishlang: **J** va **K** (yoki strelkalar) javoblar orasida o‘tadi, **A** tanlanganini qabul qiladi, **R** qaytarish uchun izoh oynasini ochadi, **Enter** qaytarishni yuboradi, **Esc** oynani yopadi. Har bir qaror o‘quvchiga guruh sahifasidagidek xabar beradi, qabul qilingan javob coin olib keladi.",
+          ],
+        },
         materials: {
           title: "Materiallar",
           body: [
