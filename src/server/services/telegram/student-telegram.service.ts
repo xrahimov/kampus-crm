@@ -9,6 +9,7 @@ import { generateToken } from "@/server/auth/tokens";
 import { prisma, type DbClient } from "@/server/db/prisma";
 import { AppError } from "@/server/errors/app-error";
 import { enqueue } from "@/server/jobs/queue";
+import { queuePushForStudents } from "@/server/services/push/push.service";
 import { telegramConfigFor } from "@/server/services/integrations/integrations.service";
 import { linkAccountByCode } from "@/server/services/student-auth/student-auth.service";
 import { appOriginForGroup } from "@/server/services/settings/domains.service";
@@ -303,21 +304,32 @@ export async function notifyStudents(
     where: { studentId: { in: input.studentIds }, student: { isArchived: false } },
     include: { student: { select: { branch: { select: { organizationId: true } } } } },
   });
+  const render = (locale: BotLocale) => {
+    const values = typeof input.values === "function" ? input.values(locale) : input.values;
+    return input.text ? input.text(locale) : botText(locale, input.kind, values);
+  };
   let queued = 0;
   for (const chat of chats) {
     const locale = botLocale(chat.locale);
-    const values = typeof input.values === "function" ? input.values(locale) : input.values;
     const id = await enqueue(tx, {
       type: "telegram.send",
       payload: {
         organizationId: chat.student.branch.organizationId,
         chatId: chat.chatId,
-        text: input.text ? input.text(locale) : botText(locale, input.kind, values),
+        text: render(locale),
       },
       uniqueKey: `tg:${input.refKey}:${chat.chatId}`,
     });
     if (id) queued += 1;
   }
+  // The same text to the browsers that asked for notifications (A-176).
+  queued += await queuePushForStudents(tx, {
+    studentIds: input.studentIds,
+    refKey: input.refKey,
+    title: "Kampus",
+    text: (locale) => render(botLocale(locale)),
+    tag: input.kind,
+  });
   return queued;
 }
 

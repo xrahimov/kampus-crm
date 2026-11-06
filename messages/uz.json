@@ -5190,6 +5190,15 @@
       "sending": "Yuborilmoqda…",
       "viaTelegram": "Telegram orqali",
       "you": "Siz"
+    },
+    "push": {
+      "title": "Bu qurilmada bildirishnomalar",
+      "intro": "Dars eslatmalari, uy vazifasi, materiallar, xabarlar va to‘lovlar sahifa yopiq bo‘lsa ham shu telefon yoki kompyuterga keladi. O‘rnatilgan My Kampus ilovasida eng yaxshi ishlaydi.",
+      "enable": "Bildirishnomalarni yoqish",
+      "disable": "O‘chirish",
+      "on": "Bildirishnomalar yoqilgan",
+      "denied": "Brauzer bu sayt uchun bildirishnomalarni bloklagan. Yoqish uchun brauzerning sayt sozlamalarida ruxsat bering.",
+      "failed": "Bildirishnomalarni yoqib bo‘lmadi. Keyinroq qayta urinib ko‘ring."
     }
   },
   "telegramBot": {

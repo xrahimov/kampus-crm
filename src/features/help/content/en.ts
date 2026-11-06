@@ -1365,6 +1365,7 @@ export const en: HelpContent = {
           title: "Telegram",
           body: [
             "Press **Connect Telegram** on your page and press Start in the bot that opens. From then on you get a reminder before each lesson, a message when the teacher starts a video lesson, homework notices, new materials and payment confirmations. Parents can connect their own phone with **Connect another phone**. Send **/stop** to the bot to disconnect.",
+            "Without Telegram, or next to it, press **Turn on notifications** on your page: the same reminders and notices then arrive as notifications on this phone or computer, even when the page is closed. This works best in the installed My Kampus app; **Turn off** stops them on that device.",
           ],
         },
         weekly: {

@@ -72,3 +72,38 @@ self.addEventListener("fetch", (event) => {
     event.respondWith(networkFirst(PAGES, request));
   }
 });
+
+/* Notifications (A-176): the server pushes the same texts the Telegram bot sends. */
+self.addEventListener("push", (event) => {
+  let data = {};
+  try {
+    data = event.data ? event.data.json() : {};
+  } catch {
+    data = { body: event.data ? event.data.text() : "" };
+  }
+  const title = data.title || "Kampus";
+  event.waitUntil(
+    self.registration.showNotification(title, {
+      body: data.body || "",
+      tag: data.tag || undefined,
+      icon: "/icons/student-192.png",
+      badge: "/icons/student-192.png",
+      data: { url: data.url || "/" },
+    }),
+  );
+});
+
+self.addEventListener("notificationclick", (event) => {
+  event.notification.close();
+  const url = new URL(
+    (event.notification.data && event.notification.data.url) || "/",
+    self.location.origin,
+  ).href;
+  event.waitUntil(
+    self.clients.matchAll({ type: "window", includeUncontrolled: true }).then((clients) => {
+      const open = clients.find((c) => c.url === url || c.url.startsWith(url));
+      if (open) return open.focus();
+      return self.clients.openWindow(url);
+    }),
+  );
+});

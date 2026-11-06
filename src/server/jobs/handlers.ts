@@ -19,6 +19,7 @@ import { issueFiscalReceipt } from "@/server/services/payments/fiscal.service";
 import { runDailyDebtCollection } from "@/server/services/debts/debts.service";
 import { makeRecordingStream } from "@/server/services/materials/hls.service";
 import { purgeOldRecordings } from "@/server/services/materials/materials.service";
+import { sendPush } from "@/server/services/push/push.service";
 import { runDailyAutoSms } from "@/server/services/sms/auto-sms.service";
 import { runInstalmentReminders } from "@/server/services/students/instalments.service";
 import {
@@ -50,6 +51,7 @@ export const JOB_TYPES = [
   "amocrm.importLead",
   "fiscal.issue",
   "recording.hls",
+  "push.send",
 ] as const;
 
 /** Jobs that run for an hour or more; the worker gives them a lane of their own (A-175). */
@@ -66,6 +68,8 @@ export function registerJobHandlers(): void {
     const { materialId } = payloadOf<{ materialId: string }>(payload);
     const result = await makeRecordingStream(db, materialId);
     console.log(`[worker] recording ${materialId}: streaming copy ${result}`);
+  registerJobHandler("push.send", async (payload, db) => {
+    await sendPush(db, payloadOf<Parameters<typeof sendPush>[1]>(payload));
   });
 
   registerJobHandler("sms.send", async (payload, db) => {
