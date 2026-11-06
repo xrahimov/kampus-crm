@@ -3236,7 +3236,8 @@
         "HOMEWORK": "Uy vazifasi",
         "TEST_RESULT": "Test natijasi",
         "BIRTHDAY": "Tug‘ilgan kun",
-        "REFERRAL": "Tavsiya"
+        "REFERRAL": "Tavsiya",
+        "VOCAB_STREAK": "So‘z seriyasi (7 kun)"
       },
       "notWired": "Saqlandi, lekin hali hech narsa ishga tushirmaydi (uy vazifasi yozuvi keyinroq).",
       "reasonsTitle": "Qo‘lda beriladigan coin sabablari",
@@ -3325,7 +3326,8 @@
         "HOMEWORK": "Uy vazifasi",
         "TEST_RESULT": "Test natijasi",
         "BIRTHDAY": "Tug‘ilgan kun",
-        "REFERRAL": "Tavsiya"
+        "REFERRAL": "Tavsiya",
+        "VOCAB_STREAK": "So‘z seriyasi"
       }
     },
     "marketplace": {
@@ -5097,6 +5099,19 @@
         "tests": "Testlar",
         "exams": "Imtihonlar"
       }
+    },
+    "vocab": {
+      "title": "So‘z treneri",
+      "learned": "{total} tadan {learned} o‘rganildi",
+      "due": "{count, plural, =0 {takrorlash yo‘q} other {# ta takrorlash}}",
+      "streak": "{count, plural, =0 {seriya yo‘q} other {# kun ketma-ket}}",
+      "start": "{count} kartochkani mashq qilish",
+      "nothingDue": "Hammasi bajarildi. Keyingi takrorlash uchun ertaga qayting.",
+      "progress": "{total} tadan {done}",
+      "tapToFlip": "Tarjimani ko‘rish uchun bosing",
+      "again": "Yana",
+      "known": "Bilardim",
+      "finished": "Tayyor! Bu safar {count} kartochka to‘g‘ri. Bilgan so‘zlar keyinroq, xato qilganlar tezroq qaytadi."
     }
   },
   "telegramBot": {
@@ -5621,6 +5636,14 @@
       "coins100": {
         "name": "100 coin",
         "hint": "Jami 100 coin to‘plang."
+      },
+      "words50": {
+        "name": "50 so‘z",
+        "hint": "So‘z trenerida 50 so‘zni o‘rganing."
+      },
+      "vocabStreak7": {
+        "name": "7 kunlik so‘z seriyasi",
+        "hint": "Yetti kun ketma-ket so‘zlarni mashq qiling."
       }
     }
   },
@@ -5643,5 +5666,17 @@
     "lockedNote": "O‘qituvchi bu postga izohlarni yopdi.",
     "deleteTitle": "Post o‘chirilsinmi?",
     "deleteText": "Post va uning ostidagi hamma izohlar guruh uchun yo‘qoladi."
+  },
+  "vocab": {
+    "editor": {
+      "title": "Trener uchun so‘zlar",
+      "count": "{count, plural, =0 {So‘z yo‘q} one {# so‘z} other {# so‘z}}",
+      "hint": "Har qatorda bitta so‘z: so‘z — tarjima — misol (misol ixtiyoriy). Mavzu ochilgach talabalar ularni kartochka sifatida o‘rganadi.",
+      "placeholder": "apple — olma — I eat an apple every day.",
+      "parsed": "{max} tadan {count} so‘z",
+      "badLines": "{count} qatorda tarjima yo‘q.",
+      "save": "So‘zlarni yangilash",
+      "empty": "Bu mavzuda hali so‘zlar yo‘q."
+    }
   }
 }

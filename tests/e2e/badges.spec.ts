@@ -12,7 +12,7 @@ async function signIn(page: Page, phone: string) {
 }
 
 test.describe("badges (A-163)", () => {
-  test("the student's page and the staff profile show the eight badges", async ({ browser }) => {
+  test("the student's page and the staff profile show the ten badges", async ({ browser }) => {
     const page = await (await browser.newContext()).newPage();
     await signIn(page, CEO_PHONE);
     await page.goto("/en/groups");
@@ -27,8 +27,8 @@ test.describe("badges (A-163)", () => {
     await page.getByRole("tab", { name: "Progress" }).click();
     const staff = page.getByTestId("student-badges");
     await expect(staff).toBeVisible();
-    await expect(staff.getByTestId("badge-tile")).toHaveCount(8);
-    await expect(staff.getByTestId("student-badges-count")).toHaveText(/\d of 8 earned/);
+    await expect(staff.getByTestId("badge-tile")).toHaveCount(10);
+    await expect(staff.getByTestId("student-badges-count")).toHaveText(/\d of 10 earned/);
     await expect(
       staff.getByTestId("badge-tile").filter({ hasText: "10-lesson streak" }),
     ).toContainText(/Attend ten lessons in a row|Earned/);
@@ -38,7 +38,7 @@ test.describe("badges (A-163)", () => {
     await student.goto(`/en/class/${first!.token}`);
     const mine = student.getByTestId("portal-badges");
     await expect(mine).toBeVisible();
-    await expect(mine.getByTestId("badge-tile")).toHaveCount(8);
+    await expect(mine.getByTestId("badge-tile")).toHaveCount(10);
     await expect(mine.getByTestId("badge-tile").first()).toHaveAttribute(
       "data-earned",
       /true|false/,
