@@ -1,6 +1,7 @@
 import { createHmac } from "node:crypto";
 
 import type { Prisma, VideoPeerRole, VideoRoomStatus } from "@/generated/prisma/client";
+import { slotInZone } from "@/lib/time-zones";
 import { DEFAULT_STUN_URLS } from "@/lib/validation/integrations";
 import {
   BROADCAST_SIGNAL_KINDS,
@@ -192,6 +193,9 @@ export interface ClassPageDto {
   /** The group's LIVE room, if the teacher has started one. */
   roomId: string | null;
   schedule: Array<{ weekday: number; startTime: string; endTime: string }>;
+  /** The student's own zone (A-177) and the schedule as it falls there; null when they keep the centre's time. */
+  timeZone: string | null;
+  localSchedule: Array<{ weekday: number; startTime: string; endTime: string }> | null;
 }
 
 /* ----- configuration ------------------------------------------------------------------------ */
@@ -602,7 +606,7 @@ export async function membershipByToken(db: DbClient, token: string) {
   const membership = await db.groupMembership.findUnique({
     where: { videoToken: token },
     include: {
-      student: { select: { id: true, fullName: true, isArchived: true } },
+      student: { select: { id: true, fullName: true, isArchived: true, timeZone: true } },
       group: {
         select: {
           id: true,
@@ -632,6 +636,8 @@ export async function getClassPage(
 ): Promise<ClassPageDto | null> {
   const membership = await membershipByToken(db, token);
   if (!membership) return null;
+  const zone = membership.student.timeZone;
+  const now = new Date();
   const branch = await db.branch.findUniqueOrThrow({
     where: { id: membership.group.branchId },
     select: { organizationId: true, organization: { select: { name: true } } },
@@ -649,6 +655,12 @@ export async function getClassPage(
     schedule: membership.group.slots
       .map((s) => ({ weekday: s.weekday, startTime: s.startTime, endTime: s.endTime }))
       .sort((a, b) => a.weekday - b.weekday),
+    timeZone: zone,
+    localSchedule: zone
+      ? membership.group.slots
+          .map((s) => slotInZone(s, zone, now))
+          .sort((a, b) => a.weekday - b.weekday)
+      : null,
   };
 }
 

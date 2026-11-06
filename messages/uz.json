@@ -619,7 +619,8 @@
     "outsideWorkHours": "Markazning ish vaqtidan tashqarida",
     "teacherBusy": "Bu vaqtda o'qituvchining boshqa darsi bor",
     "availabilityOverlap": "Bir kunning soatlari bir-birini qoplaydi",
-    "outsideAvailability": "O'qituvchining band qilish soatlaridan tashqarida"
+    "outsideAvailability": "O'qituvchining band qilish soatlaridan tashqarida",
+    "timeZone": "Noma’lum vaqt mintaqasi. Europe/Berlin kabi nom kiriting."
   },
   "roles": {
     "CEO": "CEO",
@@ -1927,7 +1928,9 @@
       "school": "Maktab",
       "schoolPlaceholder": "Maktabni tanlang",
       "referredBy": "Taklif qilgan o‘quvchi",
-      "referredByPlaceholder": "O‘quvchini ism yoki telefon bo‘yicha qidiring"
+      "referredByPlaceholder": "O‘quvchini ism yoki telefon bo‘yicha qidiring",
+      "timeZone": "Vaqt mintaqasi (chet eldagi o‘quvchilar)",
+      "timeZoneHint": "Markaz vaqti uchun bo‘sh qoldiring. O‘quvchi sahifasidagi va eslatmalardagi dars vaqtlari shu mintaqada ko‘rsatiladi, masalan Europe/Berlin."
     },
     "genders": {
       "MALE": "Erkak",
@@ -5033,7 +5036,8 @@
       "bookHint": "O'qituvchingizning bo'sh vaqtini tanlang. Oldindan yana {left} ta dars band qilishingiz mumkin.",
       "book": "Vaqt tanlash",
       "noSlots": "Keyingi ikki haftada bo'sh vaqt yo'q.",
-      "orOwnTime": "Yoki vaqtni o'zingiz kiriting:"
+      "orOwnTime": "Yoki vaqtni o'zingiz kiriting:",
+      "inZone": "Vaqtlar sizning mintaqangizda: {zone}."
     },
     "homework": {
       "empty": "Hali vazifalar yo‘q.",
@@ -5199,6 +5203,14 @@
       "on": "Bildirishnomalar yoqilgan",
       "denied": "Brauzer bu sayt uchun bildirishnomalarni bloklagan. Yoqish uchun brauzerning sayt sozlamalarida ruxsat bering.",
       "failed": "Bildirishnomalarni yoqib bo‘lmadi. Keyinroq qayta urinib ko‘ring."
+    },
+    "timeZone": {
+      "title": "Vaqt mintaqangiz",
+      "centre": "Dars vaqtlari markaz vaqtida ko‘rsatiladi: {centre}. Boshqa joyda yashasangiz, mintaqangizni belgilang — sahifadagi va eslatmalardagi vaqtlar shunga moslashadi.",
+      "current": "Dars vaqtlari {zone} bo‘yicha ko‘rsatiladi. Markaz {centre} vaqtida ishlaydi.",
+      "save": "Saqlash",
+      "useDevice": "Shu qurilma mintaqasi ({zone})",
+      "invalid": "Noma’lum vaqt mintaqasi. Ro‘yxatdan tanlang, masalan Europe/Berlin."
     }
   },
   "telegramBot": {

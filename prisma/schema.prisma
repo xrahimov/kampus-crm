@@ -894,6 +894,8 @@ model Student {
   sourceId           String?
   schoolId           String?
   note               String?
+  /// IANA zone of a student abroad (A-177); lesson times are shown and sent in it. Null = the centre's time.
+  timeZone           String?
   isBlacklisted      Boolean   @default(false)
   isArchived         Boolean   @default(false)
   createdAt          DateTime  @default(now())

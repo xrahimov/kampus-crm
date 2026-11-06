@@ -1,4 +1,5 @@
 import type { AttendanceStatus, ExamType } from "@/generated/prisma/client";
+import { lessonInZone, type LocalLessonTime } from "@/lib/time-zones";
 import { prisma, type DbClient } from "@/server/db/prisma";
 import { levelName } from "@/server/services/exams/exams.service";
 import { today } from "@/server/services/groups/shared";
@@ -24,6 +25,8 @@ export interface PortalLessonDto {
   date: string;
   startTime: string;
   endTime: string;
+  /** The same lesson in the student's own zone (A-177); null when they keep the centre's time. */
+  local: LocalLessonTime | null;
   topic: string | null;
   attendance: AttendanceStatus | null;
   grade: number | null;
@@ -37,7 +40,7 @@ export interface PortalLessonDto {
 }
 
 export interface PortalDto {
-  student: { fullName: string; coins: number };
+  student: { fullName: string; coins: number; timeZone: string | null };
   group: { name: string; courseName: string; teachers: string[]; endDate: string };
   /** The next scheduled lesson from today on, if the group still has one. */
   nextLesson: Omit<
@@ -92,6 +95,7 @@ const round1 = (n: number) => Math.round(n * 10) / 10;
 export async function getPortal(token: string, db: DbClient = prisma): Promise<PortalDto | null> {
   const membership = await membershipByToken(db, token);
   if (!membership) return null;
+  const zone = membership.student.timeZone;
   const todayIso = today();
 
   const [group, lessons, nextLesson, attendance, grades, payments, examResults, attempts, coins] =
@@ -203,11 +207,13 @@ export async function getPortal(token: string, db: DbClient = prisma): Promise<P
   const gradeByLesson = new Map(grades.map((g) => [g.lessonId, g]));
   const lessonDtos: PortalLessonDto[] = lessons.map((l) => {
     const grade = gradeByLesson.get(l.id);
+    const date = dateToIso(l.date);
     return {
       id: l.id,
-      date: dateToIso(l.date),
+      date,
       startTime: l.startTime,
       endTime: l.endTime,
+      local: zone ? lessonInZone({ date, startTime: l.startTime, endTime: l.endTime }, zone) : null,
       topic: l.topic ?? l.courseTopic?.title ?? null,
       attendance: attendanceByLesson.get(l.id) ?? null,
       grade: grade ? decimalToNumber(grade.score) : null,
@@ -251,7 +257,11 @@ export async function getPortal(token: string, db: DbClient = prisma): Promise<P
   }
 
   return {
-    student: { fullName: membership.student.fullName, coins: coins._sum.amount ?? 0 },
+    student: {
+      fullName: membership.student.fullName,
+      coins: coins._sum.amount ?? 0,
+      timeZone: zone,
+    },
     group: {
       name: membership.group.name,
       courseName: group.course.name,
@@ -264,6 +274,16 @@ export async function getPortal(token: string, db: DbClient = prisma): Promise<P
           date: dateToIso(nextLesson.date),
           startTime: nextLesson.startTime,
           endTime: nextLesson.endTime,
+          local: zone
+            ? lessonInZone(
+                {
+                  date: dateToIso(nextLesson.date),
+                  startTime: nextLesson.startTime,
+                  endTime: nextLesson.endTime,
+                },
+                zone,
+              )
+            : null,
           // A lesson not yet given shows the group's next syllabus topic (A-137).
           topic: nextLesson.topic ?? nextLesson.courseTopic?.title ?? upcomingTopic,
         }
@@ -319,4 +339,16 @@ async function levelsOf(
     where: { gradingSystemId: systemId },
     orderBy: { sortOrder: "asc" },
   });
+}
+
+/** The student sets the zone they live in from their page (A-177); null returns to the centre's time. */
+export async function setPortalTimeZone(
+  token: string,
+  timeZone: string | null,
+  db: DbClient = prisma,
+): Promise<boolean> {
+  const membership = await membershipByToken(db, token);
+  if (!membership) return false;
+  await db.student.update({ where: { id: membership.studentId }, data: { timeZone } });
+  return true;
 }
