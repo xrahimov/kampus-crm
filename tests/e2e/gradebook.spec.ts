@@ -21,7 +21,12 @@ test.describe("gradebook (A-162)", () => {
 
     // Course dialog: the weights must add up to 100.
     await page.goto("/en/settings/courses");
-    const row = page.getByTestId("course-row").filter({ hasText: "General English" }).first();
+    // Each branch has a General English course; GE-Morning A1 is the Central group's.
+    const row = page
+      .getByTestId("course-row")
+      .filter({ hasText: "General English" })
+      .filter({ hasText: "Central" })
+      .first();
     await row.getByRole("button", { name: "Actions for General English" }).click();
     await page.getByRole("menuitem", { name: "Edit" }).click();
     const dialog = page.getByTestId("course-dialog");
