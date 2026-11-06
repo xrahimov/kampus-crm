@@ -30,6 +30,7 @@ import { PortalHomeworkTab } from "./homework-tab";
 import { PortalTestsTab } from "./tests-tab";
 import { PortalMaterialsTab } from "./materials-tab";
 import { PayCard } from "./pay-card";
+import { LessonRatingCell } from "./lesson-rating";
 import { ReferralCard } from "./referral-card";
 import { TelegramCard } from "./telegram-card";
 import type { Weekday } from "@/lib/validation/groups";
@@ -248,6 +249,7 @@ export function PortalPage({
                       <TableHead>{t("lessons.topic")}</TableHead>
                       <TableHead>{t("lessons.attendance")}</TableHead>
                       <TableHead className="text-right">{t("lessons.grade")}</TableHead>
+                      <TableHead className="text-right">{t("lessons.yourRating")}</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -261,6 +263,14 @@ export function PortalPage({
                         </TableCell>
                         <TableCell>
                           {l.topic ?? <span className="text-muted-foreground">—</span>}
+                          {l.studentNote && (
+                            <p
+                              className="mt-1 text-xs whitespace-pre-wrap text-muted-foreground"
+                              data-testid="portal-lesson-note"
+                            >
+                              {t("lessons.teacherNote")}: {l.studentNote}
+                            </p>
+                          )}
                         </TableCell>
                         <TableCell>
                           <AttendanceBadge status={l.attendance} />
@@ -270,6 +280,9 @@ export function PortalPage({
                           {l.gradeComment && (
                             <div className="text-xs text-muted-foreground">{l.gradeComment}</div>
                           )}
+                        </TableCell>
+                        <TableCell className="text-right">
+                          <LessonRatingCell token={token} lesson={l} />
                         </TableCell>
                       </TableRow>
                     ))}

@@ -121,7 +121,15 @@ export const lessonUpdateSchema = z.object({
   /** A topic of the group's course syllabus (A-137); null clears it. */
   courseTopicId: z.string().max(50).nullable().optional(),
   attachmentUrl: z.string().max(500).nullable().optional(),
+  /** The teacher's note to the students about the lesson (A-168); null clears it. */
+  studentNote: z.string().trim().max(1000, "validation.tooLong").nullable().optional(),
 });
+/** A student rates a lesson from their page (A-168). */
+export const lessonRatingSchema = z.object({
+  rating: z.coerce.number().int().min(1, "validation.min").max(5, "validation.max"),
+  comment: z.string().trim().max(500, "validation.tooLong").nullable().optional(),
+});
+export type LessonRatingInput = z.output<typeof lessonRatingSchema>;
 export const attendanceSchema = z.object({
   marks: z
     .array(

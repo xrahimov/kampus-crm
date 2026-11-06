@@ -435,6 +435,7 @@ export const uz: HelpContent = {
             {
               note: "Davomat o‘quvchining davomat foizini, kelmagan bola haqida ota-onaga avto-SMSni va darsga kelgani uchun avtomatik coinlarni, agar ular yoqilgan bo‘lsa, ishga tushiradi.",
             },
+            "Dars mavzusini belgilaganda **O'quvchilar uchun izoh** ham yozishingiz mumkin: nima o'tildi, nimani takrorlash, nima olib kelish kerak. U o'quvchilar sahifasida shu dars ostida ko'rinadi va ularga Telegram orqali boradi; video darsda **Dars** panelida ham shu izoh bor. Dars tugagach o'quvchilar uni 1 dan 5 gacha yulduz bilan baholaydi va bir qator izoh qo'shishi mumkin; o'rtacha baho davomat jadvalida dars sanasi yonida ko'rinadi, ismlar va izohlar esa shu oynada ochiladi.",
           ],
         },
         grades: {
@@ -1268,6 +1269,7 @@ export const uz: HelpContent = {
           title: "Darslar va jadval",
           body: [
             "**Darslar** yorlig‘i har bir darsni sanasi, mavzusi, kelgan-kelmaganingiz va bahongiz bilan ko‘rsatadi. **Jadval** yorlig‘i guruhingiz yig‘iladigan kunlar va vaqtlarni hamda guruh qachongacha o‘qishini ko‘rsatadi.",
+            "Dars tugagach uni **Bahoyingiz** ustunida 1 dan 5 gacha yulduz bilan baholashingiz va nima yaxshi bo'lgani yoki bo'lmagani haqida bir qator yozishingiz mumkin; keyin o'zgartirsa bo'ladi. O'tkazib yuborilgan darsga baho qo'yilmaydi. O'qituvchining dars haqidagi izohi, bo'lsa, mavzu ostida ko'rinadi.",
           ],
         },
         homework: {

@@ -491,7 +491,9 @@
     "studentLinkExpired": "Bu kirish havolasi ishlatilgan yoki muddati o‘tgan. Botdan yangisini so‘rang.",
     "studentLoginOff": "Bu o‘quv markazida Telegram orqali kirish hali sozlanmagan.",
     "callWithoutLesson": "Bu qo‘ng‘iroq darsga bog‘lanmagan.",
-    "topicLocked": "Bu mavzu sizga hali ochilmagan"
+    "topicLocked": "Bu mavzu sizga hali ochilmagan",
+    "lessonNotOver": "Dars hali tugamagan",
+    "ratingAbsent": "O'tkazib yuborilgan darsga baho qo'yib bo'lmaydi"
   },
   "validation": {
     "phone": "+998 90 123 45 67 ko‘rinishida raqam kiriting.",
@@ -1462,7 +1464,10 @@
       "undo": "Qaytarish",
       "movedFrom": "{date} dan ko'chirilgan",
       "syllabusTopic": "Dasturdagi mavzu",
-      "noSyllabusTopic": "— yo‘q —"
+      "noSyllabusTopic": "— yo‘q —",
+      "studentNote": "O'quvchilar uchun izoh",
+      "studentNoteHint": "O'quvchilar sahifasida shu dars ostida ko'rinadi va Telegram orqali yuboriladi.",
+      "ratings": "O'quvchilar bahosi"
     },
     "grades": {
       "system": "Baholash",
@@ -4863,7 +4868,14 @@
       "topic": "Mavzu",
       "attendance": "Davomat",
       "grade": "Baho",
-      "nextTopic": "Keyingi mavzu: {title}"
+      "nextTopic": "Keyingi mavzu: {title}",
+      "yourRating": "Bahoyingiz",
+      "stars": "{count} yulduz",
+      "teacherNote": "O'qituvchi izohi",
+      "addComment": "Izoh qo'shish",
+      "changeComment": "Izohni o'zgartirish",
+      "commentPlaceholder": "Nima yaxshi bo'ldi, nima yo'q",
+      "send": "Yuborish"
     },
     "money": {
       "balance": "Balans",
@@ -5084,7 +5096,8 @@
     "loginLinkedElsewhere": "Profilingiz boshqa Telegram hisobiga ulangan. Avval qabulxonadan uni uzishni so‘rang.",
     "loginLink": "Kampusni ochish uchun bosing: {url}\nHavola bir marta, 10 daqiqa ishlaydi.",
     "weeklyProgress": "{group}: kurs {percent}% bajarildi ({total} mavzudan {done} tasi){score, select, none {} other {, mashqlar o‘rtachasi {score}%}}",
-    "noShow": "{group}: o'qituvchi dars xonasida {time} dan beri {minutes} daqiqa kutdi. Dars \"kelmadi\" deb qo'yildi. Keyingi safar kela olmasangiz, iltimos, o'qituvchiga oldindan ayting."
+    "noShow": "{group}: o'qituvchi dars xonasida {time} dan beri {minutes} daqiqa kutdi. Dars \"kelmadi\" deb qo'yildi. Keyingi safar kela olmasangiz, iltimos, o'qituvchiga oldindan ayting.",
+    "lessonNote": "{group}: {date} kungi dars bo'yicha o'qituvchi izohi: {text}"
   },
   "video": {
     "title": "Video dars",
@@ -5285,7 +5298,12 @@
       "link": "Havola",
       "file": "Fayl",
       "speaking": "Og‘zaki topshiriq: yozuv bilan javob bering",
-      "studentHint": "Materiallar yangi oynada ochiladi. Uy vazifasini darsdan keyin shaxsiy sahifangizdan topshiring."
+      "studentHint": "Materiallar yangi oynada ochiladi. Uy vazifasini darsdan keyin shaxsiy sahifangizdan topshiring.",
+      "studentNote": "O'quvchilar uchun izoh",
+      "studentNotePlaceholder": "Nimani takrorlash, nimaga tayyorlanish…",
+      "editNote": "Izohni tahrirlash",
+      "noNote": "Hozircha izoh yo'q",
+      "cancel": "Bekor qilish"
     },
     "board": {
       "title": "Doska",

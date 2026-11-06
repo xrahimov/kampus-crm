@@ -4,6 +4,7 @@ import { recordAudit } from "@/server/audit/audit";
 import { awardAutoCoins } from "@/server/services/coins/coins.service";
 import { assignNextTopic } from "@/server/services/settings/syllabus.service";
 import { queueAutoSms } from "@/server/services/sms/auto-sms.service";
+import { notifyStudents } from "@/server/services/telegram/student-telegram.service";
 import { prisma, type DbClient } from "@/server/db/prisma";
 import { AppError } from "@/server/errors/app-error";
 import { authorize, type Actor } from "@/server/rbac/authorize";
@@ -34,6 +35,10 @@ export interface LessonDto {
   movedFrom: string | null;
   attendance: Record<string, { status: AttendanceStatus; comment: string | null }>;
   grades: Record<string, { score: number; comment: string | null }>;
+  /** The teacher's note to the students (A-168). */
+  studentNote: string | null;
+  /** The students' ratings of the lesson (A-168). */
+  rating: { average: number | null; count: number };
 }
 
 /** A cancelled or moved lesson of the month: the group's own day off or a branch holiday (A-117). */
@@ -81,6 +86,7 @@ export async function getMonthGrid(
       include: {
         attendances: true,
         grades: true,
+        ratings: { select: { rating: true } },
         movedFrom: { select: { date: true } },
         courseTopic: { select: { title: true } },
       },
@@ -146,6 +152,13 @@ export async function getMonthGrid(
       movedFrom: l.movedFrom ? dateToIso(l.movedFrom.date) : null,
       attendance,
       grades,
+      studentNote: l.studentNote,
+      rating: {
+        average: l.ratings.length
+          ? Math.round((l.ratings.reduce((s, r) => s + r.rating, 0) / l.ratings.length) * 10) / 10
+          : null,
+        count: l.ratings.length,
+      },
     };
   });
   return {
@@ -219,6 +232,8 @@ export async function addExtraLesson(
         courseTopicId: null,
         courseTopicTitle: null,
         attachmentUrl: null,
+        studentNote: null,
+        rating: { average: null, count: 0 },
         isExtra: true,
         movedFrom: null,
         attendance: {},
@@ -234,7 +249,12 @@ export async function addExtraLesson(
 export async function updateLesson(
   actor: Actor,
   lessonId: string,
-  input: { topic?: string | null; courseTopicId?: string | null; attachmentUrl?: string | null },
+  input: {
+    topic?: string | null;
+    courseTopicId?: string | null;
+    attachmentUrl?: string | null;
+    studentNote?: string | null;
+  },
   db: DbClient = prisma,
 ): Promise<void> {
   authorize(actor, "groups.attendance.mark");
@@ -254,8 +274,26 @@ export async function updateLesson(
         ...(input.topic !== undefined ? { topic: input.topic } : {}),
         ...(input.courseTopicId !== undefined ? { courseTopicId: input.courseTopicId } : {}),
         ...(input.attachmentUrl !== undefined ? { attachmentUrl: input.attachmentUrl } : {}),
+        ...(input.studentNote !== undefined ? { studentNote: input.studentNote || null } : {}),
       },
     });
+    // A new or changed note reaches the students on Telegram (A-168).
+    if (input.studentNote && input.studentNote !== lesson.studentNote) {
+      const members = await tx.groupMembership.findMany({
+        where: { groupId: lesson.groupId, status: { in: ["NEW", "TRIAL", "ACTIVE"] } },
+        select: { studentId: true },
+      });
+      await notifyStudents(tx, {
+        studentIds: members.map((m) => m.studentId),
+        kind: "lessonNote",
+        refKey: `lesson-note:${lessonId}:${row.updatedAt.getTime()}`,
+        values: {
+          group: lesson.group.name,
+          date: dateToIso(lesson.date),
+          text: input.studentNote.slice(0, 500),
+        },
+      });
+    }
     await recordAudit(tx, actor, {
       action: "lesson.update",
       entity: "Lesson",
@@ -264,11 +302,13 @@ export async function updateLesson(
         topic: lesson.topic,
         courseTopicId: lesson.courseTopicId,
         attachmentUrl: lesson.attachmentUrl,
+        studentNote: lesson.studentNote,
       },
       after: {
         topic: row.topic,
         courseTopicId: row.courseTopicId,
         attachmentUrl: row.attachmentUrl,
+        studentNote: row.studentNote,
       },
       branchId: lesson.group.branchId,
     });

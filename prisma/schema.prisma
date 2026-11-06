@@ -813,6 +813,8 @@ model Lesson {
   /// The syllabus topic this lesson covers (A-137); `topic` stays for a free-text one.
   courseTopicId String?
   attachmentUrl String?
+  /// The teacher's short note to the students about this lesson, shown on their page (A-168).
+  studentNote   String?
   isExtra       Boolean  @default(false)
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
@@ -821,6 +823,7 @@ model Lesson {
   courseTopic CourseTopic?     @relation(fields: [courseTopicId], references: [id], onDelete: SetNull)
   attendances Attendance[]
   grades      Grade[]
+  ratings     LessonRating[]
   videoRooms  VideoRoom[]
   homework    Homework?
   materials   LessonMaterial[]
@@ -831,6 +834,23 @@ model Lesson {
   @@unique([groupId, date, startTime])
   @@index([courseTopicId])
   @@index([groupId, date])
+}
+
+/// A student's rating of one lesson, 1-5 with an optional line, from their page (A-168).
+model LessonRating {
+  id           String   @id @default(cuid())
+  lessonId     String
+  membershipId String
+  rating       Int
+  comment      String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  lesson     Lesson          @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+  membership GroupMembership @relation(fields: [membershipId], references: [id], onDelete: Cascade)
+
+  @@unique([lessonId, membershipId])
+  @@index([lessonId])
 }
 
 /// Student (EXP §6 profile). Phase 5 created the minimal row; Phase 6 adds the
@@ -1035,6 +1055,7 @@ model GroupMembership {
   student          Student              @relation(fields: [studentId], references: [id])
   attendances      Attendance[]
   grades           Grade[]
+  lessonRatings    LessonRating[]
   discounts        Discount[]
   charges          Charge[]
   payments         Payment[]

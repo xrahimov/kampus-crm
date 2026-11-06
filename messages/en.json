@@ -491,7 +491,9 @@
     "studentLinkExpired": "This sign-in link was already used or has expired. Ask the bot for a new one.",
     "studentLoginOff": "Sign-in with Telegram is not set up at this learning centre yet.",
     "callWithoutLesson": "This call is not tied to a lesson.",
-    "topicLocked": "This topic is not open to you yet"
+    "topicLocked": "This topic is not open to you yet",
+    "lessonNotOver": "The lesson is not over yet",
+    "ratingAbsent": "A missed lesson cannot be rated"
   },
   "validation": {
     "phone": "Enter a number like +998 90 123 45 67.",
@@ -1462,7 +1464,10 @@
       "undo": "Undo",
       "movedFrom": "Moved from {date}",
       "syllabusTopic": "Syllabus topic",
-      "noSyllabusTopic": "— none —"
+      "noSyllabusTopic": "— none —",
+      "studentNote": "Note for the students",
+      "studentNoteHint": "Shown on the students' pages under this lesson and sent to them on Telegram.",
+      "ratings": "Students' ratings"
     },
     "grades": {
       "system": "Grading",
@@ -4863,7 +4868,14 @@
       "topic": "Topic",
       "attendance": "Attendance",
       "grade": "Grade",
-      "nextTopic": "Next topic: {title}"
+      "nextTopic": "Next topic: {title}",
+      "yourRating": "Your rating",
+      "stars": "{count, plural, one {# star} other {# stars}}",
+      "teacherNote": "Teacher's note",
+      "addComment": "Add a line",
+      "changeComment": "Change the line",
+      "commentPlaceholder": "What went well, what did not",
+      "send": "Send"
     },
     "money": {
       "balance": "Balance",
@@ -5084,7 +5096,8 @@
     "loginLinkedElsewhere": "Your profile is already connected to another Telegram account. Ask the reception to unlink it first.",
     "loginLink": "Tap to open Kampus: {url}\nThe link works once, for 10 minutes.",
     "weeklyProgress": "{group}: course {percent}% complete ({done} of {total} topics){score, select, none {} other {, exercises average {score}%}}",
-    "noShow": "{group}: the teacher has been waiting in the lesson room since {time} for {minutes} minutes. The lesson is marked as missed. Please tell the teacher if you cannot make it next time."
+    "noShow": "{group}: the teacher has been waiting in the lesson room since {time} for {minutes} minutes. The lesson is marked as missed. Please tell the teacher if you cannot make it next time.",
+    "lessonNote": "{group}: the teacher's note on the lesson of {date}: {text}"
   },
   "video": {
     "title": "Video lesson",
@@ -5285,7 +5298,12 @@
       "link": "Link",
       "file": "File",
       "speaking": "Speaking task: answer with a recording",
-      "studentHint": "Materials open in a new tab. Hand in homework from your personal page after the lesson."
+      "studentHint": "Materials open in a new tab. Hand in homework from your personal page after the lesson.",
+      "studentNote": "Note for the students",
+      "studentNotePlaceholder": "What to review, what to prepare…",
+      "editNote": "Edit the note",
+      "noNote": "No note yet",
+      "cancel": "Cancel"
     },
     "board": {
       "title": "Whiteboard",
