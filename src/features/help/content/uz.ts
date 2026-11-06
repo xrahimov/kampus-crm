@@ -499,6 +499,7 @@ export const uz: HelpContent = {
             "**So‘rovnoma**: 2-6 javobli tez savol bering. O‘quvchilar javobni bosadi va o‘zgartira oladi; siz sonlarni va kim nimani tanlaganini darhol ko‘rasiz, o‘quvchilar natijani so‘rovnomani yopganingizdan keyin ko‘radi. Natijalar guruh sahifasida oxirgi video dars ostida saqlanadi.",
             "O‘quvchilar qo‘l ko‘tarishi mumkin; navbat ularning rasmida raqam bilan va **Qatnashchilar** → **Ko‘tarilgan qo‘llar** ro‘yxatida ko‘rinadi, u yerda qo‘lni tushirish mumkin. Ism yonidagi yulduzcha shu odamni hammaning ekranida katta ko‘rsatadi. **Diqqat rejimi** (ramka tugmasi) o‘quvchilarga faqat sizni, ko‘rsatilgan odamni va ulashilgan ekranni ko‘rsatadi; ular bir-birini eshitishda davom etadi. Hamma reaksiya yubora oladi; o‘quvchilar **sekinroq** yoki **tezroq** deb ham ayta oladi, buni faqat siz yuqorida son sifatida ko‘rasiz.",
             "Darsga tegishli qo‘ng‘iroqdan keyin **Oxirgi video dars** qatorini oching va **Qo‘ng‘iroqdan davomat**ni bosing. Kampus Sozlamalar → Integratsiyalar → Video darslarda belgilangan daqiqa (standart 10) davomida onlayn bo‘lganlarni keldi, qolganlarni kelmadi deb taklif qiladi va kechikib qo‘shilganlarni belgilaydi. Noto‘g‘risini o‘zgartiring va **Darsga qo‘llash**ni bosing; belgilar odatdagi davomat qoidalari bo‘yicha qo‘yiladi.",
+            "Bitta o'quvchili guruhda Sozlamalar → Integratsiyalar → Video darslar bo'limida belgilangan daqiqalar davomida (**Yakka darsda o'quvchi kelmaganini yozishdan oldin kutish daqiqalari**, odatda 15; qo'ng'iroq boshlanishi va dars boshlanishidan kechrog'idan hisoblanadi) qo'ng'iroqda yolg'iz kutgan bo'lsangiz, Kampus o'quvchiga \"kelmadi\" qo'yadi, o'quvchi va ota-onasiga Telegram orqali xabar beradi va xonada sizga banner ko'rsatadi. O'quvchi keyin kelsa, bahoni **Qo'ng'iroq bo'yicha davomat** orqali o'zgartiring.",
           ],
         },
         links: {
@@ -1130,7 +1131,7 @@ export const uz: HelpContent = {
         video: {
           title: "Video darslar",
           body: [
-            "Video darslar ommaviy STUN serverlar orqali sozlamasiz ishlaydi. Ba’zi mobil yoki ofis tarmoqlaridagi o‘quvchilar ulana olmasa, shu yerda TURN relay server qo‘shing (server o‘rnatmasi bittasini o‘z ichiga oladi). Bitta qo‘ng‘iroqda ruxsat etilgan eng ko‘p odam sonini va dars yozuvlari o‘chirilguncha necha kun saqlanishini belgilang. **“Keldi” hisoblanishi uchun onlayn daqiqalar** o‘quvchi keldi deb taklif qilinishi uchun qo‘ng‘iroqda qancha bo‘lishi kerakligini belgilaydi.",
+            "Video darslar ommaviy STUN serverlar orqali sozlamasiz ishlaydi. Ba’zi mobil yoki ofis tarmoqlaridagi o‘quvchilar ulana olmasa, shu yerda TURN relay server qo‘shing (server o‘rnatmasi bittasini o‘z ichiga oladi). Bitta qo‘ng‘iroqda ruxsat etilgan eng ko‘p odam sonini va dars yozuvlari o‘chirilguncha necha kun saqlanishini belgilang. **“Keldi” hisoblanishi uchun onlayn daqiqalar** o‘quvchi keldi deb taklif qilinishi uchun qo‘ng‘iroqda qancha bo‘lishi kerakligini belgilaydi. **Yakka darsda o'quvchi kelmaganini yozishdan oldin kutish daqiqalari** bitta o'quvchili guruhlarga tegishli: o'qituvchi qo'ng'iroqda shuncha vaqt yolg'iz qolsa, o'quvchiga \"kelmadi\" qo'yiladi va Telegram orqali xabar beriladi; 0 o'chiradi.",
           ],
         },
         onlinePayments: {

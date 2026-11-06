@@ -496,6 +496,7 @@ export const en: HelpContent = {
             "**Poll**: ask a quick question with 2-6 answers. Students tap an answer and can change it; you see the counts and who chose what as they come in, students see the result once you close the poll. Results stay under the last video lesson on the group page.",
             "Students can raise a hand; the order shows as a number on their picture and under **People** → **Raised hands**, where you can lower a hand. The star next to a name shows that person large on everyone's screen. **Focus mode** (the frame button) lets students see only you, the person you show and a shared screen; they still hear each other. Everyone can send reactions; students can also tell you **slower** or **faster**, which only you see as a count at the top.",
             "After a call that belongs to a lesson, open the **Last video lesson** line and press **Attendance from the call**. Kampus proposes present for everyone who was online at least the minutes set in Settings → Integrations → Video lessons (10 by default) and absent for the rest, and notes late joins. Change what is wrong and press **Apply to the lesson**; the marks go through the usual attendance rules.",
+            "In a group with one student, if you have waited alone in the call for the minutes set under Settings → Integrations → Video lessons (**Minutes alone before a 1:1 no-show is recorded**, 15 by default, counted from the later of the call's start and the lesson's start), Kampus marks the student absent, tells them and their parents on Telegram and shows you a banner in the room. If the student turns up after all, use **Attendance from the call** to change the mark.",
           ],
         },
         links: {
@@ -1126,7 +1127,7 @@ export const en: HelpContent = {
         video: {
           title: "Video lessons",
           body: [
-            "Video lessons work without setup over public STUN servers. If students on some mobile or office networks cannot connect, add a TURN relay server here (the server deployment ships one). Set the most people allowed in one call and how many days to keep lesson recordings before they are deleted. **Minutes online to count as present** sets how long a student must be in the call to be proposed as present.",
+            "Video lessons work without setup over public STUN servers. If students on some mobile or office networks cannot connect, add a TURN relay server here (the server deployment ships one). Set the most people allowed in one call and how many days to keep lesson recordings before they are deleted. **Minutes online to count as present** sets how long a student must be in the call to be proposed as present. **Minutes alone before a 1:1 no-show is recorded** applies to groups with one student: the teacher alone in the call this long marks the student absent and tells them on Telegram; 0 turns it off.",
           ],
         },
         onlinePayments: {
