@@ -49,6 +49,10 @@ export type BotMessageKind =
   | "homeworkChanged"
   | "homeworkAccepted"
   | "homeworkReturned"
+  | "assignmentSet"
+  | "assignmentChanged"
+  | "assignmentAccepted"
+  | "assignmentReturned"
   | "materialAdded"
   | "paymentReceived"
   | "debtor"
@@ -370,20 +374,23 @@ export async function notifyHomework(
   tx: DbClient,
   input:
     | {
-        kind: "homeworkSet" | "homeworkChanged";
+        kind: "homeworkSet" | "homeworkChanged" | "assignmentSet" | "assignmentChanged";
         homeworkId: string;
         groupId: string;
         groupName: string;
-        lessonDate: string;
+        /** The lesson's date, or an assignment's due date (A-161). */
+        lessonDate: string | null;
+        title?: string;
         text: string;
         stamp: string;
       }
     | {
-        kind: "homeworkAccepted" | "homeworkReturned";
+        kind: "homeworkAccepted" | "homeworkReturned" | "assignmentAccepted" | "assignmentReturned";
         homeworkId: string;
         studentId: string;
         groupName: string;
-        lessonDate: string;
+        lessonDate: string | null;
+        title?: string;
         comment: string | null;
         stamp: string;
       },
@@ -396,7 +403,8 @@ export async function notifyHomework(
     refKey: `${input.kind}:${input.homeworkId}:${input.stamp}`,
     values: (locale) => ({
       group: input.groupName,
-      date: botDate(locale, input.lessonDate),
+      date: input.lessonDate ? botDate(locale, input.lessonDate) : "none",
+      title: input.title ?? "",
       text: "text" in input ? input.text.slice(0, 500) : "",
       comment: "comment" in input && input.comment ? `\n${input.comment}` : "",
     }),

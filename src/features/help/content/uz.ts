@@ -455,6 +455,7 @@ export const uz: HelpContent = {
               ],
             },
             "Telegramga ulangan o‘quvchilar vazifa berilganda, o‘zgartirilganda, qabul qilinganda yoki qaytarilganda xabar oladi. Uy vazifasi uchun avtomatik coinlar yoqilgan bo‘lsa, qabul qilingan javob coinlarni o‘zi beradi.",
+            "**Yangi topshiriq** butun guruh uchun, darsga bog‘lamay, loyiha yoki insho beradi: nomi, vazifa, muddat va ballari bilan mezonlar **rubrikasi**. O‘quvchilar uy vazifasi kabi o‘z sahifasidan javob beradi; javobni qabul qilganda yoki qaytarganda har bir mezonga ball qo‘yasiz, o‘quvchi ballarni rubrika yonida ko‘radi. Topshiriqlar tekshirish navbatida ham chiqadi.",
           ],
         },
         checking: {
@@ -1280,6 +1281,7 @@ export const uz: HelpContent = {
                 "O‘qituvchi javobni qabul qiladi yoki izoh bilan qaytaradi. Qaytarilgan vazifa “bajarish kerak” holatida qaytadi; **Qayta javob berish** ni bosing.",
               ],
             },
+            "**Topshiriq** – butun guruh uchun kattaroq vazifa, masalan loyiha yoki insho, muddati va nimaga qarab baholanishi jadvali bilan. Unga ham shu tarzda javob bering; o‘qituvchi tekshirgach har bir qator uchun ballingizni va jamini ko‘rasiz.",
           ],
         },
         materials: {

@@ -112,8 +112,15 @@ function HomeworkItem({
   return (
     <article className="rounded-lg border" data-testid="portal-homework-item">
       <header className="flex flex-wrap items-center justify-between gap-2 border-b bg-muted/40 px-3 py-2 text-sm">
-        <div className="font-medium">
-          {t("lessonOf", { date: date(homework.lessonDate) })}
+        <div className="flex flex-wrap items-center gap-2 font-medium">
+          {homework.lessonDate
+            ? t("lessonOf", { date: date(homework.lessonDate) })
+            : homework.title}
+          {!homework.lessonDate && (
+            <Badge variant="secondary" data-testid="portal-assignment-badge">
+              {t("assignment")}
+            </Badge>
+          )}
           {homework.lessonTopic && (
             <span className="ml-2 font-normal text-muted-foreground">{homework.lessonTopic}</span>
           )}
@@ -138,6 +145,29 @@ function HomeworkItem({
       </header>
       <div className="space-y-3 px-3 py-3 text-sm">
         <p className="whitespace-pre-wrap">{homework.text}</p>
+        {homework.rubric.length > 0 && (
+          <ul className="divide-y rounded-md border text-xs" data-testid="portal-rubric">
+            <li className="flex justify-between bg-muted/40 px-2 py-1 font-medium">
+              <span>{t("rubric")}</span>
+              {s?.score !== null && s?.score !== undefined ? (
+                <span data-testid="portal-score">
+                  {t("score", { points: s.score, max: homework.maxScore ?? 0 })}
+                </span>
+              ) : (
+                <span>{t("outOf", { points: homework.maxScore ?? 0 })}</span>
+              )}
+            </li>
+            {homework.rubric.map((c, i) => (
+              <li key={i} className="flex justify-between gap-2 px-2 py-1">
+                <span>{c.name}</span>
+                <span className="tabular-nums text-muted-foreground">
+                  {s?.rubricScores ? `${s.rubricScores[i] ?? 0} / ` : ""}
+                  {c.max}
+                </span>
+              </li>
+            ))}
+          </ul>
+        )}
         <div className="flex flex-wrap gap-3 text-xs">
           {homework.linkUrl && (
             <a

@@ -17,8 +17,10 @@ export interface CheckingItemDto {
   fullName: string;
   groupId: string;
   groupName: string;
-  lessonDate: string;
+  /** Null for a standalone assignment (A-161), which carries a title instead. */
+  lessonDate: string | null;
   lessonTopic: string | null;
+  title: string | null;
   /** The task as set. */
   text: string;
   linkUrl: string | null;
@@ -69,6 +71,7 @@ export async function listCheckingQueue(
         homework: {
           select: {
             text: true,
+            title: true,
             linkUrl: true,
             speaking: true,
             lesson: {
@@ -91,8 +94,9 @@ export async function listCheckingQueue(
       fullName: r.membership.student.fullName,
       groupId: r.homework.group.id,
       groupName: r.homework.group.name,
-      lessonDate: dateToIso(r.homework.lesson.date),
-      lessonTopic: r.homework.lesson.topic ?? r.homework.lesson.courseTopic?.title ?? null,
+      lessonDate: r.homework.lesson ? dateToIso(r.homework.lesson.date) : null,
+      lessonTopic: r.homework.lesson?.topic ?? r.homework.lesson?.courseTopic?.title ?? null,
+      title: r.homework.title,
       text: r.homework.text,
       linkUrl: r.homework.linkUrl,
       speaking: r.homework.speaking,
