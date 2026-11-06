@@ -492,7 +492,9 @@
     "studentLoginOff": "Sign-in with Telegram is not set up at this learning centre yet.",
     "callWithoutLesson": "This call is not tied to a lesson.",
     "topicLocked": "This topic is not open to you yet",
-    "notAnAssignment": "This homework belongs to a lesson; edit it from the lesson."
+    "notAnAssignment": "This homework belongs to a lesson; edit it from the lesson.",
+    "trialNotToday": "The trial lesson is on another day.",
+    "trialClosed": "This trial lesson is no longer on."
   },
   "validation": {
     "phone": "Enter a number like +998 90 123 45 67.",
@@ -2746,7 +2748,10 @@
         "NO_SHOW": "Didn't come",
         "CONVERTED": "Became a student",
         "CANCELLED": "Cancelled"
-      }
+      },
+      "copyLink": "Copy the visitor's lesson link",
+      "linkCopied": "Link copied",
+      "linkHint": "Send this link to the visitor: on the day of the trial it lets them into the online lesson, and joining marks them as came."
     },
     "bulk": {
       "selected": "{count} selected",
@@ -5110,7 +5115,8 @@
     "assignmentSet": "{group}: new assignment “{title}”{date, select, none {} other {, due by {date}}}.\n{text}",
     "assignmentChanged": "{group}: the assignment “{title}” was changed.\n{text}",
     "assignmentAccepted": "{group}: your assignment “{title}” was accepted.{comment}",
-    "assignmentReturned": "{group}: your assignment “{title}” was returned, please look at it again.{comment}"
+    "assignmentReturned": "{group}: your assignment “{title}” was returned, please look at it again.{comment}",
+    "trialLink": "🎓 Your trial lesson: {group}, {date}{time, select, none {} other {, {time}}}.\nOn that day open this link to join the online lesson: {url}"
   },
   "video": {
     "title": "Video lesson",
@@ -5346,6 +5352,17 @@
       "sendNotice": "Send to everyone",
       "end": "Close the rooms and bring everyone back",
       "hint": "People in a room see and hear only each other. A {role} stays in the main room."
+    },
+    "trial": {
+      "hello": "Welcome, {name}",
+      "intro": "Your trial lesson with the group {group} at {center}. This page lets you into the online lesson on the day of your visit.",
+      "badge": "Trial lesson",
+      "waiting": "The teacher has not started the lesson yet. Keep this page open; the Join button appears as soon as they do.",
+      "notToday": "The link opens the lesson on the day of your visit. Come back then, a few minutes before the start.",
+      "closed": "This trial lesson is no longer on. Ask the learning centre for a new date.",
+      "converted": "You are a student of this group now. Use the personal link the centre sent you instead.",
+      "disabled": "Video lessons are switched off at this learning centre.",
+      "tips": "Open the link in any browser on a phone or computer; nothing to install. Allow the camera and microphone when asked."
     }
   },
   "help": {

@@ -2,13 +2,16 @@
 
 import {
   CalendarClock,
+  Check,
   Clock,
   GraduationCap,
+  Link2,
   MoreHorizontal,
   Phone,
   UserRound,
 } from "lucide-react";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
+import { useState } from "react";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -242,6 +245,9 @@ export function LeadCard({
             })}
           </Badge>
         )}
+        {lead.trial?.token && lead.trial.status === "BOOKED" && (
+          <TrialLinkButton token={lead.trial.token} />
+        )}
         {lead.sourceName && <Badge variant="secondary">{lead.sourceName}</Badge>}
         {lead.referrerName && (
           <Badge variant="outline" data-testid="lead-referrer">
@@ -286,5 +292,37 @@ export function LeadCard({
         </span>
       </p>
     </li>
+  );
+}
+
+/** Copies the trial visitor's own link into the online lesson (A-172). */
+function TrialLinkButton({ token }: { token: string }) {
+  const tl = useTranslations("leads");
+  const locale = useLocale();
+  const [copied, setCopied] = useState(false);
+  async function copy() {
+    const url = `${window.location.origin}/${locale}/class/trial/${token}`;
+    try {
+      await navigator.clipboard.writeText(url);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch {
+      /* the browser refused the clipboard; nothing else to do */
+    }
+  }
+  return (
+    <Button
+      type="button"
+      variant="ghost"
+      size="sm"
+      className="h-6 gap-1 px-1.5 text-xs"
+      onClick={() => void copy()}
+      title={tl("trial.linkHint")}
+      aria-label={tl("trial.copyLink")}
+      data-testid="lead-trial-link"
+    >
+      {copied ? <Check className="size-3" /> : <Link2 className="size-3" />}
+      {copied ? tl("trial.linkCopied") : tl("trial.copyLink")}
+    </Button>
   );
 }

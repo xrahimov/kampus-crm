@@ -492,7 +492,9 @@
     "studentLoginOff": "Bu o‘quv markazida Telegram orqali kirish hali sozlanmagan.",
     "callWithoutLesson": "Bu qo‘ng‘iroq darsga bog‘lanmagan.",
     "topicLocked": "Bu mavzu sizga hali ochilmagan",
-    "notAnAssignment": "Bu uy vazifasi darsga tegishli; uni darsdan tahrirlang."
+    "notAnAssignment": "Bu uy vazifasi darsga tegishli; uni darsdan tahrirlang.",
+    "trialNotToday": "Sinov darsi boshqa kunda.",
+    "trialClosed": "Bu sinov darsi endi o‘tkazilmaydi."
   },
   "validation": {
     "phone": "+998 90 123 45 67 ko‘rinishida raqam kiriting.",
@@ -2746,7 +2748,10 @@
         "NO_SHOW": "Kelmadi",
         "CONVERTED": "O‘quvchiga aylandi",
         "CANCELLED": "Bekor qilindi"
-      }
+      },
+      "copyLink": "Tashrifchining dars havolasini nusxalash",
+      "linkCopied": "Havola nusxalandi",
+      "linkHint": "Bu havolani tashrifchiga yuboring: sinov kuni u onlayn darsga kiritadi, qo‘shilish «keldi» deb belgilaydi."
     },
     "bulk": {
       "selected": "{count} tanlandi",
@@ -5110,7 +5115,8 @@
     "assignmentSet": "{group}: yangi topshiriq – “{title}”{date, select, none {} other {, muddati {date}}}.\n{text}",
     "assignmentChanged": "{group}: “{title}” topshirig‘i o‘zgartirildi.\n{text}",
     "assignmentAccepted": "{group}: “{title}” topshirig‘ingiz qabul qilindi.{comment}",
-    "assignmentReturned": "{group}: “{title}” topshirig‘ingiz qaytarildi, qayta ko‘rib chiqing.{comment}"
+    "assignmentReturned": "{group}: “{title}” topshirig‘ingiz qaytarildi, qayta ko‘rib chiqing.{comment}",
+    "trialLink": "🎓 Sinov darsingiz: {group}, {date}{time, select, none {} other {, {time}}}.\nO‘sha kuni onlayn darsga qo‘shilish uchun shu havolani oching: {url}"
   },
   "video": {
     "title": "Video dars",
@@ -5346,6 +5352,17 @@
       "sendNotice": "Hammaga yuborish",
       "end": "Xonalarni yopish va hammani qaytarish",
       "hint": "Xonadagilar faqat bir-birini ko‘radi va eshitadi. {role} asosiy xonada qoladi."
+    },
+    "trial": {
+      "hello": "Xush kelibsiz, {name}",
+      "intro": "{center} markazidagi {group} guruhida sinov darsingiz. Bu sahifa tashrif kunida sizni onlayn darsga kiritadi.",
+      "badge": "Sinov darsi",
+      "waiting": "O‘qituvchi darsni hali boshlamadi. Sahifani ochiq qoldiring; u boshlashi bilan «Qo‘shilish» tugmasi chiqadi.",
+      "notToday": "Havola darsni tashrif kunida ochadi. O‘sha kuni, dars boshlanishidan bir necha daqiqa oldin qayting.",
+      "closed": "Bu sinov darsi endi o‘tkazilmaydi. O‘quv markazidan yangi kun so‘rang.",
+      "converted": "Endi siz bu guruhning o‘quvchisisiz. Markaz yuborgan shaxsiy havolangizdan foydalaning.",
+      "disabled": "Bu o‘quv markazida video darslar o‘chirilgan.",
+      "tips": "Havolani telefon yoki kompyuterdagi istalgan brauzerda oching; hech narsa o‘rnatish shart emas. So‘ralganda kamera va mikrofonga ruxsat bering."
     }
   },
   "help": {

@@ -18,6 +18,7 @@ import { findGroupInScope, today } from "@/server/services/groups/shared";
 import { loadIntegrationConfig } from "@/server/services/integrations/integrations.service";
 import { deliverMessage } from "@/server/services/sms/sms.service";
 import { notifyLessonStarted } from "@/server/services/telegram/student-telegram.service";
+import { trialByToken } from "@/server/services/leads/trials.service";
 import { appOriginForGroup } from "@/server/services/settings/domains.service";
 import {
   applyPollAction,
@@ -161,6 +162,22 @@ export interface SyncDto {
   /** The open poll, else the last closed one (A-153). */
   poll: PollDto | null;
   breakout: BreakoutDto;
+}
+
+/** What a trial visitor's link shows (A-172). */
+export interface TrialPageDto {
+  organizationName: string;
+  groupName: string;
+  leadName: string;
+  date: string;
+  startTime: string | null;
+  endTime: string | null;
+  status: "BOOKED" | "ATTENDED" | "NO_SHOW" | "CONVERTED" | "CANCELLED";
+  /** The visit is today (Tashkent), so the link may open the lesson. */
+  isToday: boolean;
+  enabled: boolean;
+  /** The group's LIVE room, when the visit is today and the teacher has started. */
+  roomId: string | null;
 }
 
 export interface ClassPageDto {
@@ -622,6 +639,87 @@ export async function getClassPage(
       .map((s) => ({ weekday: s.weekday, startTime: s.startTime, endTime: s.endTime }))
       .sort((a, b) => a.weekday - b.weekday),
   };
+}
+
+/** The calendar day in Tashkent, which lessons and trial dates use. */
+function tashkentDate(now = new Date()): string {
+  return new Date(now.getTime() + 5 * 3600_000).toISOString().slice(0, 10);
+}
+
+/** What a trial visitor's link shows (A-172): whose visit, when, and whether class is on. */
+export async function getTrialPage(
+  token: string,
+  db: DbClient = prisma,
+  now = new Date(),
+): Promise<TrialPageDto | null> {
+  const trial = await trialByToken(db, token);
+  if (!trial || trial.group.status === "ARCHIVED") return null;
+  const branch = await db.branch.findUniqueOrThrow({
+    where: { id: trial.group.branchId },
+    select: { organizationId: true, organization: { select: { name: true } } },
+  });
+  const date = dateToIso(trial.date);
+  const isToday = date === tashkentDate(now);
+  const open = isToday && (trial.status === "BOOKED" || trial.status === "ATTENDED");
+  const [config, live] = await Promise.all([
+    loadVideoConfig(db, branch.organizationId),
+    open ? findLiveRoom(db, trial.group.id, now) : Promise.resolve(null),
+  ]);
+  return {
+    organizationName: branch.organization.name,
+    groupName: trial.group.name,
+    leadName: trial.lead.fullName,
+    date,
+    startTime: trial.lesson?.startTime ?? null,
+    endTime: trial.lesson?.endTime ?? null,
+    status: trial.status,
+    isToday,
+    enabled: config.enabled,
+    roomId: config.enabled && open ? (live?.id ?? null) : null,
+  };
+}
+
+/**
+ * A trial visitor enters the group's LIVE call through their own link (A-172),
+ * on the day of the visit only; joining marks the visit as attended.
+ */
+export async function joinVideoRoomAsTrial(
+  token: string,
+  db: DbClient = prisma,
+  now = new Date(),
+): Promise<JoinDto> {
+  const trial = await trialByToken(db, token);
+  if (!trial || trial.group.status === "ARCHIVED") throw AppError.notFound();
+  if (trial.status === "CANCELLED" || trial.status === "NO_SHOW" || trial.status === "CONVERTED") {
+    throw AppError.conflict("errors.trialClosed");
+  }
+  if (dateToIso(trial.date) !== tashkentDate(now)) throw AppError.conflict("errors.trialNotToday");
+  const config = await loadVideoConfig(db, await organizationOfBranch(db, trial.group.branchId));
+  if (!config.enabled) throw AppError.conflict("errors.videoDisabled");
+  const live = await findLiveRoom(db, trial.group.id, now);
+  if (!live) throw AppError.conflict("errors.videoNotStarted");
+  const joined = await addParticipant(
+    db,
+    config,
+    { id: live.id, groupId: live.groupId, lessonId: live.lessonId, groupName: trial.group.name },
+    { role: "STUDENT", displayName: trial.lead.fullName },
+    false,
+  );
+  const came = await db.trialBooking.updateMany({
+    where: { id: trial.id, status: "BOOKED" },
+    data: { status: "ATTENDED" },
+  });
+  if (came.count > 0) {
+    await recordAudit(db, null, {
+      action: "lead.trial.outcome",
+      entity: "Lead",
+      entityId: trial.lead.id,
+      after: { bookingId: trial.id, status: "ATTENDED", via: "video" },
+      branchId: trial.group.branchId,
+      organizationId: await organizationOfBranch(db, trial.group.branchId),
+    });
+  }
+  return joined;
 }
 
 /** A student enters the group's LIVE call through their personal link. */
