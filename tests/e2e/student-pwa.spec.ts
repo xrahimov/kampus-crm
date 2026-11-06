@@ -48,6 +48,7 @@ test.describe("student app install", () => {
       "/manifest.webmanifest",
     );
     await teacher.getByRole("link", { name: "GE-Morning A1" }).first().click();
+    await expect(teacher.getByTestId("group-title")).toHaveText("GE-Morning A1");
     const groupId = teacher.url().match(/groups\/([a-z0-9]+)/)![1]!;
     const links = await teacher.request.get(`/api/v1/groups/${groupId}/video/links`);
     const [first] = (await links.json()) as Array<{ token: string }>;
