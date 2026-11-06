@@ -13,6 +13,7 @@ import { createBoard } from "@/server/services/leads/boards.service";
 import { addLeadsToGroup, createLead, getLead } from "@/server/services/leads/leads.service";
 import { createSource } from "@/server/services/leads/sources.service";
 import { bookTrial, listLeadTrials, setTrialOutcome } from "@/server/services/leads/trials.service";
+import { getTrialPage, joinVideoRoomAsTrial } from "@/server/services/video/video.service";
 import { getLeadsReport } from "@/server/services/reports/leads-report.service";
 import { createBranch } from "@/server/services/settings/branches.service";
 import { createCourse } from "@/server/services/settings/courses.service";
@@ -209,6 +210,7 @@ describe("booking a trial from the lead card", () => {
       date: TODAY,
       groupName: `${TAG} Group`,
       status: "BOOKED",
+      token: expect.stringMatching(/^[A-Za-z0-9_-]{20,64}$/) as string,
     });
   });
 });
@@ -253,6 +255,69 @@ describe("the visitor on the Today roster", () => {
       where: { action: "lead.trial.outcome", entityId: leadId },
     });
     expect(audits).toBe(2);
+  });
+});
+
+describe("the visitor's own link into the online lesson (A-172)", () => {
+  const tomorrow = () => new Date(Date.now() + 24 * 3600_000);
+
+  it("shows the visit and opens the lesson only on its day", async () => {
+    const [booking] = await listLeadTrials(ceo, leadId);
+    const token = booking!.token!;
+    expect(token).toMatch(/^[A-Za-z0-9_-]{20,64}$/);
+    const page = (await getTrialPage(token))!;
+    expect(page).toMatchObject({
+      leadName: `${TAG} Visitor`,
+      groupName: `${TAG} Group`,
+      date: TODAY,
+      startTime: "22:00",
+      endTime: "22:45",
+      status: "ATTENDED",
+      isToday: true,
+      roomId: null,
+    });
+    expect((await getTrialPage(token, prisma, tomorrow()))!.isToday).toBe(false);
+    expect(await getTrialPage("nope-nope-nope-nope-nope")).toBeNull();
+    // Nobody has started the lesson yet.
+    await expect(joinVideoRoomAsTrial(token)).rejects.toThrow("errors.videoNotStarted");
+  });
+
+  it("lets the visitor into the running call and marks the visit as came", async () => {
+    const [booking] = await listLeadTrials(ceo, leadId);
+    const token = booking!.token!;
+    await setTrialOutcome(ceo, bookingId, { status: "BOOKED" });
+    const room = await prisma.videoRoom.create({
+      data: { groupId, lessonId: booking!.lessonId, startedById: teacher.userId, status: "LIVE" },
+    });
+    try {
+      await expect(joinVideoRoomAsTrial(token, prisma, tomorrow())).rejects.toThrow(
+        "errors.trialNotToday",
+      );
+      expect((await getTrialPage(token))!.roomId).toBe(room.id);
+      const joined = await joinVideoRoomAsTrial(token);
+      expect(joined).toMatchObject({
+        roomId: room.id,
+        role: "STUDENT",
+        displayName: `${TAG} Visitor`,
+        canEnd: false,
+      });
+      const after = await prisma.trialBooking.findUniqueOrThrow({ where: { id: bookingId } });
+      expect(after.status).toBe("ATTENDED");
+      expect(
+        await prisma.auditLog.findFirst({
+          where: { action: "lead.trial.outcome", entityId: leadId, actorId: null },
+        }),
+      ).toMatchObject({ after: { bookingId, status: "ATTENDED", via: "video" } });
+      // A cancelled visit no longer opens the lesson.
+      await setTrialOutcome(ceo, bookingId, { status: "CANCELLED" });
+      await expect(joinVideoRoomAsTrial(token)).rejects.toThrow("errors.trialClosed");
+      await setTrialOutcome(ceo, bookingId, { status: "ATTENDED" });
+    } finally {
+      await prisma.videoRoom.update({
+        where: { id: room.id },
+        data: { status: "ENDED", endedAt: new Date() },
+      });
+    }
   });
 });
 
