@@ -141,6 +141,8 @@ export class CallEngine {
   poll: PollDto | null = null;
   /** Breakout rooms as the server last reported them (A-156). */
   breakout: BreakoutDto = { rooms: 0, endsAt: null, mine: null, everyone: null };
+  /** Set once the 1:1 student was marked absent for not joining (A-167); the teacher sees it. */
+  noShow: string | null = null;
   /** The teacher's breakout change waiting for the next sync. */
   private breakoutDraft: NonNullable<VideoSyncInput["breakout"]> | null = null;
   /** The teacher's latest line to everyone, shown as a banner (A-156). */
@@ -619,6 +621,7 @@ export class CallEngine {
     if (sentPoll && this.pollAction === sentPoll) this.pollAction = null;
     if (sentBreakout && this.breakoutDraft === sentBreakout) this.breakoutDraft = null;
     this.breakout = result.breakout;
+    this.noShow = result.noShow;
     // A vote still on its way keeps showing as chosen.
     this.poll =
       result.poll && this.pollAction?.action === "vote" && this.pollAction.pollId === result.poll.id
