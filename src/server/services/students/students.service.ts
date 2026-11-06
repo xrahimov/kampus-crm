@@ -103,6 +103,8 @@ export interface StudentDetailDto extends StudentRowDto {
   referralCode: string | null;
   referredById: string | null;
   referredByName: string | null;
+  /** IANA zone of a student abroad (A-177), null for the centre's time. */
+  timeZone: string | null;
   referrals: number;
 }
 
@@ -273,6 +275,7 @@ function toDetailDto(row: DetailRow, balances: Map<string, MembershipBalance>): 
     referralCode: row.referralCode,
     referredById: row.referredById,
     referredByName: row.referredBy?.fullName ?? null,
+    timeZone: row.timeZone,
     referrals: row._count.referrals,
   };
 }
@@ -594,6 +597,7 @@ async function studentData(input: StudentUpdateInput) {
     ...(input.schoolId !== undefined ? { schoolId: input.schoolId } : {}),
     ...(input.referredById !== undefined ? { referredById: input.referredById } : {}),
     ...(input.note !== undefined ? { note: input.note } : {}),
+    ...(input.timeZone !== undefined ? { timeZone: input.timeZone } : {}),
     ...(input.password ? { passwordHash: await hashPassword(input.password) } : {}),
   };
 }

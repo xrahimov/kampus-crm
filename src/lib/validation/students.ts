@@ -1,5 +1,7 @@
 import { z } from "zod";
 
+import { isValidTimeZone } from "@/lib/time-zones";
+
 import { idSchema, passwordSchema, phoneSchema } from "./common";
 import { MEMBERSHIP_STATUSES } from "./groups";
 import { dateOnlySchema } from "./settings";
@@ -44,6 +46,13 @@ export type MembershipDraftInput = z.infer<typeof membershipDraftSchema>;
 export const parentSchema = z.object({ fullName: name, phone: phoneSchema });
 export type ParentInput = z.infer<typeof parentSchema>;
 
+export const timeZoneSchema = z
+  .union([z.literal("").transform(() => null), z.null(), z.string().trim().max(64)])
+  .refine((zone) => zone === null || isValidTimeZone(zone), { message: "validation.timeZone" });
+
+/** The student sets their own zone from their page (A-177). */
+export const portalTimeZoneSchema = z.object({ timeZone: timeZoneSchema });
+
 const studentBase = z.object({
   branchId: idSchema,
   fullName: name,
@@ -58,6 +67,8 @@ const studentBase = z.object({
   note: text(500).nullable().optional(),
   /** The student who brought this one (A-120); credited when this one has a group. */
   referredById: optionalId,
+  /** IANA zone of a student abroad (A-177); empty means the centre's own time. */
+  timeZone: timeZoneSchema.optional(),
 });
 
 /** "O'quvchi qo'shish": the profile plus the optional group and parent sections. */

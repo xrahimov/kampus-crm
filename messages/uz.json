@@ -608,7 +608,8 @@
     "videoUrl": "YouTube havolasini qo‘ying yoki video fayl yuklang",
     "gapCount": "Gapdagi har bir bo‘shliq (___) uchun bir javob qatori",
     "rubricScores": "Har bir mezonga uning balli doirasida ball qo‘ying.",
-    "weightsSum": "Vaznlar yig‘indisi 100 bo‘lishi kerak."
+    "weightsSum": "Vaznlar yig‘indisi 100 bo‘lishi kerak.",
+    "timeZone": "Noma’lum vaqt mintaqasi. Europe/Berlin kabi nom kiriting."
   },
   "roles": {
     "CEO": "CEO",
@@ -1879,7 +1880,9 @@
       "school": "Maktab",
       "schoolPlaceholder": "Maktabni tanlang",
       "referredBy": "Taklif qilgan o‘quvchi",
-      "referredByPlaceholder": "O‘quvchini ism yoki telefon bo‘yicha qidiring"
+      "referredByPlaceholder": "O‘quvchini ism yoki telefon bo‘yicha qidiring",
+      "timeZone": "Vaqt mintaqasi (chet eldagi o‘quvchilar)",
+      "timeZoneHint": "Markaz vaqti uchun bo‘sh qoldiring. O‘quvchi sahifasidagi va eslatmalardagi dars vaqtlari shu mintaqada ko‘rsatiladi, masalan Europe/Berlin."
     },
     "genders": {
       "MALE": "Erkak",
@@ -4950,7 +4953,8 @@
     },
     "schedule": {
       "empty": "Guruhning doimiy dars vaqti yo‘q.",
-      "until": "Guruh {date} gacha o‘qiydi."
+      "until": "Guruh {date} gacha o‘qiydi.",
+      "inZone": "Vaqtlar sizning mintaqangizda: {zone}."
     },
     "homework": {
       "empty": "Hali vazifalar yo‘q.",
@@ -5097,6 +5101,14 @@
         "tests": "Testlar",
         "exams": "Imtihonlar"
       }
+    },
+    "timeZone": {
+      "title": "Vaqt mintaqangiz",
+      "centre": "Dars vaqtlari markaz vaqtida ko‘rsatiladi: {centre}. Boshqa joyda yashasangiz, mintaqangizni belgilang — sahifadagi va eslatmalardagi vaqtlar shunga moslashadi.",
+      "current": "Dars vaqtlari {zone} bo‘yicha ko‘rsatiladi. Markaz {centre} vaqtida ishlaydi.",
+      "save": "Saqlash",
+      "useDevice": "Shu qurilma mintaqasi ({zone})",
+      "invalid": "Noma’lum vaqt mintaqasi. Ro‘yxatdan tanlang, masalan Europe/Berlin."
     }
   },
   "telegramBot": {

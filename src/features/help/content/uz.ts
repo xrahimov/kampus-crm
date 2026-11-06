@@ -1276,6 +1276,7 @@ export const uz: HelpContent = {
           title: "Darslar va jadval",
           body: [
             "**Darslar** yorlig‘i har bir darsni sanasi, mavzusi, kelgan-kelmaganingiz va bahongiz bilan ko‘rsatadi. **Jadval** yorlig‘i guruhingiz yig‘iladigan kunlar va vaqtlarni hamda guruh qachongacha o‘qishini ko‘rsatadi.",
+            "Boshqa mamlakatda yashasangiz, sahifangizda **Vaqt mintaqangiz** ni belgilang (yoki qurilmangiz mintaqasini taklif qilgan tugmani bosing). Sahifadagi dars sanalari va vaqtlari, keyingi dars qatori va eslatmalar sizning vaqtingizda, mintaqa nomi bilan keladi; markaz o‘z soati bilan ishlaydi. Xodimlar ham buni o‘quvchi kartangizda belgilashi mumkin.",
           ],
         },
         homework: {

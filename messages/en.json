@@ -608,7 +608,8 @@
     "videoUrl": "Paste a YouTube link or upload a video file",
     "gapCount": "One answer line per gap (___) in the sentence",
     "rubricScores": "Give each criterion a score within its points.",
-    "weightsSum": "The weights must add up to 100."
+    "weightsSum": "The weights must add up to 100.",
+    "timeZone": "Unknown time zone. Use a name like Europe/Berlin."
   },
   "roles": {
     "CEO": "CEO",
@@ -1879,7 +1880,9 @@
       "school": "School",
       "schoolPlaceholder": "Choose a school",
       "referredBy": "Invited by",
-      "referredByPlaceholder": "Search a student by name or phone"
+      "referredByPlaceholder": "Search a student by name or phone",
+      "timeZone": "Time zone (students abroad)",
+      "timeZoneHint": "Leave empty for the centre's own time. Lesson times on the student's page and in reminders are shown in this zone, for example Europe/Berlin."
     },
     "genders": {
       "MALE": "Male",
@@ -4950,7 +4953,8 @@
     },
     "schedule": {
       "empty": "The group has no fixed lesson times.",
-      "until": "The group runs until {date}."
+      "until": "The group runs until {date}.",
+      "inZone": "Times in your zone, {zone}."
     },
     "homework": {
       "empty": "No homework yet.",
@@ -5097,6 +5101,14 @@
         "tests": "Tests",
         "exams": "Exams"
       }
+    },
+    "timeZone": {
+      "title": "Your time zone",
+      "centre": "Lesson times are shown in the centre's time, {centre}. If you live elsewhere, set your zone and the times on this page and in reminders will follow it.",
+      "current": "Lesson times are shown in {zone}. The centre runs on {centre}.",
+      "save": "Save",
+      "useDevice": "Use this device's zone ({zone})",
+      "invalid": "Unknown time zone. Pick one from the list, for example Europe/Berlin."
     }
   },
   "telegramBot": {

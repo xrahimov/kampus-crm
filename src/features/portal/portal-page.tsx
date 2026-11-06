@@ -36,6 +36,7 @@ import { PortalMaterialsTab } from "./materials-tab";
 import { PayCard } from "./pay-card";
 import { ReferralCard } from "./referral-card";
 import { TelegramCard } from "./telegram-card";
+import { TimeZoneCard } from "./time-zone-card";
 import type { Weekday } from "@/lib/validation/groups";
 import type { PortalAnnouncementDto } from "@/server/services/announcements/announcements.service";
 import type { PortalHomeworkDto } from "@/server/services/homework/homework.service";
@@ -181,10 +182,10 @@ export function PortalPage({
               waitingText={
                 portal.nextLesson
                   ? t("nextLesson", {
-                      date: shortDate(portal.nextLesson.date),
-                      start: portal.nextLesson.startTime,
-                      end: portal.nextLesson.endTime,
-                    })
+                      date: shortDate(portal.nextLesson.local?.date ?? portal.nextLesson.date),
+                      start: portal.nextLesson.local?.startTime ?? portal.nextLesson.startTime,
+                      end: portal.nextLesson.local?.endTime ?? portal.nextLesson.endTime,
+                    }) + (portal.student.timeZone ? ` (${portal.student.timeZone})` : "")
                   : tc("waiting")
               }
               join={() => joinClass(token)}
@@ -215,6 +216,7 @@ export function PortalPage({
       )}
 
       <TelegramCard token={token} initial={telegram} />
+      <TimeZoneCard token={token} timeZone={portal.student.timeZone} />
       {referral && <ReferralCard referral={referral} />}
 
       <Card>
@@ -286,9 +288,9 @@ export function PortalPage({
                     {portal.lessons.map((l) => (
                       <TableRow key={l.id}>
                         <TableCell className="whitespace-nowrap">
-                          {shortDate(l.date)}
+                          {shortDate(l.local?.date ?? l.date)}
                           <span className="ml-2 text-xs text-muted-foreground tabular-nums">
-                            {l.startTime}
+                            {l.local?.startTime ?? l.startTime}
                           </span>
                         </TableCell>
                         <TableCell>
@@ -504,8 +506,8 @@ export function PortalPage({
               {page.schedule.length === 0 ? (
                 <p className="text-sm text-muted-foreground">{t("schedule.empty")}</p>
               ) : (
-                <ul className="divide-y text-sm">
-                  {page.schedule.map((s) => (
+                <ul className="divide-y text-sm" data-testid="portal-schedule">
+                  {(page.localSchedule ?? page.schedule).map((s) => (
                     <li key={s.weekday} className="flex justify-between gap-2 py-2">
                       <span>{weekdayLabel(fmt, s.weekday as Weekday, "long")}</span>
                       <span className="tabular-nums">
@@ -514,6 +516,14 @@ export function PortalPage({
                     </li>
                   ))}
                 </ul>
+              )}
+              {page.timeZone && (
+                <p
+                  className="mt-2 text-xs text-muted-foreground"
+                  data-testid="portal-schedule-zone"
+                >
+                  {t("schedule.inZone", { zone: page.timeZone })}
+                </p>
               )}
               <p className="mt-3 text-xs text-muted-foreground">
                 {t("schedule.until", { date: date(portal.group.endDate) })}

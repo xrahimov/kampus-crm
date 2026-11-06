@@ -1272,6 +1272,7 @@ export const en: HelpContent = {
           title: "Lessons and schedule",
           body: [
             "The **Lessons** tab lists every lesson with its date, topic, whether you were present and your grade. The **Schedule** tab shows the days and times your group meets and until when the group runs.",
+            "If you live in another country, set **Your time zone** on your page (or press the button that offers your device's zone). Lesson dates and times on the page, the next-lesson line and the reminders then come in your time, with the zone named; the centre keeps its own clock. Staff can set it for you too, on your student card.",
           ],
         },
         homework: {
