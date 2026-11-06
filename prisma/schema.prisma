@@ -2679,19 +2679,22 @@ enum VideoPeerRole {
 
 /// One video lesson of a group. At most one LIVE room per group (checked in the service).
 model VideoRoom {
-  id          String          @id @default(cuid())
-  groupId     String
-  lessonId    String?
-  status      VideoRoomStatus @default(LIVE)
-  startedById String
-  startedAt   DateTime        @default(now())
-  endedAt     DateTime?
+  id             String          @id @default(cuid())
+  groupId        String
+  lessonId       String?
+  status         VideoRoomStatus @default(LIVE)
+  startedById    String
+  startedAt      DateTime        @default(now())
+  endedAt        DateTime?
   /// Who the teacher put on everyone's stage (a participant id) and whether students see
   /// only the teacher (focus mode); set from the host's browser (A-152).
-  spotlightId String?
-  focusMode   Boolean         @default(false)
+  spotlightId    String?
+  focusMode      Boolean         @default(false)
   /// The shared whiteboard is on everyone's stage (A-155).
-  boardOpen   Boolean         @default(false)
+  boardOpen      Boolean         @default(false)
+  /// Breakout rooms (A-156): how many sub-rooms are open (0 = none) and when they close by themselves.
+  breakoutRooms  Int             @default(0)
+  breakoutEndsAt DateTime?
 
   group        Group              @relation(fields: [groupId], references: [id], onDelete: Cascade)
   lesson       Lesson?            @relation(fields: [lessonId], references: [id], onDelete: SetNull)
@@ -2718,6 +2721,8 @@ model VideoParticipant {
   media        Json?
   /// When the current raised hand went up, for the order of the hand queue (A-152).
   handRaisedAt DateTime?
+  /// The breakout sub-room this browser is in (1-based); null = the main room (A-156).
+  breakoutRoom Int?
   joinedAt     DateTime      @default(now())
   lastSeenAt   DateTime      @default(now())
   leftAt       DateTime?

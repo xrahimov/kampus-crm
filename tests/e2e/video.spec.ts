@@ -165,6 +165,30 @@ test.describe("video lessons", () => {
     await teacher.getByTestId("toggle-board").click();
     await expect(student.getByTestId("whiteboard")).toHaveCount(0, { timeout: 10_000 });
 
+    // Breakout rooms: the student is seated alone in a room, hears the notice, comes back (A-156).
+    await teacher.getByTestId("toggle-breakout").click();
+    const rooms = teacher.getByTestId("breakout-panel");
+    await expect(rooms).toBeVisible({ timeout: 10_000 });
+    await rooms.getByTestId("breakout-rooms").selectOption("2");
+    await rooms.getByTestId("breakout-start").click();
+    await expect(rooms.getByTestId("breakout-list")).toBeVisible({ timeout: 10_000 });
+    await expect(student.getByTestId("breakout-notice-bar")).toContainText("room 1", {
+      timeout: 10_000,
+    });
+    await expect(student.getByTestId("breakout-countdown")).toBeVisible();
+    await expect(teacher.getByTestId("breakout-notice-bar")).toContainText("main room");
+    await rooms.getByTestId("breakout-notice").fill("Two minutes left");
+    await rooms.getByTestId("breakout-notice-send").click();
+    await expect(student.getByTestId("host-notice")).toContainText("Two minutes left", {
+      timeout: 10_000,
+    });
+    await student.getByTestId("host-notice").click();
+    await expect(student.getByTestId("host-notice")).toHaveCount(0);
+    await rooms.getByTestId("breakout-end").click();
+    await expect(student.getByTestId("breakout-notice-bar")).toHaveCount(0, { timeout: 10_000 });
+    await expect(rooms.getByTestId("breakout-start")).toBeVisible({ timeout: 10_000 });
+    await teacher.getByTestId("toggle-breakout").click();
+
     // The lesson panel: the teacher sets today's topic, the student reads it (A-154).
     await teacher.getByTestId("toggle-lesson").click();
     const lessonPanel = teacher.getByTestId("lesson-panel");

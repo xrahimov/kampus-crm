@@ -6,6 +6,7 @@ import {
   Circle,
   Focus,
   Hand,
+  LayoutGrid,
   MessageSquare,
   Mic,
   MicOff,
@@ -30,6 +31,7 @@ import { PACE_REACTIONS, REACTIONS, type Reaction } from "@/lib/validation/video
 import { cn } from "@/lib/utils";
 
 import { CHAT_MAX_LENGTH, type CallEngine, type RemotePeer } from "./call-engine";
+import { BreakoutPanel, breakoutCountdown } from "./breakout-panel";
 import { LessonPanel } from "./lesson-panel";
 import { PollPanel } from "./poll-panel";
 import { CallRecorder, recordingMimeType, uploadBoard, uploadRecording } from "./recorder";
@@ -37,7 +39,7 @@ import { VideoTile } from "./video-tile";
 import { Whiteboard } from "./whiteboard";
 
 const SELF = "self";
-type Panel = "people" | "chat" | "poll" | "lesson" | null;
+type Panel = "people" | "chat" | "poll" | "lesson" | "breakout" | null;
 
 /** How each reaction looks on a picture. */
 export const REACTION_EMOJI: Record<Reaction, string> = {
@@ -138,7 +140,17 @@ export function CallRoom({
   const mutedBy = engine.mutedBy;
   const loweredBy = engine.loweredBy;
   const stage = engine.currentStage;
+  const breakout = engine.breakout;
+  const notice = engine.notice;
   const reactions = engine.activeReactions();
+  // The breakout countdown ticks once a second while rooms are open.
+  const [clock, setClock] = useState(() => Date.now());
+  useEffect(() => {
+    if (breakout.rooms === 0 || !breakout.endsAt) return;
+    const timer = setInterval(() => setClock(Date.now()), 1000);
+    return () => clearInterval(timer);
+  }, [breakout.rooms, breakout.endsAt]);
+  const countdown = breakout.rooms > 0 ? breakoutCountdown(breakout.endsAt, clock) : null;
   const pace = isStudent ? null : engine.paceTally();
 
   // Chat lines count as read while the panel is open; so does a poll.
@@ -322,6 +334,19 @@ export function CallRoom({
               </span>
             )}
           </HeaderButton>
+          {isHost && (
+            <HeaderButton
+              active={panel === "breakout"}
+              onClick={() => togglePanel("breakout")}
+              testId="toggle-breakout"
+            >
+              <LayoutGrid className="size-4" />
+              <span className="hidden sm:inline">{t("breakout")}</span>
+              {breakout.rooms > 0 && (
+                <span className="size-2 rounded-full bg-amber-400" aria-hidden />
+              )}
+            </HeaderButton>
+          )}
           <HeaderButton
             active={panel === "lesson"}
             onClick={() => togglePanel("lesson")}
@@ -396,6 +421,33 @@ export function CallRoom({
         </p>
       )}
 
+      {breakout.rooms > 0 && (
+        <p
+          className="mx-4 mb-2 flex items-center justify-center gap-2 rounded-md bg-sidebar-muted px-3 py-2 text-center text-sm text-white"
+          role="status"
+          data-testid="breakout-notice-bar"
+        >
+          <LayoutGrid className="size-4 shrink-0" aria-hidden />
+          {breakout.mine === null
+            ? t("breakoutMain", { rooms: breakout.rooms })
+            : t("breakoutIn", { number: breakout.mine })}
+          {countdown && (
+            <span className="tabular-nums opacity-80" data-testid="breakout-countdown">
+              {countdown}
+            </span>
+          )}
+        </p>
+      )}
+      {notice && (
+        <button
+          type="button"
+          onClick={() => engine.dismissNotice()}
+          className="mx-4 mb-2 rounded-md bg-amber-400 px-3 py-2 text-center text-sm font-medium text-sidebar hover:bg-amber-300"
+          data-testid="host-notice"
+        >
+          {t("noticeFrom", { name: notice.name })} {notice.text}
+        </button>
+      )}
       {isStudent && engine.poll?.open && engine.pollUnseen && panel !== "poll" && (
         <button
           type="button"
@@ -567,6 +619,8 @@ export function CallRoom({
               <PollPanel engine={engine} />
             ) : panel === "lesson" ? (
               <LessonPanel engine={engine} />
+            ) : panel === "breakout" ? (
+              <BreakoutPanel engine={engine} />
             ) : (
               <ChatPanel engine={engine} />
             )}

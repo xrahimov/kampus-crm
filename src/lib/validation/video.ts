@@ -25,11 +25,18 @@ export const SIGNAL_KINDS = [
   "lower",
   "react",
   "board",
+  "notice",
 ] as const;
 export type SignalKind = (typeof SIGNAL_KINDS)[number];
 
 /** Signals only the teacher (HOST) may send; the server drops anyone else's. */
-export const HOST_SIGNAL_KINDS: readonly SignalKind[] = ["mute", "lower"];
+export const HOST_SIGNAL_KINDS: readonly SignalKind[] = ["mute", "lower", "notice"];
+/** Signals the server fans out to everyone in the call, whatever `to` says. */
+export const BROADCAST_SIGNAL_KINDS: readonly SignalKind[] = ["notice"];
+
+export const BREAKOUT_MAX_ROOMS = 6;
+export const BREAKOUT_MAX_MINUTES = 60;
+export const NOTICE_MAX_LENGTH = 300;
 
 /** Reactions everyone sees on the sender's picture; "slower"/"faster" go to the teacher only. */
 export const REACTIONS = ["like", "clap", "heart", "laugh", "wow", "slower", "faster"] as const;
@@ -99,6 +106,23 @@ export const videoSyncSchema = z.object({
       focus: z.boolean(),
       /** The shared whiteboard is shown on everyone's stage (A-155). */
       board: z.boolean().default(false),
+    })
+    .optional(),
+  /** Breakout rooms (A-156), teacher only: how many, for how long, and who goes where. */
+  breakout: z
+    .object({
+      /** 0 closes the rooms and brings everyone back. */
+      rooms: z.number().int().min(0).max(BREAKOUT_MAX_ROOMS),
+      minutes: z.number().int().min(1).max(BREAKOUT_MAX_MINUTES).nullable().optional(),
+      assign: z
+        .array(
+          z.object({
+            id: z.string().min(1).max(64),
+            room: z.number().int().min(1).max(BREAKOUT_MAX_ROOMS).nullable(),
+          }),
+        )
+        .max(100)
+        .default([]),
     })
     .optional(),
 });

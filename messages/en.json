@@ -5067,7 +5067,11 @@
       "pollAsk": "The teacher asks: {question} Tap to answer.",
       "lesson": "Lesson",
       "boardOn": "Open the whiteboard",
-      "boardOff": "Close the whiteboard"
+      "boardOff": "Close the whiteboard",
+      "breakout": "Rooms",
+      "breakoutMain": "Breakout rooms are open ({rooms}); you are in the main room.",
+      "breakoutIn": "You are in room {number}. The teacher brings everyone back when the time is up.",
+      "noticeFrom": "{name}:"
     },
     "done": {
       "left": "You left the lesson.",
@@ -5188,6 +5192,25 @@
       "saving": "Saving…",
       "saved": "Saved under the group's materials",
       "saveFailed": "Could not save"
+    },
+    "breakout": {
+      "intro": "Split the students into small rooms for group work. Guests stay with you in the main room; you can drop in on any room.",
+      "rooms": "Rooms",
+      "minutes": "Time",
+      "min": "{count} min",
+      "untilClosed": "Until I close them",
+      "start": "Open {rooms} rooms",
+      "noStudents": "No students in the call yet.",
+      "mainRoom": "Main room",
+      "room": "Room {number}",
+      "youAreHere": "you are here",
+      "visit": "Go there",
+      "moveTo": "Move {name} to a room",
+      "notice": "Message to everyone",
+      "noticePlaceholder": "Message to all rooms…",
+      "sendNotice": "Send to everyone",
+      "end": "Close the rooms and bring everyone back",
+      "hint": "People in a room see and hear only each other. A {role} stays in the main room."
     }
   },
   "help": {
