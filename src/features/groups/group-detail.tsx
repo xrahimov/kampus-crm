@@ -474,7 +474,7 @@ export function GroupDetail({
                 />
               </TabsContent>
               <TabsContent value="syllabus" className="pt-4">
-                <SyllabusTab data={syllabus} />
+                <SyllabusTab data={syllabus} groupId={group.id} canSet={can.mark && !archived} />
               </TabsContent>
               <TabsContent value="notes" className="pt-4">
                 <NotesTab groupId={group.id} notes={notes} canEdit={can.update} />

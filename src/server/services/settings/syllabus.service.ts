@@ -5,6 +5,7 @@ import { authorize, authorizeBranch, type Actor } from "@/server/rbac/authorize"
 import { findGroupInScope } from "@/server/services/groups/shared";
 
 import { dateToIso, mustFind } from "./shared";
+import { releaseOf, topicOpen, type TopicReleaseDto } from "./topic-content.service";
 
 /*
  * Course syllabus (round 2 B9, A-137): the course carries its topics in
@@ -25,6 +26,12 @@ export interface GroupSyllabusTopicDto extends CourseTopicDto {
   /** The lesson that covered it, when one did. */
   lessonId: string | null;
   lessonDate: string | null;
+  /** Content blocks the topic carries (A-157). */
+  blocks: number;
+  /** When this group's students get the content. */
+  release: TopicReleaseDto;
+  /** Students of the group can open the content today. */
+  open: boolean;
 }
 
 export interface GroupSyllabusDto {
@@ -175,14 +182,21 @@ export async function getGroupSyllabus(
   const group = await findGroupInScope(db, actor, groupId, {
     course: { select: { id: true, name: true } },
   });
-  const [topics, lessons] = await Promise.all([
-    db.courseTopic.findMany({ where: { courseId: group.courseId }, orderBy: { sortOrder: "asc" } }),
+  const [topics, lessons, releases] = await Promise.all([
+    db.courseTopic.findMany({
+      where: { courseId: group.courseId },
+      orderBy: { sortOrder: "asc" },
+      include: { _count: { select: { blocks: true } } },
+    }),
     db.lesson.findMany({
       where: { groupId, courseTopicId: { not: null } },
       select: { id: true, date: true, courseTopicId: true },
       orderBy: [{ date: "asc" }, { startTime: "asc" }],
     }),
+    db.groupTopicRelease.findMany({ where: { groupId } }),
   ]);
+  const releaseByTopic = new Map(releases.map((r) => [r.topicId, releaseOf(r)]));
+  const todayIso = dateToIso(new Date());
   const byTopic = new Map<string, { id: string; date: Date }>();
   for (const l of lessons) {
     if (l.courseTopicId && !byTopic.has(l.courseTopicId)) byTopic.set(l.courseTopicId, l);
@@ -196,11 +210,16 @@ export async function getGroupSyllabus(
       status = "next";
       nextSeen = true;
     }
+    const release = releaseByTopic.get(t.id) ?? releaseOf(null);
+    const lessonDate = lesson ? dateToIso(lesson.date) : null;
     return {
       ...toDto(t),
       status,
       lessonId: lesson?.id ?? null,
-      lessonDate: lesson ? dateToIso(lesson.date) : null,
+      lessonDate,
+      blocks: t._count.blocks,
+      release,
+      open: topicOpen(release, lessonDate, todayIso),
     };
   });
   const next = rows.find((r) => r.status === "next");

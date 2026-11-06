@@ -1,17 +1,51 @@
 "use client";
 
+import { BookOpen, LockOpen } from "lucide-react";
 import { useTranslations } from "next-intl";
+import { useState, useTransition } from "react";
 
 import { EmptyState } from "@/components/data/empty-state";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { useRouter } from "@/i18n/navigation";
+import { api } from "@/lib/api-client";
 import { parseDateOnly } from "@/lib/dates";
 import { useDateFormat } from "@/lib/use-date-format";
-import type { GroupSyllabusDto } from "@/server/services/settings/syllabus.service";
+import type {
+  GroupSyllabusDto,
+  GroupSyllabusTopicDto,
+} from "@/server/services/settings/syllabus.service";
 
-/** The group's progress through its course syllabus (A-137). */
-export function SyllabusTab({ data }: { data: GroupSyllabusDto }) {
+import { TopicContentDialog } from "./topic-content-dialog";
+
+/**
+ * The group's progress through its course syllabus (A-137), and per topic the
+ * lesson content students get and when they get it (A-157).
+ */
+export function SyllabusTab({
+  data,
+  groupId,
+  canSet,
+}: {
+  data: GroupSyllabusDto;
+  groupId: string;
+  /** May open topics for the students (the attendance right of a live group). */
+  canSet: boolean;
+}) {
   const t = useTranslations("groups.syllabus");
   const fmt = useDateFormat();
+  const router = useRouter();
+  const [, startTransition] = useTransition();
+  const refresh = () => startTransition(() => router.refresh());
+  const [contentOf, setContentOf] = useState<string | null>(null);
   if (data.total === 0) {
     return <EmptyState title={t("empty")} />;
   }
@@ -76,9 +110,102 @@ export function SyllabusTab({ data }: { data: GroupSyllabusDto }) {
             >
               {t(`status.${topic.status}`)}
             </Badge>
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              onClick={() => setContentOf(topic.id)}
+              data-testid="syllabus-content"
+            >
+              <BookOpen /> {t("content.button", { count: topic.blocks })}
+            </Button>
+            {topic.open ? (
+              <span
+                className="flex items-center gap-1 text-xs text-muted-foreground"
+                data-testid="syllabus-open"
+              >
+                <LockOpen className="size-3.5" aria-hidden /> {t("content.openNow")}
+              </span>
+            ) : null}
+            {canSet && <ReleaseControl groupId={groupId} topic={topic} onSaved={refresh} />}
           </li>
         ))}
       </ol>
+      <TopicContentDialog
+        topicId={contentOf}
+        onOpenChange={(open) => !open && setContentOf(null)}
+        onSaved={refresh}
+      />
     </div>
+  );
+}
+
+/** When this group's students get the topic's content: after the lesson, now, or from a date. */
+function ReleaseControl({
+  groupId,
+  topic,
+  onSaved,
+}: {
+  groupId: string;
+  topic: GroupSyllabusTopicDto;
+  onSaved: () => void;
+}) {
+  const t = useTranslations("groups.syllabus.content");
+  const [date, setDate] = useState(topic.release.date ?? "");
+  const [busy, setBusy] = useState(false);
+
+  async function save(mode: "lesson" | "now" | "date", day = date) {
+    if (mode === "date" && !day) return;
+    setBusy(true);
+    try {
+      await api(`/groups/${groupId}/syllabus/${topic.id}/release`, {
+        method: "PUT",
+        body: { mode, date: mode === "date" ? day : null },
+      });
+      onSaved();
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return (
+    <span className="flex items-center gap-1.5">
+      <Select
+        value={topic.release.mode}
+        onValueChange={(v) => {
+          if (v === "date") {
+            if (date) void save("date");
+          } else void save(v as "lesson" | "now");
+        }}
+        disabled={busy}
+      >
+        <SelectTrigger
+          className="h-8 w-auto gap-1 text-xs"
+          aria-label={t("release")}
+          data-testid="syllabus-release"
+        >
+          <SelectValue />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectItem value="lesson">{t("modes.lesson")}</SelectItem>
+          <SelectItem value="now">{t("modes.now")}</SelectItem>
+          <SelectItem value="date" disabled={!date}>
+            {t("modes.date")}
+          </SelectItem>
+        </SelectContent>
+      </Select>
+      <Input
+        type="date"
+        value={date}
+        onChange={(e) => setDate(e.target.value)}
+        onBlur={() => {
+          if (date && date !== topic.release.date) void save("date", date);
+        }}
+        className="h-8 w-36 text-xs"
+        aria-label={t("fromDate")}
+        disabled={busy}
+        data-testid="syllabus-release-date"
+      />
+    </span>
   );
 }

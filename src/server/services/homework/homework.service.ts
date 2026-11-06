@@ -12,6 +12,7 @@ import { awardAutoCoins } from "@/server/services/coins/coins.service";
 import { findGroupInScope, ownGroupsOnly, today } from "@/server/services/groups/shared";
 import { dateToIso, isoToDate, mustFind } from "@/server/services/settings/shared";
 import { notifyHomework } from "@/server/services/telegram/student-telegram.service";
+import { portalTopicFileAllowed } from "@/server/services/settings/topic-content.service";
 import { membershipByToken } from "@/server/services/video/video.service";
 import { STORAGE_KEY_PATTERN } from "@/server/storage/storage";
 
@@ -445,7 +446,7 @@ export async function portalFileAllowed(
   const membership = await membershipByToken(db, token);
   if (!membership) return false;
   const url = `/api/v1/files/${key}`;
-  const [homework, own, lesson, material] = await Promise.all([
+  const [homework, own, lesson, material, topic] = await Promise.all([
     db.homework.count({ where: { groupId: membership.groupId, attachmentUrl: url } }),
     db.homeworkSubmission.count({
       where: {
@@ -455,6 +456,7 @@ export async function portalFileAllowed(
     }),
     db.lesson.count({ where: { groupId: membership.groupId, attachmentUrl: url } }),
     db.lessonMaterial.count({ where: { groupId: membership.groupId, url } }),
+    portalTopicFileAllowed(db, membership, url),
   ]);
-  return homework + own + lesson + material > 0;
+  return homework + own + lesson + material > 0 || topic;
 }
