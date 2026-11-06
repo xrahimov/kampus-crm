@@ -1,6 +1,6 @@
 import { prisma } from "@/server/db/prisma";
 import { json, route } from "@/server/http/handler";
-import { ensureDailyJob, registerJobHandlers } from "@/server/jobs/handlers";
+import { ensureDailyJob, HEAVY_JOB_TYPES, registerJobHandlers } from "@/server/jobs/handlers";
 import { runDueJobs } from "@/server/jobs/queue";
 
 /**
@@ -10,7 +10,8 @@ import { runDueJobs } from "@/server/jobs/queue";
 export const POST = route({ permission: "settings.integrations" }, async () => {
   registerJobHandlers();
   await ensureDailyJob(prisma);
-  const result = await runDueJobs(50, prisma);
+  // Video transcoding takes an hour; it is the worker's, never a request's.
+  const result = await runDueJobs(50, prisma, { exclude: HEAVY_JOB_TYPES });
   const pending = await prisma.job.count({ where: { status: "PENDING" } });
   return json({ ...result, pending });
 });

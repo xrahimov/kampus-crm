@@ -485,6 +485,7 @@ export const en: HelpContent = {
           title: "Materials",
           body: [
             "The **Materials** tab holds files and links for the group: a textbook chapter, a presentation, a recording. Add one for a particular lesson or for the whole group. Students open and download them from their page. Recordings of video lessons land here by themselves and are deleted after the number of days set in Settings → Integrations → Video lessons.",
+            "Under a recording you see how many students opened it and how many watched it to the end. When **Make streaming copies of recordings** is on in Settings → Integrations → Video lessons, each new recording is converted in the background into several qualities, so it plays on iPhones and over a weak connection; the row says “streams in adaptive quality” once that is done.",
           ],
         },
         video: {
@@ -1315,6 +1316,7 @@ export const en: HelpContent = {
           title: "Materials",
           body: [
             "The **Materials** tab holds what the teacher shared: files, links and recordings of video lessons. Press **Open** to view or **Download** to keep a copy. Recordings are kept for a limited time.",
+            "A recording plays right on the page. Pick a speed under the player (it is remembered), and when you come back, even on another device, the video continues from where you stopped.",
           ],
         },
         course: {

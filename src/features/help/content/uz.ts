@@ -488,6 +488,7 @@ export const uz: HelpContent = {
           title: "Materiallar",
           body: [
             "**Materiallar** yorlig‘ida guruh uchun fayllar va havolalar turadi: darslik bobi, taqdimot, yozuv. Birini muayyan dars uchun yoki butun guruh uchun qo‘shing. O‘quvchilar ularni o‘z sahifasidan ochadi va yuklab oladi. Video darslar yozuvlari bu yerga o‘zi tushadi va Sozlamalar → Integratsiyalar → Video darslar bo‘limida belgilangan kunlar o‘tgach o‘chiriladi.",
+            "Yozuv ostida uni qancha o‘quvchi ochgani va qanchasi oxirigacha ko‘rgani ko‘rinadi. Sozlamalar → Integratsiyalar → Video darslar bo‘limida **Yozuvlarning striming nusxalarini tayyorlash** yoqilsa, har bir yangi yozuv fonda bir necha sifatga o‘giriladi: u iPhone’da va zaif internetda ham ochiladi; tayyor bo‘lgach qatorda «moslashuvchan sifatda uzatiladi» yozuvi chiqadi.",
           ],
         },
         video: {
@@ -1319,6 +1320,7 @@ export const uz: HelpContent = {
           title: "Materiallar",
           body: [
             "**Materiallar** yorlig‘ida o‘qituvchi ulashgan narsalar turadi: fayllar, havolalar va video darslar yozuvlari. Ko‘rish uchun **Ochish** ni, nusxasini saqlab qolish uchun **Yuklab olish** ni bosing. Yozuvlar cheklangan muddat saqlanadi.",
+            "Yozuv sahifaning o‘zida ochiladi. Pleyer ostidan tezlikni tanlang (u eslab qolinadi); qaytib kelganingizda, hatto boshqa qurilmada ham, video to‘xtagan joyingizdan davom etadi.",
           ],
         },
         course: {

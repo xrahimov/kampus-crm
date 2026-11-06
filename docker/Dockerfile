@@ -35,6 +35,8 @@ CMD ["npx", "prisma", "migrate", "deploy"]
 # --- worker: job queue process (A-21), runs the TypeScript source with tsx -----
 FROM deps AS worker
 ENV NODE_ENV=production
+# Streaming copies of lesson recordings (A-175) are made with ffmpeg.
+RUN apk add --no-cache ffmpeg
 COPY src ./src
 COPY scripts ./scripts
 # Services import the translation files directly (Telegram texts for students).

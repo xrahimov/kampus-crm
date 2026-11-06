@@ -4,15 +4,28 @@ import { Download, ExternalLink } from "lucide-react";
 import { useTranslations } from "next-intl";
 
 import { groupByLesson, KIND_ICON } from "@/features/materials/group-materials-tab";
+import { VideoPlayer } from "@/features/shared/video-player";
 import { parseDateOnly } from "@/lib/dates";
 import { useDateFormat } from "@/lib/use-date-format";
 import type { MaterialDto } from "@/server/services/materials/materials.service";
 
 /** The group's files, links and lesson recordings on the student's page (A-105). */
-export function PortalMaterialsTab({ items }: { items: MaterialDto[] }) {
+export function PortalMaterialsTab({ items, token }: { items: MaterialDto[]; token: string }) {
   const t = useTranslations("portal.materials");
   const fmt = useDateFormat();
   const date = (iso: string) => fmt(parseDateOnly(iso), { day: "numeric", month: "short" });
+  // Where the student is in a recording goes to the server (A-175): the next device continues there.
+  const saveProgress = (materialId: string, positionSec: number, durationSec: number | null) => {
+    void fetch(
+      `/api/v1/public/class/${encodeURIComponent(token)}/materials/${materialId}/progress`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ positionSec, durationSec }),
+        keepalive: true,
+      },
+    ).catch(() => undefined);
+  };
 
   if (items.length === 0) {
     return <p className="text-sm text-muted-foreground">{t("empty")}</p>;
@@ -56,13 +69,14 @@ export function PortalMaterialsTab({ items }: { items: MaterialDto[] }) {
                     </a>
                   </div>
                   {m.kind === "RECORDING" && (
-                    <video
-                      controls
-                      preload="metadata"
+                    <VideoPlayer
                       src={m.url}
-                      className="aspect-video w-full rounded-md bg-black"
-                      aria-label={t("recording")}
-                      data-testid="portal-recording"
+                      hlsSrc={m.hlsUrl}
+                      title={t("recording")}
+                      resumeSec={m.resumeSec}
+                      storageKey={m.id}
+                      onProgress={(pos, dur) => saveProgress(m.id, pos, dur)}
+                      testId="portal-recording"
                     />
                   )}
                 </li>
