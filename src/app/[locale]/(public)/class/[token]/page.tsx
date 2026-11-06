@@ -8,6 +8,7 @@ import { listPortalHomework } from "@/server/services/homework/homework.service"
 import { listPortalMaterials } from "@/server/services/materials/materials.service";
 import { getPortalPayOptions } from "@/server/services/payments/online-payments.service";
 import { getPortal } from "@/server/services/portal/portal.service";
+import { getPortalGradebook } from "@/server/services/gradebook/gradebook.service";
 import { getPortalProgress } from "@/server/services/progress/course-progress.service";
 import { listPortalCourse } from "@/server/services/settings/topic-content.service";
 import { listPortalCertificates } from "@/server/services/students/certificates.service";
@@ -49,6 +50,7 @@ export default async function Page({ params, searchParams }: Props) {
     tests,
     course,
     progress,
+    gradebook,
   ] = await Promise.all([
     getClassPage(token),
     getPortal(token),
@@ -62,6 +64,7 @@ export default async function Page({ params, searchParams }: Props) {
     listPortalTests(token),
     listPortalCourse(token),
     getPortalProgress(token),
+    getPortalGradebook(token),
   ]);
   if (!page || !portal || !homework || !telegram || !materials || !pay || !announcements) {
     notFound();
@@ -82,6 +85,7 @@ export default async function Page({ params, searchParams }: Props) {
         tests={tests ?? []}
         course={course}
         progress={progress}
+        gradebook={gradebook}
         initialTab={paid ? "money" : "lessons"}
       />
     </div>

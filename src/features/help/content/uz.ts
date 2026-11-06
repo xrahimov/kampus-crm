@@ -441,6 +441,7 @@ export const uz: HelpContent = {
           title: "Baholar",
           body: [
             "**Baho** yorlig‘ida xuddi shunday jadval bor. Katakni bosing va bahoni guruhning baholash tizimida kiriting: kursga qarab CEFR darajasi, IELTS bali, 1 dan 5 gacha yoki 0 dan 100 gacha. Har bir o‘quvchining o‘rtacha bahosi o‘ng tomonda hisoblanadi. Baholar o‘quvchining shaxsiy sahifasida va progress yorlig‘ida ko‘rinadi.",
+            "**Baholar jurnali** yorlig‘i hamma narsani har bir talaba uchun bitta yakuniy bahoga birlashtiradi: dars baholari, uy vazifasi (qabul qilingan ish rubrika bali yoki 100% sifatida, qaytarilgan yoki bajarilmagan ish 0% sifatida hisoblanadi), mashqlar, testlar va imtihonlar. Har bir qismning o‘rtachasi olinadi, so‘ng Sozlamalar → Kurslar → Baho vaznlari bo‘limida belgilangan vaznlar bo‘yicha hisoblanadi (odatiy: 30% darslar, 30% uy vazifasi, 20% testlar, 20% imtihonlar; beshta son yig‘indisi 100). Hali yozuvi yo‘q qism hisobga olinmaydi, yakuniy baho guruh baholash shkalasining darajasiga o‘giriladi.",
           ],
         },
         homework: {
@@ -1323,6 +1324,7 @@ export const uz: HelpContent = {
           title: "Natijalar",
           body: [
             "**Natijalar** yorlig‘i imtihonlaringiz va testlaringizni sana, ball va o‘tgan-o‘tmaganingiz bilan ko‘rsatadi. “Hali baholanmagan” deb belgilangan natijalar o‘qituvchi ularni kiritganda yangilanadi.",
+            "Natijalar yuqorisida **Bahoyingiz** kurs bo‘yicha yakuniy bahoyingizni va u nimadan tashkil topganini ko‘rsatadi: dars baholari, uy vazifasi, mashqlar, testlar va imtihonlar o‘rtachasi, har biri o‘z vazni bilan. Hali bo‘sh qismlar hisobga olinmaydi.",
           ],
         },
         telegram: {

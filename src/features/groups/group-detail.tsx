@@ -41,6 +41,7 @@ import type {
   GroupHistoryDto,
   GroupNoteDto,
 } from "@/server/services/groups/groups.service";
+import type { GroupGradebookDto } from "@/server/services/gradebook/gradebook.service";
 import type { GroupProgressDto } from "@/server/services/progress/course-progress.service";
 import type { GroupSyllabusDto } from "@/server/services/settings/syllabus.service";
 import type { MonthGridDto } from "@/server/services/groups/lessons.service";
@@ -79,12 +80,14 @@ import { MembersPanel } from "./members-panel";
 import { MoveBranchDialog } from "./move-branch-dialog";
 import { HistoryTab, NotesTab } from "./notes-history";
 import { OfferSeatsDialog } from "./offer-seats-dialog";
+import { GradebookTab } from "./gradebook-tab";
 import { SyllabusTab } from "./syllabus-tab";
 import { weekdayLabel } from "./weekday";
 
 const TABS = [
   "attendance",
   "grades",
+  "gradebook",
   "homework",
   "materials",
   "syllabus",
@@ -107,6 +110,7 @@ export function GroupDetail({
   notes,
   syllabus,
   progress,
+  gradebook,
   history,
   discounts,
   comments,
@@ -135,6 +139,7 @@ export function GroupDetail({
   notes: GroupNoteDto[];
   syllabus: GroupSyllabusDto;
   progress: GroupProgressDto;
+  gradebook: GroupGradebookDto;
   history: Page<GroupHistoryDto>;
   discounts: DiscountDto[];
   comments: StudentCommentDto[];
@@ -169,6 +174,7 @@ export function GroupDetail({
     giveCoins: boolean;
     manageCoins: boolean;
     sms: boolean;
+    catalog: boolean;
   };
 }) {
   const t = useTranslations();
@@ -465,6 +471,9 @@ export function GroupDetail({
                   gradingSystemName={group.gradingSystemName}
                   canMark={can.mark && !archived}
                 />
+              </TabsContent>
+              <TabsContent value="gradebook" className="pt-4">
+                <GradebookTab data={gradebook} canEditCourse={can.catalog} />
               </TabsContent>
               <TabsContent value="homework" className="pt-4">
                 <GroupHomeworkTab

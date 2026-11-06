@@ -438,6 +438,7 @@ export const en: HelpContent = {
           title: "Grades",
           body: [
             "The **Grades** tab has the same grid. Click a cell and enter the mark in the group's grading system: a CEFR level, an IELTS band, 1 to 5 or 0 to 100, depending on the course. The average per student is computed on the right. Marks appear on the student's personal page and in their progress tab.",
+            "The **Gradebook** tab combines everything into one final grade per student: lesson grades, homework (accepted work counts as its rubric score or 100%, returned or missing work as 0%), exercises, tests and exams. Each part is averaged and then weighted as set on the course in Settings → Courses → Grade weights (default 30% lessons, 30% homework, 20% tests, 20% exams; the five numbers add up to 100). A part with no entries yet is left out, and the final grade is mapped to a level of the group's grading scale.",
           ],
         },
         homework: {
@@ -1319,6 +1320,7 @@ export const en: HelpContent = {
           title: "Results",
           body: [
             "The **Results** tab lists your exams and tests with the date, score and whether you passed. Results marked “not graded yet” will update when the teacher enters them.",
+            "At the top of Results, **Your grade** shows your final grade for the course and how it is made up: the average of your lesson grades, homework, exercises, tests and exams, each with its weight. Parts that have nothing in them yet are not counted.",
           ],
         },
         telegram: {
