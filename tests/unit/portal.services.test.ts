@@ -218,8 +218,14 @@ describe("student portal", () => {
     await expect(
       ratePortalLesson(tokenOne, secondLessonId, { rating: 5, comment: null }),
     ).rejects.toMatchObject({ status: 409, message: "errors.ratingAbsent" });
+    // A lesson on a later day is never over yet, whatever the time of day the test runs.
+    const upcoming = await prisma.lesson.findFirstOrThrow({
+      where: { groupId, date: { gt: new Date() } },
+      orderBy: { date: "asc" },
+      select: { id: true },
+    });
     await expect(
-      ratePortalLesson(tokenOne, portal.nextLesson!.id, { rating: 5, comment: null }),
+      ratePortalLesson(tokenOne, upcoming.id, { rating: 5, comment: null }),
     ).rejects.toMatchObject({ status: 409, message: "errors.lessonNotOver" });
 
     expect(
