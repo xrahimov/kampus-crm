@@ -19,23 +19,28 @@ import { useRouter } from "@/i18n/navigation";
 import { api } from "@/lib/api-client";
 import { parseDateOnly } from "@/lib/dates";
 import { useDateFormat } from "@/lib/use-date-format";
+import type { GroupProgressDto } from "@/server/services/progress/course-progress.service";
 import type {
   GroupSyllabusDto,
   GroupSyllabusTopicDto,
 } from "@/server/services/settings/syllabus.service";
 
+import { GroupProgressTable } from "./group-progress-table";
 import { TopicContentDialog } from "./topic-content-dialog";
 
 /**
  * The group's progress through its course syllabus (A-137), and per topic the
- * lesson content students get and when they get it (A-157).
+ * lesson content students get and when they get it (A-157), then each
+ * student's progress through it (A-159).
  */
 export function SyllabusTab({
   data,
+  progress,
   groupId,
   canSet,
 }: {
   data: GroupSyllabusDto;
+  progress: GroupProgressDto;
   groupId: string;
   /** May open topics for the students (the attendance right of a live group). */
   canSet: boolean;
@@ -131,6 +136,7 @@ export function SyllabusTab({
           </li>
         ))}
       </ol>
+      <GroupProgressTable data={progress} />
       <TopicContentDialog
         topicId={contentOf}
         onOpenChange={(open) => !open && setContentOf(null)}

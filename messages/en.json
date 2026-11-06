@@ -1662,6 +1662,25 @@
         "moveUp": "Move up",
         "moveDown": "Move down",
         "remove": "Remove"
+      },
+      "students": {
+        "title": "Students' progress",
+        "hint": "A topic counts as complete for a student once its lesson has been held and they did its exercises and handed in its homework; with neither, attending the lesson is enough.",
+        "empty": "No students in the group yet.",
+        "student": "Student",
+        "complete": "Complete",
+        "topics": "{done} of {total} topics",
+        "exercises": "Exercises",
+        "score": "Avg score",
+        "attendance": "Attendance",
+        "homework": "Homework",
+        "byTopic": "By topic",
+        "cell": {
+          "complete": "Complete",
+          "open": "In progress",
+          "absent": "Missed the lesson",
+          "planned": "Not covered yet"
+        }
       }
     },
     "waitlist": {
@@ -2002,7 +2021,13 @@
       "byGroup": "By group",
       "group": "Group",
       "course": "Course",
-      "status": "Status"
+      "status": "Status",
+      "byCourse": "By course",
+      "noCourses": "Not in a group with a syllabus.",
+      "complete": "Complete",
+      "topics": "Topics",
+      "exercises": "Exercises",
+      "score": "Avg score"
     },
     "importBalances": "Import opening balances",
     "importBalancesHint": "One row per student and group with the balance they bring from the previous system: a debt is a negative number, money the student has is positive. Students are found by Kampus ID, phone or exact name; a preview shows the matches before anything is written.",
@@ -4955,7 +4980,8 @@
       "balance": "Balance: {amount}",
       "nextPayment": "next payment {date}",
       "open": "Open page",
-      "footer": "This page is for your family only. Keep the link to yourselves; the centre can issue a new one if it gets out."
+      "footer": "This page is for your family only. Keep the link to yourselves; the centre can issue a new one if it gets out.",
+      "progress": "Course: {percent}% complete ({done} of {total} topics)"
     },
     "course": {
       "empty": "The course has no topics yet.",
@@ -4965,7 +4991,15 @@
       "locked": "Opens after the lesson",
       "opensOn": "Opens on {date}",
       "open": "Open",
-      "download": "Download"
+      "download": "Download",
+      "yourProgress": "Your progress",
+      "percent": "{percent}% of the course complete",
+      "topicsDone": "{done} of {total} topics",
+      "exercisesDone": "Exercises: {done} of {total}",
+      "score": "Average score: {score}%",
+      "attendance": "Attendance: {percent}%",
+      "done": "Done",
+      "toDo": "To do"
     },
     "exercises": {
       "items": "{count} items",
@@ -5045,7 +5079,8 @@
     "loginNotYours": "Please share your own number with the button, not someone else's contact.",
     "loginUnknown": "This number is not registered at the learning centre. Ask the reception to add it to your profile.",
     "loginLinkedElsewhere": "Your profile is already connected to another Telegram account. Ask the reception to unlink it first.",
-    "loginLink": "Tap to open Kampus: {url}\nThe link works once, for 10 minutes."
+    "loginLink": "Tap to open Kampus: {url}\nThe link works once, for 10 minutes.",
+    "weeklyProgress": "{group}: course {percent}% complete ({done} of {total} topics){score, select, none {} other {, exercises average {score}%}}"
   },
   "video": {
     "title": "Video lesson",

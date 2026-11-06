@@ -224,6 +224,18 @@ test.describe("course syllabus (A-137)", () => {
     await expect(practice.getByTestId("exercise-item-result")).toHaveCount(2);
     await practice.getByTestId("exercise-done").click();
     await expect(practice.getByTestId("portal-exercise-best")).toContainText("2/2");
+
+    // Progress (A-159): the student sees the course share and the exercise count; Alphabet
+    // (attended, nothing asked) is done, Greetings has no lesson yet so it stays open.
+    await studentPage.reload();
+    await studentPage.getByTestId("portal-tab-course").click();
+    const summary = studentPage.getByTestId("portal-progress");
+    await expect(summary.getByTestId("portal-progress-percent")).toHaveText(
+      "33% of the course complete",
+    );
+    await expect(summary.getByTestId("portal-progress-exercises")).toHaveText("Exercises: 1 of 1");
+    await expect(portalTopics.nth(0).getByTestId("portal-topic-done")).toBeVisible();
+    await expect(portalTopics.nth(1).getByTestId("portal-topic-done")).toHaveCount(0);
     await studentPage.close();
 
     // The teacher sees the result on the exercise.
@@ -232,6 +244,21 @@ test.describe("course syllabus (A-137)", () => {
     await expect(exercise.getByTestId("ex-result-row")).toContainText("2/2 (100 %)");
     await exercise.getByRole("button", { name: "Cancel" }).click();
     await content.getByRole("button", { name: "Cancel" }).click();
+
+    // The teacher's table under the syllabus: one row, one square per topic.
+    await page.goto(`/en/groups/${groupId}?tab=syllabus`);
+    const progressRow = page.getByTestId("group-progress-row");
+    await expect(progressRow).toHaveCount(1);
+    await expect(progressRow.getByTestId("group-progress-percent")).toHaveText("33%");
+    await expect(progressRow.getByTestId("group-progress-cell")).toHaveCount(3);
+    await expect(progressRow.getByTestId("group-progress-cell").nth(0)).toHaveAttribute(
+      "data-state",
+      "complete",
+    );
+    await expect(progressRow.getByTestId("group-progress-cell").nth(1)).toHaveAttribute(
+      "data-state",
+      "planned",
+    );
 
     // Today offers the next topic on the group's lesson of the day; "Use it" takes it.
     await page.goto("/en/today");

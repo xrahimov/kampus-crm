@@ -74,6 +74,15 @@ export function FamilyPortalPage({ data }: { data: FamilyPortalDto }) {
                           })
                         : t("noLesson")}
                     </p>
+                    {g.progress && (
+                      <p className="text-muted-foreground" data-testid="family-progress">
+                        {t("progress", {
+                          percent: g.progress.percent ?? 0,
+                          done: g.progress.topicsComplete,
+                          total: g.progress.topicsTotal,
+                        })}
+                      </p>
+                    )}
                     <p
                       className={
                         g.balance < 0 ? "font-medium text-destructive" : "text-muted-foreground"

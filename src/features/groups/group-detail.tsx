@@ -41,6 +41,7 @@ import type {
   GroupHistoryDto,
   GroupNoteDto,
 } from "@/server/services/groups/groups.service";
+import type { GroupProgressDto } from "@/server/services/progress/course-progress.service";
 import type { GroupSyllabusDto } from "@/server/services/settings/syllabus.service";
 import type { MonthGridDto } from "@/server/services/groups/lessons.service";
 import type { GroupHomeworkDto } from "@/server/services/homework/homework.service";
@@ -105,6 +106,7 @@ export function GroupDetail({
   daysOff,
   notes,
   syllabus,
+  progress,
   history,
   discounts,
   comments,
@@ -132,6 +134,7 @@ export function GroupDetail({
   daysOff: GroupDayOffDto[];
   notes: GroupNoteDto[];
   syllabus: GroupSyllabusDto;
+  progress: GroupProgressDto;
   history: Page<GroupHistoryDto>;
   discounts: DiscountDto[];
   comments: StudentCommentDto[];
@@ -474,7 +477,12 @@ export function GroupDetail({
                 />
               </TabsContent>
               <TabsContent value="syllabus" className="pt-4">
-                <SyllabusTab data={syllabus} groupId={group.id} canSet={can.mark && !archived} />
+                <SyllabusTab
+                  data={syllabus}
+                  progress={progress}
+                  groupId={group.id}
+                  canSet={can.mark && !archived}
+                />
               </TabsContent>
               <TabsContent value="notes" className="pt-4">
                 <NotesTab groupId={group.id} notes={notes} canEdit={can.update} />

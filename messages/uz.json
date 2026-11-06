@@ -1662,6 +1662,25 @@
         "moveUp": "Yuqoriga",
         "moveDown": "Pastga",
         "remove": "Olib tashlash"
+      },
+      "students": {
+        "title": "O‘quvchilar progressi",
+        "hint": "Mavzu o‘quvchi uchun dars o‘tilgach va u mashqlarni bajarib, uy vazifasini topshirgach bajarilgan hisoblanadi; ikkisi ham bo‘lmasa, darsda qatnashgani kifoya.",
+        "empty": "Guruhda hali o‘quvchi yo‘q.",
+        "student": "O‘quvchi",
+        "complete": "Bajarildi",
+        "topics": "{total} mavzudan {done}",
+        "exercises": "Mashqlar",
+        "score": "O‘rtacha ball",
+        "attendance": "Davomat",
+        "homework": "Uy vazifasi",
+        "byTopic": "Mavzular bo‘yicha",
+        "cell": {
+          "complete": "Bajarildi",
+          "open": "Jarayonda",
+          "absent": "Darsni qoldirdi",
+          "planned": "Hali o‘tilmadi"
+        }
       }
     },
     "waitlist": {
@@ -2002,7 +2021,13 @@
       "byGroup": "Guruhlar bo'yicha",
       "group": "Guruh",
       "course": "Kurs",
-      "status": "Holat"
+      "status": "Holat",
+      "byCourse": "Kurslar bo‘yicha",
+      "noCourses": "Dastur bor guruhda emas.",
+      "complete": "Bajarildi",
+      "topics": "Mavzular",
+      "exercises": "Mashqlar",
+      "score": "O‘rtacha ball"
     },
     "importBalances": "Boshlang'ich qoldiqlarni import qilish",
     "importBalancesHint": "Har bir o'quvchi va guruh uchun bir qator: oldingi tizimdan kelgan qoldiq. Qarz manfiy son, o'quvchining ortiqcha puli musbat son bilan yoziladi. O'quvchi Kampus ID, telefon yoki aniq ism bo'yicha topiladi; yozishdan oldin mosliklar ko'rsatiladi.",
@@ -4955,7 +4980,8 @@
       "balance": "Balans: {amount}",
       "nextPayment": "keyingi to‘lov {date}",
       "open": "Sahifani ochish",
-      "footer": "Bu sahifa faqat oilangiz uchun. Havolani boshqalarga bermang; tarqalsa markaz yangisini beradi."
+      "footer": "Bu sahifa faqat oilangiz uchun. Havolani boshqalarga bermang; tarqalsa markaz yangisini beradi.",
+      "progress": "Kurs: {percent}% bajarildi ({total} mavzudan {done})"
     },
     "course": {
       "empty": "Kursda hali mavzular yo‘q.",
@@ -4965,7 +4991,15 @@
       "locked": "Darsdan keyin ochiladi",
       "opensOn": "{date} ochiladi",
       "open": "Ochish",
-      "download": "Yuklab olish"
+      "download": "Yuklab olish",
+      "yourProgress": "Sizning progressingiz",
+      "percent": "Kursning {percent}% bajarildi",
+      "topicsDone": "{total} mavzudan {done}",
+      "exercisesDone": "Mashqlar: {total} tadan {done}",
+      "score": "O‘rtacha ball: {score}%",
+      "attendance": "Davomat: {percent}%",
+      "done": "Bajarildi",
+      "toDo": "Bajarish kerak"
     },
     "exercises": {
       "items": "{count} topshiriq",
@@ -5045,7 +5079,8 @@
     "loginNotYours": "Iltimos, boshqa kontaktni emas, tugma orqali o‘z raqamingizni yuboring.",
     "loginUnknown": "Bu raqam o‘quv markazida ro‘yxatda yo‘q. Qabulxonadan uni profilingizga qo‘shishni so‘rang.",
     "loginLinkedElsewhere": "Profilingiz boshqa Telegram hisobiga ulangan. Avval qabulxonadan uni uzishni so‘rang.",
-    "loginLink": "Kampusni ochish uchun bosing: {url}\nHavola bir marta, 10 daqiqa ishlaydi."
+    "loginLink": "Kampusni ochish uchun bosing: {url}\nHavola bir marta, 10 daqiqa ishlaydi.",
+    "weeklyProgress": "{group}: kurs {percent}% bajarildi ({total} mavzudan {done} tasi){score, select, none {} other {, mashqlar o‘rtachasi {score}%}}"
   },
   "video": {
     "title": "Video dars",
