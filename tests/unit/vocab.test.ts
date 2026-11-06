@@ -15,7 +15,7 @@ import { setCourseSyllabus } from "@/server/services/settings/syllabus.service";
 import { setTopicRelease } from "@/server/services/settings/topic-content.service";
 import { createStudent } from "@/server/services/students/students.service";
 import { listStudentLinks } from "@/server/services/video/video.service";
-import { vocabStreak } from "@/server/services/vocab/streak";
+import { localDay, vocabStreak } from "@/server/services/vocab/streak";
 import {
   getPortalVocab,
   listTopicWords,
@@ -208,11 +208,13 @@ describe("vocabulary trainer (A-165)", () => {
     );
 
     // Six earlier days of practice make today the seventh: the streak coins are awarded.
+    // Counted back from the Tashkent day, which the service uses: late in the UTC
+    // evening it is already tomorrow there, and a day built from UTC would leave a gap.
     const days = [];
     for (let i = 1; i <= 6; i++) {
-      const d = new Date();
+      const d = new Date(`${localDay()}T00:00:00Z`);
       d.setUTCDate(d.getUTCDate() - i);
-      days.push({ membershipId, date: new Date(`${iso(d)}T00:00:00Z`), reviewed: 1, correct: 1 });
+      days.push({ membershipId, date: d, reviewed: 1, correct: 1 });
     }
     await prisma.vocabDay.createMany({ data: days });
     expect(await vocabStreak(prisma, membershipId)).toBe(7);
