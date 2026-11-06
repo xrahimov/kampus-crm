@@ -37,6 +37,7 @@ import type { PortalAnnouncementDto } from "@/server/services/announcements/anno
 import type { PortalHomeworkDto } from "@/server/services/homework/homework.service";
 import type { PortalCertificateDto } from "@/server/services/students/certificates.service";
 import type { PortalTestDto } from "@/server/services/tests/portal-tests.service";
+import type { CourseProgressDto } from "@/server/services/progress/course-progress.service";
 import type { PortalCourseDto } from "@/server/services/settings/topic-content.service";
 import type { MaterialDto } from "@/server/services/materials/materials.service";
 import type { PortalPayOptionsDto } from "@/server/services/payments/online-payments.service";
@@ -80,6 +81,7 @@ export function PortalPage({
   certificates = [],
   tests = [],
   course = null,
+  progress = null,
   initialTab = "lessons",
 }: {
   token: string;
@@ -97,6 +99,8 @@ export function PortalPage({
   tests?: PortalTestDto[];
   /** The course's topics and the content open to the student (A-157). */
   course?: PortalCourseDto | null;
+  /** Where the student stands in the course (A-159). */
+  progress?: CourseProgressDto | null;
   initialTab?: "lessons" | "money";
 }) {
   const t = useTranslations("portal");
@@ -284,7 +288,7 @@ export function PortalPage({
 
             {course && course.total > 0 && (
               <TabsContent value="course">
-                <PortalCourseTab token={token} course={course} />
+                <PortalCourseTab token={token} course={course} progress={progress} />
               </TabsContent>
             )}
             <TabsContent value="materials">

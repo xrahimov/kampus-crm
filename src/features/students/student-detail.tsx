@@ -75,6 +75,7 @@ import type {
 } from "@/server/services/students/students.service";
 
 import type { StudentProgressDto } from "@/server/services/exams/exams.service";
+import type { CourseProgressDto } from "@/server/services/progress/course-progress.service";
 import type { StudentTestResultsDto } from "@/server/services/tests/tests.service";
 
 import { SendSmsDialog } from "@/features/sms/send-sms-dialog";
@@ -116,6 +117,7 @@ export function StudentDetail({
   legacyPayments,
   paymentGroupId,
   progress,
+  courseProgress,
   testResults,
   sms,
   calls,
@@ -135,6 +137,7 @@ export function StudentDetail({
   legacyPayments: LegacyPaymentDto[];
   paymentGroupId: string | null;
   progress: StudentProgressDto;
+  courseProgress: CourseProgressDto[];
   testResults: StudentTestResultsDto;
   sms: SmsLogRowDto[];
   calls: CallDto[];
@@ -467,7 +470,7 @@ export function StudentDetail({
                 </TabsContent>
 
                 <TabsContent value="progress" className="pt-4">
-                  <ProgressTab progress={progress} />
+                  <ProgressTab progress={progress} courses={courseProgress} />
                 </TabsContent>
                 <TabsContent value="testResults" className="pt-4">
                   <TestResultsTab studentId={student.id} initial={testResults} />

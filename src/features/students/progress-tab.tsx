@@ -17,10 +17,21 @@ import {
 } from "@/components/ui/table";
 import { parseDateOnly } from "@/lib/dates";
 import { useDateFormat } from "@/lib/use-date-format";
+import { ProgressMeter } from "@/features/progress/progress-meter";
 import type { StudentProgressDto } from "@/server/services/exams/exams.service";
+import type { CourseProgressDto } from "@/server/services/progress/course-progress.service";
 
-/** Student profile → "O'quvchi progressi" (EXP §6): KPIs, monthly table, exam results. */
-export function ProgressTab({ progress }: { progress: StudentProgressDto }) {
+/**
+ * Student profile → "O'quvchi progressi" (EXP §6): KPIs, the way through each
+ * current course (A-159), monthly table, exam results.
+ */
+export function ProgressTab({
+  progress,
+  courses = [],
+}: {
+  progress: StudentProgressDto;
+  courses?: CourseProgressDto[];
+}) {
   const t = useTranslations("students.progress");
   const te = useTranslations("exams");
   const tg = useTranslations("groups.memberStatuses");
@@ -46,6 +57,53 @@ export function ProgressTab({ progress }: { progress: StudentProgressDto }) {
           </Card>
         ))}
       </div>
+
+      <section className="space-y-2">
+        <h3 className="text-sm font-semibold">{t("byCourse")}</h3>
+        {courses.filter((c) => c.topicsTotal > 0).length === 0 ? (
+          <p className="text-sm text-muted-foreground">{t("noCourses")}</p>
+        ) : (
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>{t("group")}</TableHead>
+                <TableHead>{t("course")}</TableHead>
+                <TableHead className="min-w-40">{t("complete")}</TableHead>
+                <TableHead className="text-right">{t("topics")}</TableHead>
+                <TableHead className="text-right">{t("exercises")}</TableHead>
+                <TableHead className="text-right">{t("score")}</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {courses
+                .filter((c) => c.topicsTotal > 0)
+                .map((c) => (
+                  <TableRow key={c.membershipId} data-testid="progress-course-row">
+                    <TableCell className="font-medium">
+                      <Link href={`/groups/${c.groupId}`} className="hover:underline">
+                        {c.groupName}
+                      </Link>
+                    </TableCell>
+                    <TableCell>{c.courseName}</TableCell>
+                    <TableCell>
+                      <div className="flex items-center gap-2">
+                        <ProgressMeter percent={c.percent} className="w-24" />
+                        <span className="tabular-nums">{pct(c.percent)}</span>
+                      </div>
+                    </TableCell>
+                    <TableCell className="text-right tabular-nums">
+                      {c.topicsComplete}/{c.topicsTotal}
+                    </TableCell>
+                    <TableCell className="text-right tabular-nums">
+                      {c.exercisesDone}/{c.exercisesTotal}
+                    </TableCell>
+                    <TableCell className="text-right tabular-nums">{pct(c.scorePercent)}</TableCell>
+                  </TableRow>
+                ))}
+            </TableBody>
+          </Table>
+        )}
+      </section>
 
       <section className="space-y-2">
         <h3 className="text-sm font-semibold">{t("byMonth")}</h3>
