@@ -229,7 +229,7 @@ describe("validation", () => {
 });
 
 describe("coin settings and reasons", () => {
-  it("creates the reference rules and the referral rule on first read and saves the switch", async () => {
+  it("creates the reference rules, the referral and vocabulary rules on first read and saves the switch", async () => {
     const settings = await getCoinSettings(ceo);
     expect(settings.rules.map((r) => r.event)).toEqual([
       "ATTENDANCE",
@@ -237,6 +237,7 @@ describe("coin settings and reasons", () => {
       "TEST_RESULT",
       "BIRTHDAY",
       "REFERRAL",
+      "VOCAB_STREAK",
     ]);
     const updated = await updateCoinSettings(ceo, {
       autoCoins: true,
