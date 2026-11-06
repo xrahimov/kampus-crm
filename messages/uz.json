@@ -498,7 +498,9 @@
     "rescheduleTooLate": "Darsni endi o'zgartirib bo'lmaydi",
     "lessonNotOver": "Dars hali tugamagan",
     "ratingAbsent": "O'tkazib yuborilgan darsga baho qo'yib bo'lmaydi",
-    "bookingLimit": "Oldindan band qilingan darslar soni allaqachon eng ko'p"
+    "bookingLimit": "Oldindan band qilingan darslar soni allaqachon eng ko'p",
+    "trialNotToday": "Sinov darsi boshqa kunda.",
+    "trialClosed": "Bu sinov darsi endi o‘tkazilmaydi."
   },
   "validation": {
     "phone": "+998 90 123 45 67 ko‘rinishida raqam kiriting.",
@@ -2826,7 +2828,10 @@
         "NO_SHOW": "Kelmadi",
         "CONVERTED": "O‘quvchiga aylandi",
         "CANCELLED": "Bekor qilindi"
-      }
+      },
+      "copyLink": "Tashrifchining dars havolasini nusxalash",
+      "linkCopied": "Havola nusxalandi",
+      "linkHint": "Bu havolani tashrifchiga yuboring: sinov kuni u onlayn darsga kiritadi, qo‘shilish «keldi» deb belgilaydi."
     },
     "bulk": {
       "selected": "{count} tanlandi",
@@ -5274,7 +5279,8 @@
     "chatPick": "Bu qaysi guruh uchun? Pastdan tanlang, so‘ng xabaringizni qayta yuboring.",
     "chatPicked": "💬 Endi xabarlaringiz {group} chatiga boradi. Yozing.",
     "chatFromStudent": "💬 {group} · {student} yozdi:\n{text}\n\nJavob: Kampus → Guruhlar → {group} → Chat.",
-    "lessonSummary": "📘 {group}, {date} {time}\nMavzu: {topic, select, none {yozilmagan} other {{topic}}}\nDavomat: {attendance, select, PRESENT {keldi ✅} ABSENT {kelmadi ❌} EXCUSED {sababli} other {hali belgilanmagan}}\nUyga vazifa: {homework, select, none {yo‘q} other {{homework}}}{due, select, none {} other { (muddat {due})}}"
+    "lessonSummary": "📘 {group}, {date} {time}\nMavzu: {topic, select, none {yozilmagan} other {{topic}}}\nDavomat: {attendance, select, PRESENT {keldi ✅} ABSENT {kelmadi ❌} EXCUSED {sababli} other {hali belgilanmagan}}\nUyga vazifa: {homework, select, none {yo‘q} other {{homework}}}{due, select, none {} other { (muddat {due})}}",
+    "trialLink": "🎓 Sinov darsingiz: {group}, {date}{time, select, none {} other {, {time}}}.\nO‘sha kuni onlayn darsga qo‘shilish uchun shu havolani oching: {url}"
   },
   "video": {
     "title": "Video dars",
@@ -5516,6 +5522,17 @@
       "sendNotice": "Hammaga yuborish",
       "end": "Xonalarni yopish va hammani qaytarish",
       "hint": "Xonadagilar faqat bir-birini ko‘radi va eshitadi. {role} asosiy xonada qoladi."
+    },
+    "trial": {
+      "hello": "Xush kelibsiz, {name}",
+      "intro": "{center} markazidagi {group} guruhida sinov darsingiz. Bu sahifa tashrif kunida sizni onlayn darsga kiritadi.",
+      "badge": "Sinov darsi",
+      "waiting": "O‘qituvchi darsni hali boshlamadi. Sahifani ochiq qoldiring; u boshlashi bilan «Qo‘shilish» tugmasi chiqadi.",
+      "notToday": "Havola darsni tashrif kunida ochadi. O‘sha kuni, dars boshlanishidan bir necha daqiqa oldin qayting.",
+      "closed": "Bu sinov darsi endi o‘tkazilmaydi. O‘quv markazidan yangi kun so‘rang.",
+      "converted": "Endi siz bu guruhning o‘quvchisisiz. Markaz yuborgan shaxsiy havolangizdan foydalaning.",
+      "disabled": "Bu o‘quv markazida video darslar o‘chirilgan.",
+      "tips": "Havolani telefon yoki kompyuterdagi istalgan brauzerda oching; hech narsa o‘rnatish shart emas. So‘ralganda kamera va mikrofonga ruxsat bering."
     }
   },
   "help": {

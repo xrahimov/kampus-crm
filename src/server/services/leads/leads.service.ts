@@ -74,7 +74,14 @@ export interface LeadDto {
   lastContactAt: string | null;
   lastOutcome: LeadContactOutcome | null;
   /** The lead's latest trial lesson (A-131): the next booked one, else the last outcome. */
-  trial: { id: string; date: string; groupName: string; status: TrialStatus } | null;
+  trial: {
+    id: string;
+    date: string;
+    groupName: string;
+    status: TrialStatus;
+    /** The visitor's link into the online lesson (A-172). */
+    token: string | null;
+  } | null;
   sortOrder: number;
   isArchived: boolean;
   studentId: string | null;
@@ -134,7 +141,13 @@ const include = {
   trials: {
     where: { status: { not: "CANCELLED" } },
     orderBy: [{ date: "desc" }, { createdAt: "desc" }],
-    select: { id: true, date: true, status: true, group: { select: { name: true } } },
+    select: {
+      id: true,
+      date: true,
+      status: true,
+      videoToken: true,
+      group: { select: { name: true } },
+    },
   },
 } satisfies Prisma.LeadInclude;
 type Row = Prisma.LeadGetPayload<{ include: typeof include }>;
@@ -144,7 +157,13 @@ function trialOf(trials: Row["trials"]): LeadDto["trial"] {
   const booked = [...trials].reverse().find((t) => t.status === "BOOKED");
   const pick = booked ?? trials[0];
   return pick
-    ? { id: pick.id, date: dateToIso(pick.date), groupName: pick.group.name, status: pick.status }
+    ? {
+        id: pick.id,
+        date: dateToIso(pick.date),
+        groupName: pick.group.name,
+        status: pick.status,
+        token: pick.videoToken,
+      }
     : null;
 }
 

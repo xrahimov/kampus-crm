@@ -1,11 +1,15 @@
 import type { Prisma } from "@/generated/prisma/client";
 import type { TrialBookingInput, TrialOutcomeInput, TrialStatus } from "@/lib/validation/leads";
 import { recordAudit } from "@/server/audit/audit";
+import { generateToken } from "@/server/auth/tokens";
 import { prisma, type DbClient } from "@/server/db/prisma";
 import { AppError } from "@/server/errors/app-error";
+import { enqueue } from "@/server/jobs/queue";
 import { authorize, can, type Actor } from "@/server/rbac/authorize";
 import { findGroupInScope, groupScope } from "@/server/services/groups/shared";
+import { appOriginForGroup } from "@/server/services/settings/domains.service";
 import { dateToIso, isoToDate, mustFind } from "@/server/services/settings/shared";
+import { botDate, botLocale, botText } from "@/server/services/telegram/student-telegram.service";
 
 import { leadScope } from "./shared";
 
@@ -31,6 +35,8 @@ export interface TrialBookingDto {
   date: string;
   status: TrialStatus;
   note: string | null;
+  /** The visitor's own link into the online lesson (A-172); null for bookings made before links existed. */
+  token: string | null;
   createdByName: string | null;
   createdAt: string;
 }
@@ -54,6 +60,7 @@ function toDto(row: Row): TrialBookingDto {
     date: dateToIso(row.date),
     status: row.status,
     note: row.note,
+    token: row.videoToken,
     createdByName: row.createdBy?.fullName ?? null,
     createdAt: row.createdAt.toISOString(),
   };
@@ -113,8 +120,11 @@ export async function bookTrial(
   const lesson = await db.lesson.findFirst({
     where: { groupId: group.id, date },
     orderBy: { startTime: "asc" },
-    select: { id: true },
+    select: { id: true, startTime: true, endTime: true },
   });
+  // The visitor's own link into the online lesson (A-172).
+  const videoToken = generateToken(18);
+  const origin = await appOriginForGroup(group.id, db);
   return db.$transaction(async (tx) => {
     const row = await tx.trialBooking.create({
       data: {
@@ -123,6 +133,7 @@ export async function bookTrial(
         lessonId: lesson?.id ?? null,
         date,
         note: input.note,
+        videoToken,
         createdById: actor.userId || null,
       },
       include,
@@ -134,7 +145,64 @@ export async function bookTrial(
       after: { groupId: group.id, groupName: group.name, date: input.date },
       branchId: lead.branchId,
     });
+    // A lead who wrote to the bot gets the link in that chat, and the inbox keeps a copy.
+    const conversation = await tx.leadConversation.findFirst({
+      where: { leadId, channel: "TELEGRAM" },
+      select: { id: true, organizationId: true, externalChatId: true, locale: true },
+    });
+    if (conversation) {
+      const locale = botLocale(conversation.locale);
+      const text = botText(locale, "trialLink", {
+        group: group.name,
+        date: botDate(locale, input.date),
+        time: lesson ? `${lesson.startTime}–${lesson.endTime}` : "none",
+        url: trialLink(origin, videoToken),
+      });
+      await enqueue(tx, {
+        type: "telegram.send",
+        payload: {
+          organizationId: conversation.organizationId,
+          chatId: conversation.externalChatId,
+          text,
+        },
+        uniqueKey: `tg:trial-link:${row.id}`,
+      });
+      await tx.leadMessage.create({
+        data: {
+          conversationId: conversation.id,
+          direction: "OUT",
+          text,
+          sentById: actor.userId || null,
+        },
+      });
+      await tx.leadConversation.update({
+        where: { id: conversation.id },
+        data: { lastMessageAt: new Date() },
+      });
+    }
     return toDto(row);
+  });
+}
+
+/** The visitor's page address for a booking's token. */
+export function trialLink(origin: string, token: string): string {
+  return `${origin}/class/trial/${token}`;
+}
+
+/** The booking a visitor's link stands for; null for an unknown token. */
+export async function trialByToken(db: DbClient, token: string) {
+  if (!/^[A-Za-z0-9_-]{20,64}$/.test(token)) return null;
+  return db.trialBooking.findUnique({
+    where: { videoToken: token },
+    select: {
+      id: true,
+      date: true,
+      status: true,
+      lessonId: true,
+      lead: { select: { id: true, fullName: true, branchId: true } },
+      group: { select: { id: true, name: true, branchId: true, status: true } },
+      lesson: { select: { startTime: true, endTime: true } },
+    },
   });
 }
 

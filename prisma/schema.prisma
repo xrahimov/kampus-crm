@@ -1983,6 +1983,8 @@ model TrialBooking {
   date        DateTime    @db.Date
   status      TrialStatus @default(BOOKED)
   note        String?
+  /// The visitor's own link into the online lesson, /class/trial/<token> (A-172).
+  videoToken  String?     @unique
   createdById String?
   createdAt   DateTime    @default(now())
   updatedAt   DateTime    @updatedAt

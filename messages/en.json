@@ -498,7 +498,9 @@
     "rescheduleTooLate": "The lesson can no longer be changed",
     "lessonNotOver": "The lesson is not over yet",
     "ratingAbsent": "A missed lesson cannot be rated",
-    "bookingLimit": "You already have the most lessons booked ahead"
+    "bookingLimit": "You already have the most lessons booked ahead",
+    "trialNotToday": "The trial lesson is on another day.",
+    "trialClosed": "This trial lesson is no longer on."
   },
   "validation": {
     "phone": "Enter a number like +998 90 123 45 67.",
@@ -2826,7 +2828,10 @@
         "NO_SHOW": "Didn't come",
         "CONVERTED": "Became a student",
         "CANCELLED": "Cancelled"
-      }
+      },
+      "copyLink": "Copy the visitor's lesson link",
+      "linkCopied": "Link copied",
+      "linkHint": "Send this link to the visitor: on the day of the trial it lets them into the online lesson, and joining marks them as came."
     },
     "bulk": {
       "selected": "{count} selected",
@@ -5274,7 +5279,8 @@
     "chatPick": "Which group is this for? Pick it below, then send your message again.",
     "chatPicked": "💬 Your messages now go to the {group} chat. Write away.",
     "chatFromStudent": "💬 {group} · {student} wrote:\n{text}\n\nReply in Kampus: Groups → {group} → Chat.",
-    "lessonSummary": "📘 {group}, {date} {time}\nTopic: {topic, select, none {not written down} other {{topic}}}\nAttendance: {attendance, select, PRESENT {present ✅} ABSENT {absent ❌} EXCUSED {excused} other {not marked yet}}\nHomework: {homework, select, none {none} other {{homework}}}{due, select, none {} other { (due {due})}}"
+    "lessonSummary": "📘 {group}, {date} {time}\nTopic: {topic, select, none {not written down} other {{topic}}}\nAttendance: {attendance, select, PRESENT {present ✅} ABSENT {absent ❌} EXCUSED {excused} other {not marked yet}}\nHomework: {homework, select, none {none} other {{homework}}}{due, select, none {} other { (due {due})}}",
+    "trialLink": "🎓 Your trial lesson: {group}, {date}{time, select, none {} other {, {time}}}.\nOn that day open this link to join the online lesson: {url}"
   },
   "video": {
     "title": "Video lesson",
@@ -5516,6 +5522,17 @@
       "sendNotice": "Send to everyone",
       "end": "Close the rooms and bring everyone back",
       "hint": "People in a room see and hear only each other. A {role} stays in the main room."
+    },
+    "trial": {
+      "hello": "Welcome, {name}",
+      "intro": "Your trial lesson with the group {group} at {center}. This page lets you into the online lesson on the day of your visit.",
+      "badge": "Trial lesson",
+      "waiting": "The teacher has not started the lesson yet. Keep this page open; the Join button appears as soon as they do.",
+      "notToday": "The link opens the lesson on the day of your visit. Come back then, a few minutes before the start.",
+      "closed": "This trial lesson is no longer on. Ask the learning centre for a new date.",
+      "converted": "You are a student of this group now. Use the personal link the centre sent you instead.",
+      "disabled": "Video lessons are switched off at this learning centre.",
+      "tips": "Open the link in any browser on a phone or computer; nothing to install. Allow the camera and microphone when asked."
     }
   },
   "help": {
