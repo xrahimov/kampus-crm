@@ -103,7 +103,7 @@ What runs:
 | `db`      | PostgreSQL 16, data in the `db-data` volume                                                                                        |
 | `backup`  | Nightly `pg_dump` into `./backups` kept `BACKUP_KEEP_DAYS` days (default 14), plus a copy of uploaded files in `./backups/uploads` |
 
-Uploaded photos live in the `uploads` volume.
+Uploaded files live in the `uploads` volume, or in object storage (section 10).
 
 ## 6. Check that it works
 
@@ -203,6 +203,47 @@ changes per centre.
 Clearing the field stops the name from being served; its certificate lapses by
 itself. `DOMAIN` and `APP_URL` stay the main address: it keeps working for
 every centre, and the payment and amoCRM callback URLs always use it.
+
+## 10. Object storage
+
+By default every uploaded file (photos, lesson materials, homework attachments,
+recordings) lives in the `uploads` Docker volume on the server's disk, and the
+`backup` service mirrors it. Recordings are the heavy part: an hour of video is
+100–300 MB, so a 38 GB server fills up within months. Kampus can keep the files in
+S3-compatible object storage instead: Hetzner Object Storage (about €5 per TB and
+month), MinIO or AWS S3.
+
+1. Create a bucket (Hetzner Cloud console → Object Storage → Create bucket, same
+   location as the server, **private** visibility) and an access key pair.
+2. Add to `.env`:
+
+   ```
+   STORAGE_DRIVER=s3
+   S3_ENDPOINT=https://fsn1.your-objectstorage.com
+   S3_REGION=fsn1
+   S3_BUCKET=kampus-files
+   S3_ACCESS_KEY=...
+   S3_SECRET_KEY=...
+   # S3_FORCE_PATH_STYLE=true   # MinIO and most self-hosted services
+   ```
+
+3. Copy the files that are already on the disk into the bucket (re-runnable, skips
+   files that are already there, deletes nothing):
+
+   ```bash
+   docker compose -f docker-compose.prod.yml run --rm app npx tsx scripts/migrate-uploads.ts
+   ```
+
+4. Restart: `docker compose -f docker-compose.prod.yml up -d`.
+
+Files are still served only through Kampus (`/api/v1/files/...`, signed in or by
+a student link), never straight from the bucket, so the bucket stays private. The
+worker uses the same settings for the nightly recording clean-up. The `backup`
+service keeps mirroring the local folder only; with object storage, turn on the
+bucket's own versioning or copy it with `rclone` if you want a second copy.
+
+To go back to the disk, set `STORAGE_DRIVER=local` again; files uploaded while
+the bucket was in use stay there and would have to be copied back by hand.
 
 ## Troubleshooting
 
