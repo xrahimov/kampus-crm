@@ -5648,6 +5648,12 @@
       "withBot": "Telegram bot orqali kirish",
       "privacy": "Faqat o‘quv markazida o‘quvchi yoki ota-onada yozilgan raqamlar kira oladi. Kampus Telegram parolingiz va xabarlaringizni ko‘rmaydi.",
       "off": "Bu yerda Telegram orqali kirish hali sozlanmagan. O‘quv markazi yuborgan shaxsiy havoladan foydalaning."
+    },
+    "shell": {
+      "offline": "Internet yo‘q. Bu sahifa oxirgi ochganingizdagi holatda; aloqa qaytgach yangilanadi.",
+      "installHint": "My Kampus ni bosh ekranga qo‘shing: darslaringiz, uyga vazifa va to‘lovlar bir bosishda, internetsiz ham.",
+      "install": "O‘rnatish",
+      "later": "Hozir emas"
     }
   },
   "exercises": {
