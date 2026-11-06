@@ -378,7 +378,8 @@ export async function chatFromTelegram(
       group: { select: { name: true, branchId: true } },
       student: { select: { fullName: true } },
     },
-    orderBy: { joinedAt: "asc" },
+    // Oldest group first; the name breaks ties, so the buttons keep one order.
+    orderBy: [{ joinedAt: "asc" }, { group: { name: "asc" } }],
   });
   if (memberships.length === 0) return null;
   const chat = await db.studentTelegramChat.findUnique({
