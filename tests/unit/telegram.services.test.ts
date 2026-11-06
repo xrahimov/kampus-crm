@@ -106,6 +106,7 @@ beforeAll(async () => {
     webhookSecret: "s3cret",
     botUsername: "kampus_test_bot",
     weeklyReport: true,
+    lessonSummary: true,
     sharedWithAllCentres: false,
     loginClientId: "",
     loginClientSecret: "",

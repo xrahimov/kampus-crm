@@ -236,6 +236,8 @@ export const telegramIntegrationSchema = z.object({
     .default(""),
   /** Sunday evening digest to every chat linked to a student (A-118). */
   weeklyReport: z.boolean().default(true),
+  /** After each video lesson, a short summary to the student's and parents' chats (A-171). */
+  lessonSummary: z.boolean().default(true),
   /**
    * Site owner only (A-135): this bot also serves every centre that has no bot
    * of its own. The service drops the flag for anyone else.
