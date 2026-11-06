@@ -190,28 +190,28 @@ model User {
   purchasesDecided PurchaseRequest[]  @relation("purchaseDecider")
   questionsWritten QuestionBankItem[] @relation("questionAuthor")
 
-  smsSent             SmsMessage[]         @relation("smsSender")
-  calls               CallLog[]            @relation("callStaff")
+  smsSent             SmsMessage[]          @relation("smsSender")
+  calls               CallLog[]             @relation("callStaff")
   botRecipient        BotRecipient?
   staffCheckIns       StaffAttendance[]
   workSchedules       WorkSchedule[]
   availability        TeacherAvailability[]
-  membershipsClosed   GroupMembership[]    @relation("membershipsClosed")
-  testsWritten        Test[]               @relation("testAuthor")
-  attemptsEntered     TestAttempt[]        @relation("attemptEnteredBy")
-  videoRoomsStarted   VideoRoom[]          @relation("videoRoomStarter")
+  membershipsClosed   GroupMembership[]     @relation("membershipsClosed")
+  testsWritten        Test[]                @relation("testAuthor")
+  attemptsEntered     TestAttempt[]         @relation("attemptEnteredBy")
+  videoRoomsStarted   VideoRoom[]           @relation("videoRoomStarter")
   videoPeers          VideoParticipant[]
-  homeworkSet         Homework[]           @relation("homeworkAuthor")
-  exercisesWritten    Exercise[]           @relation("exerciseAuthor")
-  homeworkChecked     HomeworkSubmission[] @relation("homeworkChecker")
-  materialsAdded      LessonMaterial[]     @relation("materialAuthor")
-  adjustmentsMade     BalanceAdjustment[]  @relation("adjustmentAuthor")
-  legacyPaymentsAdded LegacyPayment[]      @relation("legacyPaymentAuthor")
-  debtContacts        DebtContact[]        @relation("debtContactAuthor")
-  absenceContacts     AbsenceContact[]     @relation("absenceContactAuthor")
-  announcements       Announcement[]       @relation("announcementAuthor")
-  streamPosts         StreamPost[]         @relation("streamPostAuthor")
-  streamComments      StreamComment[]      @relation("streamCommentAuthor")
+  homeworkSet         Homework[]            @relation("homeworkAuthor")
+  exercisesWritten    Exercise[]            @relation("exerciseAuthor")
+  homeworkChecked     HomeworkSubmission[]  @relation("homeworkChecker")
+  materialsAdded      LessonMaterial[]      @relation("materialAuthor")
+  adjustmentsMade     BalanceAdjustment[]   @relation("adjustmentAuthor")
+  legacyPaymentsAdded LegacyPayment[]       @relation("legacyPaymentAuthor")
+  debtContacts        DebtContact[]         @relation("debtContactAuthor")
+  absenceContacts     AbsenceContact[]      @relation("absenceContactAuthor")
+  announcements       Announcement[]        @relation("announcementAuthor")
+  streamPosts         StreamPost[]          @relation("streamPostAuthor")
+  streamComments      StreamComment[]       @relation("streamCommentAuthor")
 
   leadMessagesSent LeadMessage[]      @relation("leadMessageAuthor")
   chatMessages     GroupChatMessage[] @relation("chatAuthor")
@@ -925,6 +925,7 @@ model Student {
   videoPeers        VideoParticipant[]
   telegramChats     StudentTelegramChat[]
   badges            StudentBadge[]
+  pushSubscriptions PushSubscription[]
   adjustments       BalanceAdjustment[]
   debtCases         DebtCase[]
   absenceCases      AbsenceCase[]
@@ -2800,6 +2801,26 @@ model Job {
 
 /// Round 2 F5 (A-134): what the server knows about itself, one row per key:
 /// the worker's and the backup's last heartbeat, the alert recipient, open alerts.
+/// A browser of the student app that asked for notifications (A-176): Web Push
+/// next to Telegram. The same texts go to both; a gone endpoint is removed.
+model PushSubscription {
+  id        String   @id @default(cuid())
+  studentId String
+  endpoint  String   @unique
+  p256dh    String
+  auth      String
+  /// Language of the page that subscribed; the texts come in it.
+  locale    String   @default("uz")
+  /// The student page to open when the notification is tapped.
+  path      String
+  userAgent String?
+  createdAt DateTime @default(now())
+
+  student Student @relation(fields: [studentId], references: [id], onDelete: Cascade)
+
+  @@index([studentId])
+}
+
 model SystemState {
   key  String   @id
   at   DateTime @default(now())
