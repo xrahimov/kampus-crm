@@ -210,8 +210,7 @@ export async function computeProgress(
       const workDone =
         done.length === exercises.length && homework !== "pending" && homework !== "returned";
       const nothingAsked = exercises.length === 0 && homework === "none";
-      const complete =
-        coveredOn !== null && workDone && !(nothingAsked && attendance === "ABSENT");
+      const complete = coveredOn !== null && workDone && !(nothingAsked && attendance === "ABSENT");
       return {
         topicId: t.id,
         sortOrder: t.sortOrder,
