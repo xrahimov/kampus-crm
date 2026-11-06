@@ -209,6 +209,8 @@ model User {
   debtContacts        DebtContact[]        @relation("debtContactAuthor")
   absenceContacts     AbsenceContact[]     @relation("absenceContactAuthor")
   announcements       Announcement[]       @relation("announcementAuthor")
+  streamPosts         StreamPost[]         @relation("streamPostAuthor")
+  streamComments      StreamComment[]      @relation("streamCommentAuthor")
 
   leadMessagesSent LeadMessage[] @relation("leadMessageAuthor")
 
@@ -733,6 +735,7 @@ model Group {
   materials       LessonMaterial[]
   absenceCases    AbsenceCase[]
   announcements   Announcement[]
+  streamPosts     StreamPost[]
   trials          TrialBooking[]
 
   waitlistOffers WaitlistEntry[] @relation("waitlistOffers")
@@ -1049,6 +1052,7 @@ model GroupMembership {
   absenceCases     AbsenceCase[]
   portalTestStarts PortalTestStart[]
   exerciseAttempts ExerciseAttempt[]
+  streamComments   StreamComment[]
 
   @@unique([groupId, studentId])
   @@index([studentId])
@@ -2987,6 +2991,43 @@ model AnnouncementRead {
   student      Student      @relation(fields: [studentId], references: [id], onDelete: Cascade)
 
   @@unique([announcementId, studentId])
+}
+
+/// Class stream (A-164): a teacher's post to one group that students can
+/// comment on from their page. Pinned posts stay on top; a locked post takes
+/// no more comments.
+model StreamPost {
+  id            String   @id @default(cuid())
+  groupId       String
+  authorId      String?
+  body          String
+  attachmentUrl String?
+  pinned        Boolean  @default(false)
+  locked        Boolean  @default(false)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  group    Group           @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  author   User?           @relation("streamPostAuthor", fields: [authorId], references: [id], onDelete: SetNull)
+  comments StreamComment[]
+
+  @@index([groupId, pinned, createdAt])
+}
+
+/// A comment under a stream post, by a staff member (`authorId`) or a student (`membershipId`).
+model StreamComment {
+  id           String   @id @default(cuid())
+  postId       String
+  authorId     String?
+  membershipId String?
+  body         String
+  createdAt    DateTime @default(now())
+
+  post       StreamPost       @relation(fields: [postId], references: [id], onDelete: Cascade)
+  author     User?            @relation("streamCommentAuthor", fields: [authorId], references: [id], onDelete: SetNull)
+  membership GroupMembership? @relation(fields: [membershipId], references: [id], onDelete: Cascade)
+
+  @@index([postId, createdAt])
 }
 
 /// Waiting list (A-138, round 2 B6): people who want a course for which no

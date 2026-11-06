@@ -463,6 +463,12 @@ export const en: HelpContent = {
             "Work through it from the keyboard: **J** and **K** (or the arrows) move between answers, **A** accepts the selected one, **R** opens the comment box to return it, **Enter** sends the return and **Esc** closes the box. Each verdict notifies the student the way it does from the group page, and an accepted answer earns its coins.",
           ],
         },
+        stream: {
+          title: "Class stream",
+          body: [
+            "The **Stream** tab is the group's wall. Post what the group should know between lessons: what to prepare, a link, a reminder. Tick **Pin to the top** for something that must stay visible. Students read it on their page and can comment; you answer under the post, remove a comment, or close comments on a post. Every new post also goes to the students' Telegram.",
+          ],
+        },
         materials: {
           title: "Materials",
           body: [
@@ -1323,6 +1329,12 @@ export const en: HelpContent = {
             "The **Results** tab lists your exams and tests with the date, score and whether you passed. Results marked “not graded yet” will update when the teacher enters them.",
             "Under your figures, **Badges** shows the achievements you have earned, with the date, and the ones still locked with what it takes to get them. A new badge is also announced on your Telegram.",
             "At the top of Results, **Your grade** shows your final grade for the course and how it is made up: the average of your lesson grades, homework, exercises, tests and exams, each with its weight. Parts that have nothing in them yet are not counted.",
+          ],
+        },
+        stream: {
+          title: "Stream",
+          body: [
+            "The **Stream** tab shows your teacher's posts to the group, newest first with pinned ones on top. Write a comment under a post with **Reply**; you can delete your own comment. When a post says comments are closed, no more can be added.",
           ],
         },
         telegram: {

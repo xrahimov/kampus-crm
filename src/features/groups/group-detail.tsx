@@ -42,6 +42,7 @@ import type {
   GroupNoteDto,
 } from "@/server/services/groups/groups.service";
 import type { GroupGradebookDto } from "@/server/services/gradebook/gradebook.service";
+import type { StreamPostDto } from "@/server/services/stream/stream.service";
 import type { GroupProgressDto } from "@/server/services/progress/course-progress.service";
 import type { GroupSyllabusDto } from "@/server/services/settings/syllabus.service";
 import type { MonthGridDto } from "@/server/services/groups/lessons.service";
@@ -81,6 +82,7 @@ import { MoveBranchDialog } from "./move-branch-dialog";
 import { HistoryTab, NotesTab } from "./notes-history";
 import { OfferSeatsDialog } from "./offer-seats-dialog";
 import { GradebookTab } from "./gradebook-tab";
+import { GroupStreamTab } from "./stream-tab";
 import { SyllabusTab } from "./syllabus-tab";
 import { weekdayLabel } from "./weekday";
 
@@ -89,6 +91,7 @@ const TABS = [
   "grades",
   "gradebook",
   "homework",
+  "stream",
   "materials",
   "syllabus",
   "tests",
@@ -111,6 +114,7 @@ export function GroupDetail({
   syllabus,
   progress,
   gradebook,
+  stream,
   history,
   discounts,
   comments,
@@ -140,6 +144,7 @@ export function GroupDetail({
   syllabus: GroupSyllabusDto;
   progress: GroupProgressDto;
   gradebook: GroupGradebookDto;
+  stream: StreamPostDto[];
   history: Page<GroupHistoryDto>;
   discounts: DiscountDto[];
   comments: StudentCommentDto[];
@@ -474,6 +479,13 @@ export function GroupDetail({
               </TabsContent>
               <TabsContent value="gradebook" className="pt-4">
                 <GradebookTab data={gradebook} canEditCourse={can.catalog} />
+              </TabsContent>
+              <TabsContent value="stream" className="pt-4">
+                <GroupStreamTab
+                  groupId={group.id}
+                  initial={stream}
+                  canPost={can.mark && !archived}
+                />
               </TabsContent>
               <TabsContent value="homework" className="pt-4">
                 <GroupHomeworkTab
