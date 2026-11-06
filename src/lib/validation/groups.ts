@@ -297,3 +297,9 @@ export const attendanceScanSchema = z.object({
   lessonId: idSchema.optional(),
 });
 export type AttendanceScanInput = z.infer<typeof attendanceScanSchema>;
+
+/** One message in a group's chat (A-170). */
+export const chatMessageSchema = z.object({
+  text: z.string().trim().min(1, "validation.required").max(2000, "validation.tooLong"),
+});
+export type ChatMessageInput = z.infer<typeof chatMessageSchema>;

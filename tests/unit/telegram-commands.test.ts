@@ -238,10 +238,16 @@ describe("the webhook's replies", () => {
     });
     expect(await say(aliceChat, "/id")).toBeNull();
     expect(await say(aliceChat, "/start")).toBeNull();
+    // Plain text from a linked chat goes to the student's group chat (A-170).
     expect(await say(aliceChat, "Hello there")).toEqual({
-      text: botText("en", "menuHint"),
+      text: botText("en", "chatSent", { group: groupName }),
       replyMarkup: botMenu("en"),
     });
+    expect(
+      await prisma.groupChatMessage.findFirst({
+        where: { groupId, membershipId: aliceMembershipId, source: "TELEGRAM" },
+      }),
+    ).toMatchObject({ text: "Hello there" });
     // A chat nobody linked gets nothing, so the staff `/id` flow stays as it was.
     expect(await say(strangerChat, "Balance", "en")).toBeNull();
     expect(await say(strangerChat, "/start nope-nope-nope", "en")).toEqual({
