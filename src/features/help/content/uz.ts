@@ -1331,6 +1331,7 @@ export const uz: HelpContent = {
           title: "Telegram",
           body: [
             "Sahifangizda **Telegramni ulash** ni bosing va ochilgan botda Start ni bosing. Shundan boshlab har bir darsdan oldin eslatma, o‘qituvchi video darsni boshlaganda xabar, uy vazifasi xabarlari, yangi materiallar va to‘lov tasdiqlarini olasiz. Ota-onalar **Yana bir telefon ulash** bilan o‘z telefonini ulashi mumkin. Uzish uchun botga **/stop** yuboring.",
+            "Telegramsiz yoki u bilan birga sahifangizda **Bildirishnomalarni yoqish** ni bosing: shu eslatma va xabarlar sahifa yopiq bo‘lsa ham shu telefon yoki kompyuterga bildirishnoma bo‘lib keladi. Bu o‘rnatilgan My Kampus ilovasida eng yaxshi ishlaydi; **O‘chirish** ularni shu qurilmada to‘xtatadi.",
           ],
         },
         weekly: {

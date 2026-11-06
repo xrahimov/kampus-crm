@@ -32,6 +32,7 @@ import { PortalTestsTab } from "./tests-tab";
 import { PortalMaterialsTab } from "./materials-tab";
 import { PayCard } from "./pay-card";
 import { ReferralCard } from "./referral-card";
+import { PushCard } from "./push-card";
 import { TelegramCard } from "./telegram-card";
 import type { Weekday } from "@/lib/validation/groups";
 import type { PortalAnnouncementDto } from "@/server/services/announcements/announcements.service";
@@ -193,6 +194,7 @@ export function PortalPage({
       </div>
 
       <TelegramCard token={token} initial={telegram} />
+      <PushCard token={token} />
       {referral && <ReferralCard referral={referral} />}
 
       <Card>

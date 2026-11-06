@@ -510,7 +510,7 @@ model CourseTopic {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  course   Course              @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  course    Course              @relation(fields: [courseId], references: [id], onDelete: Cascade)
   lessons   Lesson[]
   blocks    CourseTopicBlock[]
   releases  GroupTopicRelease[]
@@ -890,6 +890,7 @@ model Student {
   callLogs          CallLog[]
   videoPeers        VideoParticipant[]
   telegramChats     StudentTelegramChat[]
+  pushSubscriptions PushSubscription[]
   adjustments       BalanceAdjustment[]
   debtCases         DebtCase[]
   absenceCases      AbsenceCase[]
@@ -2657,6 +2658,26 @@ model Job {
 
 /// Round 2 F5 (A-134): what the server knows about itself, one row per key:
 /// the worker's and the backup's last heartbeat, the alert recipient, open alerts.
+/// A browser of the student app that asked for notifications (A-176): Web Push
+/// next to Telegram. The same texts go to both; a gone endpoint is removed.
+model PushSubscription {
+  id        String   @id @default(cuid())
+  studentId String
+  endpoint  String   @unique
+  p256dh    String
+  auth      String
+  /// Language of the page that subscribed; the texts come in it.
+  locale    String   @default("uz")
+  /// The student page to open when the notification is tapped.
+  path      String
+  userAgent String?
+  createdAt DateTime @default(now())
+
+  student Student @relation(fields: [studentId], references: [id], onDelete: Cascade)
+
+  @@index([studentId])
+}
+
 model SystemState {
   key  String   @id
   at   DateTime @default(now())

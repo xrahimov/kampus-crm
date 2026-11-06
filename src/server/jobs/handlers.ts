@@ -18,6 +18,7 @@ import { runDailyNotifications } from "@/server/services/dashboard/notifications
 import { issueFiscalReceipt } from "@/server/services/payments/fiscal.service";
 import { runDailyDebtCollection } from "@/server/services/debts/debts.service";
 import { purgeOldRecordings } from "@/server/services/materials/materials.service";
+import { sendPush } from "@/server/services/push/push.service";
 import { runDailyAutoSms } from "@/server/services/sms/auto-sms.service";
 import { runInstalmentReminders } from "@/server/services/students/instalments.service";
 import {
@@ -46,6 +47,7 @@ export const JOB_TYPES = [
   "amocrm.pushLead",
   "amocrm.importLead",
   "fiscal.issue",
+  "push.send",
 ] as const;
 
 function payloadOf<T>(payload: unknown): T {
@@ -54,6 +56,10 @@ function payloadOf<T>(payload: unknown): T {
 
 export function registerJobHandlers(): void {
   if (hasJobHandler("sms.send")) return;
+
+  registerJobHandler("push.send", async (payload, db) => {
+    await sendPush(db, payloadOf<Parameters<typeof sendPush>[1]>(payload));
+  });
 
   registerJobHandler("sms.send", async (payload, db) => {
     const { messageId } = payloadOf<{ messageId: string }>(payload);
