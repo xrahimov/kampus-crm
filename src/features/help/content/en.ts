@@ -1241,7 +1241,7 @@ export const en: HelpContent = {
         link: {
           title: "Your link",
           body: [
-            "Your learning centre gives you a personal link, by SMS or from your teacher. Open it in any browser on a phone, tablet or computer; there is nothing to install and no password. Save it as a bookmark or to your home screen so you find it quickly.",
+            "Your learning centre gives you a personal link, by SMS or from your teacher. Open it in any browser on a phone, tablet or computer; there is nothing to install and no password. Save it as a bookmark or to your home screen so you find it quickly: on Android, Chrome offers **Install** at the top of the page (or **Add to home screen** in its menu); on an iPhone, use **Share → Add to Home Screen** in Safari. The icon is called **My Kampus**, and the page then opens like an app and still shows your last schedule, homework and balance when there is no internet.",
             "The page greets you by name and shows your group, your teacher and four numbers: your attendance, your average grade, how many lessons were held and your coins.",
             {
               note: "The link is yours alone: it shows your marks and payments. Do not share it. If you lose it, ask your teacher for a new one; the old one then stops working.",
