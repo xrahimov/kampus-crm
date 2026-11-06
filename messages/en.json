@@ -1475,7 +1475,8 @@
         "materials": "Materials",
         "syllabus": "Syllabus",
         "gradebook": "Gradebook",
-        "stream": "Stream"
+        "stream": "Stream",
+        "chat": "Chat"
       },
       "changeTeacherHint": "The new teacher's share counts from today.",
       "notify": "Tell the students and parents (Telegram and SMS)",
@@ -1785,6 +1786,16 @@
         "tests": "Tests",
         "exams": "Exams"
       }
+    },
+    "chat": {
+      "empty": "No messages yet. Write to the group: students see it on their page and in Telegram.",
+      "placeholder": "Message to the group…",
+      "send": "Send",
+      "sending": "Sending…",
+      "viaTelegram": "via Telegram",
+      "hint": "Everyone in the group reads this chat. Students answer from their page or by writing to the bot.",
+      "archived": "The group is archived; the chat is read-only.",
+      "you": "You"
     }
   },
   "timetable": {
@@ -4915,7 +4926,8 @@
       "announcements": "News",
       "tests": "Tests",
       "course": "Course",
-      "stream": "Stream"
+      "stream": "Stream",
+      "chat": "Chat"
     },
     "tests": {
       "empty": "No tests for your group yet.",
@@ -5177,6 +5189,16 @@
       "again": "Again",
       "known": "I knew it",
       "finished": "Done! {count} cards right this run. Words you knew come back later; missed ones sooner."
+    },
+    "chat": {
+      "empty": "No messages yet. Write to your teacher here; the whole group sees the chat.",
+      "teachers": "Teachers: {names}",
+      "telegramHint": "Connect Telegram above and the teacher's messages reach you there too; you can answer straight from the bot.",
+      "placeholder": "Your message…",
+      "send": "Send",
+      "sending": "Sending…",
+      "viaTelegram": "via Telegram",
+      "you": "You"
     }
   },
   "telegramBot": {
@@ -5204,7 +5226,7 @@
     "menuBalance": "Balance",
     "menuPay": "Pay",
     "menuAbsent": "Absent today",
-    "menuHint": "Send Balance, Pay or Absent today, or use the buttons below.",
+    "menuHint": "Send Balance, Pay or Absent today, use the buttons below, or just write: your message goes to your group's chat.",
     "balanceGroup": "{group}: balance {balance}{next, select, none {} other {, next payment by {next}}}",
     "balanceDebtGroup": "{group}: debt {debt}",
     "balanceCoins": "Coins: {total}",
@@ -5245,7 +5267,12 @@
     "streamPost": "📌 {group} · {author}:\n{text}",
     "noShow": "{group}: the teacher has been waiting in the lesson room since {time} for {minutes} minutes. The lesson is marked as missed. Please tell the teacher if you cannot make it next time.",
     "lessonNote": "{group}: the teacher's note on the lesson of {date}: {text}",
-    "lessonBooked": "{group}: a lesson is booked for {date}, {time}."
+    "lessonBooked": "{group}: a lesson is booked for {date}, {time}.",
+    "chatMessage": "💬 {group} · {from}:\n{text}\n\nReply here and your teacher sees it in Kampus.",
+    "chatSent": "✅ Sent to the {group} chat.",
+    "chatPick": "Which group is this for? Pick it below, then send your message again.",
+    "chatPicked": "💬 Your messages now go to the {group} chat. Write away.",
+    "chatFromStudent": "💬 {group} · {student} wrote:\n{text}\n\nReply in Kampus: Groups → {group} → Chat."
   },
   "video": {
     "title": "Video lesson",

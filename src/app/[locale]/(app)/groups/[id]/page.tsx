@@ -19,6 +19,7 @@ import {
   listGroupHistory,
   listGroupNotes,
 } from "@/server/services/groups/groups.service";
+import { getGroupChat } from "@/server/services/chat/group-chat.service";
 import { getMonthGrid } from "@/server/services/groups/lessons.service";
 import { getGroupSyllabus } from "@/server/services/settings/syllabus.service";
 import { listGroupHomework } from "@/server/services/homework/homework.service";
@@ -104,6 +105,7 @@ export default async function Page({ params, searchParams }: Props) {
     progress,
     gradebook,
     stream,
+    chat,
   ] = await Promise.all([
     getMonthGrid(current.actor, id, month),
     listMembers(current.actor, id, { archived: str(sp.archived) === "1" }),
@@ -141,6 +143,7 @@ export default async function Page({ params, searchParams }: Props) {
     getGroupProgress(current.actor, id),
     getGroupGradebook(current.actor, id),
     listGroupStream(current.actor, id),
+    getGroupChat(current.actor, id),
   ]);
 
   return (
@@ -166,6 +169,7 @@ export default async function Page({ params, searchParams }: Props) {
       coinReasons={coinReasons}
       video={video}
       homework={homework}
+      chat={chat}
       materials={materials}
       paymentOptions={paymentOptions}
       options={options}

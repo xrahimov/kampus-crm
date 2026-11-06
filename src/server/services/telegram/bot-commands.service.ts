@@ -9,6 +9,7 @@ import {
 } from "@/server/services/payments/online-payments.service";
 import { dateToIso, isoToDate } from "@/server/services/settings/shared";
 import { membershipBalances } from "@/server/services/students/balances";
+import { chatFromTelegram } from "@/server/services/chat/group-chat.service";
 import {
   botDate,
   botLocale,
@@ -349,8 +350,27 @@ export async function handleBotUpdate(
   // Through the shared bot, the answer is about the student's own centre.
   const centreId = organizationId ?? linked.student.branch.organizationId;
   let text: string;
-  if (!command) text = botText(locale, "menuHint");
-  else if (command.kind === "balance") text = await balanceReply(db, locale, studentId);
+  if (!command) {
+    // Anything that is not a command is a message to the student's group chat (A-170).
+    const chat = await chatFromTelegram(db, {
+      chatId: message.chatId,
+      studentId,
+      organizationId,
+      locale,
+      text: message.text,
+    });
+    if (chat?.pick) {
+      return {
+        text: chat.text,
+        replyMarkup: {
+          keyboard: chat.pick.map((name) => [{ text: name }]),
+          resize_keyboard: true,
+          one_time_keyboard: true,
+        },
+      };
+    }
+    text = chat ? chat.text : botText(locale, "menuHint");
+  } else if (command.kind === "balance") text = await balanceReply(db, locale, studentId);
   else if (command.kind === "pay") text = await payReply(db, locale, centreId, studentId);
   else text = await absentReply(db, locale, centreId, studentId, command.rest);
   return { text, replyMarkup: botMenu(locale) };
