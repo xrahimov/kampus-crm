@@ -26,6 +26,8 @@ import { generatePassword, todayIso } from "@/features/staff/password";
 import { PhotoField } from "@/features/staff/photo-field";
 import { StudentPicker } from "@/features/students/student-picker";
 import { api } from "@/lib/api-client";
+import { APP_TIME_ZONE } from "@/lib/dates";
+import { listTimeZones } from "@/lib/time-zones";
 import { applyApiError } from "@/lib/api-errors";
 import {
   GENDERS,
@@ -79,6 +81,7 @@ export function StudentDialog({
     referredById: "",
     schoolId: "",
     note: "",
+    timeZone: "",
     membership: null,
     parent: null,
   });
@@ -118,6 +121,7 @@ export function StudentDialog({
             referredById: student.referredById ?? "",
             schoolId: student.schoolId ?? "",
             note: student.note ?? "",
+            timeZone: student.timeZone ?? "",
             membership: null,
             parent: null,
           }
@@ -369,6 +373,24 @@ export function StudentDialog({
           <Textarea id="student-note" rows={2} {...form.register("note")} />
         </div>
       )}
+
+      <div className="space-y-2">
+        <Label htmlFor="student-timeZone">{tf("timeZone")}</Label>
+        <Input
+          id="student-timeZone"
+          list="student-timeZone-list"
+          placeholder={APP_TIME_ZONE}
+          autoComplete="off"
+          {...form.register("timeZone")}
+        />
+        <datalist id="student-timeZone-list">
+          {listTimeZones().map((zone) => (
+            <option key={zone} value={zone} />
+          ))}
+        </datalist>
+        <p className="text-xs text-muted-foreground">{tf("timeZoneHint")}</p>
+        <FieldError id="student-timeZone-error" message={err(errors.timeZone?.message)} />
+      </div>
 
       {!student && (
         <>

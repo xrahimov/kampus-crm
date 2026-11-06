@@ -39,6 +39,9 @@ import { ReferralCard } from "./referral-card";
 import { PortalScheduleTab } from "./schedule-tab";
 import { PushCard } from "./push-card";
 import { TelegramCard } from "./telegram-card";
+import { TimeZoneCard } from "./time-zone-card";
+
+import { TimeZoneCard } from "./time-zone-card";
 import type { PortalAnnouncementDto } from "@/server/services/announcements/announcements.service";
 import type { PortalChatDto } from "@/server/services/chat/group-chat.service";
 import type { PortalHomeworkDto } from "@/server/services/homework/homework.service";
@@ -194,10 +197,10 @@ export function PortalPage({
               waitingText={
                 portal.nextLesson
                   ? t("nextLesson", {
-                      date: shortDate(portal.nextLesson.date),
-                      start: portal.nextLesson.startTime,
-                      end: portal.nextLesson.endTime,
-                    })
+                      date: shortDate(portal.nextLesson.local?.date ?? portal.nextLesson.date),
+                      start: portal.nextLesson.local?.startTime ?? portal.nextLesson.startTime,
+                      end: portal.nextLesson.local?.endTime ?? portal.nextLesson.endTime,
+                    }) + (portal.student.timeZone ? ` (${portal.student.timeZone})` : "")
                   : tc("waiting")
               }
               join={() => joinClass(token)}
@@ -229,6 +232,7 @@ export function PortalPage({
 
       <TelegramCard token={token} initial={telegram} />
       <PushCard token={token} />
+      <TimeZoneCard token={token} timeZone={portal.student.timeZone} />
       {referral && <ReferralCard referral={referral} />}
 
       <Card>
@@ -312,9 +316,9 @@ export function PortalPage({
                     {portal.lessons.map((l) => (
                       <TableRow key={l.id}>
                         <TableCell className="whitespace-nowrap">
-                          {shortDate(l.date)}
+                          {shortDate(l.local?.date ?? l.date)}
                           <span className="ml-2 text-xs text-muted-foreground tabular-nums">
-                            {l.startTime}
+                            {l.local?.startTime ?? l.startTime}
                           </span>
                         </TableCell>
                         <TableCell>
@@ -548,10 +552,18 @@ export function PortalPage({
             <TabsContent value="schedule">
               <PortalScheduleTab
                 token={token}
-                weekly={page.schedule}
+                weekly={page.localSchedule ?? page.schedule}
                 endDate={portal.group.endDate}
                 initial={schedule}
               />
+              {page.timeZone && (
+                <p
+                  className="mt-2 text-xs text-muted-foreground"
+                  data-testid="portal-schedule-zone"
+                >
+                  {t("schedule.inZone", { zone: page.timeZone })}
+                </p>
+              )}
             </TabsContent>
           </Tabs>
         </CardContent>

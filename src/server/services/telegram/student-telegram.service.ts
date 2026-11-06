@@ -5,6 +5,7 @@ import ru from "../../../../messages/ru.json";
 import uz from "../../../../messages/uz.json";
 
 import { APP_TIME_ZONE, formatDateUz } from "@/lib/dates";
+import { lessonInZone } from "@/lib/time-zones";
 import { generateToken } from "@/server/auth/tokens";
 import { prisma, type DbClient } from "@/server/db/prisma";
 import { AppError } from "@/server/errors/app-error";
@@ -288,24 +289,52 @@ export async function handleStudentCommand(
  * transaction of the event it reports. A composed message (several lines of
  * bot texts) comes through `text` instead of `kind` + `values`.
  */
+export interface NotifiedStudent {
+  timeZone: string | null;
+}
+
+/**
+ * A lesson's times for one student (A-177): the centre's wall clock, or the
+ * student's own zone with the zone named, e.g. "20:30 (Europe/Berlin)".
+ */
+export function lessonTimesFor(
+  lesson: { date: string; startTime: string; endTime: string },
+  student: NotifiedStudent,
+): { start: string; end: string; date: string } {
+  if (!student.timeZone || student.timeZone === APP_TIME_ZONE) {
+    return { start: lesson.startTime, end: lesson.endTime, date: lesson.date };
+  }
+  const local = lessonInZone(lesson, student.timeZone);
+  return {
+    start: local.startTime,
+    end: `${local.endTime} (${student.timeZone})`,
+    date: local.date,
+  };
+}
+
 export async function notifyStudents(
   tx: DbClient,
   input: {
     studentIds: string[];
     kind: BotMessageKind;
     refKey: string;
+    /** Static values, or a function of the language and the student (their time zone, A-177). */
     values?:
-      Record<string, string | number> | ((locale: BotLocale) => Record<string, string | number>);
+      | Record<string, string | number>
+      | ((locale: BotLocale, student: NotifiedStudent) => Record<string, string | number>);
     text?: (locale: BotLocale) => string;
   },
 ): Promise<number> {
   if (input.studentIds.length === 0) return 0;
   const chats = await tx.studentTelegramChat.findMany({
     where: { studentId: { in: input.studentIds }, student: { isArchived: false } },
-    include: { student: { select: { branch: { select: { organizationId: true } } } } },
+    include: {
+      student: { select: { timeZone: true, branch: { select: { organizationId: true } } } },
+    },
   });
-  const render = (locale: BotLocale) => {
-    const values = typeof input.values === "function" ? input.values(locale) : input.values;
+  const render = (locale: BotLocale, student: NotifiedStudent) => {
+    const values =
+      typeof input.values === "function" ? input.values(locale, student) : input.values;
     return input.text ? input.text(locale) : botText(locale, input.kind, values);
   };
   let queued = 0;
@@ -316,7 +345,7 @@ export async function notifyStudents(
       payload: {
         organizationId: chat.student.branch.organizationId,
         chatId: chat.chatId,
-        text: render(locale),
+        text: render(locale, { timeZone: chat.student.timeZone }),
       },
       uniqueKey: `tg:${input.refKey}:${chat.chatId}`,
     });
@@ -327,7 +356,8 @@ export async function notifyStudents(
     studentIds: input.studentIds,
     refKey: input.refKey,
     title: "Kampus",
-    text: (locale) => render(botLocale(locale)),
+    // Browser notifications keep the centre's clock; the page itself shows the student's zone.
+    text: (locale) => render(botLocale(locale), { timeZone: null }),
     tag: input.kind,
   });
   return queued;
@@ -496,12 +526,14 @@ export async function runLessonReminders(
           studentIds: [m.studentId],
           kind: "lessonSoon",
           refKey: `lesson-soon:${lesson.id}`,
-          values: {
+          values: (_locale, student) => ({
             group: lesson.group.name,
-            start: lesson.startTime,
-            end: lesson.endTime,
+            ...lessonTimesFor(
+              { date: clock.date, startTime: lesson.startTime, endTime: lesson.endTime },
+              student,
+            ),
             link: m.videoToken ? classLink(origin, m.videoToken) : "",
-          },
+          }),
         }),
       );
     }
