@@ -4532,7 +4532,8 @@
         "turnSecret": "TURN umumiy kaliti (login va parol o‘rniga)",
         "maxParticipants": "Bir qo‘ng‘iroqdagi eng ko‘p odam",
         "recordingKeepDays": "Dars yozuvlarini saqlash muddati (kun)",
-        "attendanceMinutes": "“Keldi” hisoblanishi uchun onlayn daqiqalar"
+        "attendanceMinutes": "“Keldi” hisoblanishi uchun onlayn daqiqalar",
+        "noShowMinutes": "Yakka darsda o'quvchi kelmaganini yozishdan oldin kutish daqiqalari (0 = o'chiq)"
       },
       "hint": "Bepul ommaviy STUN serverlar bilan sozlamasiz ishlaydi. Ba’zi mobil va ofis tarmoqlari to‘g‘ridan-to‘g‘ri qo‘ng‘iroqlarni to‘sadi; ular uchun TURN relay qo‘shing (masalan Cloudflare Calls TURN, Metered yoki o‘z coturn serveringiz).",
       "retentionHint": "Bundan eski yozuvlar har kecha video fayli bilan birga o'chiriladi, shunda server diski to'lib qolmaydi. 0 — doimiy saqlash."
@@ -5194,7 +5195,8 @@
     "assignmentAccepted": "{group}: “{title}” topshirig‘ingiz qabul qilindi.{comment}",
     "assignmentReturned": "{group}: “{title}” topshirig‘ingiz qaytarildi, qayta ko‘rib chiqing.{comment}",
     "badgeEarned": "🏅 Yangi nishon: {name}. {hint}",
-    "streamPost": "📌 {group} · {author}:\n{text}"
+    "streamPost": "📌 {group} · {author}:\n{text}",
+    "noShow": "{group}: o'qituvchi dars xonasida {time} dan beri {minutes} daqiqa kutdi. Dars \"kelmadi\" deb qo'yildi. Keyingi safar kela olmasangiz, iltimos, o'qituvchiga oldindan ayting."
   },
   "video": {
     "title": "Video dars",
@@ -5290,7 +5292,8 @@
       "breakout": "Xonalar",
       "breakoutMain": "Kichik xonalar ochiq ({rooms}); siz asosiy xonadasiz.",
       "breakoutIn": "Siz {number}-xonadasiz. Vaqt tugaganda o‘qituvchi hammani qaytaradi.",
-      "noticeFrom": "{name}:"
+      "noticeFrom": "{name}:",
+      "noShow": "O'quvchi qo'shilmadi. \"Kelmadi\" qo'yildi va Telegram orqali xabar berildi; hozir kelsa, dars davomatidan foydalaning."
     },
     "done": {
       "left": "Siz darsdan chiqdingiz.",

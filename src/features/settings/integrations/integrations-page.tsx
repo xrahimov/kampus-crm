@@ -102,6 +102,7 @@ export function IntegrationsPage({
           { key: "maxParticipants", type: "number" },
           { key: "recordingKeepDays", type: "number" },
           { key: "attendanceMinutes", type: "number" },
+          { key: "noShowMinutes", type: "number" },
         ]}
         extra={
           <>

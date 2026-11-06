@@ -321,6 +321,11 @@ export const videoIntegrationSchema = z.object({
    * minutes counts as present; joining more than this many minutes late is noted.
    */
   attendanceMinutes: z.coerce.number().int().min(1).max(120).default(10),
+  /**
+   * No-show (online-lessons D3, A-167): in a group with one student, the teacher alone in the
+   * call for this many minutes marks the student absent and tells them; 0 turns it off.
+   */
+  noShowMinutes: z.coerce.number().int().min(0).max(60).default(15),
 });
 
 /**
