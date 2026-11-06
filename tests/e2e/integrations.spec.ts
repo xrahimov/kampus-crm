@@ -85,7 +85,8 @@ test.describe("integrations", () => {
     await expect(batchRows.filter({ hasText: "Failed" }).first()).toContainText(
       "fake: unreachable number",
     );
-    await page.goto("/en/students?groupStatus=ACTIVE");
+    // Searched by name: the specs before this one add students, who fill the first page.
+    await page.goto("/en/students?groupStatus=ACTIVE&q=Demo%20Student%20One");
     await page
       .getByTestId("student-row")
       .filter({ hasText: "Demo Student One" })
