@@ -340,6 +340,7 @@ export const en: HelpContent = {
           title: "Days off, teacher changes and finishing",
           body: [
             "**Give a day off** removes one date's lesson for this group, for example a teacher's trip, and can tell the students and parents at once by Telegram and SMS (the SMS switches are in Settings → General → Auto SMS). Pick a new date and time to move the lesson instead of dropping it. The month's cancelled and moved lessons are listed above the attendance grid, where a day off can be undone. Branch-wide holidays go to Settings → Days off instead and apply to every group.",
+            "When Settings → General has **Students may move or cancel their own 1:1 lessons** on, the only student of a group can move or cancel an upcoming lesson from their own page up to the set number of hours before it starts. Such changes appear in the same list as **Moved by the student** or **Cancelled by the student**, and you are told by Telegram like the students are.",
             "**Change teacher** replaces the outgoing teacher with a new one from today; the new teacher's share of the pay counts from today, the old one's until yesterday. **Support teachers** attaches extra teachers who may mark attendance and see the group without a pay share.",
             "**Finish group** when the course is over: every active student becomes a graduate and the remaining lessons are removed. The graduates report lists them. **Archive** hides a group that was abandoned; its lessons and history stay. Archived groups are listed under the Archived tab.",
             "**Offer seats to the waiting list** texts the people waiting for the group's course in this branch, as many as the group has free seats, and marks them offered (see Leads → Waiting list).",
@@ -1273,6 +1274,7 @@ export const en: HelpContent = {
           title: "Lessons and schedule",
           body: [
             "The **Lessons** tab lists every lesson with its date, topic, whether you were present and your grade. The **Schedule** tab shows the days and times your group meets and until when the group runs.",
+            "If you study one to one and your centre allows it, the Schedule tab also lists your next lessons with **Move** and **Cancel lesson** buttons. They work up to the number of hours before the lesson that the centre set; after that the lesson stays and counts as held. Pick a new date and time inside the centre's working hours when the teacher is free; the teacher is told at once. A lesson the teacher took off without a new time appears under **Lessons waiting for a new time**, where you pick one.",
           ],
         },
         homework: {
