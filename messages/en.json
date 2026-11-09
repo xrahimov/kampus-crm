@@ -500,7 +500,10 @@
     "ratingAbsent": "A missed lesson cannot be rated",
     "bookingLimit": "You already have the most lessons booked ahead",
     "trialNotToday": "The trial lesson is on another day.",
-    "trialClosed": "This trial lesson is no longer on."
+    "trialClosed": "This trial lesson is no longer on.",
+    "packageUnknown": "This package does not exist.",
+    "packageInactive": "This package is no longer sold.",
+    "billingNotPackages": "This group charges a monthly fee, not packages."
   },
   "validation": {
     "phone": "Enter a number like +998 90 123 45 67.",
@@ -1437,7 +1440,11 @@
         "teacher": "{day} {start}–{end}: {teacher} teaches {group}.",
         "saveAnyway": "Save anyway",
         "hint": "Change the time, room or teacher, or save anyway if the overlap is intended."
-      }
+      },
+      "billing": "Billing",
+      "billingMonthly": "Monthly fee",
+      "billingPackages": "Lesson packages",
+      "billingHint": "Monthly: the course price is charged every month. Packages: students buy N lessons at a time and each attended lesson uses one; set the packages on the group's Packages tab."
     },
     "detail": {
       "info": "Group",
@@ -1479,7 +1486,8 @@
         "syllabus": "Syllabus",
         "gradebook": "Gradebook",
         "stream": "Stream",
-        "chat": "Chat"
+        "chat": "Chat",
+        "packages": "Packages"
       },
       "changeTeacherHint": "The new teacher's share counts from today.",
       "notify": "Tell the students and parents (Telegram and SMS)",
@@ -1561,7 +1569,9 @@
       "toLead": "Return to leads",
       "sms": "Message (SMS)",
       "importExcel": "Add from Excel",
-      "addNew": "Add a new student"
+      "addNew": "Add a new student",
+      "lessonsLeft": "{count, plural, one {# lesson left} other {# lessons left}}",
+      "lessonsLeftTitle": "Lessons left in the package"
     },
     "notes": {
       "newNote": "Add note",
@@ -2014,7 +2024,8 @@
       },
       "instalments": "Instalments",
       "instalmentPaid": "paid",
-      "familyDiscount": "Family discount {percent}%: {price} per month. Managed in the Family card."
+      "familyDiscount": "Family discount {percent}%: {price} per month. Managed in the Family card.",
+      "lessonsLeft": "Lessons left"
     },
     "comments": {
       "title": "Comments and notes",
@@ -2070,6 +2081,9 @@
         "family": {
           "link": "Linked to a family",
           "unlink": "Removed from the family"
+        },
+        "package": {
+          "sell": "Lesson package sold"
         }
       }
     },
@@ -2609,6 +2623,63 @@
     "deleteTitle": "Remove discount?",
     "deleteText": "The discount for “{name}” ends now. Past months stay as charged.",
     "family": "Family"
+  },
+  "packages": {
+    "title": "Lesson packages",
+    "add": "Add package",
+    "edit": "Edit package",
+    "sell": "Sell a package",
+    "empty": "No packages yet.",
+    "emptyHint": "Add a package: how many lessons it holds and what it costs. Students buy packages and each attended lesson uses one.",
+    "columns": {
+      "name": "Package",
+      "lessons": "Lessons",
+      "price": "Price",
+      "perLesson": "Per lesson",
+      "sold": "Sold",
+      "status": "Status"
+    },
+    "active": "On sale",
+    "inactive": "Not sold",
+    "deactivate": "Stop selling",
+    "form": {
+      "name": "Package name",
+      "lessons": "Lessons",
+      "price": "Price",
+      "active": "On sale"
+    },
+    "sellForm": {
+      "student": "Student",
+      "package": "Package",
+      "packageOption": "{name} — {lessons} lessons, {price}",
+      "summary": "{lessons} lessons are added and {price} is taken as a payment.",
+      "method": "Payment method",
+      "paidAt": "Paid on",
+      "comment": "Comment"
+    },
+    "credits": {
+      "title": "Students' lessons",
+      "empty": "No students in this group.",
+      "student": "Student",
+      "purchased": "Bought",
+      "used": "Used",
+      "left": "Left",
+      "lastPurchase": "Last package"
+    },
+    "purchases": {
+      "title": "Packages sold",
+      "date": "Date",
+      "student": "Student",
+      "package": "Package",
+      "used": "Used",
+      "price": "Price",
+      "note": "Comment",
+      "by": "Sold by"
+    },
+    "deleteTitle": "Remove package?",
+    "deleteText": "“{name}” is removed from the group's offers.",
+    "deactivateTitle": "Stop selling the package?",
+    "deactivateText": "“{name}” was already sold, so it stays in the history but is not offered any more."
   },
   "leads": {
     "title": "Leads",
@@ -4137,7 +4208,9 @@
         "HomeworkSubmission": "Homework answer",
         "LessonMaterial": "Lesson material",
         "BalanceAdjustment": "Balance adjustment",
-        "Family": "Family"
+        "Family": "Family",
+        "LessonPackage": "Lesson package",
+        "PackagePurchase": "Package sold"
       },
       "names": {
         "attendance": {
@@ -4471,6 +4544,12 @@
         "certificate": {
           "issue": "Certificate issued",
           "revoke": "Certificate revoked"
+        },
+        "package": {
+          "create": "Lesson package added",
+          "update": "Lesson package changed",
+          "delete": "Lesson package removed",
+          "sell": "Lesson package sold"
         }
       }
     }
@@ -4994,7 +5073,11 @@
       "date": "Date",
       "month": "For month",
       "method": "Method",
-      "amount": "Amount"
+      "amount": "Amount",
+      "lessonsLeft": "Lessons left",
+      "lessonsUsed": "Lessons used",
+      "packages": "Packages on offer",
+      "packageOffer": "{name}: {lessons} lessons for {price}"
     },
     "results": {
       "exams": "Exams",
@@ -5301,7 +5384,8 @@
     "chatPicked": "💬 Your messages now go to the {group} chat. Write away.",
     "chatFromStudent": "💬 {group} · {student} wrote:\n{text}\n\nReply in Kampus: Groups → {group} → Chat.",
     "lessonSummary": "📘 {group}, {date} {time}\nTopic: {topic, select, none {not written down} other {{topic}}}\nAttendance: {attendance, select, PRESENT {present ✅} ABSENT {absent ❌} EXCUSED {excused} other {not marked yet}}\nHomework: {homework, select, none {none} other {{homework}}}{due, select, none {} other { (due {due})}}",
-    "trialLink": "🎓 Your trial lesson: {group}, {date}{time, select, none {} other {, {time}}}.\nOn that day open this link to join the online lesson: {url}"
+    "trialLink": "🎓 Your trial lesson: {group}, {date}{time, select, none {} other {, {time}}}.\nOn that day open this link to join the online lesson: {url}",
+    "packageLow": "{group}: {left, plural, =0 {your lesson package is used up} one {one lesson left in your package} other {# lessons left in your package}}. Please buy the next one at the learning centre."
   },
   "video": {
     "title": "Video lesson",

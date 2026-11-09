@@ -318,7 +318,8 @@ export const uz: HelpContent = {
           body: [
             "Chap kartochkada kurs, narx, baholash tizimi, filial, davomiylik, jadval, o‘qituvchilar, faol o‘quvchilar va o‘tilgan darslar ko‘rinadi. Uning ostida video dars kartochkasi turadi, “Guruhga dars berish” ga qarang.",
             "Yuqoridagi tugmalar: **Tahrirlash** yaratishdagi formaning o‘zini ochadi; **Yana** da support o‘qituvchilar, o‘qituvchini o‘zgartirish, guruhga dam berish, boshqa filialga o‘tkazish, tugatish va arxivlash turadi.",
-            "O‘ng tomonda guruh o‘quvchilari, ular ostida esa yorliqlar: davomat, baho, uy vazifasi, materiallar, test, bilim tahlili, imtihonlar, chegirmalar, coinlar, izohlar, eslatmalar va guruh tarixi.",
+            "O‘ng tomonda guruh o‘quvchilari, ular ostida esa yorliqlar: davomat, baho, uy vazifasi, materiallar, test, bilim tahlili, imtihonlar, chegirmalar, coinlar, izohlar, eslatmalar va guruh tarixi. Dars paketlarini sotadigan guruhda yana **Paketlar** yorlig‘i bor.",
+            "**Dars paketlari.** O‘quvchilar oy uchun emas, darslar soni uchun to‘lasa, guruh formasida **To‘lov tartibi** → *Dars paketlari* ni tanlang. Paketlar yorlig‘ida paketlarni qo‘shing (nomi, nechta dars, narxi) va o‘quvchiga sotish uchun **Paket sotish** ni bosing: narx chek bilan oddiy to‘lov sifatida qabul qilinadi, darslar esa o‘quvchining hisobiga qo‘shiladi. O‘quvchi kelgan deb belgilangan har bir dars bittasini ishlatadi; o‘quvchilar ro‘yxati, o‘quvchi sahifasi va uning shaxsiy sahifasi nechta qolganini ko‘rsatadi. Darsi qolmagan holda kelgan o‘quvchi shu darslar uchun qarzdor bo‘ladi, keyingi paket avval ularni yopadi. Bitta dars qolganda o‘quvchiga Telegramda xabar boradi.",
           ],
         },
         members: {

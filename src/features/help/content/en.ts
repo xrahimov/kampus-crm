@@ -315,7 +315,8 @@ export const en: HelpContent = {
           body: [
             "The left card shows the course, price, grading system, branch, length, schedule, teachers, active students and lessons held. Under it is the video lesson card, see “Teaching a group”.",
             "The buttons at the top: **Edit** opens the same form as creating; **More** holds support teachers, changing the teacher, giving the group a day off, moving it to another branch, finishing it and archiving it.",
-            "To the right are the group's students, and below them the tabs: attendance, grades, homework, materials, tests, knowledge analysis, exams, discounts, coins, comments, notes and history.",
+            "To the right are the group's students, and below them the tabs: attendance, grades, homework, materials, tests, knowledge analysis, exams, discounts, coins, comments, notes and history. A group that sells lesson packages also has a **Packages** tab.",
+            "**Lesson packages.** In the group form set **Billing** to *Lesson packages* when students pay for a number of lessons instead of a month. On the Packages tab add the packages (a name, how many lessons, the price) and press **Sell a package** to sell one to a student: the price is taken as an ordinary payment with its receipt, and the lessons are added to the student's credits. Every lesson the student is marked present at uses one credit; the member list, the student's page and their own page show how many are left. A student who attends with no credits left owes those lessons, and the next package covers them first. The student gets a Telegram line when one lesson is left.",
           ],
         },
         members: {

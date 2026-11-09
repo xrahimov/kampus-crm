@@ -1,4 +1,5 @@
 import type { Prisma } from "@/generated/prisma/client";
+import type { BillingMode } from "@/lib/validation/groups";
 import type { DbClient } from "@/server/db/prisma";
 import {
   dateToIso,
@@ -56,6 +57,10 @@ export interface MembershipBalance {
   deferred: number;
   /** The parts of the split months from the first unpaid one on; empty when no fee is split. */
   instalments: InstalmentPart[];
+  /** How the group charges (A-178); packages have no monthly fee and no next payment day. */
+  billingMode: BillingMode;
+  /** Lesson credits in a package group: bought, used and left (negative = owed); null for monthly groups. */
+  credits: { purchased: number; used: number; left: number } | null;
 }
 
 const todayIso = () => dateToIso(new Date());
@@ -72,10 +77,20 @@ const membershipSelect = {
   group: {
     select: {
       endDate: true,
+      billingMode: true,
       course: { select: { price: true } },
       lessons: { select: { date: true } },
+      // The cheapest package on offer is what the pay dialog suggests (A-178).
+      packages: {
+        where: { isActive: true },
+        select: { price: true },
+        orderBy: { price: "asc" },
+        take: 1,
+      },
     },
   },
+  packagePurchases: { select: { lessons: true, price: true } },
+  _count: { select: { packageUses: true } },
   discounts: {
     select: {
       id: true,
@@ -115,6 +130,8 @@ export async function syncCharges(db: DbClient, membershipIds: string[]): Promis
   });
 
   for (const m of rows) {
+    // A package group charges per package sold, never per month (A-178).
+    if (m.group.billingMode === "PACKAGES") continue;
     const window = windowOf(m);
     const months = chargeableMonths(window, dateToIso(m.group.endDate), today);
     if (months.length === 0) continue;
@@ -246,7 +263,11 @@ export async function membershipBalances(
         amount: decimalToNumber(c.amount),
       }))
       .sort((a, b) => a.month.localeCompare(b.month));
-    const charged = charges.reduce((s, c) => s + c.amount, 0);
+    // In a package group what was sold is what is charged; months charged before a
+    // switch to packages stay (A-178).
+    const packages = m.group.billingMode === "PACKAGES";
+    const purchased = m.packagePurchases.reduce((s, p) => s + decimalToNumber(p.price), 0);
+    const charged = charges.reduce((s, c) => s + c.amount, 0) + purchased;
     const paid = paidBy.get(m.id)?.amount ?? 0;
     const bonus = paidBy.get(m.id)?.bonus ?? 0;
     const refunded = refundedBy.get(m.id) ?? 0;
@@ -302,6 +323,35 @@ export async function membershipBalances(
         .filter((d) => d.remainingMonths > 0)
         .sort((a, b) => a.givenAt.localeCompare(b.givenAt))[0] ?? null;
     const monthlyPrice = openDiscount ? openDiscount.discountedPrice : basePrice;
+    if (packages) {
+      const lessonsBought = m.packagePurchases.reduce((s, p) => s + p.lessons, 0);
+      const cheapest = m.group.packages[0] ? decimalToNumber(m.group.packages[0].price) : 0;
+      result.set(m.id, {
+        membershipId: m.id,
+        charged,
+        paid,
+        bonus,
+        refunded,
+        adjusted,
+        balance,
+        // Nothing falls due on a day: the student buys the next package when the credits end.
+        nextPaymentDate: balance < 0 ? (unpaid ?? today) : null,
+        suggestedMonth: currentMonth,
+        suggestedAmount: balance < 0 ? -balance : cheapest,
+        monthlyPrice: 0,
+        lastChargedMonth,
+        discount: null,
+        deferred: 0,
+        instalments: [],
+        billingMode: "PACKAGES",
+        credits: {
+          purchased: lessonsBought,
+          used: m._count.packageUses,
+          left: lessonsBought - m._count.packageUses,
+        },
+      });
+      continue;
+    }
     result.set(m.id, {
       membershipId: m.id,
       charged,
@@ -319,6 +369,8 @@ export async function membershipBalances(
       discount: openDiscount,
       deferred,
       instalments: split.parts.filter((p) => p.month >= (unpaid ?? currentMonth)),
+      billingMode: "MONTHLY",
+      credits: null,
     });
   }
   return result;

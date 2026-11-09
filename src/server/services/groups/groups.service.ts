@@ -7,6 +7,7 @@ import type {
   GroupTeacherInput,
   GroupUpdateInput,
   ScheduleSlotInput,
+  BillingMode,
   Weekday,
   WeekdayPattern,
 } from "@/lib/validation/groups";
@@ -59,6 +60,8 @@ export interface GroupDto {
   courseDurationMonths: number;
   gradingSystemId: string | null;
   gradingSystemName: string;
+  /** Monthly fee or lesson packages (A-178). */
+  billingMode: BillingMode;
   weekdayPattern: WeekdayPattern;
   slots: SlotDto[];
   teachers: GroupTeacherDto[];
@@ -114,6 +117,7 @@ export function toGroupDto(row: Row): GroupDto {
     courseDurationMonths: row.course.durationMonths,
     gradingSystemId: row.gradingSystemId,
     gradingSystemName: row.gradingSystem?.name ?? row.course.gradingSystem?.name ?? "",
+    billingMode: row.billingMode,
     weekdayPattern: row.weekdayPattern,
     slots: row.slots.map((s) => ({
       weekday: s.weekday as Weekday,
@@ -383,6 +387,7 @@ export async function createGroup(
           name: input.name,
           courseId: input.courseId,
           gradingSystemId: input.gradingSystemId ?? null,
+          billingMode: input.billingMode ?? "MONTHLY",
           weekdayPattern: input.weekdayPattern,
           startDate: isoToDate(input.startDate),
           endDate: isoToDate(endDate),
@@ -522,6 +527,7 @@ export async function updateGroup(
           ...(input.name !== undefined ? { name: input.name } : {}),
           courseId,
           ...("gradingSystemId" in input ? { gradingSystemId: input.gradingSystemId ?? null } : {}),
+          ...(input.billingMode !== undefined ? { billingMode: input.billingMode } : {}),
           weekdayPattern: pattern,
           startDate: isoToDate(startDate),
           endDate: isoToDate(endDate),

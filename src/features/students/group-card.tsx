@@ -108,7 +108,25 @@ export function GroupCard({
       ? [[tg("billingFrom"), date(group.billingFrom)] as [string, React.ReactNode]]
       : []),
     [left ? tg("left") : tg("ends"), date(group.leftAt ?? group.groupEndDate)],
-    [tg("nextPayment"), group.nextPaymentDate ? date(group.nextPaymentDate) : "—"],
+    ...(group.lessonsLeft !== null
+      ? [
+          [
+            tg("lessonsLeft"),
+            <span
+              key="lessons-left"
+              className={cn(group.lessonsLeft <= 0 && "text-destructive")}
+              data-testid="lessons-left"
+            >
+              {group.lessonsLeft}
+            </span>,
+          ] as [string, React.ReactNode],
+        ]
+      : [
+          [tg("nextPayment"), group.nextPaymentDate ? date(group.nextPaymentDate) : "—"] as [
+            string,
+            React.ReactNode,
+          ],
+        ]),
     ...(group.instalments.length > 0
       ? [
           [
@@ -124,15 +142,19 @@ export function GroupCard({
           ] as [string, React.ReactNode],
         ]
       : []),
-    [
-      tg("price"),
-      <span key="price">
-        {money(group.monthlyPrice)}
-        {group.customPrice !== null && (
-          <span className="ml-1 text-xs text-muted-foreground">({tg("customPrice")})</span>
-        )}
-      </span>,
-    ],
+    ...(group.lessonsLeft === null
+      ? [
+          [
+            tg("price"),
+            <span key="price">
+              {money(group.monthlyPrice)}
+              {group.customPrice !== null && (
+                <span className="ml-1 text-xs text-muted-foreground">({tg("customPrice")})</span>
+              )}
+            </span>,
+          ] as [string, React.ReactNode],
+        ]
+      : []),
   ];
 
   return (

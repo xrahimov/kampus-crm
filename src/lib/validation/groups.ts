@@ -48,11 +48,17 @@ export const groupTeacherSchema = z.object({
 });
 export type GroupTeacherInput = z.infer<typeof groupTeacherSchema>;
 
+/** How a group charges (A-178): the course's monthly fee, or packages of N lessons. */
+export const BILLING_MODES = ["MONTHLY", "PACKAGES"] as const;
+export type BillingMode = (typeof BILLING_MODES)[number];
+
 const groupBase = z.object({
   branchId: idSchema,
   name,
   courseId: idSchema,
   gradingSystemId: idSchema.nullable().optional(),
+  /** Defaults to the monthly fee; packages (A-178) are chosen per group. */
+  billingMode: z.enum(BILLING_MODES).optional(),
   weekdayPattern: z.enum(WEEKDAY_PATTERNS).default("EVEN"),
   /** One per weekday; CUSTOM uses exactly these days, the other patterns fix the days. */
   slots: z.array(scheduleSlotSchema).min(1, "validation.slotsMin").max(7),

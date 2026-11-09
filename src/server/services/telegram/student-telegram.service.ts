@@ -114,7 +114,8 @@ export type BotMessageKind =
   | "chatPicked"
   | "chatFromStudent"
   | "lessonSummary"
-  | "trialLink";
+  | "trialLink"
+  | "packageLow";
 
 /** Narrows Telegram's language_code to a language the bot speaks. */
 export function botLocale(languageCode: string | undefined | null): BotLocale {

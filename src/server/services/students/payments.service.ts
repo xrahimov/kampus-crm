@@ -155,87 +155,114 @@ export async function createPayment(
   input: PaymentInput,
   db: DbClient = prisma,
 ): Promise<PaymentDto> {
+  const prepared = await preparePayment(db, actor, input);
+  return db.$transaction((tx) => writePayment(tx, actor, prepared, input));
+}
+
+type PreparedPayment = {
+  m: Awaited<ReturnType<typeof findMembershipForPayment>>;
+  method: { id: string };
+};
+
+/** The checks before a payment is written: the member is in scope and the method is the centre's. */
+export async function preparePayment(
+  db: DbClient,
+  actor: Actor,
+  input: { membershipId: string; paymentMethodId: string },
+): Promise<PreparedPayment> {
   authorize(actor, "payments.create");
   const m = await findMembershipForPayment(db, actor, input.membershipId);
-  const organizationId = actor.organizationId;
   const method = await mustFind(
     db.paymentMethod.findFirst({
-      where: { id: input.paymentMethodId, organizationId, isActive: true },
+      where: { id: input.paymentMethodId, organizationId: actor.organizationId, isActive: true },
+      select: { id: true },
     }),
     "errors.paymentMethodUnknown",
   );
-  return db.$transaction(async (tx) => {
-    const row = await tx.payment.create({
-      data: {
-        studentId: m.studentId,
-        membershipId: m.id,
-        branchId: m.group.branchId,
-        paymentMethodId: method.id,
-        amount: input.amount,
-        bonus: input.bonus,
-        effectiveMonth: isoToDate(input.effectiveMonth),
-        paidAt: isoToDate(input.paidAt),
-        comment: input.comment ?? null,
-        receivedById: actor.userId || null,
-      },
-      include,
-    });
-    const dto = toDto(row);
-    await recordAudit(tx, actor, {
-      action: "payment.create",
-      entity: "Payment",
-      entityId: row.id,
-      after: {
-        amount: dto.amount,
-        bonus: dto.bonus,
-        effectiveMonth: dto.effectiveMonth,
-        paidAt: dto.paidAt,
-        groupId: dto.groupId,
-        method: dto.methodName,
-      },
-      branchId: m.group.branchId,
-    });
-    // "To'lov qilgandan so'ng sms yuborish" and the Telegram staff feed (A-88, A-85).
-    await queueAutoSms(tx, {
-      event: "PAYMENT_MADE",
+  return { m, method };
+}
+
+/**
+ * Writes one payment with everything that follows it (audit, SMS, staff feed,
+ * fiscal receipt, bell, debt case) inside the caller's transaction, so a package
+ * sale (A-178) can add its own rows next to it.
+ */
+export async function writePayment(
+  tx: DbClient,
+  actor: Actor,
+  { m, method }: PreparedPayment,
+  input: PaymentInput,
+): Promise<PaymentDto> {
+  const organizationId = actor.organizationId;
+  const row = await tx.payment.create({
+    data: {
       studentId: m.studentId,
-      refKey: `payment:${row.id}`,
-      vars: { groupName: dto.groupName, amount: String(dto.amount), date: dto.paidAt },
-    });
-    await notifyStaff(tx, {
-      organizationId: actor.organizationId,
+      membershipId: m.id,
       branchId: m.group.branchId,
-      text: `To'lov: ${dto.studentName} — ${dto.amount} (${dto.groupName}), ${actor.fullName}`,
-    });
-    // The online fiscal receipt, when the centre fiscalises (A-147).
-    const fiscalId = await queueFiscalReceipt(tx, {
-      organizationId,
-      paymentId: row.id,
-      kind: "SALE",
-    });
-    if (fiscalId) {
-      dto.fiscal = fiscalToDto(
-        await tx.fiscalReceipt.findUniqueOrThrow({ where: { id: fiscalId } }),
-      );
-    }
-    // The in-app bell for the branch's cashiers and managers (A-97).
-    await notifyUsers(tx, {
-      kind: "PAYMENT",
-      params: {
-        name: dto.studentName,
-        amount: dto.amount,
-        group: dto.groupName,
-        by: actor.fullName,
-      },
-      href: `/students/${m.studentId}`,
-      branchId: m.group.branchId,
-      permission: "payments.create",
-      excludeUserId: actor.userId,
-    });
-    // A payment that clears the debt closes the student's collection case at once (A-112).
-    await refreshStudentDebts(tx, m.studentId);
-    return dto;
+      paymentMethodId: method.id,
+      amount: input.amount,
+      bonus: input.bonus,
+      effectiveMonth: isoToDate(input.effectiveMonth),
+      paidAt: isoToDate(input.paidAt),
+      comment: input.comment ?? null,
+      receivedById: actor.userId || null,
+    },
+    include,
   });
+  const dto = toDto(row);
+  await recordAudit(tx, actor, {
+    action: "payment.create",
+    entity: "Payment",
+    entityId: row.id,
+    after: {
+      amount: dto.amount,
+      bonus: dto.bonus,
+      effectiveMonth: dto.effectiveMonth,
+      paidAt: dto.paidAt,
+      groupId: dto.groupId,
+      method: dto.methodName,
+    },
+    branchId: m.group.branchId,
+  });
+  // "To'lov qilgandan so'ng sms yuborish" and the Telegram staff feed (A-88, A-85).
+  await queueAutoSms(tx, {
+    event: "PAYMENT_MADE",
+    studentId: m.studentId,
+    refKey: `payment:${row.id}`,
+    vars: { groupName: dto.groupName, amount: String(dto.amount), date: dto.paidAt },
+  });
+  await notifyStaff(tx, {
+    organizationId: actor.organizationId,
+    branchId: m.group.branchId,
+    text: `To'lov: ${dto.studentName} — ${dto.amount} (${dto.groupName}), ${actor.fullName}`,
+  });
+  // The online fiscal receipt, when the centre fiscalises (A-147).
+  const fiscalId = await queueFiscalReceipt(tx, {
+    organizationId,
+    paymentId: row.id,
+    kind: "SALE",
+  });
+  if (fiscalId) {
+    dto.fiscal = fiscalToDto(await tx.fiscalReceipt.findUniqueOrThrow({ where: { id: fiscalId } }));
+  }
+  // The in-app bell for the branch's cashiers and managers (A-97).
+  await notifyUsers(tx, {
+    kind: "PAYMENT",
+    params: {
+      name: dto.studentName,
+      amount: dto.amount,
+      group: dto.groupName,
+      by: actor.fullName,
+    },
+    href: `/students/${m.studentId}`,
+    branchId: m.group.branchId,
+    permission: "payments.create",
+    excludeUserId: actor.userId,
+  });
+  // A payment that clears the debt closes the student's collection case at once (A-112).
+  await refreshStudentDebts(tx, m.studentId);
+  return dto;
+  return dto;
 }
 
 export async function getPayment(
