@@ -46,6 +46,8 @@ export interface MembershipDto {
   leaveReason: string | null;
   /** Filled by `listMembers` only (Phase 6); null elsewhere. */
   balance: number | null;
+  /** Lesson credits left in a package group (A-178), filled by `listMembers`; null in monthly groups. */
+  lessonsLeft: number | null;
 }
 
 export const MEMBER_SORT_FIELDS = ["fullName", "status", "joinedAt"] as const;
@@ -68,9 +70,14 @@ const include = {
 } satisfies Prisma.GroupMembershipInclude;
 type Row = Prisma.GroupMembershipGetPayload<{ include: typeof include }>;
 
-function toDto(row: Row, balance: number | null = null): MembershipDto {
+function toDto(
+  row: Row,
+  balance: number | null = null,
+  lessonsLeft: number | null = null,
+): MembershipDto {
   return {
     balance,
+    lessonsLeft,
     id: row.id,
     groupId: row.groupId,
     studentId: row.studentId,
@@ -128,7 +135,10 @@ export async function listMembers(
     db,
     rows.map((r) => r.id),
   );
-  return rows.map((r) => toDto(r, balances.get(r.id)?.balance ?? 0));
+  return rows.map((r) => {
+    const b = balances.get(r.id);
+    return toDto(r, b?.balance ?? 0, b?.credits?.left ?? null);
+  });
 }
 
 /** Autocomplete for "O'quvchilarni qidiring": name or phone, inside the actor's branches. */

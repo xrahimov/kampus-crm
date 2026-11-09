@@ -27,6 +27,7 @@ import { listGroupMaterials } from "@/server/services/materials/materials.servic
 import { listMembers } from "@/server/services/groups/memberships.service";
 import { getGroupFormOptions } from "@/server/services/groups/options.service";
 import { listGroupDiscounts } from "@/server/services/students/discounts.service";
+import { listGroupPackages } from "@/server/services/students/packages.service";
 import { getPaymentOptions } from "@/server/services/students/payments.service";
 import { canCreateStudents, listGroupComments } from "@/server/services/students/students.service";
 import {
@@ -106,6 +107,7 @@ export default async function Page({ params, searchParams }: Props) {
     gradebook,
     stream,
     chat,
+    packages,
   ] = await Promise.all([
     getMonthGrid(current.actor, id, month),
     listMembers(current.actor, id, { archived: str(sp.archived) === "1" }),
@@ -144,6 +146,7 @@ export default async function Page({ params, searchParams }: Props) {
     getGroupGradebook(current.actor, id),
     listGroupStream(current.actor, id),
     getGroupChat(current.actor, id),
+    group.billingMode === "PACKAGES" ? listGroupPackages(current.actor, id) : null,
   ]);
 
   return (
@@ -171,6 +174,7 @@ export default async function Page({ params, searchParams }: Props) {
       homework={homework}
       chat={chat}
       materials={materials}
+      packages={packages}
       paymentOptions={paymentOptions}
       options={options}
       branches={current.branches}

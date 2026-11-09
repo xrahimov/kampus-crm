@@ -31,6 +31,7 @@ import {
   GROUP_STATUSES,
   GROUP_TEACHER_ROLES,
   SHARE_TYPES,
+  BILLING_MODES,
   WEEKDAY_PATTERNS,
   WEEKDAYS,
   type GroupInput,
@@ -60,6 +61,7 @@ const formSchema = z
     name: z.string().trim().min(1, "validation.required").max(120, "validation.tooLong"),
     courseId: z.string().min(1, "validation.required"),
     gradingSystemId: z.string().nullable(),
+    billingMode: z.enum(BILLING_MODES),
     weekdayPattern: z.enum(WEEKDAY_PATTERNS),
     customDays: z.array(z.coerce.number().int().min(1).max(7)),
     perDay: z.boolean(),
@@ -119,6 +121,7 @@ function toApiBody(v: FormOutput): GroupInput {
     name: v.name,
     courseId: v.courseId,
     gradingSystemId: v.gradingSystemId || null,
+    billingMode: v.billingMode,
     weekdayPattern: v.weekdayPattern,
     slots,
     teachers: v.teachers,
@@ -165,6 +168,7 @@ export function GroupDialog({
     name: "",
     courseId: "",
     gradingSystemId: null,
+    billingMode: "MONTHLY",
     weekdayPattern: "EVEN",
     customDays: [],
     perDay: false,
@@ -202,6 +206,7 @@ export function GroupDialog({
       name: group.name,
       courseId: group.courseId,
       gradingSystemId: group.gradingSystemId,
+      billingMode: group.billingMode,
       weekdayPattern: group.weekdayPattern,
       customDays: group.slots.map((s) => s.weekday),
       perDay: !uniform,
@@ -399,6 +404,29 @@ export function GroupDialog({
           )}
         />
       </div>
+
+      <Controller
+        control={form.control}
+        name="billingMode"
+        render={({ field }) => (
+          <div className="space-y-2">
+            <Label htmlFor="group-billing">{tg("billing")}</Label>
+            <Select value={field.value} onValueChange={field.onChange}>
+              <SelectTrigger id="group-billing" data-testid="group-billing">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {BILLING_MODES.map((mode) => (
+                  <SelectItem key={mode} value={mode}>
+                    {tg(mode === "MONTHLY" ? "billingMonthly" : "billingPackages")}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <p className="text-xs text-muted-foreground">{tg("billingHint")}</p>
+          </div>
+        )}
+      />
 
       <Controller
         control={form.control}

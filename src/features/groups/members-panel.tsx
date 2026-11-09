@@ -231,6 +231,22 @@ export function MembersPanel({
                     ` · ${tm("chargedFrom")} ${fmt(parseDateOnly(m.billingFrom), { dateStyle: "medium" })}`}
                 </p>
               </div>
+              {m.lessonsLeft !== null && (
+                <Badge
+                  variant={
+                    m.lessonsLeft <= 0
+                      ? "destructive"
+                      : m.lessonsLeft <= 2
+                        ? "secondary"
+                        : "success"
+                  }
+                  className="tabular-nums"
+                  title={tm("lessonsLeftTitle")}
+                  data-testid="member-lessons-left"
+                >
+                  {tm("lessonsLeft", { count: m.lessonsLeft })}
+                </Badge>
+              )}
               {showBalance && m.balance !== null && (
                 <Badge
                   variant={m.balance < 0 ? "destructive" : m.balance > 0 ? "success" : "outline"}

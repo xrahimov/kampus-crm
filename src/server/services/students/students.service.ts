@@ -70,6 +70,8 @@ export interface StudentGroupDto {
   /** Unpaid parts of a split fee not due yet (A-123). */
   deferred: number;
   instalments: MembershipBalance["instalments"];
+  /** Lesson credits left in a package group (A-178); null in a monthly group. */
+  lessonsLeft: number | null;
   gradeAverage: number | null;
 }
 
@@ -231,6 +233,7 @@ function toGroupDto(
     discount: balance?.discount ?? null,
     deferred: balance?.deferred ?? 0,
     instalments: balance?.instalments ?? [],
+    lessonsLeft: balance?.credits?.left ?? null,
     gradeAverage: average(m.grades),
   };
 }

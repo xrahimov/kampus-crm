@@ -5,6 +5,7 @@ import { checkBadges } from "@/server/services/badges/badges.service";
 import { awardAutoCoins } from "@/server/services/coins/coins.service";
 import { assignNextTopic } from "@/server/services/settings/syllabus.service";
 import { queueAutoSms } from "@/server/services/sms/auto-sms.service";
+import { recordPackageUse } from "@/server/services/students/packages.service";
 import { notifyStudents } from "@/server/services/telegram/student-telegram.service";
 import { prisma, type DbClient } from "@/server/db/prisma";
 import { AppError } from "@/server/errors/app-error";
@@ -337,10 +338,13 @@ export async function markAttendance(
     lesson.groupId,
     marks.map((m) => m.membershipId),
   );
-  const members = await db.groupMembership.findMany({
-    where: { id: { in: marks.map((m) => m.membershipId) } },
-    select: { id: true, studentId: true },
-  });
+  const [members, billing] = await Promise.all([
+    db.groupMembership.findMany({
+      where: { id: { in: marks.map((m) => m.membershipId) } },
+      select: { id: true, studentId: true },
+    }),
+    db.group.findUniqueOrThrow({ where: { id: lesson.groupId }, select: { billingMode: true } }),
+  ]);
   const studentOf = new Map(members.map((m) => [m.id, m.studentId]));
   await db.$transaction(async (tx) => {
     // The first marks of a lesson give it the group's next syllabus topic (A-137).
@@ -372,6 +376,16 @@ export async function markAttendance(
           refKey: `attendance:${lessonId}:${mark.membershipId}`,
           revoke: mark.status !== "PRESENT",
         });
+        // In a package group a lesson attended takes one credit (A-178).
+        if (billing.billingMode === "PACKAGES") {
+          await recordPackageUse(tx, {
+            lessonId,
+            membershipId: mark.membershipId,
+            studentId,
+            groupName: lesson.group.name,
+            status: mark.status,
+          });
+        }
         // "Darsga kelmaganlarga sms" / "Darsga kelganlarga sms" (A-88), once per lesson and mark.
         if (mark.status === "ABSENT" || mark.status === "PRESENT") {
           await queueAutoSms(tx, {

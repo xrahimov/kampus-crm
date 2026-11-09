@@ -165,10 +165,11 @@ model User {
   paymentsReceived   Payment[]
   refundsMade        Refund[]
   certificatesIssued Certificate[]
-  cashClosesMade     CashClose[]      @relation("cashCloseCashier")
-  cashClosesAccepted CashClose[]      @relation("cashCloseAcceptor")
-  instalmentsCreated Instalment[]     @relation("instalmentCreator")
+  cashClosesMade     CashClose[]       @relation("cashCloseCashier")
+  cashClosesAccepted CashClose[]       @relation("cashCloseAcceptor")
+  instalmentsCreated Instalment[]      @relation("instalmentCreator")
   discountsGiven     Discount[]
+  packagesSold       PackagePurchase[]
   studentComments    StudentComment[]
 
   leadsAssigned Lead[]         @relation("leadTeacher")
@@ -677,6 +678,13 @@ enum WeekdayPattern {
   CUSTOM
 }
 
+/// How a group charges (A-178): a fee per course month, or packages of N lessons
+/// that attended lessons use up one credit at a time.
+enum BillingMode {
+  MONTHLY
+  PACKAGES
+}
+
 enum GroupTeacherRole {
   MAIN
   ASSISTANT
@@ -713,6 +721,7 @@ model Group {
   gradingSystemId String? // override; null = the course's system
   name            String
   weekdayPattern  WeekdayPattern @default(EVEN)
+  billingMode     BillingMode    @default(MONTHLY)
   startDate       DateTime       @db.Date
   endDate         DateTime       @db.Date
   status          GroupStatus    @default(ACTIVE)
@@ -743,6 +752,7 @@ model Group {
   materials       LessonMaterial[]
   chatMessages    GroupChatMessage[]
   chatReads       GroupChatRead[]
+  packages        LessonPackage[]
   absenceCases    AbsenceCase[]
   announcements   Announcement[]
   streamPosts     StreamPost[]
@@ -844,6 +854,7 @@ model Lesson {
   homework    Homework?
   materials   LessonMaterial[]
   trials      TrialBooking[]
+  packageUses PackageUse[]
   /// The day off this extra lesson replaces, when it was moved here (A-117).
   movedFrom   GroupDayOff?
 
@@ -1095,6 +1106,8 @@ model GroupMembership {
   streamComments   StreamComment[]
   vocabCards       VocabCard[]
   vocabDays        VocabDay[]
+  packagePurchases PackagePurchase[]
+  packageUses      PackageUse[]
 
   materialViews MaterialView[]
 
@@ -1351,6 +1364,68 @@ model Discount {
   @@index([familyId])
 }
 
+/// A package a group sells (A-178): N lessons for a price. Only groups with
+/// `billingMode = PACKAGES` use them; deactivated packages stay for history.
+model LessonPackage {
+  id        String   @id @default(cuid())
+  groupId   String
+  name      String
+  lessons   Int
+  price     Decimal  @db.Decimal(15, 2)
+  isActive  Boolean  @default(true)
+  sortOrder Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  group     Group             @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  purchases PackagePurchase[]
+
+  @@index([groupId])
+}
+
+/// A package bought by one member (A-178). The lessons and price are copied so a
+/// later change to the package does not alter what was sold; the payment that
+/// paid for it is linked when the sale went through the cash desk.
+model PackagePurchase {
+  id           String   @id @default(cuid())
+  membershipId String
+  packageId    String?
+  paymentId    String?  @unique
+  name         String
+  lessons      Int
+  price        Decimal  @db.Decimal(15, 2)
+  purchasedAt  DateTime @db.Date
+  note         String?
+  createdById  String?
+  createdAt    DateTime @default(now())
+
+  membership GroupMembership @relation(fields: [membershipId], references: [id], onDelete: Cascade)
+  package    LessonPackage?  @relation(fields: [packageId], references: [id], onDelete: SetNull)
+  payment    Payment?        @relation(fields: [paymentId], references: [id], onDelete: SetNull)
+  createdBy  User?           @relation(fields: [createdById], references: [id], onDelete: SetNull)
+  uses       PackageUse[]
+
+  @@index([membershipId, purchasedAt])
+}
+
+/// One attended lesson of a package group taking one credit (A-178). `purchaseId`
+/// is null when the member had no credit left: the lesson is owed until the
+/// next package is bought, which then takes these over.
+model PackageUse {
+  lessonId     String
+  membershipId String
+  purchaseId   String?
+  createdAt    DateTime @default(now())
+
+  lesson     Lesson           @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+  membership GroupMembership  @relation(fields: [membershipId], references: [id], onDelete: Cascade)
+  purchase   PackagePurchase? @relation(fields: [purchaseId], references: [id], onDelete: SetNull)
+
+  @@id([lessonId, membershipId])
+  @@index([membershipId])
+  @@index([purchaseId])
+}
+
 /// One monthly fee per membership and course month (A-10). `month` is the first
 /// day of the month; the amount is pro-rated by the lessons the student is in.
 model Charge {
@@ -1390,14 +1465,15 @@ model Payment {
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
 
-  student        Student         @relation(fields: [studentId], references: [id])
-  membership     GroupMembership @relation(fields: [membershipId], references: [id])
-  branch         Branch          @relation(fields: [branchId], references: [id])
-  paymentMethod  PaymentMethod?  @relation(fields: [paymentMethodId], references: [id], onDelete: SetNull)
-  receivedBy     User?           @relation(fields: [receivedById], references: [id], onDelete: SetNull)
-  refunds        Refund[]
-  onlinePayment  OnlinePayment?
-  fiscalReceipts FiscalReceipt[]
+  student         Student          @relation(fields: [studentId], references: [id])
+  membership      GroupMembership  @relation(fields: [membershipId], references: [id])
+  branch          Branch           @relation(fields: [branchId], references: [id])
+  paymentMethod   PaymentMethod?   @relation(fields: [paymentMethodId], references: [id], onDelete: SetNull)
+  receivedBy      User?            @relation(fields: [receivedById], references: [id], onDelete: SetNull)
+  refunds         Refund[]
+  onlinePayment   OnlinePayment?
+  fiscalReceipts  FiscalReceipt[]
+  packagePurchase PackagePurchase?
 
   @@index([studentId, paidAt])
   @@index([membershipId])

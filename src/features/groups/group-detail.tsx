@@ -51,6 +51,7 @@ import type { GroupMaterialsDto } from "@/server/services/materials/materials.se
 import type { MembershipDto } from "@/server/services/groups/memberships.service";
 import type { GroupFormOptions } from "@/server/services/groups/options.service";
 import type { PaymentOptionsDto } from "@/server/services/students/payments.service";
+import type { GroupPackagesDto } from "@/server/services/students/packages.service";
 import type { DiscountDto } from "@/server/services/students/discounts.service";
 import type { StudentCommentDto } from "@/server/services/students/students.service";
 import type { GroupChatDto } from "@/server/services/chat/group-chat.service";
@@ -83,6 +84,7 @@ import { MembersPanel } from "./members-panel";
 import { MoveBranchDialog } from "./move-branch-dialog";
 import { HistoryTab, NotesTab } from "./notes-history";
 import { OfferSeatsDialog } from "./offer-seats-dialog";
+import { PackagesTab } from "./packages-tab";
 import { GradebookTab } from "./gradebook-tab";
 import { GroupStreamTab } from "./stream-tab";
 import { SyllabusTab } from "./syllabus-tab";
@@ -102,6 +104,7 @@ const TABS = [
   "notes",
   "exams",
   "discounts",
+  "packages",
   "coins",
   "comments",
   "history",
@@ -132,6 +135,7 @@ export function GroupDetail({
   homework,
   chat,
   materials,
+  packages,
   paymentOptions,
   options,
   branches,
@@ -164,6 +168,8 @@ export function GroupDetail({
   homework: GroupHomeworkDto;
   chat: GroupChatDto;
   materials: GroupMaterialsDto;
+  /** The lesson packages of a package group (A-178); null for a monthly group. */
+  packages: GroupPackagesDto | null;
   paymentOptions: PaymentOptionsDto;
   options: GroupFormOptions;
   branches: BranchOption[];
@@ -217,6 +223,8 @@ export function GroupDetail({
   );
   const archived = group.status === "ARCHIVED";
   const editable = can.update && !archived;
+  // The Packages tab exists only where the group sells packages (A-178).
+  const tabs = TABS.filter((k) => k !== "packages" || group.billingMode === "PACKAGES");
   const tab = (searchParams.get("tab") ?? "attendance") as (typeof TABS)[number];
   const showArchived = searchParams.get("archived") === "1";
 
@@ -329,7 +337,14 @@ export function GroupDetail({
             <CardContent>
               <dl className="grid gap-x-6 gap-y-2 text-sm sm:grid-cols-2">
                 <Row label={t("groups.columns.course")} value={group.courseName} />
-                <Row label={td("price")} value={money(group.coursePrice)} />
+                <Row
+                  label={td("price")}
+                  value={
+                    group.billingMode === "PACKAGES"
+                      ? t("groups.form.billingPackages")
+                      : money(group.coursePrice)
+                  }
+                />
                 <Row label={td("gradingSystem")} value={group.gradingSystemName || "—"} />
                 <Row label={td("branch")} value={group.branchName} />
                 <Row label={t("groups.columns.opened")} value={date(group.startDate)} />
@@ -459,7 +474,7 @@ export function GroupDetail({
           <CardContent className="pt-6">
             <Tabs value={tab} onValueChange={(v) => setParam("tab", v === "attendance" ? null : v)}>
               <TabsList className="h-auto flex-wrap">
-                {TABS.map((k) => (
+                {tabs.map((k) => (
                   <TabsTrigger key={k} value={k} data-testid={`tab-${k}`}>
                     {td(`tabs.${k}`)}
                   </TabsTrigger>
@@ -571,6 +586,18 @@ export function GroupDetail({
                   canGive={can.discount && !archived}
                 />
               </TabsContent>
+              {packages && (
+                <TabsContent value="packages" className="pt-4">
+                  <PackagesTab
+                    groupId={group.id}
+                    data={packages}
+                    members={members}
+                    paymentOptions={paymentOptions}
+                    canManage={editable}
+                    canSell={can.pay && !archived}
+                  />
+                </TabsContent>
+              )}
               <TabsContent value="comments" className="pt-4">
                 <CommentsTab
                   groupId={group.id}

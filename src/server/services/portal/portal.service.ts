@@ -66,6 +66,13 @@ export interface PortalDto {
       method: string | null;
     }>;
   };
+  /** Lesson credits in a package group (A-178): null when the group charges monthly. */
+  packages: {
+    purchased: number;
+    used: number;
+    lessonsLeft: number;
+    offers: Array<{ id: string; name: string; lessons: number; price: number }>;
+  } | null;
   exams: Array<{
     id: string;
     name: string;
@@ -105,8 +112,14 @@ export async function getPortal(token: string, db: DbClient = prisma): Promise<P
         select: {
           endDate: true,
           courseId: true,
+          billingMode: true,
           course: { select: { name: true } },
           teachers: { select: { user: { select: { fullName: true } } } },
+          packages: {
+            where: { isActive: true },
+            select: { id: true, name: true, lessons: true, price: true },
+            orderBy: [{ sortOrder: "asc" }, { price: "asc" }],
+          },
         },
       }),
       db.lesson.findMany({
@@ -308,6 +321,20 @@ export async function getPortal(token: string, db: DbClient = prisma): Promise<P
         method: p.paymentMethod?.name ?? null,
       })),
     },
+    packages:
+      group.billingMode === "PACKAGES"
+        ? {
+            purchased: balance?.credits?.purchased ?? 0,
+            used: balance?.credits?.used ?? 0,
+            lessonsLeft: balance?.credits?.left ?? 0,
+            offers: group.packages.map((p) => ({
+              id: p.id,
+              name: p.name,
+              lessons: p.lessons,
+              price: decimalToNumber(p.price),
+            })),
+          }
+        : null,
     exams,
     tests: attempts.map((a) => ({
       id: a.id,

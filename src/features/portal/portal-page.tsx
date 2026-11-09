@@ -166,6 +166,7 @@ export function PortalPage({
   const canPay = pay.providers.length > 0 && portal.money.monthlyPrice > 0;
   const showMoney =
     canPay ||
+    portal.packages !== null ||
     portal.money.monthlyPrice > 0 ||
     portal.money.balance !== 0 ||
     portal.money.payments.length > 0;
@@ -386,12 +387,49 @@ export function PortalPage({
                     value={money(portal.money.balance)}
                     tone={portal.money.balance < 0 ? "bad" : "good"}
                   />
-                  <Stat label={t("money.monthly")} value={money(portal.money.monthlyPrice)} />
-                  <Stat
-                    label={t("money.nextPayment")}
-                    value={portal.money.nextPaymentDate ? date(portal.money.nextPaymentDate) : "—"}
-                  />
+                  {portal.packages ? (
+                    <>
+                      <Stat
+                        label={t("money.lessonsLeft")}
+                        value={String(portal.packages.lessonsLeft)}
+                        tone={portal.packages.lessonsLeft <= 0 ? "bad" : "good"}
+                      />
+                      <Stat
+                        label={t("money.lessonsUsed")}
+                        value={`${portal.packages.used} / ${portal.packages.purchased}`}
+                      />
+                    </>
+                  ) : (
+                    <>
+                      <Stat label={t("money.monthly")} value={money(portal.money.monthlyPrice)} />
+                      <Stat
+                        label={t("money.nextPayment")}
+                        value={
+                          portal.money.nextPaymentDate ? date(portal.money.nextPaymentDate) : "—"
+                        }
+                      />
+                    </>
+                  )}
                 </div>
+                {portal.packages && portal.packages.offers.length > 0 && (
+                  <div
+                    className="rounded-lg border bg-card px-3 py-2 text-sm"
+                    data-testid="package-offers"
+                  >
+                    <div className="text-xs text-muted-foreground">{t("money.packages")}</div>
+                    <ul className="mt-1 space-y-0.5">
+                      {portal.packages.offers.map((o) => (
+                        <li key={o.id}>
+                          {t("money.packageOffer", {
+                            name: o.name,
+                            lessons: o.lessons,
+                            price: money(o.price),
+                          })}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
                 {portal.money.balance < 0 && (
                   <Alert>{t("money.debt", { amount: money(-portal.money.balance) })}</Alert>
                 )}

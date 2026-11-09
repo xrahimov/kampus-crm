@@ -500,7 +500,10 @@
     "ratingAbsent": "O'tkazib yuborilgan darsga baho qo'yib bo'lmaydi",
     "bookingLimit": "Oldindan band qilingan darslar soni allaqachon eng ko'p",
     "trialNotToday": "Sinov darsi boshqa kunda.",
-    "trialClosed": "Bu sinov darsi endi o‘tkazilmaydi."
+    "trialClosed": "Bu sinov darsi endi o‘tkazilmaydi.",
+    "packageUnknown": "Bunday paket yo‘q.",
+    "packageInactive": "Bu paket endi sotilmaydi.",
+    "billingNotPackages": "Bu guruh paket emas, oylik to‘lov bilan ishlaydi."
   },
   "validation": {
     "phone": "+998 90 123 45 67 ko‘rinishida raqam kiriting.",
@@ -1437,7 +1440,11 @@
         "teacher": "{day} {start}–{end}: {teacher} {group} guruhida dars beradi.",
         "saveAnyway": "Baribir saqlash",
         "hint": "Vaqt, xona yoki o‘qituvchini o‘zgartiring, yoki ustma-ustlik ataylab bo‘lsa, baribir saqlang."
-      }
+      },
+      "billing": "To‘lov tartibi",
+      "billingMonthly": "Oylik to‘lov",
+      "billingPackages": "Dars paketlari",
+      "billingHint": "Oylik: har oy kurs narxi hisoblanadi. Paketlar: o‘quvchi bir yo‘la N ta dars sotib oladi va har qatnashgan dars bittasini ishlatadi; paketlarni guruhning Paketlar yorlig‘ida belgilang."
     },
     "detail": {
       "info": "Guruh",
@@ -1479,7 +1486,8 @@
         "syllabus": "Dastur",
         "gradebook": "Baholar jurnali",
         "stream": "Lenta",
-        "chat": "Chat"
+        "chat": "Chat",
+        "packages": "Paketlar"
       },
       "changeTeacherHint": "Yangi o'qituvchining ulushi bugundan hisoblanadi.",
       "notify": "O'quvchilar va ota-onalarga xabar berish (Telegram va SMS)",
@@ -1561,7 +1569,9 @@
       "toLead": "Lidlarga qaytarish",
       "sms": "Xabar (SMS)",
       "importExcel": "Excel orqali qo'shish",
-      "addNew": "Yangi o‘quvchi qo‘shish"
+      "addNew": "Yangi o‘quvchi qo‘shish",
+      "lessonsLeft": "{count} ta dars qoldi",
+      "lessonsLeftTitle": "Paketda qolgan darslar"
     },
     "notes": {
       "newNote": "Eslatma qo'shish",
@@ -2014,7 +2024,8 @@
       },
       "instalments": "Bo‘lib to‘lash",
       "instalmentPaid": "to‘langan",
-      "familyDiscount": "Oilaviy chegirma {percent}%: oyiga {price}. «Oila» kartasida boshqariladi."
+      "familyDiscount": "Oilaviy chegirma {percent}%: oyiga {price}. «Oila» kartasida boshqariladi.",
+      "lessonsLeft": "Qolgan darslar"
     },
     "comments": {
       "title": "Izoh va eslatmalar",
@@ -2070,6 +2081,9 @@
         "family": {
           "link": "Oilaga bog‘landi",
           "unlink": "Oiladan chiqarildi"
+        },
+        "package": {
+          "sell": "Dars paketi sotildi"
         }
       }
     },
@@ -2609,6 +2623,63 @@
     "deleteTitle": "Chegirma o‘chirilsinmi?",
     "deleteText": "“{name}” uchun chegirma hozir tugaydi. O‘tgan oylar hisoblanganicha qoladi.",
     "family": "Oila"
+  },
+  "packages": {
+    "title": "Dars paketlari",
+    "add": "Paket qo‘shish",
+    "edit": "Paketni tahrirlash",
+    "sell": "Paket sotish",
+    "empty": "Hali paketlar yo‘q.",
+    "emptyHint": "Paket qo‘shing: nechta dars va qancha turishi. O‘quvchilar paket sotib oladi, har qatnashgan dars bittasini ishlatadi.",
+    "columns": {
+      "name": "Paket",
+      "lessons": "Darslar",
+      "price": "Narxi",
+      "perLesson": "Bir dars",
+      "sold": "Sotilgan",
+      "status": "Holati"
+    },
+    "active": "Sotuvda",
+    "inactive": "Sotilmaydi",
+    "deactivate": "Sotuvdan olish",
+    "form": {
+      "name": "Paket nomi",
+      "lessons": "Darslar soni",
+      "price": "Narxi",
+      "active": "Sotuvda"
+    },
+    "sellForm": {
+      "student": "O‘quvchi",
+      "package": "Paket",
+      "packageOption": "{name} — {lessons} ta dars, {price}",
+      "summary": "{lessons} ta dars qo‘shiladi va {price} to‘lov sifatida qabul qilinadi.",
+      "method": "To‘lov usuli",
+      "paidAt": "To‘langan sana",
+      "comment": "Izoh"
+    },
+    "credits": {
+      "title": "O‘quvchilarning darslari",
+      "empty": "Guruhda o‘quvchi yo‘q.",
+      "student": "O‘quvchi",
+      "purchased": "Sotib olingan",
+      "used": "Ishlatilgan",
+      "left": "Qoldi",
+      "lastPurchase": "Oxirgi paket"
+    },
+    "purchases": {
+      "title": "Sotilgan paketlar",
+      "date": "Sana",
+      "student": "O‘quvchi",
+      "package": "Paket",
+      "used": "Ishlatilgan",
+      "price": "Narxi",
+      "note": "Izoh",
+      "by": "Kim sotgan"
+    },
+    "deleteTitle": "Paket o‘chirilsinmi?",
+    "deleteText": "“{name}” guruh takliflaridan olib tashlanadi.",
+    "deactivateTitle": "Paket sotuvdan olinsinmi?",
+    "deactivateText": "“{name}” avval sotilgan, shuning uchun tarixda qoladi, lekin boshqa taklif qilinmaydi."
   },
   "leads": {
     "title": "Lidlar",
@@ -4137,7 +4208,9 @@
         "HomeworkSubmission": "Uy vazifasi javobi",
         "LessonMaterial": "Dars materiali",
         "BalanceAdjustment": "Qoldiq to'g'rilashi",
-        "Family": "Oila"
+        "Family": "Oila",
+        "LessonPackage": "Dars paketi",
+        "PackagePurchase": "Sotilgan paket"
       },
       "names": {
         "attendance": {
@@ -4471,6 +4544,12 @@
         "certificate": {
           "issue": "Sertifikat berildi",
           "revoke": "Sertifikat bekor qilindi"
+        },
+        "package": {
+          "create": "Dars paketi qo‘shildi",
+          "update": "Dars paketi o‘zgartirildi",
+          "delete": "Dars paketi o‘chirildi",
+          "sell": "Dars paketi sotildi"
         }
       }
     }
@@ -4994,7 +5073,11 @@
       "date": "Sana",
       "month": "Qaysi oy uchun",
       "method": "Usul",
-      "amount": "Summa"
+      "amount": "Summa",
+      "lessonsLeft": "Qolgan darslar",
+      "lessonsUsed": "Ishlatilgan darslar",
+      "packages": "Sotuvdagi paketlar",
+      "packageOffer": "{name}: {lessons} ta dars — {price}"
     },
     "results": {
       "exams": "Imtihonlar",
@@ -5301,7 +5384,8 @@
     "chatPicked": "💬 Endi xabarlaringiz {group} chatiga boradi. Yozing.",
     "chatFromStudent": "💬 {group} · {student} yozdi:\n{text}\n\nJavob: Kampus → Guruhlar → {group} → Chat.",
     "lessonSummary": "📘 {group}, {date} {time}\nMavzu: {topic, select, none {yozilmagan} other {{topic}}}\nDavomat: {attendance, select, PRESENT {keldi ✅} ABSENT {kelmadi ❌} EXCUSED {sababli} other {hali belgilanmagan}}\nUyga vazifa: {homework, select, none {yo‘q} other {{homework}}}{due, select, none {} other { (muddat {due})}}",
-    "trialLink": "🎓 Sinov darsingiz: {group}, {date}{time, select, none {} other {, {time}}}.\nO‘sha kuni onlayn darsga qo‘shilish uchun shu havolani oching: {url}"
+    "trialLink": "🎓 Sinov darsingiz: {group}, {date}{time, select, none {} other {, {time}}}.\nO‘sha kuni onlayn darsga qo‘shilish uchun shu havolani oching: {url}",
+    "packageLow": "{group}: {left, plural, =0 {dars paketingiz tugadi} other {paketingizda # ta dars qoldi}}. Iltimos, keyingi paketni o‘quv markazida sotib oling."
   },
   "video": {
     "title": "Video dars",
