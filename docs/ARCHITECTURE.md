@@ -3,7 +3,8 @@
 > App name: **Kampus** (repo `kampus-crm`).
 > Source of truth: `/mnt/project-files/exploration/EXPLORATION.md` (EXP). Section references like "EXP §5" point there.
 > Everything that EXP marks [INFERRED] / [NOT VERIFIED], and every decision of mine, is listed in `ASSUMPTIONS.md` (A-numbers below).
-> Status: **draft for review**. No code has been written yet.
+> Status: **built**. All thirteen phases below are merged (PRs #1 to #12). This document is the Phase 1 design and is kept as written; it is not extended for later work.
+> Everything added afterwards (video lessons, the student and parent app, several organisations, online payments, the online-lesson tools, lesson packages) is described row by row in `ASSUMPTIONS.md` from A-100 onwards, with its models, endpoints and rules; start at "Where things stand now" there.
 
 ---
 
