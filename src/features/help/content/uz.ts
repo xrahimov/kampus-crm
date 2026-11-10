@@ -1132,11 +1132,14 @@ export const uz: HelpContent = {
             "O‘quvchilar va ota-onalar shaxsiy havola o‘rniga **/student** sahifasida **Telegram orqali kirish** bilan kira oladi. Telegram shaxsni va telefonni tasdiqlaydi; Kampus faqat shu telefon markazingizdagi o‘quvchi yoki ota-ona kartasida bo‘lsa kiritadi, shuning uchun hech kim soxta hisob ocha olmaydi.",
             {
               steps: [
-                "Telegramda **@BotFather**ni oching, botingizni tanlang va **Login Widget**ni oching.",
-                "Ruxsat etilgan manzillarga saytingiz manzilini hamda manzil va **/api/v1/student-auth/telegram/callback** ni qo‘shing.",
+                "Telegramda **@BotFather**ni oching, ilovasini ishga tushirish uchun **Open** tugmasini bosing, botingizni tanlang va **Login Widget**ni oching.",
+                "Botni **OpenID Connect** orqali kirishga o‘tkazing. Telegram tasdiqlashni so‘raydi, chunki bu o‘zgarishni ortga qaytarib bo‘lmaydi va botning eski kirish vidjeti ishlamay qoladi. Kampus eskisidan foydalanmaydi.",
+                "**Redirect URI** qo‘shing: saytingiz manzili va **/api/v1/student-auth/telegram/callback**. **Trusted Origin** sifatida saytingiz manzilini qo‘shing.",
                 "**Client ID** va **Client Secret**ni shu yerdagi Telegram kartasiga ko‘chirib, saqlang.",
+                "**/student** sahifasini ochib, **Telegram orqali kirish**ni bosing. Telegram botingiz nomi yozilgan kirish sahifasini ko‘rsatishi kerak.",
               ],
             },
+            "Server egasi o‘z botini barcha markazlarga ulashgan bo‘lsa, uning kirish kalitlari o‘sha markazlarga ham xizmat qiladi, shuning uchun o‘z boti yo‘q markazga bu qadamlar kerak emas. Sayt boshqa manzilga ko‘chsa, BotFather’dagi ikkala manzilni ham o‘zgartiring.",
             "Har bir o‘quvchi kartasida **Kampus ilovasiga kirish** bo‘limi bor: kim o‘quvchi yoki ota-ona sifatida kiradi, qanday ulangan, hamma joydan chiqarish va kirishni olib tashlash tugmalari.",
           ],
         },

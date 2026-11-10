@@ -13,6 +13,16 @@ assumptions, and lists the few items left out on purpose. Decisions that go beyo
 are numbered in [docs/ASSUMPTIONS.md](docs/ASSUMPTIONS.md); the ones still marked **OPEN** need an
 answer from the product owner before the behaviour is treated as final.
 
+Everything built since then (PRs #13 to #103, as of 2026-11-10) goes beyond the reference: video
+lessons with recordings, pages and sign-in for students and parents, homework, online payments,
+several organisations on one server, the round-2 items and the online-lesson tools up to lesson
+packages. Each addition is one row in [docs/ASSUMPTIONS.md](docs/ASSUMPTIONS.md) from A-100 onwards,
+and its "Where things stand now" section gives the short version.
+
+Docs are part of every change: a change adds or edits its row in ASSUMPTIONS.md, the in-app help in
+uz, ru and en when a page or a setup step changes, and [docs/DEPLOY.md](docs/DEPLOY.md) when the
+server routine changes.
+
 ## Stack
 
 Next.js 16 (App Router) · React 19 · TypeScript (strict) · Tailwind CSS 4 · shadcn/ui-style components ·
@@ -21,21 +31,25 @@ GitHub Actions
 
 ## Modules
 
-| Module             | What it covers                                                                                                                                                         |
-| ------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Dashboard          | Twelve KPI cards (masked until "show numbers"), room schedule grid, finance summary, utilisation badge                                                                 |
-| Leads              | Boards and columns (Kanban), lead form, move / archive / restore, SMS to a column, add leads to a group, return a student to leads, sources report, public lead forms  |
-| Teachers and staff | Staff with roles, branches, salary methods and photos; teacher profile; roles with a permission matrix and custom roles                                                |
-| Groups             | Schedule patterns and rooms, up to three teachers with pay shares, members with statuses, attendance, grades, notes, exams, tests, discounts, coins, comments, history |
-| Students           | Profile with groups, progress, test results, comments, SMS, history, parents, calls; payments, refunds, printable receipts and badges; Excel import and export         |
-| Exams              | Group and mock exams, registrations, grading sheet with levels, finish and reopen                                                                                      |
-| Tests and coins    | Question bank, tests, staff-entered attempts, knowledge analysis; coin rules and manual reasons, group ranking, marketplace with purchase requests                     |
-| Finance            | Overview figures and charts, monthly plan, categories and ledger (expenses, incomes, advances, marketing, bonuses, fines, investments), payroll with approvals         |
-| Reports            | Payments, student payments, left students, graduates, staff attendance, coins, leads, students, center statistics; Excel on every report                               |
-| Settings           | General switches, payment methods, courses, rooms, days off, schools, grading systems, receipt layout, SMS templates and auto-SMS, logs                                |
-| Integrations       | Eskiz SMS, Telegram bot notifications, AmoCRM lead push, telephony webhook with click-to-call, FaceID webhook with staff attendance                                    |
-| Header             | Global search over students, leads and groups; payment button; notifications bell and page; branch and language switch                                                 |
-| Help               | In-app manuals in uz / ru / en for every role (CEO, branch manager, admin, cashier, teacher, student) with screenshots and a search that leads to the section          |
+| Module               | What it covers                                                                                                                                                                                                                              |
+| -------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Dashboard            | Twelve KPI cards (masked until "show numbers"), room schedule grid, finance summary, utilisation badge                                                                                                                                      |
+| Leads                | Boards and columns (Kanban), lead form, move / archive / restore, SMS to a column, add leads to a group, return a student to leads, sources report, public lead forms                                                                       |
+| Teachers and staff   | Staff with roles, branches, salary methods and photos; teacher profile; roles with a permission matrix and custom roles                                                                                                                     |
+| Groups               | Schedule patterns and rooms, up to three teachers with pay shares, members with statuses, attendance, grades, notes, exams, tests, discounts, coins, comments, history                                                                      |
+| Students             | Profile with groups, progress, test results, comments, SMS, history, parents, calls; payments, refunds, printable receipts and badges; Excel import and export                                                                              |
+| Exams                | Group and mock exams, registrations, grading sheet with levels, finish and reopen                                                                                                                                                           |
+| Tests and coins      | Question bank, tests, staff-entered attempts, knowledge analysis; coin rules and manual reasons, group ranking, marketplace with purchase requests                                                                                          |
+| Finance              | Overview figures and charts, monthly plan, categories and ledger (expenses, incomes, advances, marketing, bonuses, fines, investments), payroll with approvals                                                                              |
+| Reports              | Payments, student payments, left students, graduates, staff attendance, coins, leads, students, center statistics; Excel on every report                                                                                                    |
+| Settings             | General switches, payment methods, courses, rooms, days off, schools, grading systems, receipt layout, SMS templates and auto-SMS, logs                                                                                                     |
+| Integrations         | Eskiz SMS, Telegram bot notifications, AmoCRM lead push, telephony webhook with click-to-call, FaceID webhook with staff attendance                                                                                                         |
+| Online lessons       | Video lessons in the browser with recordings and streaming copies, attendance from the call, polls, whiteboard, breakout rooms, hand queue, the lesson beside the call, 1:1 self-booking, no-shows and ratings                              |
+| Students and parents | Sign-in at `/student` with Telegram (phone match, no passwords), personal and family pages, homework and tests, self-study content with exercises and a vocabulary trainer, badges, class stream, group chat, installable app with web push |
+| Billing              | Monthly fees with discounts and instalments, or lesson packages per group (one credit per attended lesson); online payments through Payme and Click; cashier day close; debt collection                                                     |
+| Organisations        | Several centres on one server with a site-owner console, a centre's own address, a Telegram bot shared with every centre or one per centre, importers for a centre moving from another CRM                                                  |
+| Header               | Global search over students, leads and groups; payment button; notifications bell and page; branch and language switch                                                                                                                      |
+| Help                 | In-app manuals in uz / ru / en for every role (CEO, branch manager, admin, cashier, teacher, student) with screenshots and a search that leads to the section                                                                               |
 
 ## Quick start (local)
 
@@ -119,7 +133,7 @@ src/lib/                shared by client and server: zod schemas, rbac catalogue
 src/server/             auth, rbac, audit, errors, http helpers, services, jobs, excel, storage, db
 scripts/worker.ts       background job worker
 tests/unit, tests/e2e   Vitest and Playwright suites
-docs/                   ARCHITECTURE.md, ASSUMPTIONS.md, EXPLORATION.md, TRACEABILITY.md
+docs/                   ARCHITECTURE.md, ASSUMPTIONS.md, DEPLOY.md, EXPLORATION.md, TRACEABILITY.md
 ```
 
 Layering rule: UI → `/api/v1` route → `server/services` → Prisma. Components never import from

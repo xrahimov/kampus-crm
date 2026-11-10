@@ -131,14 +131,35 @@ credentials in its own Settings → Integrations. Telegram is the exception: the
 site owner can tick **Shared with every centre on this server** on their own
 Telegram card, and centres without a bot of their own use that one.
 
+**Telegram login for students and parents** needs one more step in BotFather:
+open the bot → **Login Widget**, switch it to **OpenID Connect** login (one-way;
+the bot's old widget stops working), add the Redirect URI
+`https://<DOMAIN>/api/v1/student-auth/telegram/callback` and `https://<DOMAIN>/`
+as Trusted Origin, then copy the Client ID and Client Secret into Settings →
+Integrations → Telegram. With the shared switch on, these keys serve every
+centre without a bot of its own. If `<DOMAIN>` changes, change both addresses in
+BotFather. To check, open `https://<DOMAIN>/student` and press **Log in with
+Telegram**: Telegram shows its sign-in page with the bot's name.
+
 ## 7. Update to a new version
+
+Take a dump first, so a bad update can be undone (restore is in section 8):
 
 ```bash
 cd /opt/kampus
+C='docker compose -f docker-compose.prod.yml'
+$C exec -T db pg_dump -U kampus -d kampus --no-owner --no-privileges | gzip > backups/pre-update-$(date +%Y%m%d-%H%M).sql.gz
 git pull
-docker compose -f docker-compose.prod.yml up -d --build   # migrations run automatically
-docker image prune -f
+$C up -d --build                               # migrations run automatically
+$C logs --no-color migrate | tail -12          # every migration applied, no error
+$C exec -T caddy caddy reload --config /etc/caddy/Caddyfile
+docker builder prune -af --keep-storage 4G     # the build cache otherwise fills the disk
 ```
+
+Then repeat the checks of section 6. On a small server the build needs swap
+(about 2 GB) and takes several minutes, during which the site answers slowly or
+not at all. Nothing deploys by itself: merging to `main` changes the server only
+when these commands are run.
 
 The `backup` service reads `docker/backup.sh` when it starts, so after an update
 that changed the script, restart it once:

@@ -1128,11 +1128,14 @@ export const en: HelpContent = {
             "Students and parents can sign in at **/student** with **Log in with Telegram** instead of using their personal links. Telegram confirms the person and their phone; Kampus lets them in only when that phone is on a student or a parent card of your centre, so nobody can make up an account.",
             {
               steps: [
-                "In Telegram open **@BotFather**, choose your bot and open **Login Widget**.",
-                "Add your site's address and the address plus **/api/v1/student-auth/telegram/callback** to the allowed URLs.",
+                "In Telegram open **@BotFather**, press **Open** to start its app, choose your bot and open **Login Widget**.",
+                "Switch the bot to **OpenID Connect** login. Telegram asks you to confirm, because the switch cannot be undone and the bot's old login widget stops working. Kampus does not use the old one.",
+                "Add the **Redirect URI**: your site's address plus **/api/v1/student-auth/telegram/callback**. Add your site's address as the **Trusted Origin**.",
                 "Copy the **Client ID** and **Client Secret** into the Telegram card here and save.",
+                "Open **/student** and press **Log in with Telegram**. Telegram should show its sign-in page with your bot's name.",
               ],
             },
+            "When the server's owner shares their bot with every centre, its login keys serve those centres too, so a centre without a bot of its own needs none of these steps. If the site moves to another address, change both addresses in BotFather.",
             "Each student's card shows **Kampus app sign-in**: who signs in as the student or as a parent, how they were linked, and buttons to sign them out everywhere or remove the access.",
           ],
         },
