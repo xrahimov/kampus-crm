@@ -4653,11 +4653,13 @@
         "turnSecret": "TURN umumiy kaliti (login va parol o‘rniga)",
         "maxParticipants": "Bir qo‘ng‘iroqdagi eng ko‘p odam",
         "recordingKeepDays": "Dars yozuvlarini saqlash muddati (kun)",
+        "hlsRecordings": "Yozuvlarning striming nusxalarini tayyorlash",
         "attendanceMinutes": "“Keldi” hisoblanishi uchun onlayn daqiqalar",
         "noShowMinutes": "Yakka darsda o'quvchi kelmaganini yozishdan oldin kutish daqiqalari (0 = o'chiq)"
       },
       "hint": "Bepul ommaviy STUN serverlar bilan sozlamasiz ishlaydi. Ba’zi mobil va ofis tarmoqlari to‘g‘ridan-to‘g‘ri qo‘ng‘iroqlarni to‘sadi; ular uchun TURN relay qo‘shing (masalan Cloudflare Calls TURN, Metered yoki o‘z coturn serveringiz).",
-      "retentionHint": "Bundan eski yozuvlar har kecha video fayli bilan birga o'chiriladi, shunda server diski to'lib qolmaydi. 0 — doimiy saqlash."
+      "retentionHint": "Bundan eski yozuvlar har kecha video fayli bilan birga o'chiriladi, shunda server diski to'lib qolmaydi. 0 — doimiy saqlash.",
+      "hlsHint": "Yoqilganda har bir yozuv iPhone’da va sust internetda ham ochilishi uchun qo‘shimcha ravishda (360p va 720p) qayta ishlanadi. Bu server protsessorini band qiladi, shuning uchun yozuvlari ko‘p kichik serverda o‘chiq qoldiring."
     },
     "PAYME": {
       "title": "Payme",

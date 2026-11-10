@@ -4653,11 +4653,13 @@
         "turnSecret": "TURN shared secret (instead of username and password)",
         "maxParticipants": "Most people in one call",
         "recordingKeepDays": "Keep lesson recordings for (days)",
+        "hlsRecordings": "Make streaming copies of recordings",
         "attendanceMinutes": "Minutes online to count as present",
         "noShowMinutes": "Minutes alone before a 1:1 no-show is recorded (0 = off)"
       },
       "hint": "Works without setup using free public STUN servers. Some mobile and office networks block direct calls; for those, add a TURN relay (for example Cloudflare Calls TURN, Metered or your own coturn).",
-      "retentionHint": "Recordings older than this are deleted every night, together with their video file, to keep the server's disk from filling up. 0 keeps them forever."
+      "retentionHint": "Recordings older than this are deleted every night, together with their video file, to keep the server's disk from filling up. 0 keeps them forever.",
+      "hlsHint": "With streaming copies on, each recording is also converted so that it plays on iPhones and on weak connections (360p and 720p). The conversion uses the server's processor, so leave it off on a small server with many recordings."
     },
     "PAYME": {
       "title": "Payme",
