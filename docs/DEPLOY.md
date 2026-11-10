@@ -141,6 +141,13 @@ centre without a bot of its own. If `<DOMAIN>` changes, change both addresses in
 BotFather. To check, open `https://<DOMAIN>/student` and press **Log in with
 Telegram**: Telegram shows its sign-in page with the bot's name.
 
+**Staff** use the same keys and the same Redirect URI: with the keys saved, the
+staff sign-in page shows **Log in with Telegram**, and a staff member comes in
+when their Telegram number is the phone on their staff card. A centre that wants
+no passwords at all switches on **Staff sign in with Telegram only** under
+Settings → General. The switch can be turned on only by someone who is signed in
+with Telegram at that moment, which proves the login works before passwords go.
+
 ## 7. Update to a new version
 
 Take a dump first, so a bad update can be undone (restore is in section 8):
@@ -278,6 +285,13 @@ the bucket was in use stay there and would have to be copied back by hand.
   server yet, or port 80/443 is blocked by the firewall. `docker compose -f docker-compose.prod.yml logs caddy`.
 - **Login works, then logs out at once:** `APP_URL` does not match the address in
   the browser, or you use plain http without `COOKIE_SECURE=false`.
+- **Nobody can sign in after switching to Telegram only** (the bot's login keys
+  were revoked, the site moved to another address, Telegram is unreachable): add
+  `STAFF_PASSWORD_LOGIN=on` to `/opt/kampus/.env` and run
+  `docker compose -f docker-compose.prod.yml up -d app`. Passwords are accepted
+  again and the sign-in page shows the password form. Fix the login (section 6),
+  then remove the line and run the same command. Passwords also work by
+  themselves whenever the centre's bot has no login keys.
 - **`migrate` failed:** `docker compose -f docker-compose.prod.yml logs migrate`;
   fix `.env` and run `up -d --build` again. Bootstrap errors name the missing variable.
 - **Disk full:** `docker system df`, then `docker image prune -af`; the dumps in

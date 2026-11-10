@@ -16,6 +16,7 @@ import type { Actor } from "@/server/rbac/authorize";
 import { authorizeBranch, canAccessAllBranches } from "@/server/rbac/authorize";
 import {
   getTelegramNotifier,
+  loadIntegrationConfig,
   telegramConfigFor,
 } from "@/server/services/integrations/integrations.service";
 import { botText } from "@/server/services/telegram/student-telegram.service";
@@ -57,6 +58,9 @@ export async function passwordSignInAllowed(
 
 /** Whether the bot this centre uses (its own or the shared one) has Telegram login keys. */
 export async function telegramSignInReady(db: DbClient, organizationId: string): Promise<boolean> {
+  // Login keys alone are enough on the server's address, with or without a bot token (A-150).
+  const own = await loadIntegrationConfig(db, "TELEGRAM", organizationId);
+  if (own?.isEnabled && own.loginClientId && own.loginClientSecret) return true;
   const effective = await telegramConfigFor(db, organizationId);
   return Boolean(
     effective?.config.isEnabled &&

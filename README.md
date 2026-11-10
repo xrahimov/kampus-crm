@@ -13,7 +13,7 @@ assumptions, and lists the few items left out on purpose. Decisions that go beyo
 are numbered in [docs/ASSUMPTIONS.md](docs/ASSUMPTIONS.md); the ones still marked **OPEN** need an
 answer from the product owner before the behaviour is treated as final.
 
-Everything built since then (PRs #13 to #103, as of 2026-11-10) goes beyond the reference: video
+Everything built since then (PRs #13 to #105, as of 2026-11-10) goes beyond the reference: video
 lessons with recordings, pages and sign-in for students and parents, homework, online payments,
 several organisations on one server, the round-2 items and the online-lesson tools up to lesson
 packages. Each addition is one row in [docs/ASSUMPTIONS.md](docs/ASSUMPTIONS.md) from A-100 onwards,
@@ -35,7 +35,7 @@ GitHub Actions
 | -------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Dashboard            | Twelve KPI cards (masked until "show numbers"), room schedule grid, finance summary, utilisation badge                                                                                                                                      |
 | Leads                | Boards and columns (Kanban), lead form, move / archive / restore, SMS to a column, add leads to a group, return a student to leads, sources report, public lead forms                                                                       |
-| Teachers and staff   | Staff with roles, branches, salary methods and photos; teacher profile; roles with a permission matrix and custom roles                                                                                                                     |
+| Teachers and staff   | Staff with roles, branches, salary methods and photos; teacher profile; roles with a permission matrix and custom roles; sign-in with a password or with Telegram, or Telegram only per centre                                              |
 | Groups               | Schedule patterns and rooms, up to three teachers with pay shares, members with statuses, attendance, grades, notes, exams, tests, discounts, coins, comments, history                                                                      |
 | Students             | Profile with groups, progress, test results, comments, SMS, history, parents, calls; payments, refunds, printable receipts and badges; Excel import and export                                                                              |
 | Exams                | Group and mock exams, registrations, grading sheet with levels, finish and reopen                                                                                                                                                           |
