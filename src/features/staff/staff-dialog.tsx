@@ -387,6 +387,7 @@ export function StaffDialog({
           </Button>
         </div>
         <FieldError id="staff-password-error" message={errors.password?.message} />
+        {!person && <p className="text-xs text-muted-foreground">{tf("passwordTelegramHint")}</p>}
       </div>
 
       {person && (

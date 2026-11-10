@@ -14,7 +14,10 @@ import { prisma, type DbClient } from "@/server/db/prisma";
 import { AppError } from "@/server/errors/app-error";
 import type { Actor } from "@/server/rbac/authorize";
 import { authorizeBranch, canAccessAllBranches } from "@/server/rbac/authorize";
-import { getTelegramNotifier } from "@/server/services/integrations/integrations.service";
+import {
+  getTelegramNotifier,
+  telegramConfigFor,
+} from "@/server/services/integrations/integrations.service";
 import { botText } from "@/server/services/telegram/student-telegram.service";
 
 import { noteSignIn } from "./account.service";
@@ -33,7 +36,36 @@ export type LoginOutcome =
   /** The password was right; the session is issued once the Telegram code is entered. */
   | { kind: "challenge"; challengeId: string; expiresAt: string };
 
-interface SignedInUser {
+/**
+ * Whether a password may open a session in this centre (A-180). A centre that
+ * switched to Telegram only refuses it; STAFF_PASSWORD_LOGIN=on in the server's
+ * environment is the way back in when Telegram cannot be used at all.
+ */
+export async function passwordSignInAllowed(
+  db: DbClient,
+  organizationId: string,
+): Promise<boolean> {
+  if (process.env.STAFF_PASSWORD_LOGIN === "on") return true;
+  const settings = await db.orgSettings.findUnique({
+    where: { organizationId },
+    select: { staffTelegramOnly: true },
+  });
+  if (!settings?.staffTelegramOnly) return true;
+  // The switch holds only while the centre has a Telegram login to use instead.
+  return !(await telegramSignInReady(db, organizationId));
+}
+
+/** Whether the bot this centre uses (its own or the shared one) has Telegram login keys. */
+export async function telegramSignInReady(db: DbClient, organizationId: string): Promise<boolean> {
+  const effective = await telegramConfigFor(db, organizationId);
+  return Boolean(
+    effective?.config.isEnabled &&
+    effective.config.loginClientId &&
+    effective.config.loginClientSecret,
+  );
+}
+
+export interface SignedInUser {
   id: string;
   phone: string;
   organizationId: string;
@@ -44,7 +76,8 @@ interface SignedInUser {
  * Phone + password login with per-phone and per-IP lockout.
  * Wrong phone and wrong password produce the same error, so the response does
  * not reveal which phones exist. A person with the Telegram code switched on
- * gets a challenge instead of a session (A-124).
+ * gets a challenge instead of a session (A-124). A centre that signs in with
+ * Telegram only refuses the password, right or wrong (A-180).
  */
 export async function login(
   input: LoginInput,
@@ -88,6 +121,20 @@ export async function login(
     throw AppError.forbidden("errors.organizationSuspended");
   }
 
+  // Checked only after the right password, so the answer says nothing about other people's phones.
+  if (!(await passwordSignInAllowed(db, user.organizationId))) {
+    await db.loginLog.create({
+      data: {
+        userId: user.id,
+        phone: input.phone,
+        success: false,
+        ip: ctx.ip,
+        userAgent: ctx.userAgent,
+      },
+    });
+    throw AppError.forbidden("errors.passwordSignInOff");
+  }
+
   // Default to the user's only branch; users with several pick one in the header.
   const activeBranchId = user.branches.length === 1 ? user.branches[0]!.branchId : null;
 
@@ -98,11 +145,12 @@ export async function login(
   return { kind: "session", issued: await issueSession(db, user, activeBranchId, ctx) };
 }
 
-async function issueSession(
+export async function issueSession(
   db: DbClient,
   user: SignedInUser,
   activeBranchId: string | null,
   ctx: LoginContext,
+  method: "PASSWORD" | "TELEGRAM" = "PASSWORD",
 ): Promise<IssuedSession> {
   // The alert looks at earlier sign-ins, so it runs before this one is logged.
   await noteSignIn(db, user, ctx);
@@ -111,6 +159,7 @@ async function issueSession(
       userId: user.id,
       phone: user.phone,
       success: true,
+      method,
       ip: ctx.ip,
       userAgent: ctx.userAgent,
     },
@@ -120,6 +169,7 @@ async function issueSession(
     activeBranchId,
     ip: ctx.ip,
     userAgent: ctx.userAgent,
+    signedInWith: method,
   });
 }
 

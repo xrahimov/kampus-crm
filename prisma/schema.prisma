@@ -268,16 +268,18 @@ model UserBranch {
 // ---------------------------------------------------------------------------
 
 model Session {
-  id             String   @id @default(cuid())
-  tokenHash      String   @unique // sha256 of the opaque cookie token
+  id             String       @id @default(cuid())
+  tokenHash      String       @unique // sha256 of the opaque cookie token
   userId         String
   activeBranchId String?
   csrfSecret     String
   ip             String?
   userAgent      String?
   expiresAt      DateTime
-  lastSeenAt     DateTime @default(now())
-  createdAt      DateTime @default(now())
+  lastSeenAt     DateTime     @default(now())
+  createdAt      DateTime     @default(now())
+  /// How this session was opened (A-180): Telegram-only can be switched on only from a Telegram session.
+  signedInWith   SignInMethod @default(PASSWORD)
 
   user         User    @relation(fields: [userId], references: [id], onDelete: Cascade)
   activeBranch Branch? @relation(fields: [activeBranchId], references: [id], onDelete: SetNull)
@@ -296,14 +298,21 @@ model LoginAttempt {
   @@index([key, createdAt])
 }
 
+/// How a staff member proved who they are at sign-in (A-180).
+enum SignInMethod {
+  PASSWORD
+  TELEGRAM
+}
+
 model LoginLog {
-  id        String   @id @default(cuid())
+  id        String       @id @default(cuid())
   userId    String?
   phone     String
   success   Boolean
+  method    SignInMethod @default(PASSWORD)
   ip        String?
   userAgent String?
-  createdAt DateTime @default(now())
+  createdAt DateTime     @default(now())
 
   user User? @relation(fields: [userId], references: [id], onDelete: SetNull)
 
@@ -387,6 +396,8 @@ model OrgSettings {
   autoCoins                  Boolean @default(false)
   /// The setup checklist on the home page (A-128); hidden by its button or this switch.
   showSetupChecklist         Boolean @default(true)
+  /// Staff sign in with Telegram only; the password is refused (A-180).
+  staffTelegramOnly          Boolean @default(false)
   /// Students of 1:1 groups may move or cancel their lessons from their page (A-166).
   studentReschedule          Boolean @default(false)
   /// How many hours before the lesson a student may still move or cancel it (A-166).

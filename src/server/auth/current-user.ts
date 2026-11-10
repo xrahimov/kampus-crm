@@ -81,7 +81,8 @@ export async function resolveCurrentUser(
       fullName: user.fullName,
       phone: user.phone,
       photoUrl: user.photoUrl,
-      mustChangePassword: user.mustChangePassword,
+      // Someone who came in through Telegram has no use for the password they were given (A-180).
+      mustChangePassword: user.mustChangePassword && session.signedInWith !== "TELEGRAM",
       signInCode: user.signInCode,
       hasSalary: user.salaryMethod !== null || user._count.groupsTaught > 0,
     },
@@ -97,6 +98,7 @@ export async function resolveCurrentUser(
       branchIds: actorBranchIds,
       activeBranchId: activeBranch?.id ?? null,
       isSiteOwner: user.isSiteOwner,
+      signedInWith: session.signedInWith,
       ip: ip ?? null,
     },
   };

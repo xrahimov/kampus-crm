@@ -117,6 +117,8 @@ interface LoginState {
   next: string;
   locale: string;
   at: number;
+  /** Who is signing in; absent on a student's login. Staff use the same callback address (A-180). */
+  kind?: "staff";
 }
 
 /** Only paths inside the student area are accepted as the place to land after sign-in. */
@@ -129,20 +131,36 @@ export function callbackUrl(origin: string): string {
   return `${origin.replace(/\/$/, "")}/api/v1/student-auth/telegram/callback`;
 }
 
+/** Where a staff member may land after sign-in: a page of the app, never another site or the API. */
+export function safeStaffNext(next: string | null | undefined): string {
+  return next && /^\/(?!\/)(?!api\/)[A-Za-z0-9_\-/?=&%.]*$/.test(next) ? next : "";
+}
+
 /** Starts a login: the Telegram URL to send the browser to, and the state cookie to set. */
 export async function startTelegramLogin(
   db: DbClient,
-  input: { host: string | null; origin: string; next?: string | null; locale: string },
+  input: {
+    host: string | null;
+    origin: string;
+    next?: string | null;
+    locale: string;
+    kind?: "staff";
+  },
 ): Promise<{ url: string; cookie: string }> {
   const setup = await resolveLoginSetup(db, input.host);
-  if (!setup) throw AppError.notFound("errors.studentLoginOff");
+  if (!setup) {
+    throw AppError.notFound(
+      input.kind === "staff" ? "errors.staffTelegramOff" : "errors.studentLoginOff",
+    );
+  }
   const state: LoginState = {
     state: generateToken(16),
     verifier: randomBytes(32).toString("base64url"),
     nonce: generateToken(16),
-    next: safeNext(input.next),
+    next: input.kind === "staff" ? safeStaffNext(input.next) : safeNext(input.next),
     locale: input.locale,
     at: Date.now(),
+    ...(input.kind === "staff" ? { kind: "staff" as const } : {}),
   };
   const url = createTelegramLoginProvider().authorizeUrl({
     clientId: setup.clientId,
@@ -176,18 +194,34 @@ export function stateLocale(cookie: string | null | undefined): string | null {
   return readState(cookie)?.locale ?? null;
 }
 
-/** Telegram came back with a code: verify it and sign the person in. */
-export async function finishTelegramLogin(
+/** Whether the login that is coming back was started from the staff sign-in page (A-180). */
+export function stateIsStaff(cookie: string | null | undefined): boolean {
+  return readState(cookie)?.kind === "staff";
+}
+
+export interface TelegramReturn {
+  host: string | null;
+  origin: string;
+  code: string | null;
+  state: string | null;
+  cookie: string | null | undefined;
+}
+
+/**
+ * Telegram came back with a code: checks it against the state the browser left
+ * with and exchanges it for the person Telegram vouches for. Shared by the
+ * student and the staff sign-in.
+ */
+export async function verifyTelegramReturn(
   db: DbClient,
-  input: {
-    host: string | null;
-    origin: string;
-    code: string | null;
-    state: string | null;
-    cookie: string | null | undefined;
-  },
-  ctx: LoginContext,
-): Promise<{ token: string; next: string; locale: string | null }> {
+  input: TelegramReturn,
+): Promise<{
+  identity: TelegramIdentity;
+  setup: LoginSetup;
+  next: string;
+  locale: string | null;
+  staff: boolean;
+}> {
   const saved = readState(input.cookie);
   if (!saved || !input.state || !input.code || !safeEqual(saved.state, input.state)) {
     throw AppError.unauthenticated("errors.studentLoginExpired");
@@ -210,11 +244,29 @@ export async function finishTelegramLogin(
     }
     throw error;
   }
+  return {
+    identity,
+    setup,
+    next: saved.next,
+    locale: saved.locale ?? null,
+    staff: saved.kind === "staff",
+  };
+}
+
+/** Telegram came back with a code: verify it and sign the student or parent in. */
+export async function finishTelegramLogin(
+  db: DbClient,
+  input: TelegramReturn,
+  ctx: LoginContext,
+): Promise<{ token: string; next: string; locale: string | null }> {
+  const back = await verifyTelegramReturn(db, input);
+  // A code asked for on the staff page never opens a student session, and the other way round.
+  if (back.staff) throw AppError.unauthenticated("errors.studentLoginExpired");
   const account = await db.$transaction((tx) =>
-    accountForIdentity(tx, identity, setup.scopeOrganizationId),
+    accountForIdentity(tx, back.identity, back.setup.scopeOrganizationId),
   );
   const token = await createStudentSession(db, account.id, ctx);
-  return { token, next: saved.next, locale: saved.locale ?? null };
+  return { token, next: back.next, locale: back.locale };
 }
 
 /* ----- matching people ---------------------------------------------------------------------- */

@@ -50,8 +50,13 @@ const staffBase = z.object({
   ...salaryFields,
 });
 
-/** Create: a password is required. */
-export const staffCreateSchema = staffBase.extend({ password: passwordSchema });
+/**
+ * Create: a password is required, except in a centre that signs in with
+ * Telegram only (A-180), where it may be left empty; the service decides.
+ */
+export const staffCreateSchema = staffBase.extend({
+  password: passwordSchema.optional().or(z.literal("").transform(() => undefined)),
+});
 export type StaffCreateInput = z.infer<typeof staffCreateSchema>;
 
 /** Update: every field optional; an empty password means "keep the current one". */
