@@ -1,4 +1,5 @@
 import { cookies } from "next/headers";
+import type { NextResponse } from "next/server";
 
 import {
   CSRF_COOKIE,
@@ -18,6 +19,8 @@ export interface SessionRecord {
   csrfSecret: string;
   expiresAt: Date;
   lastSeenAt: Date;
+  /** How the session was opened (A-180). */
+  signedInWith: "PASSWORD" | "TELEGRAM";
 }
 
 export interface IssuedSession {
@@ -34,6 +37,7 @@ export async function createSession(
     activeBranchId: string | null;
     ip?: string | null;
     userAgent?: string | null;
+    signedInWith?: "PASSWORD" | "TELEGRAM";
   },
   now = new Date(),
 ): Promise<IssuedSession> {
@@ -49,6 +53,7 @@ export async function createSession(
       userAgent: input.userAgent?.slice(0, 512) ?? null,
       expiresAt: new Date(now.getTime() + SESSION_TTL_MS),
       lastSeenAt: now,
+      signedInWith: input.signedInWith ?? "PASSWORD",
     },
   });
   return { token, csrfToken, session };
@@ -108,6 +113,25 @@ export async function setSessionCookies(issued: IssuedSession): Promise<void> {
   });
   // Readable by the browser so the API client can echo it in the CSRF header.
   store.set(CSRF_COOKIE, issued.csrfToken, {
+    httpOnly: false,
+    secure: cookieSecure(),
+    sameSite: "lax",
+    path: "/",
+    maxAge,
+  });
+}
+
+/** The same two cookies on a response a route builds itself (a redirect after Telegram, A-180). */
+export function applySessionCookies(response: NextResponse, issued: IssuedSession): void {
+  const maxAge = Math.floor(SESSION_TTL_MS / 1000);
+  response.cookies.set(SESSION_COOKIE, issued.token, {
+    httpOnly: true,
+    secure: cookieSecure(),
+    sameSite: "lax",
+    path: "/",
+    maxAge,
+  });
+  response.cookies.set(CSRF_COOKIE, issued.csrfToken, {
     httpOnly: false,
     secure: cookieSecure(),
     sameSite: "lax",

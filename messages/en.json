@@ -81,7 +81,12 @@
     "confirmPassword": "Repeat the new password",
     "savePassword": "Save the password",
     "passwordSaved": "Password changed. Your other devices were signed out.",
-    "passwordHint": "At least 8 characters; not one you use anywhere else."
+    "passwordHint": "At least 8 characters; not one you use anywhere else.",
+    "signInSubtitleBoth": "Log in with Telegram, or use the phone number and password your administrator gave you.",
+    "signInSubtitleTelegram": "Staff sign in with Telegram. Your Telegram number must be the phone number on your staff card.",
+    "withTelegram": "Log in with Telegram",
+    "telegramHint": "Telegram confirms your phone number; Kampus lets you in when it is the number on your staff card.",
+    "orPassword": "or with a password"
   },
   "account": {
     "title": "My account",
@@ -503,7 +508,15 @@
     "trialClosed": "This trial lesson is no longer on.",
     "packageUnknown": "This package does not exist.",
     "packageInactive": "This package is no longer sold.",
-    "billingNotPackages": "This group charges a monthly fee, not packages."
+    "billingNotPackages": "This group charges a monthly fee, not packages.",
+    "passwordSignInOff": "Your centre signs in with Telegram only. Use Log in with Telegram.",
+    "staffTelegramOff": "Sign-in with Telegram is not set up on this address yet.",
+    "staffTelegramExpired": "The sign-in took too long or was started in another browser. Please try again.",
+    "staffTelegramFailed": "Telegram did not confirm the sign-in. Please try again.",
+    "staffTelegramNoPhone": "Telegram did not share your phone number, so Kampus cannot tell who you are. Try again and allow the phone number.",
+    "staffTelegramUnknown": "No staff member has the phone number of this Telegram account. Ask your administrator to check the number on your staff card.",
+    "staffTelegramOnlyNoBot": "Telegram login is not set up for this centre, so passwords cannot be switched off. Add the login keys in Settings → Integrations → Telegram first.",
+    "staffTelegramOnlyNeedsTelegram": "Sign out and sign in with Telegram first. The switch works only from a Telegram sign-in, so you cannot lock yourself out."
   },
   "validation": {
     "phone": "Enter a number like +998 90 123 45 67.",
@@ -828,6 +841,11 @@
         "hint": "Applies to groups with one student. The student moves or cancels a lesson from their page up to this many hours before it starts; later it stays and counts as held.",
         "hours": "Notice before the lesson",
         "unit": "hours"
+      },
+      "staffSignIn": {
+        "title": "Staff sign-in",
+        "hint": "Staff can always sign in with Telegram when the centre's bot has the login keys: Telegram confirms their phone and it must be the number on their staff card. Switch this on to refuse passwords altogether. You can switch it on only while you are signed in with Telegram yourself.",
+        "telegramOnly": "Staff sign in with Telegram only"
       }
     },
     "switches": {
@@ -1227,7 +1245,8 @@
       "signInCode": "Ask for a Telegram code at sign-in",
       "signInCodeHint": "Needs the person's Telegram chat under Settings → Bot notifications.",
       "signOutAll": "Sign out of all devices",
-      "signedOutAll": "Signed out everywhere."
+      "signedOutAll": "Signed out everywhere.",
+      "passwordTelegramHint": "Leave empty when your centre signs in with Telegram only."
     },
     "temporaryPassword": "Temporary password"
   },

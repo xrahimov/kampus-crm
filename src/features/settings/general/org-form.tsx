@@ -268,6 +268,31 @@ export function OrgForm({
             </div>
           </fieldset>
 
+          <fieldset className="space-y-3" data-testid="staff-sign-in">
+            <legend className="text-sm font-medium">
+              {t("settings.general.staffSignIn.title")}
+            </legend>
+            <p className="text-xs text-muted-foreground">
+              {t("settings.general.staffSignIn.hint")}
+            </p>
+            <div className="flex items-center justify-between gap-4 rounded-lg border px-4 py-3">
+              <Label htmlFor="switch-staffTelegramOnly" className="font-normal">
+                {t("settings.general.staffSignIn.telegramOnly")}
+              </Label>
+              <Controller
+                control={form.control}
+                name="staffTelegramOnly"
+                render={({ field }) => (
+                  <Switch
+                    id="switch-staffTelegramOnly"
+                    checked={field.value === true}
+                    onCheckedChange={field.onChange}
+                  />
+                )}
+              />
+            </div>
+          </fieldset>
+
           <fieldset className="space-y-3" data-testid="public-page">
             <legend className="text-sm font-medium">
               {t("settings.general.publicPage.title")}

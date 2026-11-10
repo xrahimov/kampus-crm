@@ -11,7 +11,9 @@ import {
 import type { Prisma } from "@/generated/prisma/client";
 import { recordAudit } from "@/server/audit/audit";
 import { requireTelegramChat } from "@/server/services/account.service";
+import { passwordSignInAllowed } from "@/server/services/auth.service";
 import { hashPassword } from "@/server/auth/password";
+import { generateToken } from "@/server/auth/tokens";
 import { prisma, type DbClient } from "@/server/db/prisma";
 import { AppError } from "@/server/errors/app-error";
 import type { ParsedList } from "@/server/http/list-query";
@@ -275,10 +277,15 @@ export async function createStaff(
   db: DbClient = prisma,
 ): Promise<StaffDto> {
   authorize(actor, perm(scope, "create"));
+  // No password is needed where nobody signs in with one (A-180): the account gets a
+  // random one nobody knows, so it stays closed if the centre goes back to passwords.
+  if (!input.password && (await passwordSignInAllowed(db, actor.organizationId))) {
+    throw AppError.validation({ password: ["validation.required"] });
+  }
   const [roleIds, branchIds, passwordHash] = await Promise.all([
     resolveRoles(db, actor, scope, input.roleCodes),
     resolveBranches(db, actor, input.branchIds),
-    hashPassword(input.password),
+    hashPassword(input.password ?? generateToken(24)),
   ]);
   try {
     return await db.$transaction(async (tx) => {

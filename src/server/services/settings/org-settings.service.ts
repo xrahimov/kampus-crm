@@ -3,6 +3,7 @@ import { recordAudit } from "@/server/audit/audit";
 import { prisma, type DbClient } from "@/server/db/prisma";
 import { authorize, type Actor } from "@/server/rbac/authorize";
 import { AppError } from "@/server/errors/app-error";
+import { telegramSignInReady } from "@/server/services/auth.service";
 import { rethrowAsAppError } from "@/server/services/settings/shared";
 
 export interface OrgSettingsDto extends OrgSettingsInput {
@@ -42,6 +43,7 @@ function toDto(
     absenceSilentDays: settings.absenceSilentDays,
     referralBonus: settings.referralBonus,
     studentRescheduleHours: settings.studentRescheduleHours,
+    staffTelegramOnly: settings.staffTelegramOnly,
     publicPage: settings.publicPage,
     publicSlug: settings.publicSlug,
     publicIntro: settings.publicIntro,
@@ -90,6 +92,8 @@ export async function updateOrgSettings(
     referralBonus: input.referralBonus,
     // Self-service rescheduling for 1:1 students (A-166).
     studentRescheduleHours: input.studentRescheduleHours,
+    // Staff sign-in (A-180): left out keeps the centre's choice.
+    staffTelegramOnly: input.staffTelegramOnly,
     // Public page (A-121); a field left out keeps its value, "" clears it.
     publicPage: input.publicPage,
     publicSlug: input.publicSlug,
@@ -100,6 +104,18 @@ export async function updateOrgSettings(
     publicTelegram: input.publicTelegram,
     publicFormId: input.publicFormId,
   };
+  // Telegram only (A-180) is a one-way door for whoever cannot use Telegram, so
+  // it opens only for someone who came in through Telegram themselves, in a
+  // centre whose bot has the login keys. Switching it off is always allowed.
+  const before = await loadSettings(db, organizationId);
+  if (input.staffTelegramOnly === true && !before.staffTelegramOnly) {
+    if (!(await telegramSignInReady(db, organizationId))) {
+      throw AppError.conflict("errors.staffTelegramOnlyNoBot");
+    }
+    if (actor.signedInWith !== "TELEGRAM") {
+      throw AppError.conflict("errors.staffTelegramOnlyNeedsTelegram");
+    }
+  }
   if (input.publicFormId) {
     const form = await db.leadForm.findFirst({
       where: { id: input.publicFormId, organizationId },

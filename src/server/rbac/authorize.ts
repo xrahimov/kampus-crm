@@ -18,6 +18,8 @@ export interface Actor {
   activeBranchId: string | null;
   /** Runs the server: may create and rename organisations (A-108). Not a role permission. */
   isSiteOwner?: boolean;
+  /** How this session was opened; only a Telegram session may switch a centre to Telegram only (A-180). */
+  signedInWith?: "PASSWORD" | "TELEGRAM";
   ip?: string | null;
 }
 

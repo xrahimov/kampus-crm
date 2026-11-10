@@ -41,6 +41,29 @@ export function setStudentCookie(response: NextResponse, token: string): void {
   });
 }
 
+/** Back to the staff sign-in page with the reason as a message key (A-180). */
+export function staffLoginErrorRedirect(
+  origin: string,
+  locale: string,
+  error: unknown,
+): NextResponse {
+  let key = "errors.staffTelegramFailed";
+  if (isAppError(error)) {
+    // The shared checks speak of the student page; on the staff page they mean the same thing.
+    key =
+      error.message === "errors.studentLoginExpired"
+        ? "errors.staffTelegramExpired"
+        : error.message === "errors.studentLoginFailed"
+          ? "errors.staffTelegramFailed"
+          : error.message === "errors.studentLoginOff"
+            ? "errors.staffTelegramOff"
+            : error.message;
+  } else console.error(error);
+  const url = new URL(`${origin}/${locale}/login`);
+  url.searchParams.set("error", key.replace(/^errors\./, ""));
+  return NextResponse.redirect(url, 303);
+}
+
 /** Back to the sign-in page with the reason as a message key. */
 export function loginErrorRedirect(origin: string, locale: string, error: unknown): NextResponse {
   let key = "errors.studentLoginFailed";

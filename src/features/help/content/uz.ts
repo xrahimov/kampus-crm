@@ -62,6 +62,7 @@ export const uz: HelpContent = {
                 "Parol noto‘g‘ri bo‘lsa, sahifa buni aytadi. Ketma-ket bir necha noto‘g‘ri urinishdan so‘ng kirish qisqa vaqtga to‘xtatiladi; kutib, qayta urinib ko‘ring.",
               ],
             },
+            "**Telegram orqali kirish.** Kirish sahifasida shu tugma ko‘rinsa, parol o‘rniga undan foydalanishingiz mumkin: Telegram telefon raqamingizni tasdiqlaydi va u xodim kartangizdagi raqam bo‘lsa, Kampus hisobingizni ochadi. Kampus bunday raqamli xodim yo‘q desa, administratordan kartangizdagi telefonni to‘g‘rilashni so‘rang. Markaz faqat Telegram orqali kirishga o‘tishi mumkin; shunda sahifada faqat shu tugma qoladi va parollar qabul qilinmaydi.",
             "Tizimdan chiqish uchun yuqori o‘ng burchakdagi ismingizni oching va **Chiqish** ni tanlang. Umumiy kompyuterlarda buni albatta qiling.",
             {
               note: "Parolni unutdingizmi? Yangi parolni faqat administrator Sozlamalar → Xodimlar bo‘limida o‘rnata oladi.",
@@ -1140,6 +1141,7 @@ export const uz: HelpContent = {
               ],
             },
             "Server egasi o‘z botini barcha markazlarga ulashgan bo‘lsa, uning kirish kalitlari o‘sha markazlarga ham xizmat qiladi, shuning uchun o‘z boti yo‘q markazga bu qadamlar kerak emas. Sayt boshqa manzilga ko‘chsa, BotFather’dagi ikkala manzilni ham o‘zgartiring.",
+            "**Xodimlar ham shu kalitlardan foydalanadi.** Kalitlar saqlangach, xodimlarning kirish sahifasida ham **Telegram orqali kirish** tugmasi chiqadi: Telegramdagi raqami xodim kartasidagi telefon bilan bir xil bo‘lgan xodim kiradi. Parollardan butunlay voz kechish uchun Sozlamalar → Umumiy sozlamalar bo‘limida **Xodimlar faqat Telegram orqali kiradi** tugmasini yoqing. Kampus uni faqat o‘zingiz Telegram orqali kirgan paytda yoqishga ruxsat beradi, shunda o‘zingizni tashqarida qoldirmaysiz; yangi xodimlarga parol kerak bo‘lmaydi. Telegram orqali kirish ishlamay qolsa, server egasi serverda STAFF_PASSWORD_LOGIN=on ni o‘rnatib, parollarni qayta yoqishi mumkin.",
             "Har bir o‘quvchi kartasida **Kampus ilovasiga kirish** bo‘limi bor: kim o‘quvchi yoki ota-ona sifatida kiradi, qanday ulangan, hamma joydan chiqarish va kirishni olib tashlash tugmalari.",
           ],
         },

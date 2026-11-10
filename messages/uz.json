@@ -81,7 +81,12 @@
     "confirmPassword": "Yangi parolni takrorlang",
     "savePassword": "Parolni saqlash",
     "passwordSaved": "Parol o‘zgartirildi. Boshqa qurilmalaringiz tizimdan chiqarildi.",
-    "passwordHint": "Kamida 8 belgi; boshqa joyda ishlatmaydigan parol bo‘lsin."
+    "passwordHint": "Kamida 8 belgi; boshqa joyda ishlatmaydigan parol bo‘lsin.",
+    "signInSubtitleBoth": "Telegram orqali kiring yoki administrator bergan telefon raqam va parolni kiriting.",
+    "signInSubtitleTelegram": "Xodimlar Telegram orqali kiradi. Telegramdagi raqamingiz xodim kartangizdagi telefon raqam bilan bir xil bo‘lishi kerak.",
+    "withTelegram": "Telegram orqali kirish",
+    "telegramHint": "Telegram telefon raqamingizni tasdiqlaydi; u xodim kartangizdagi raqam bo‘lsa, Kampus sizni kiritadi.",
+    "orPassword": "yoki parol bilan"
   },
   "account": {
     "title": "Mening hisobim",
@@ -503,7 +508,15 @@
     "trialClosed": "Bu sinov darsi endi o‘tkazilmaydi.",
     "packageUnknown": "Bunday paket yo‘q.",
     "packageInactive": "Bu paket endi sotilmaydi.",
-    "billingNotPackages": "Bu guruh paket emas, oylik to‘lov bilan ishlaydi."
+    "billingNotPackages": "Bu guruh paket emas, oylik to‘lov bilan ishlaydi.",
+    "passwordSignInOff": "Markazingizga faqat Telegram orqali kiriladi. “Telegram orqali kirish” tugmasidan foydalaning.",
+    "staffTelegramOff": "Bu manzilda Telegram orqali kirish hali sozlanmagan.",
+    "staffTelegramExpired": "Kirish juda uzoq davom etdi yoki boshqa brauzerda boshlangan. Qaytadan urinib ko‘ring.",
+    "staffTelegramFailed": "Telegram kirishni tasdiqlamadi. Qaytadan urinib ko‘ring.",
+    "staffTelegramNoPhone": "Telegram telefon raqamingizni bermadi, shuning uchun Kampus sizni taniy olmaydi. Qaytadan urinib, telefon raqamga ruxsat bering.",
+    "staffTelegramUnknown": "Bu Telegram hisobining telefon raqami hech bir xodimda yo‘q. Administratordan xodim kartangizdagi raqamni tekshirishni so‘rang.",
+    "staffTelegramOnlyNoBot": "Bu markaz uchun Telegram orqali kirish sozlanmagan, shuning uchun parollarni o‘chirib bo‘lmaydi. Avval Sozlamalar → Integratsiyalar → Telegram bo‘limida kirish kalitlarini kiriting.",
+    "staffTelegramOnlyNeedsTelegram": "Avval tizimdan chiqib, Telegram orqali kiring. Bu tugma faqat Telegram orqali kirganingizda ishlaydi, shunda o‘zingizni tashqarida qoldirmaysiz."
   },
   "validation": {
     "phone": "+998 90 123 45 67 ko‘rinishida raqam kiriting.",
@@ -828,6 +841,11 @@
         "hint": "Bitta o'quvchili guruhlarga tegishli. O'quvchi darsni boshlanishidan shuncha soat oldin o'z sahifasidan ko'chirishi yoki bekor qilishi mumkin; keyinroq dars o'tilgan hisoblanadi.",
         "hours": "Darsgacha xabar berish muddati",
         "unit": "soat"
+      },
+      "staffSignIn": {
+        "title": "Xodimlarning kirishi",
+        "hint": "Markaz botida kirish kalitlari bo‘lsa, xodimlar har doim Telegram orqali kira oladi: Telegram telefonni tasdiqlaydi va u xodim kartasidagi raqam bo‘lishi kerak. Parollarni butunlay rad etish uchun buni yoqing. Uni faqat o‘zingiz Telegram orqali kirgan paytda yoqa olasiz.",
+        "telegramOnly": "Xodimlar faqat Telegram orqali kiradi"
       }
     },
     "switches": {
@@ -1227,7 +1245,8 @@
       "signInCode": "Kirishda Telegram kodi so‘ralsin",
       "signInCodeHint": "Xodimning Telegrami Sozlamalar → Bot xabarnomalarida bo‘lishi kerak.",
       "signOutAll": "Barcha qurilmalardan chiqarish",
-      "signedOutAll": "Hamma joydan chiqarildi."
+      "signedOutAll": "Hamma joydan chiqarildi.",
+      "passwordTelegramHint": "Markazingizga faqat Telegram orqali kirilsa, bo‘sh qoldiring."
     },
     "temporaryPassword": "Vaqtinchalik parol"
   },

@@ -1,7 +1,8 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useTranslations } from "next-intl";
+import { Send } from "lucide-react";
+import { useLocale, useTranslations } from "next-intl";
 import { useSearchParams } from "next/navigation";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
@@ -40,9 +41,38 @@ function messageFor(t: ReturnType<typeof useTranslations>, error: unknown): stri
   return t("errors.internal");
 }
 
-export function LoginForm() {
+/** "Log in with Telegram" for staff (A-180): a plain link, the server does the rest. */
+function TelegramButton() {
+  const t = useTranslations();
+  const locale = useLocale();
+  const searchParams = useSearchParams();
+  const params = new URLSearchParams({ locale });
+  const next = searchParams.get("next");
+  if (next && next.startsWith("/") && !next.startsWith("//")) params.set("next", next);
+  return (
+    <Button asChild className="w-full" size="lg">
+      <a href={`/api/v1/auth/telegram/start?${params.toString()}`} data-testid="login-telegram">
+        <Send /> {t("auth.withTelegram")}
+      </a>
+    </Button>
+  );
+}
+
+export function LoginForm({
+  telegram = false,
+  password = true,
+}: {
+  /** The address has a Telegram login for staff. */
+  telegram?: boolean;
+  /** Phone and password are still accepted here. */
+  password?: boolean;
+}) {
   const t = useTranslations();
   const afterSignIn = useAfterSignIn();
+  const searchParams = useSearchParams();
+  // Telegram sent the browser back with a reason it could not sign the person in.
+  const returned = searchParams.get("error");
+  const returnedKey = returned && /^[A-Za-z]+$/.test(returned) ? `errors.${returned}` : null;
   const [serverError, setServerError] = useState<string | null>(null);
   // Set once the password was right and a Telegram code is expected (A-124).
   const [challengeId, setChallengeId] = useState<string | null>(null);
@@ -79,12 +109,40 @@ export function LoginForm() {
     );
   }
 
+  const telegramError = !serverError && returnedKey && (
+    <Alert variant="destructive" data-testid="login-telegram-error">
+      {t.has(returnedKey) ? t(returnedKey) : t("errors.staffTelegramFailed")}
+    </Alert>
+  );
+
+  if (!password) {
+    return (
+      <div className="space-y-4" data-testid="login-telegram-only">
+        {telegramError}
+        <TelegramButton />
+        <p className="text-xs text-muted-foreground">{t("auth.telegramHint")}</p>
+      </div>
+    );
+  }
+
   return (
     <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4" noValidate>
       {serverError && (
         <Alert variant="destructive" data-testid="login-error">
           {serverError}
         </Alert>
+      )}
+      {telegramError}
+      {telegram && (
+        <>
+          <TelegramButton />
+          <p className="text-xs text-muted-foreground">{t("auth.telegramHint")}</p>
+          <div className="flex items-center gap-3 text-xs text-muted-foreground">
+            <span className="h-px flex-1 bg-border" />
+            {t("auth.orPassword")}
+            <span className="h-px flex-1 bg-border" />
+          </div>
+        </>
       )}
 
       <div className="space-y-2">

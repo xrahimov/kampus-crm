@@ -59,6 +59,7 @@ export const en: HelpContent = {
                 "If the password is wrong, the page says so. After several wrong attempts in a row, sign-in pauses for a short while; wait and try again.",
               ],
             },
+            "**Log in with Telegram.** When the sign-in page shows this button you can use it instead of the password: Telegram confirms your phone number and Kampus opens your account when it is the number on your staff card. If Kampus says no staff member has that number, ask your administrator to correct the phone on your card. A centre can switch to Telegram only; the page then shows just this button and passwords are refused.",
             "To sign out, open your name in the top right corner and choose **Sign out**. Do this on shared computers.",
             {
               note: "Forgot your password? Only an administrator can set a new one, under Settings → Staff.",
@@ -1136,6 +1137,7 @@ export const en: HelpContent = {
               ],
             },
             "When the server's owner shares their bot with every centre, its login keys serve those centres too, so a centre without a bot of its own needs none of these steps. If the site moves to another address, change both addresses in BotFather.",
+            "**Staff use the same keys.** Once they are saved, the staff sign-in page shows **Log in with Telegram** as well: a staff member comes in when their Telegram number is the phone on their staff card. To refuse passwords altogether, switch on **Staff sign in with Telegram only** under Settings → General. Kampus lets you switch it on only while you are signed in with Telegram yourself, so you cannot lock yourself out; new staff then need no password. If Telegram login ever stops working, the server's owner can let passwords in again by setting STAFF_PASSWORD_LOGIN=on on the server.",
             "Each student's card shows **Kampus app sign-in**: who signs in as the student or as a parent, how they were linked, and buttons to sign them out everywhere or remove the access.",
           ],
         },
