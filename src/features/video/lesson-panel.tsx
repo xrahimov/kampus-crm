@@ -1,11 +1,23 @@
 "use client";
 
-import { BookOpen, ExternalLink, FileText, Link2, Pencil, RefreshCw, Video } from "lucide-react";
+import {
+  BookOpen,
+  ExternalLink,
+  FileText,
+  Link2,
+  Pencil,
+  Presentation,
+  RefreshCw,
+  Upload,
+  Video,
+  X,
+} from "lucide-react";
 import { useFormatter, useTranslations } from "next-intl";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
-import { api } from "@/lib/api-client";
+import { api, ApiError, uploadFile } from "@/lib/api-client";
 import { cn } from "@/lib/utils";
+import { materialView } from "@/lib/video-material";
 import type { CallLessonDto } from "@/server/services/video/call-lesson.service";
 
 import type { CallEngine } from "./call-engine";
@@ -14,8 +26,22 @@ import type { CallEngine } from "./call-engine";
  * The lesson beside the call (A-154): today's topic, the lesson's and the
  * group's materials, and the homework. The teacher can set the topic here;
  * materials and homework are managed on the group page, which opens in a new tab.
+ * The teacher can also put a material, or a file straight from the device, on
+ * everyone's stage (A-183).
  */
-export function LessonPanel({ engine }: { engine: CallEngine }) {
+
+/** What "show a file from this device" offers: the kinds the room can display itself. */
+export const SHOWABLE_ACCEPT =
+  "application/pdf,image/jpeg,image/png,image/webp,audio/mpeg,audio/mp4,audio/ogg,audio/wav,audio/webm,video/mp4,video/webm";
+
+export function LessonPanel({
+  engine,
+  onShown,
+}: {
+  engine: CallEngine;
+  /** Called after the teacher put something on the stage, so a phone can close the panel. */
+  onShown?: () => void;
+}) {
   const t = useTranslations("video.lesson");
   const format = useFormatter();
   const [data, setData] = useState<CallLessonDto | null>(null);
@@ -27,6 +53,9 @@ export function LessonPanel({ engine }: { engine: CallEngine }) {
   const [note, setNote] = useState("");
   const isHost = engine.self.role === "HOST";
   const isStudent = engine.self.role === "STUDENT";
+  const fileRef = useRef<HTMLInputElement>(null);
+  const [upload, setUpload] = useState<"idle" | "busy" | "failed" | "type" | "size">("idle");
+  const shownId = engine.currentStage.material?.id ?? null;
 
   // Re-fetched when this counter moves (open, Refresh, after saving the topic).
   const [reloads, setReloads] = useState(0);
@@ -55,6 +84,49 @@ export function LessonPanel({ engine }: { engine: CallEngine }) {
       alive = false;
     };
   }, [engine, reloads]);
+
+  /** A file from the teacher's device: saved as a material of the lesson, then shown. */
+  const showFile = async (file: File | undefined) => {
+    if (!file) return;
+    setUpload("busy");
+    try {
+      const stored = await uploadFile(file, "/uploads/documents");
+      const created = await api<{ id: string; title: string; url: string }>(
+        `/groups/${engine.self.groupId}/materials`,
+        {
+          method: "POST",
+          body: {
+            lessonId: engine.self.lessonId,
+            kind: "FILE",
+            // "Unit 3.pdf" is shown as "Unit 3".
+            title: (file.name.replace(/\.[A-Za-z0-9]{1,5}$/, "").trim() || file.name).slice(0, 200),
+            url: stored.url,
+          },
+        },
+      );
+      engine.showMaterial({
+        id: created.id,
+        title: created.title,
+        kind: "FILE",
+        view: materialView("FILE", created.url),
+        url: created.url,
+      });
+      setUpload("idle");
+      load();
+      onShown?.();
+    } catch (e) {
+      const key = e instanceof ApiError ? (e.fields?.file?.[0] ?? "") : "";
+      setUpload(
+        key.endsWith("attachmentType")
+          ? "type"
+          : key.endsWith("attachmentSize")
+            ? "size"
+            : "failed",
+      );
+    } finally {
+      if (fileRef.current) fileRef.current.value = "";
+    }
+  };
 
   const saveNote = async () => {
     if (!data?.lesson) return;
@@ -292,17 +364,62 @@ export function LessonPanel({ engine }: { engine: CallEngine }) {
             </a>
           )}
         </div>
+        {isHost && (
+          <div className="mt-1.5 space-y-1">
+            <input
+              ref={fileRef}
+              type="file"
+              accept={SHOWABLE_ACCEPT}
+              className="sr-only"
+              tabIndex={-1}
+              aria-hidden
+              onChange={(e) => void showFile(e.target.files?.[0])}
+              data-testid="lesson-show-file-input"
+            />
+            <button
+              type="button"
+              onClick={() => fileRef.current?.click()}
+              disabled={upload === "busy"}
+              className="flex min-h-10 w-full items-center justify-center gap-2 rounded-md bg-sidebar-active px-3 py-2 text-sm font-medium text-white hover:bg-sidebar-active/80 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white disabled:opacity-60"
+              data-testid="lesson-show-file"
+            >
+              <Upload className="size-4 shrink-0" />
+              {upload === "busy" ? t("uploading") : t("showFile")}
+            </button>
+            <p
+              className={cn("text-xs", upload === "idle" || upload === "busy" ? "opacity-60" : "")}
+              role={upload === "idle" || upload === "busy" ? undefined : "alert"}
+              data-testid="lesson-show-file-note"
+            >
+              {upload === "type"
+                ? t("showFileType")
+                : upload === "size"
+                  ? t("showFileSize")
+                  : upload === "failed"
+                    ? t("showFileFailed")
+                    : t("showFileHint")}
+            </p>
+          </div>
+        )}
         {data.materials.length === 0 ? (
           <p className="mt-1 text-xs opacity-60">{t("noMaterials")}</p>
         ) : (
           <ul className="mt-1 space-y-1" data-testid="lesson-materials">
             {data.materials.map((m) => (
-              <li key={m.id}>
+              <li
+                key={m.id}
+                className={cn(
+                  "flex items-center gap-1 rounded-md",
+                  shownId === m.id && "bg-sidebar ring-1 ring-sidebar-active",
+                )}
+                data-testid="lesson-material"
+                data-shown={shownId === m.id || undefined}
+              >
                 <a
                   href={m.url}
                   target="_blank"
                   rel="noreferrer"
-                  className="flex items-center gap-2 rounded-md px-2 py-1.5 hover:bg-sidebar"
+                  className="flex min-w-0 flex-1 items-center gap-2 rounded-md px-2 py-1.5 hover:bg-sidebar"
                 >
                   {m.kind === "LINK" ? (
                     <Link2 className="size-3.5 shrink-0" />
@@ -314,6 +431,47 @@ export function LessonPanel({ engine }: { engine: CallEngine }) {
                   <span className="min-w-0 flex-1 truncate text-white">{m.title}</span>
                   {m.general && <span className="shrink-0 text-xs opacity-60">{t("general")}</span>}
                 </a>
+                {isHost && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (shownId === m.id) {
+                        engine.hideMaterial();
+                        return;
+                      }
+                      engine.showMaterial({
+                        id: m.id,
+                        title: m.title,
+                        kind: m.kind,
+                        view: materialView(m.kind, m.url),
+                        url: m.url,
+                      });
+                      onShown?.();
+                    }}
+                    aria-pressed={shownId === m.id}
+                    aria-label={
+                      shownId === m.id
+                        ? t("stopShowing", { title: m.title })
+                        : t("show", { title: m.title })
+                    }
+                    title={
+                      shownId === m.id
+                        ? t("stopShowing", { title: m.title })
+                        : t("show", { title: m.title })
+                    }
+                    className={cn(
+                      "grid size-8 shrink-0 place-items-center rounded-md hover:bg-sidebar hover:text-white focus-visible:outline-2 focus-visible:outline-sidebar-active pointer-coarse:size-10",
+                      shownId === m.id && "text-sidebar-active",
+                    )}
+                    data-testid="lesson-material-show"
+                  >
+                    {shownId === m.id ? (
+                      <X className="size-4" />
+                    ) : (
+                      <Presentation className="size-4" />
+                    )}
+                  </button>
+                )}
               </li>
             ))}
           </ul>

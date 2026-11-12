@@ -13,3 +13,4 @@ CLAUDE.md
 
 # Vendored skills are kept byte-identical to upstream
 .claude/skills/
+public/pdfjs

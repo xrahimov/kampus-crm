@@ -3047,6 +3047,9 @@ model VideoRoom {
   focusMode      Boolean         @default(false)
   /// The shared whiteboard is on everyone's stage (A-155).
   boardOpen      Boolean         @default(false)
+  /// The material the teacher shows on everyone's stage (A-183):
+  /// `{ id, page, playing, position, at }`; null = nothing shown.
+  shownMaterial  Json?
   /// Breakout rooms (A-156): how many sub-rooms are open (0 = none) and when they close by themselves.
   breakoutRooms  Int             @default(0)
   breakoutEndsAt DateTime?

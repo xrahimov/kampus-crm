@@ -5,7 +5,7 @@
  * homework and balance it saw. Everything else, the staff app above all, goes
  * straight to the network as before.
  */
-const VERSION = "student-v1";
+const VERSION = "student-v2";
 const PAGES = `${VERSION}-pages`;
 const ASSETS = `${VERSION}-assets`;
 const STUDENT_PATH = /^\/(uz|ru|en)\/(class|student|family)(\/|$)/;
@@ -34,7 +34,8 @@ async function networkFirst(cacheName, request) {
   const cache = await caches.open(cacheName);
   try {
     const response = await fetch(request);
-    if (response.ok) await cache.put(request, response.clone());
+    // Only whole answers are kept: a cache refuses a partial one (206).
+    if (response.status === 200) await cache.put(request, response.clone());
     return response;
   } catch (error) {
     const cached = await cache.match(request, { ignoreSearch: true });
@@ -69,6 +70,10 @@ self.addEventListener("fetch", (event) => {
   // The pages' own data calls (the call status, homework, chat) come from the
   // network and are kept for the offline view of the same page.
   if (url.pathname.startsWith("/api/v1/public/class/")) {
+    // Files (recordings, materials, audio) go straight to the network: a player
+    // asks for byte ranges, which the cache cannot keep, and a recording is far
+    // too large to store for the offline view (A-184).
+    if (url.pathname.includes("/files/") || request.headers.has("range")) return;
     event.respondWith(networkFirst(PAGES, request));
   }
 });

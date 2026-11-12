@@ -13,7 +13,7 @@ assumptions, and lists the few items left out on purpose. Decisions that go beyo
 are numbered in [docs/ASSUMPTIONS.md](docs/ASSUMPTIONS.md); the ones still marked **OPEN** need an
 answer from the product owner before the behaviour is treated as final.
 
-Everything built since then (PRs #13 to #107, as of 2026-11-12) goes beyond the reference: video
+Everything built since then (PRs #13 to #108, as of 2026-11-12) goes beyond the reference: video
 lessons with recordings, pages and sign-in for students and parents, homework, online payments,
 several organisations on one server, the round-2 items and the online-lesson tools up to lesson
 packages. Each addition is one row in [docs/ASSUMPTIONS.md](docs/ASSUMPTIONS.md) from A-100 onwards,
@@ -44,7 +44,7 @@ GitHub Actions
 | Reports              | Payments, student payments, left students, graduates, staff attendance, coins, leads, students, center statistics; Excel on every report                                                                                                                                                                |
 | Settings             | General switches, payment methods, courses, rooms, days off, schools, grading systems, receipt layout, SMS templates and auto-SMS, logs                                                                                                                                                                 |
 | Integrations         | Eskiz SMS, Telegram bot notifications, AmoCRM lead push, telephony webhook with click-to-call, FaceID webhook with staff attendance                                                                                                                                                                     |
-| Online lessons       | Video lessons in the browser with recordings and streaming copies, attendance from the call, polls, whiteboard, breakout rooms, hand queue, the lesson beside the call, 1:1 self-booking, no-shows and ratings; works by touch on tablets, with a camera switch where the browser cannot share a screen |
+| Online lessons       | Video lessons in the browser with recordings and streaming copies, attendance from the call, polls, whiteboard, showing a file to everyone, breakout rooms, hand queue, the lesson beside the call, 1:1 self-booking, no-shows and ratings; works by touch on a phone or a tablet, with a camera switch |
 | Students and parents | Sign-in at `/student` with Telegram (phone match, no passwords), personal and family pages, homework and tests, self-study content with exercises and a vocabulary trainer, badges, class stream, group chat, installable app with web push                                                             |
 | Billing              | Monthly fees with discounts and instalments, or lesson packages per group (one credit per attended lesson); online payments through Payme and Click; cashier day close; debt collection                                                                                                                 |
 | Organisations        | Several centres on one server with a site-owner console, a centre's own address, a Telegram bot shared with every centre or one per centre, importers for a centre moving from another CRM                                                                                                              |
@@ -132,6 +132,7 @@ src/features/<module>/  client UI per module: tables, dialogs, forms, charts
 src/lib/                shared by client and server: zod schemas, rbac catalogue, api client, dates
 src/server/             auth, rbac, audit, errors, http helpers, services, jobs, excel, storage, db
 scripts/worker.ts       background job worker
+scripts/copy-pdf-worker.mjs  copies the PDF reader's worker into public/pdfjs after a pdfjs-dist update
 tests/unit, tests/e2e   Vitest and Playwright suites
 docs/                   ARCHITECTURE.md, ASSUMPTIONS.md, DEPLOY.md, EXPLORATION.md, TRACEABILITY.md
 ```

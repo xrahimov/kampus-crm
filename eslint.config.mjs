@@ -25,6 +25,8 @@ const eslintConfig = defineConfig([
     "playwright-report/**",
     "test-results/**",
     "coverage/**",
+    // The PDF reader's worker, copied from pdfjs-dist (scripts/copy-pdf-worker.mjs).
+    "public/pdfjs/**",
   ]),
 ]);
 

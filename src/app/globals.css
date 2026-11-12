@@ -3,6 +3,8 @@
 @import "@fontsource-variable/onest";
 
 @custom-variant dark (&:is(.dark *));
+/* A phone held sideways: little height, so the video room trims its bars (A-184). */
+@custom-variant short (@media (orientation: landscape) and (max-height: 520px));
 
 /*
  * Kampus design tokens. Samarkand palette: lapis ink for structure (the

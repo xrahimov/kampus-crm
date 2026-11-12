@@ -43,9 +43,25 @@ export interface CallLessonDto {
 
 const MAX_MATERIALS = 30;
 
-function fileUrl(token: string | null, url: string | null): string | null {
+/** A stored file's address for this participant: students go through their personal link (A-105). */
+export function fileUrl(token: string | null, url: string | null): string | null {
   if (!url || !token || !url.startsWith("/api/v1/files/")) return url;
   return `/api/v1/public/class/${encodeURIComponent(token)}/files/${url.slice("/api/v1/files/".length)}`;
+}
+
+/** The personal-link token a student's file addresses are built with; null for staff. */
+export async function studentFileToken(
+  db: DbClient,
+  me: { role: string; studentId: string | null },
+  groupId: string,
+): Promise<string | null> {
+  if (me.role !== "STUDENT" || !me.studentId) return null;
+  const membership = await db.groupMembership.findFirst({
+    where: { groupId, studentId: me.studentId },
+    select: { videoToken: true },
+    orderBy: { createdAt: "desc" },
+  });
+  return membership?.videoToken ?? null;
 }
 
 /** What the lesson panel shows this participant; the secret proves the browser's seat in the call. */
@@ -78,17 +94,7 @@ export async function getCallLesson(
   if (!me || !safeEqual(sha256(secret), me.secretHash)) throw AppError.forbidden();
   if (me.leftAt || me.room.status !== "LIVE") throw AppError.conflict("errors.videoEnded");
   const lesson = me.room.lesson;
-  // A student's files go through their personal link (A-105).
-  const token =
-    me.role === "STUDENT" && me.studentId
-      ? ((
-          await db.groupMembership.findFirst({
-            where: { groupId: me.room.groupId, studentId: me.studentId },
-            select: { videoToken: true },
-            orderBy: { createdAt: "desc" },
-          })
-        )?.videoToken ?? null)
-      : null;
+  const token = await studentFileToken(db, me, me.room.groupId);
   const [materials, homework] = await Promise.all([
     db.lessonMaterial.findMany({
       where: {
