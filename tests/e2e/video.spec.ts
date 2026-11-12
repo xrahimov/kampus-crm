@@ -284,6 +284,57 @@ test.describe("video lessons", () => {
     await teacherContext.close();
   });
 
+  test("on a tablet without screen capture the room explains and offers the whiteboard", async ({
+    browser,
+  }) => {
+    test.setTimeout(90_000);
+    // An iPad in portrait: touch, no getDisplayMedia (A-181).
+    const context = await browser.newContext({
+      viewport: { width: 820, height: 1180 },
+      hasTouch: true,
+    });
+    await context.addInitScript(() => {
+      Object.defineProperty(MediaDevices.prototype, "getDisplayMedia", { value: undefined });
+    });
+    const teacher = await context.newPage();
+    await signIn(teacher, TEACHER_PHONE);
+    await teacher.goto("/en/groups");
+    await teacher.getByRole("link", { name: "GE-Morning A1" }).first().click();
+    const card = teacher.getByTestId("group-video");
+    const start = card.getByTestId("video-start");
+    await expect(start.or(card.getByTestId("video-join"))).toBeVisible();
+    if (await start.isVisible()) {
+      await start.click();
+    } else {
+      await card.getByTestId("video-join").click();
+    }
+    await expect(teacher.getByTestId("join-call")).toBeEnabled({ timeout: 20_000 });
+    await teacher.getByTestId("join-call").click();
+    await expect(teacher.getByTestId("call-room")).toBeVisible();
+
+    await expect(teacher.getByTestId("toggle-share")).toHaveCount(0);
+    // Chromium's fake device is a single camera, so there is nothing to switch to.
+    await expect(teacher.getByTestId("switch-camera")).toHaveCount(0);
+    await teacher.getByTestId("share-unavailable-button").click();
+    const notice = teacher.getByTestId("share-unavailable");
+    await expect(notice).toContainText("This browser cannot share the screen");
+    await notice.getByTestId("share-use-board").click();
+    await expect(notice).toHaveCount(0);
+    await expect(teacher.getByTestId("whiteboard")).toBeVisible();
+    await teacher.getByTestId("toggle-board").click();
+    await teacher.getByTestId("share-unavailable-button").click();
+    await notice.getByTestId("share-use-lesson").click();
+    await expect(teacher.getByTestId("lesson-panel")).toBeVisible();
+
+    await teacher.getByTestId("end-call").click();
+    await teacher
+      .getByRole("alertdialog")
+      .getByRole("button", { name: "End for everyone" })
+      .click();
+    await expect(teacher.getByTestId("call-done")).toContainText("The video lesson has ended.");
+    await context.close();
+  });
+
   test("a wrong class link shows the not-found page", async ({ page }) => {
     const response = await page.goto("/en/class/this-link-does-not-exist-000");
     expect(response?.status()).toBe(404);

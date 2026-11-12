@@ -11,6 +11,7 @@ import {
   MessageSquare,
   Mic,
   MicOff,
+  MonitorOff,
   MonitorUp,
   MonitorX,
   PenLine,
@@ -19,6 +20,7 @@ import {
   SmilePlus,
   Square,
   Star,
+  SwitchCamera,
   Users,
   Video,
   VideoOff,
@@ -78,6 +80,8 @@ export function CallRoom({
   const [reactionsOpen, setReactionsOpen] = useState(false);
   const canShare =
     typeof navigator !== "undefined" && Boolean(navigator.mediaDevices?.getDisplayMedia);
+  // Where the browser cannot share a screen (iPads and phones, A-181), the button explains.
+  const [shareHelp, setShareHelp] = useState(false);
   const [recorder, setRecorder] = useState<CallRecorder | null>(null);
   const [saving, setSaving] = useState(false);
   const [recordNotice, setRecordNotice] = useState<"saved" | "failed" | null>(null);
@@ -490,6 +494,55 @@ export function CallRoom({
         </p>
       )}
 
+      {shareHelp && (
+        <div
+          className="mx-4 mb-2 flex flex-wrap items-center justify-center gap-2 rounded-md bg-sidebar-muted px-3 py-2 text-center text-sm text-white"
+          role="status"
+          data-testid="share-unavailable"
+        >
+          <span>{t("shareUnavailable")}</span>
+          {isHost && (
+            <NoticeAction
+              onClick={() => {
+                engine.setStage({ board: true });
+                setShareHelp(false);
+              }}
+              testId="share-use-board"
+            >
+              {t("shareUseBoard")}
+            </NoticeAction>
+          )}
+          <NoticeAction
+            onClick={() => {
+              setPanel("lesson");
+              setShareHelp(false);
+            }}
+            testId="share-use-lesson"
+          >
+            {t("shareUseLesson")}
+          </NoticeAction>
+          {engine.canSwitchCamera && (
+            <NoticeAction
+              onClick={() => {
+                void engine.switchCamera();
+                setShareHelp(false);
+              }}
+              testId="share-use-camera"
+            >
+              {t("switchCamera")}
+            </NoticeAction>
+          )}
+          <button
+            type="button"
+            onClick={() => setShareHelp(false)}
+            aria-label={t("dismiss")}
+            className="grid size-8 place-items-center rounded-md hover:bg-sidebar focus-visible:outline-2 focus-visible:outline-sidebar-active"
+          >
+            <X className="size-4" />
+          </button>
+        </div>
+      )}
+
       {/* Students hidden by focus mode are still heard. */}
       {peers
         .filter((p) => hidden.has(p.id))
@@ -749,14 +802,34 @@ export function CallRoom({
             {recorder ? <Square /> : <Circle />}
           </ControlButton>
         )}
-        {canShare && (
+        {engine.canSwitchCamera && (
+          <ControlButton
+            active
+            disabled={!media.video}
+            onClick={() => void engine.switchCamera()}
+            label={t("switchCamera")}
+            testId="switch-camera"
+          >
+            <SwitchCamera />
+          </ControlButton>
+        )}
+        {canShare ? (
           <ControlButton
             active={!media.screen}
             onClick={() => void (media.screen ? engine.stopScreen() : engine.shareScreen())}
             label={media.screen ? t("stopSharing") : t("shareScreen")}
-            className="hidden sm:inline-flex"
+            testId="toggle-share"
           >
             {media.screen ? <MonitorX /> : <MonitorUp />}
+          </ControlButton>
+        ) : (
+          <ControlButton
+            active={!shareHelp}
+            onClick={() => setShareHelp((v) => !v)}
+            label={t("shareUnavailableButton")}
+            testId="share-unavailable-button"
+          >
+            <MonitorOff />
           </ControlButton>
         )}
         <button
@@ -815,9 +888,31 @@ function HeaderButton({
       aria-expanded={active}
       data-testid={testId}
       className={cn(
-        "flex items-center gap-2 rounded-md px-3 py-1.5 text-sm hover:bg-sidebar-muted focus-visible:outline-2 focus-visible:outline-sidebar-active",
+        "flex items-center gap-2 rounded-md px-3 py-1.5 text-sm hover:bg-sidebar-muted focus-visible:outline-2 focus-visible:outline-sidebar-active pointer-coarse:min-h-10 pointer-coarse:px-3.5",
         active && "bg-sidebar-muted text-white",
       )}
+    >
+      {children}
+    </button>
+  );
+}
+
+/** A small action inside a notice bar. */
+function NoticeAction({
+  onClick,
+  testId,
+  children,
+}: {
+  onClick: () => void;
+  testId: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      data-testid={testId}
+      className="rounded-md bg-white/10 px-3 py-1.5 font-medium text-white hover:bg-white/20 focus-visible:outline-2 focus-visible:outline-sidebar-active"
     >
       {children}
     </button>

@@ -111,6 +111,8 @@ export class CallEngine {
   private local: MediaStream;
   private camera: MediaStreamTrack | null;
   private screen: MediaStreamTrack | null = null;
+  /** Video inputs the browser lists; more than one lets the camera switch (A-181). */
+  private cameraIds: string[] = [];
   media: MediaState;
   chat: ChatMessage[] = [];
   /** Chat lines received while the panel was closed. */
@@ -168,6 +170,23 @@ export class CallEngine {
       screen: false,
       hand: false,
     };
+    void this.listCameras();
+  }
+
+  private async listCameras(): Promise<void> {
+    if (!navigator.mediaDevices?.enumerateDevices) return;
+    try {
+      const devices = await navigator.mediaDevices.enumerateDevices();
+      this.cameraIds = devices.filter((d) => d.kind === "videoinput").map((d) => d.deviceId);
+      this.onChange();
+    } catch {
+      // No device list; the switch button stays away.
+    }
+  }
+
+  /** True with a camera in hand and another to switch to (front and back on a tablet). */
+  get canSwitchCamera(): boolean {
+    return this.camera !== null && this.cameraIds.length > 1 && !this.screen;
   }
 
   subscribe = (listener: () => void): (() => void) => {
@@ -490,6 +509,38 @@ export class CallEngine {
       setTimeout(() => this.onChange(), PACE_WINDOW_MS + 50);
     }
     this.onChange();
+  }
+
+  /**
+   * Switches to the next camera (A-181): on a tablet or phone from the front camera to the
+   * back one, which stands in for screen sharing where the browser has none. The current
+   * camera is stopped first, since phones allow one open camera at a time.
+   */
+  async switchCamera(): Promise<void> {
+    if (!this.canSwitchCamera || !this.camera) return;
+    const currentId = this.camera.getSettings().deviceId ?? null;
+    const nextId = nextCameraId(this.cameraIds, currentId);
+    if (!nextId) return;
+    const wanted = this.media.video;
+    this.camera.stop();
+    let track: MediaStreamTrack | null = null;
+    for (const id of [nextId, currentId]) {
+      if (!id) continue;
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({
+          video: { ...cameraConstraints(this.self.role), deviceId: { exact: id } },
+        });
+        track = stream.getVideoTracks()[0] ?? null;
+        if (track) break;
+      } catch {
+        // Try the camera we had.
+      }
+    }
+    if (track) track.enabled = wanted;
+    this.camera = track;
+    await this.replaceVideo(track);
+    this.media = { ...this.media, video: wanted && track !== null };
+    this.changed(true);
   }
 
   /** Sends the screen instead of the camera until sharing stops. */
@@ -860,10 +911,7 @@ export async function openLocalMedia(
 ): Promise<{ stream: MediaStream; denied: boolean }> {
   const stream = new MediaStream();
   if (!navigator.mediaDevices?.getUserMedia) return { stream, denied: true };
-  const video: MediaTrackConstraints =
-    role === "STUDENT"
-      ? { width: { ideal: 480 }, height: { ideal: 360 }, frameRate: { ideal: 15, max: 20 } }
-      : { width: { ideal: 960 }, height: { ideal: 540 }, frameRate: { ideal: 24, max: 30 } };
+  const video = cameraConstraints(role);
   const audio: MediaTrackConstraints = { echoCancellation: true, noiseSuppression: true };
   let denied = false;
   for (const [kind, constraints] of [
@@ -881,4 +929,18 @@ export async function openLocalMedia(
     }
   }
   return { stream, denied };
+}
+
+/** The camera picture each role sends: students small, teachers sharper. */
+export function cameraConstraints(role: PeerDto["role"]): MediaTrackConstraints {
+  return role === "STUDENT"
+    ? { width: { ideal: 480 }, height: { ideal: 360 }, frameRate: { ideal: 15, max: 20 } }
+    : { width: { ideal: 960 }, height: { ideal: 540 }, frameRate: { ideal: 24, max: 30 } };
+}
+
+/** The camera after the current one in the browser's list, wrapping around; null with one camera. */
+export function nextCameraId(ids: readonly string[], currentId: string | null): string | null {
+  if (ids.length < 2) return null;
+  const at = currentId ? ids.indexOf(currentId) : -1;
+  return ids[(at + 1) % ids.length] ?? null;
 }
