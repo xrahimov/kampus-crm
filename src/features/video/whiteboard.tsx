@@ -161,7 +161,7 @@ export function Whiteboard({
   };
 
   const tool =
-    "grid size-8 place-items-center rounded-md text-sidebar hover:bg-black/10 focus-visible:outline-2 focus-visible:outline-sidebar-active disabled:opacity-40";
+    "grid size-8 place-items-center rounded-md text-sidebar hover:bg-black/10 focus-visible:outline-2 focus-visible:outline-sidebar-active disabled:opacity-40 pointer-coarse:size-10";
 
   return (
     <div
@@ -182,7 +182,7 @@ export function Whiteboard({
                 aria-label={t("color")}
                 aria-pressed={!erase && color === c}
                 className={cn(
-                  "grid size-8 place-items-center rounded-md hover:bg-black/10",
+                  "grid size-8 place-items-center rounded-md hover:bg-black/10 pointer-coarse:size-10",
                   !erase && color === c && "bg-black/10",
                 )}
               >

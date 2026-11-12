@@ -179,7 +179,7 @@ export function VideoTile({
           aria-pressed={pinned}
           aria-label={pinned ? t("unpin") : t("pin")}
           className={cn(
-            "absolute top-2 right-2 grid size-8 place-items-center rounded-md bg-black/45 text-white opacity-0 transition-opacity group-hover/tile:opacity-100 focus-visible:opacity-100 focus-visible:outline-2 focus-visible:outline-sidebar-active",
+            "absolute top-2 right-2 grid size-8 place-items-center rounded-md bg-black/45 text-white opacity-0 transition-opacity group-hover/tile:opacity-100 pointer-coarse:opacity-100 focus-visible:opacity-100 focus-visible:outline-2 focus-visible:outline-sidebar-active",
             pinned && "opacity-100",
           )}
         >
