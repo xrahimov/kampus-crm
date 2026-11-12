@@ -46,6 +46,8 @@ export interface HelpSectionSpec {
   id: string;
   /** File under /help/<locale>/, without extension. */
   screenshot?: string;
+  /** Further pictures of the same section, shown after its text. */
+  more?: readonly string[];
 }
 
 export interface HelpArticleSpec {
@@ -81,7 +83,7 @@ export const HELP_ARTICLES = [
       { id: "branchAndLanguage" },
       { id: "notifications", screenshot: "notifications" },
       { id: "roles" },
-      { id: "account" },
+      { id: "account", screenshot: "account" },
       { id: "mySalary", screenshot: "my-salary" },
       { id: "help", screenshot: "help" },
     ],
@@ -116,7 +118,7 @@ export const HELP_ARTICLES = [
       { id: "waitlist", screenshot: "waitlist" },
       { id: "inbox" },
       { id: "sources", screenshot: "lead-sources" },
-      { id: "forms" },
+      { id: "forms", screenshot: "web-form" },
     ],
   },
   {
@@ -130,7 +132,7 @@ export const HELP_ARTICLES = [
       { id: "create", screenshot: "group-form" },
       { id: "detail", screenshot: "group-detail" },
       { id: "members", screenshot: "group-members" },
-      { id: "tabs" },
+      { id: "tabs", screenshot: "group-packages" },
       { id: "changes" },
       { id: "timetable", screenshot: "timetable" },
     ],
@@ -160,11 +162,15 @@ export const HELP_ARTICLES = [
       { id: "attendance", screenshot: "attendance" },
       { id: "grades", screenshot: "grades" },
       { id: "homework", screenshot: "homework" },
-      { id: "checking" },
-      { id: "stream" },
-      { id: "chat" },
+      { id: "checking", screenshot: "checking" },
+      { id: "stream", screenshot: "stream" },
+      { id: "chat", screenshot: "group-chat" },
       { id: "materials", screenshot: "materials" },
-      { id: "video", screenshot: "video-card" },
+      {
+        id: "video",
+        screenshot: "video-card",
+        more: ["video-room", "video-show-file", "video-whiteboard", "video-poll"],
+      },
       { id: "links", screenshot: "student-links" },
       { id: "coins" },
       { id: "tests" },
@@ -330,7 +336,7 @@ export const HELP_ARTICLES = [
       { id: "overview", screenshot: "integrations" },
       { id: "sms" },
       { id: "telegram", screenshot: "bot-recipients" },
-      { id: "telegramLogin" },
+      { id: "telegramLogin", screenshot: "student-login" },
       { id: "amocrm" },
       { id: "telephony" },
       { id: "faceId" },
@@ -367,18 +373,18 @@ export const HELP_ARTICLES = [
     isPublic: true,
     sections: [
       { id: "link", screenshot: "portal" },
-      { id: "signIn" },
-      { id: "family" },
-      { id: "lesson", screenshot: "portal-lesson" },
-      { id: "lessons" },
+      { id: "signIn", screenshot: "student-login" },
+      { id: "family", screenshot: "family-page" },
+      { id: "lesson", screenshot: "portal-lesson", more: ["portal-video-phone"] },
+      { id: "lessons", screenshot: "portal-lessons" },
       { id: "homework", screenshot: "portal-homework" },
-      { id: "chat" },
-      { id: "materials" },
+      { id: "chat", screenshot: "portal-chat" },
+      { id: "materials", screenshot: "portal-materials" },
       { id: "course" },
       { id: "money", screenshot: "portal-money" },
       { id: "tests", screenshot: "portal-tests" },
-      { id: "results" },
-      { id: "stream" },
+      { id: "results", screenshot: "portal-results" },
+      { id: "stream", screenshot: "portal-stream" },
       { id: "telegram" },
       { id: "weekly" },
     ],

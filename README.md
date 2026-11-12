@@ -13,11 +13,14 @@ assumptions, and lists the few items left out on purpose. Decisions that go beyo
 are numbered in [docs/ASSUMPTIONS.md](docs/ASSUMPTIONS.md); the ones still marked **OPEN** need an
 answer from the product owner before the behaviour is treated as final.
 
-Everything built since then (PRs #13 to #109, as of 2026-11-12) goes beyond the reference: video
+Everything built since then (PRs #13 to #111, as of 2026-11-12) goes beyond the reference: video
 lessons with recordings, pages and sign-in for students and parents, homework, online payments,
 several organisations on one server, the round-2 items and the online-lesson tools up to lesson
 packages. Each addition is one row in [docs/ASSUMPTIONS.md](docs/ASSUMPTIONS.md) from A-100 onwards,
 and its "Where things stand now" section gives the short version.
+
+[docs/DEMO-GUIDE.md](docs/DEMO-GUIDE.md) is a script for showing the whole app to a centre's owner or
+its teachers, stop by stop, with the manual's own screenshots.
 
 Docs are part of every change: a change adds or edits its row in ASSUMPTIONS.md, the in-app help in
 uz, ru and en when a page or a setup step changes, and [docs/DEPLOY.md](docs/DEPLOY.md) when the
@@ -95,21 +98,21 @@ app and its tests run without any external account. Webhooks: `POST /api/v1/webh
 
 ## Scripts
 
-| Script                     | What it does                                                                        |
-| -------------------------- | ----------------------------------------------------------------------------------- |
-| `npm run dev`              | Dev server                                                                          |
-| `npm run build`            | Production build (standalone output)                                                |
-| `npm run lint`             | ESLint                                                                              |
-| `npm run format:check`     | Prettier check (`npm run format` to fix)                                            |
-| `npm run typecheck`        | `tsc --noEmit`                                                                      |
-| `npm test`                 | Vitest unit + DB integration tests                                                  |
-| `npm run test:e2e`         | Playwright end-to-end tests (needs a database)                                      |
-| `npm run db:migrate`       | Create/apply a migration in development                                             |
-| `npm run db:deploy`        | Apply committed migrations                                                          |
-| `npm run db:seed`          | Load fake demo data                                                                 |
-| `npm run db:bootstrap`     | First-start setup from `BOOTSTRAP_*` variables                                      |
-| `npm run worker`           | Background job worker                                                               |
-| `npm run help:screenshots` | Re-takes the manual's screenshots from a seeded local run (`public/help/<locale>/`) |
+| Script                     | What it does                                                                                                                       |
+| -------------------------- | ---------------------------------------------------------------------------------------------------------------------------------- |
+| `npm run dev`              | Dev server                                                                                                                         |
+| `npm run build`            | Production build (standalone output)                                                                                               |
+| `npm run lint`             | ESLint                                                                                                                             |
+| `npm run format:check`     | Prettier check (`npm run format` to fix)                                                                                           |
+| `npm run typecheck`        | `tsc --noEmit`                                                                                                                     |
+| `npm test`                 | Vitest unit + DB integration tests                                                                                                 |
+| `npm run test:e2e`         | Playwright end-to-end tests (needs a database)                                                                                     |
+| `npm run db:migrate`       | Create/apply a migration in development                                                                                            |
+| `npm run db:deploy`        | Apply committed migrations                                                                                                         |
+| `npm run db:seed`          | Load fake demo data                                                                                                                |
+| `npm run db:bootstrap`     | First-start setup from `BOOTSTRAP_*` variables                                                                                     |
+| `npm run worker`           | Background job worker                                                                                                              |
+| `npm run help:screenshots` | Re-takes the manual's screenshots from a seeded local run (`public/help/<locale>/`); start the server with `TELEGRAM_LOGIN_FAKE=1` |
 
 ## Testing and CI
 
@@ -134,7 +137,7 @@ src/server/             auth, rbac, audit, errors, http helpers, services, jobs,
 scripts/worker.ts       background job worker
 scripts/copy-pdf-worker.mjs  copies the PDF reader's worker into public/pdfjs after a pdfjs-dist update
 tests/unit, tests/e2e   Vitest and Playwright suites
-docs/                   ARCHITECTURE.md, ASSUMPTIONS.md, DEPLOY.md, EXPLORATION.md, TRACEABILITY.md
+docs/                   ARCHITECTURE.md, ASSUMPTIONS.md, DEMO-GUIDE.md, DEPLOY.md, EXPLORATION.md, TRACEABILITY.md
 ```
 
 Layering rule: UI → `/api/v1` route → `server/services` → Prisma. Components never import from

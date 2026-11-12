@@ -54,15 +54,15 @@ export const uz: HelpContent = {
         signIn: {
           title: "Tizimga kirish",
           body: [
-            "Administratoringiz sizga hisob yaratadi va kirish uchun telefon raqam va parolni aytadi. Kampusni kompyuter, planshet yoki telefondagi brauzerda oching; hech narsa o‘rnatish kerak emas.",
+            "Administratoringiz telefon raqamingiz bilan sizga hisob yaratadi. Kampusni kompyuter, planshet yoki telefondagi brauzerda oching; hech narsa o‘rnatish kerak emas. Tizimga Telegram orqali kirasiz.",
             {
               steps: [
-                "Telefon raqamingizni +998 90 123 45 67 ko‘rinishida kiriting.",
-                "Parolingizni kiriting va **Kirish** tugmasini bosing.",
-                "Parol noto‘g‘ri bo‘lsa, sahifa buni aytadi. Ketma-ket bir necha noto‘g‘ri urinishdan so‘ng kirish qisqa vaqtga to‘xtatiladi; kutib, qayta urinib ko‘ring.",
+                "**Telegram orqali kirish** tugmasini bosing.",
+                "Telegram tasdiqlashni so‘raydi; telefon raqamingizni ulashishga rozilik bering.",
+                "Bu raqam xodim kartangizdagi telefon raqam bo‘lsa, Kampus hisobingizni ochadi. Kampus bunday raqamli xodim yo‘q desa, administratordan kartangizdagi telefonni to‘g‘rilashni so‘rang.",
               ],
             },
-            "**Telegram orqali kirish.** Kirish sahifasida shu tugma ko‘rinsa, parol o‘rniga undan foydalanishingiz mumkin: Telegram telefon raqamingizni tasdiqlaydi va u xodim kartangizdagi raqam bo‘lsa, Kampus hisobingizni ochadi. Kampus bunday raqamli xodim yo‘q desa, administratordan kartangizdagi telefonni to‘g‘rilashni so‘rang. Markaz faqat Telegram orqali kirishga o‘tishi mumkin; shunda sahifada faqat shu tugma qoladi va parollar qabul qilinmaydi.",
+            "**Telefon raqam va parol.** Faqat Telegram orqali kirishga o‘tmagan markazda sahifada shakl ham bo‘ladi: telefon raqamingizni +998 90 123 45 67 ko‘rinishida va parolingizni kiriting, so‘ng **Kirish** tugmasini bosing. Parol noto‘g‘ri bo‘lsa, sahifa buni aytadi; ketma-ket bir necha noto‘g‘ri urinishdan so‘ng kirish qisqa vaqtga to‘xtatiladi. Markaz faqat Telegram orqali kiradigan bo‘lsa, sahifada faqat Telegram tugmasi turadi va parollar qabul qilinmaydi.",
             "Tizimdan chiqish uchun yuqori o‘ng burchakdagi ismingizni oching va **Chiqish** ni tanlang. Umumiy kompyuterlarda buni albatta qiling.",
             {
               note: "Parolni unutdingizmi? Yangi parolni faqat administrator Sozlamalar → Xodimlar bo‘limida o‘rnata oladi.",

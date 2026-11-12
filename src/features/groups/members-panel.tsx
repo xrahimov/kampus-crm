@@ -214,8 +214,13 @@ export function MembersPanel({
       ) : (
         <ul className="divide-y rounded-md border">
           {visible.map((m) => (
-            <li key={m.id} className="flex items-center gap-3 px-3 py-2" data-testid="member-row">
-              <div className="min-w-0 flex-1">
+            <li
+              key={m.id}
+              className="flex flex-wrap items-center gap-x-3 gap-y-1.5 px-3 py-2"
+              data-testid="member-row"
+            >
+              {/* In the narrow column the badges move under the name instead of squeezing it. */}
+              <div className="min-w-40 flex-1">
                 <Link
                   href={`/students/${m.studentId}`}
                   className="block truncate font-medium hover:underline"

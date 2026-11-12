@@ -1240,7 +1240,7 @@ async function seedNotifications() {
         {
           userId: u.id,
           kind: "LEAD",
-          params: { name: "<client name>", column: "NEW LEADS", source: "Instagram" },
+          params: { name: "Demo Lead One", column: "NEW LEADS", source: "Instagram" },
           href: "/leads",
         },
         {

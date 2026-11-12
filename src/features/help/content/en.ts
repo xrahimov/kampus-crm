@@ -51,15 +51,15 @@ export const en: HelpContent = {
         signIn: {
           title: "Signing in",
           body: [
-            "Your administrator creates your account and tells you the phone number and password to use. Open Kampus in a browser on a computer, tablet or phone; nothing needs to be installed.",
+            "Your administrator creates your account with your phone number. Open Kampus in a browser on a computer, tablet or phone; nothing needs to be installed. You sign in with Telegram.",
             {
               steps: [
-                "Enter your phone number in the form +998 90 123 45 67.",
-                "Enter your password and press **Sign in**.",
-                "If the password is wrong, the page says so. After several wrong attempts in a row, sign-in pauses for a short while; wait and try again.",
+                "Press **Log in with Telegram**.",
+                "Telegram asks you to confirm; agree to share your phone number.",
+                "Kampus opens your account when that number is the phone number on your staff card. If Kampus says no staff member has that number, ask your administrator to correct the phone on your card.",
               ],
             },
-            "**Log in with Telegram.** When the sign-in page shows this button you can use it instead of the password: Telegram confirms your phone number and Kampus opens your account when it is the number on your staff card. If Kampus says no staff member has that number, ask your administrator to correct the phone on your card. A centre can switch to Telegram only; the page then shows just this button and passwords are refused.",
+            "**Phone number and password.** A centre that has not switched to Telegram only also shows a form: enter your phone number in the form +998 90 123 45 67 and your password, and press **Sign in**. If the password is wrong, the page says so; after several wrong attempts in a row, sign-in pauses for a short while. Where the centre signs in with Telegram only, the page shows just the Telegram button and passwords are refused.",
             "To sign out, open your name in the top right corner and choose **Sign out**. Do this on shared computers.",
             {
               note: "Forgot your password? Only an administrator can set a new one, under Settings → Staff.",
