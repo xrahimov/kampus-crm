@@ -454,9 +454,9 @@ export const en: HelpContent = {
             "One homework per lesson. Students answer from their personal link; you accept or return each answer here.",
             {
               steps: [
-                "On the **Homework** tab press **Set homework**, choose the lesson and write the task. Add a link or a file and a due date if you want. Tick **Speaking task** for pronunciation and speaking practice: the student then records their answer with the microphone on their page.",
+                "On the **Homework** tab press **Set homework**, check the lesson (the dialog opens on the lesson just taught) and write the task. Add a link or a file and a due date if you want. Tick **Speaking task** for pronunciation and speaking practice: the student then records their answer with the microphone on their page.",
                 "Each homework card shows how many students answered and how many answers you accepted. Open a card to read the answers; each has the student's text and file.",
-                "Press **Accept** or **Return**, with a comment for the student if useful; on a speaking task you can listen to the recording right there and record a spoken reply of your own. A returned answer goes back to the student as “to do”.",
+                "An answer waiting for a check has both buttons: press **Accept** or **Return**, with a comment for the student if useful; on a speaking task you can listen to the recording right there and record a spoken reply of your own. A returned answer goes back to the student as “to do”.",
               ],
             },
             "Students connected to Telegram get a message when homework is set, changed, accepted or returned. When automatic coins for homework are on, an accepted answer gives the coins by itself.",
@@ -1282,7 +1282,7 @@ export const en: HelpContent = {
           body: [
             {
               steps: [
-                "Open your link a few minutes before the lesson. The top card shows the next lesson's time and waits for the teacher.",
+                "Open your link a few minutes before the lesson. The top card shows the next lesson's time and waits for the teacher. Your camera stays off until the lesson starts; **Check camera and microphone** shows your picture earlier if you want to test them.",
                 "When the teacher starts, the card changes by itself. Allow the camera and microphone when the browser asks, check your picture and press **Join lesson**.",
                 "In the lesson you can turn your camera and microphone on and off, raise your hand, write in the chat and see who is there. The teacher may turn your microphone off; you can turn it back on.",
                 "Press **Leave** when the lesson ends, or wait for the teacher to end it.",

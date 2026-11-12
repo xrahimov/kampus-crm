@@ -5,7 +5,12 @@ import { prisma, type DbClient } from "@/server/db/prisma";
 import { AppError } from "@/server/errors/app-error";
 import { enqueue } from "@/server/jobs/queue";
 import { authorize, type Actor } from "@/server/rbac/authorize";
-import { findGroupInScope, ownGroupsOnly, today } from "@/server/services/groups/shared";
+import {
+  centreToday,
+  findGroupInScope,
+  ownGroupsOnly,
+  today,
+} from "@/server/services/groups/shared";
 import { dateToIso, isoToDate, mustFind } from "@/server/services/settings/shared";
 import { deleteMaterialFiles } from "@/server/services/materials/hls.service";
 import { notifyMaterial } from "@/server/services/telegram/student-telegram.service";
@@ -285,7 +290,9 @@ export async function saveRecording(
     select: { organizationId: true },
   });
   const { hlsRecordings } = await loadVideoConfig(db, branch.organizationId);
-  const date = room.lesson ? dateToIso(room.lesson.date) : dateToIso(room.startedAt);
+  // The day and the time of one moment, both on the centre's clock: the title used
+  // to pair the UTC day with the Tashkent time ("12 Nov 01:52" for a call on the 13th).
+  const date = centreToday(room.startedAt);
   const time = new Intl.DateTimeFormat("en-GB", {
     hour: "2-digit",
     minute: "2-digit",

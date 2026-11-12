@@ -7,6 +7,18 @@ import { TEACHER_ROLE_CODES } from "@/server/services/staff/staff.service";
 
 export const today = (): string => dateToIso(new Date());
 
+/** The centre's clock is Tashkent's (UTC+5, no daylight saving). */
+const TASHKENT_OFFSET_MS = 5 * 60 * 60 * 1000;
+
+/**
+ * Today's date as the centre sees it, which is the day a lesson's `date` holds.
+ * `today()` above is the UTC day: between midnight and 05:00 in Tashkent it is
+ * still yesterday, so "today's lesson" and a student's next lesson were a day
+ * behind. Lesson lookups use this one.
+ */
+export const centreToday = (now: Date = new Date()): string =>
+  dateToIso(new Date(now.getTime() + TASHKENT_OFFSET_MS));
+
 /** Users whose only roles are teacher roles see just the groups they teach (A-52). */
 export function ownGroupsOnly(actor: Actor): boolean {
   return (

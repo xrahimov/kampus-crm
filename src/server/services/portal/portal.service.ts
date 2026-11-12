@@ -2,7 +2,7 @@ import type { AttendanceStatus, ExamType } from "@/generated/prisma/client";
 import { lessonInZone, type LocalLessonTime } from "@/lib/time-zones";
 import { prisma, type DbClient } from "@/server/db/prisma";
 import { levelName } from "@/server/services/exams/exams.service";
-import { today } from "@/server/services/groups/shared";
+import { centreToday } from "@/server/services/groups/shared";
 import { dateToIso, decimalToNumber, isoToDate } from "@/server/services/settings/shared";
 import { nextTopicForGroup } from "@/server/services/settings/syllabus.service";
 import { membershipBalances } from "@/server/services/students/balances";
@@ -103,7 +103,7 @@ export async function getPortal(token: string, db: DbClient = prisma): Promise<P
   const membership = await membershipByToken(db, token);
   if (!membership) return null;
   const zone = membership.student.timeZone;
-  const todayIso = today();
+  const todayIso = centreToday();
 
   const [group, lessons, nextLesson, attendance, grades, payments, examResults, attempts, coins] =
     await Promise.all([

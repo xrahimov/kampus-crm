@@ -1724,7 +1724,9 @@
       "deleteText": "Students will no longer see it. A recording file is removed with it.",
       "addedBy": "Added by {name}",
       "duration": "{minutes} min",
-      "size": "{mb} MB"
+      "size": "{mb} MB",
+      "adaptive": "streams in adaptive quality",
+      "watched": "opened by {started}, watched to the end by {finished}"
     },
     "syllabus": {
       "progress": "{done} of {total} topics covered",
@@ -3386,7 +3388,6 @@
         "REFERRAL": "Referral",
         "VOCAB_STREAK": "Vocabulary streak (7 days)"
       },
-      "notWired": "Saved, but nothing triggers it yet (a homework record arrives later).",
       "reasonsTitle": "Manual coin reasons",
       "reasonsDescription": "A teacher picks one of these when giving coins and cannot exceed its maximum.",
       "addReason": "Add reason",
@@ -5415,7 +5416,8 @@
     "title": "Video lesson",
     "backToGroup": "Back to the group",
     "staff": {
-      "startedBy": "Started by {name}. Check your camera and microphone, then join."
+      "startedBy": "Started by {name}. Check your camera and microphone, then join.",
+      "live": "Started by {name}."
     },
     "roles": {
       "HOST": "Teacher",
@@ -5431,7 +5433,12 @@
       "partial": "The browser gave access to only part of your devices. You can still join; allow the camera and microphone in the address bar to use both.",
       "denied": "No camera or microphone is available. You can join to watch and listen; allow access in the address bar and reload to take part.",
       "join": "Join lesson",
-      "joining": "Joining…"
+      "joining": "Joining…",
+      "check": "Check camera and microphone"
+    },
+    "player": {
+      "speed": "Speed",
+      "resumed": "Continued from {time}"
     },
     "room": {
       "muted": "Microphone off",

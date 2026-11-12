@@ -14,6 +14,8 @@ import { VideoTile } from "./video-tile";
 /**
  * Before joining: a camera preview with microphone and camera switches. The
  * stream opened here is handed to the call, so the browser asks only once.
+ * While there is no call to join, the camera stays off (a student opens the
+ * page for homework too) until the person asks to check it.
  */
 export function Lobby({
   role,
@@ -40,8 +42,11 @@ export function Lobby({
   const [denied, setDenied] = useState(false);
   const [audio, setAudio] = useState(true);
   const [video, setVideo] = useState(true);
+  const [checking, setChecking] = useState(false);
+  const open = ready || checking;
 
   useEffect(() => {
+    if (!open) return;
     let cancelled = false;
     let opened: MediaStream | null = null;
     void openLocalMedia(role, { audio: true, video: true }).then((r) => {
@@ -58,8 +63,9 @@ export function Lobby({
       // The call owns the tracks once joined; only an abandoned lobby stops them.
       const tracks = (opened as MediaStream | null)?.getTracks() ?? [];
       if (!tracks.some((tr) => handedOver.has(tr))) for (const tr of tracks) tr.stop();
+      setStream(null);
     };
-  }, [role]);
+  }, [role, open]);
 
   function toggle(kind: "audio" | "video") {
     if (!stream) return;
@@ -75,39 +81,55 @@ export function Lobby({
 
   return (
     <div className="space-y-4">
-      <VideoTile
-        stream={stream}
-        name={name}
-        isSelf
-        audioOn={audio && hasAudio}
-        videoOn={video && hasVideo}
-        status={stream ? null : t("opening")}
-        className="aspect-video w-full"
-        testId="lobby-preview"
-      />
+      {open && (
+        <VideoTile
+          stream={stream}
+          name={name}
+          isSelf
+          audioOn={audio && hasAudio}
+          videoOn={video && hasVideo}
+          status={stream ? null : t("opening")}
+          className="aspect-video w-full"
+          testId="lobby-preview"
+        />
+      )}
       <div className="flex items-center justify-center gap-2">
-        <Button
-          type="button"
-          variant={audio && hasAudio ? "outline" : "secondary"}
-          size="icon"
-          onClick={() => toggle("audio")}
-          disabled={!hasAudio}
-          aria-label={audio ? t("micOff") : t("micOn")}
-          aria-pressed={!audio}
-        >
-          {audio && hasAudio ? <Mic /> : <MicOff />}
-        </Button>
-        <Button
-          type="button"
-          variant={video && hasVideo ? "outline" : "secondary"}
-          size="icon"
-          onClick={() => toggle("video")}
-          disabled={!hasVideo}
-          aria-label={video ? t("cameraOff") : t("cameraOn")}
-          aria-pressed={!video}
-        >
-          {video && hasVideo ? <Video /> : <VideoOff />}
-        </Button>
+        {!open && (
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => setChecking(true)}
+            data-testid="lobby-check"
+          >
+            <Video /> {t("check")}
+          </Button>
+        )}
+        {open && (
+          <>
+            <Button
+              type="button"
+              variant={audio && hasAudio ? "outline" : "secondary"}
+              size="icon"
+              onClick={() => toggle("audio")}
+              disabled={!hasAudio}
+              aria-label={audio ? t("micOff") : t("micOn")}
+              aria-pressed={!audio}
+            >
+              {audio && hasAudio ? <Mic /> : <MicOff />}
+            </Button>
+            <Button
+              type="button"
+              variant={video && hasVideo ? "outline" : "secondary"}
+              size="icon"
+              onClick={() => toggle("video")}
+              disabled={!hasVideo}
+              aria-label={video ? t("cameraOff") : t("cameraOn")}
+              aria-pressed={!video}
+            >
+              {video && hasVideo ? <Video /> : <VideoOff />}
+            </Button>
+          </>
+        )}
       </div>
       {denied && stream && <Alert>{hasAudio || hasVideo ? t("partial") : t("denied")}</Alert>}
       {error && <Alert variant="destructive">{error}</Alert>}

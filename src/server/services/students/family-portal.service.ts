@@ -4,7 +4,7 @@ import { generateToken } from "@/server/auth/tokens";
 import { prisma, type DbClient } from "@/server/db/prisma";
 import { AppError } from "@/server/errors/app-error";
 import { authorize, type Actor } from "@/server/rbac/authorize";
-import { today } from "@/server/services/groups/shared";
+import { centreToday } from "@/server/services/groups/shared";
 import { appOriginFor } from "@/server/services/settings/domains.service";
 import { dateToIso, isoToDate, mustFind } from "@/server/services/settings/shared";
 import {
@@ -151,7 +151,7 @@ export async function portalChildren(
     db,
     memberships.map((m) => m.id),
   );
-  const todayDate = isoToDate(today());
+  const todayDate = isoToDate(centreToday());
   const children: FamilyPortalDto["children"] = [];
   for (const s of students) {
     const groups: FamilyPortalGroupDto[] = [];

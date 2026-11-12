@@ -1,7 +1,7 @@
 "use client";
 
 import { useTranslations } from "next-intl";
-import { useState, useSyncExternalStore } from "react";
+import { useEffect, useState, useSyncExternalStore } from "react";
 
 import { Button } from "@/components/ui/button";
 import { ApiError } from "@/lib/api-client";
@@ -15,6 +15,9 @@ const idle = { subscribe: () => () => undefined, getVersion: () => 0 };
 
 type Outcome = "left" | "ended" | "gone" | "error";
 
+/** Where the person is: before joining, in the call, or on the closing screen. */
+export type CallPhase = "lobby" | "call" | "left" | "ended";
+
 /** Lobby → call → "you left" screen, shared by the staff page and a student's link. */
 export function CallFlow({
   role,
@@ -24,6 +27,7 @@ export function CallFlow({
   join,
   endForAll,
   doneActions,
+  onPhase,
 }: {
   role: PeerDto["role"];
   name: string;
@@ -34,6 +38,8 @@ export function CallFlow({
   endForAll?: (roomId: string) => Promise<void>;
   /** Extra buttons on the closing screen, e.g. back to the group. */
   doneActions?: React.ReactNode;
+  /** Told when the phase changes, so the page around the call can follow it. */
+  onPhase?: (phase: CallPhase) => void;
 }) {
   const t = useTranslations("video");
   const te = useTranslations();
@@ -69,6 +75,15 @@ export function CallFlow({
       ? (engine.status as Outcome)
       : null;
   const finished = engineDone ?? outcome;
+  const phase: CallPhase =
+    engine && !finished
+      ? "call"
+      : finished === "ended"
+        ? "ended"
+        : finished && finished !== "error"
+          ? "left"
+          : "lobby";
+  useEffect(() => onPhase?.(phase), [onPhase, phase]);
 
   if (engine && !finished) {
     return (

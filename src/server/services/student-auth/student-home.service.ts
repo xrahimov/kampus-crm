@@ -1,5 +1,5 @@
 import { prisma, type DbClient } from "@/server/db/prisma";
-import { today } from "@/server/services/groups/shared";
+import { centreToday } from "@/server/services/groups/shared";
 import { dateToIso, isoToDate } from "@/server/services/settings/shared";
 import {
   childSelect,
@@ -62,7 +62,7 @@ export async function getStudentHome(
       branch: { select: { organizationId: true, organization: { select: { name: true } } } },
     },
   });
-  const since = isoToDate(today());
+  const since = isoToDate(centreToday());
   since.setUTCDate(since.getUTCDate() - HOMEWORK_WINDOW_DAYS);
   const profiles: StudentHomeProfileDto[] = [];
   for (const s of students) {
