@@ -1849,7 +1849,7 @@
   },
   "assistant": {
     "title": "Assistant",
-    "hint": "Ask about your centre in plain words: debtors, students, payments, today's lessons, or ask for a draft SMS. Answers come from your data; the assistant reads only what your role may see. It answers only about the centre's work in Kampus; questions on other topics are declined.",
+    "hint": "Ask about your centre in plain words: debtors, students, payments, today's lessons, or ask for a draft SMS. Answers come from your data; the assistant reads only what your role may see. It answers about the centre's work in Kampus and teaching questions (a topic, a lesson plan, exercises); other topics are declined.",
     "placeholder": "Ask a question or describe what to draft…",
     "send": "Send",
     "thinking": "Thinking…",
