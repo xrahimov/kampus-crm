@@ -27,6 +27,23 @@ async function telegramLogin(page: Page, person: { id: string; name: string; pho
   await page.goto(back.toString());
 }
 
+/** The centre's bot gets the login keys, saved by the CEO from a password session. */
+async function saveLoginKeys(page: Page, stamp: string) {
+  await page.goto("/en/login");
+  await page.getByLabel("Phone number").fill(CEO_PHONE);
+  await page.getByLabel("Password").fill(PASSWORD);
+  await page.getByRole("button", { name: "Sign in" }).click();
+  await expect(page).toHaveURL(/\/en\/(dashboard|today)/);
+  await page.goto("/en/settings/integrations");
+  const form = page.getByTestId("integration-telegram");
+  const enabled = form.getByRole("switch", { name: "Enabled" });
+  if (!(await enabled.isChecked())) await enabled.click();
+  await form.getByLabel("Telegram login: Client ID").fill("123456");
+  await form.getByLabel("Telegram login: Client Secret").fill(`secret-${stamp}`);
+  await form.getByTestId("telegram-save").click();
+  await expect(form).toContainText("Saved");
+}
+
 test.describe("staff sign-in with Telegram (A-180)", () => {
   test("a staff member's Telegram phone signs them in, a stranger's does not", async ({
     browser,
@@ -36,19 +53,7 @@ test.describe("staff sign-in with Telegram (A-180)", () => {
     const stamp = String(Date.now()).slice(-7);
 
     // The centre's bot has the login keys.
-    await page.goto("/en/login");
-    await page.getByLabel("Phone number").fill(CEO_PHONE);
-    await page.getByLabel("Password").fill(PASSWORD);
-    await page.getByRole("button", { name: "Sign in" }).click();
-    await expect(page).toHaveURL(/\/en\/(dashboard|today)/);
-    await page.goto("/en/settings/integrations");
-    const form = page.getByTestId("integration-telegram");
-    const enabled = form.getByRole("switch", { name: "Enabled" });
-    if (!(await enabled.isChecked())) await enabled.click();
-    await form.getByLabel("Telegram login: Client ID").fill("123456");
-    await form.getByLabel("Telegram login: Client Secret").fill(`secret-${stamp}`);
-    await form.getByTestId("telegram-save").click();
-    await expect(form).toContainText("Saved");
+    await saveLoginKeys(page, stamp);
 
     // The switch to Telegram only is there, and refuses a password session.
     await page.goto("/en/settings/general");
@@ -80,5 +85,58 @@ test.describe("staff sign-in with Telegram (A-180)", () => {
       user: { phone: string };
     };
     expect(me.user.phone).toBe(TEACHER_PHONE);
+  });
+
+  test("the site owner switches every centre to Telegram only, and back (A-181)", async ({
+    browser,
+    page,
+  }) => {
+    test.skip(process.env.TELEGRAM_LOGIN_FAKE !== "1", "needs TELEGRAM_LOGIN_FAKE=1 on the server");
+    const stamp = String(Date.now()).slice(-7);
+    await saveLoginKeys(page, stamp);
+
+    // The site owner comes in through Telegram: only then may the rule be switched on.
+    const owner = await (await browser.newContext()).newPage();
+    await owner.goto("/en/login");
+    await telegramLogin(owner, { id: `5${stamp}`, name: "Owner", phone: CEO_PHONE.slice(1) });
+    await expect(owner).toHaveURL(/\/en\/(dashboard|today)/);
+
+    const signIn = owner.getByTestId("staff-sign-in");
+    const all = signIn.getByRole("switch", {
+      name: "Every centre on this server signs in with Telegram only",
+    });
+    const own = signIn.getByRole("switch", { name: "Staff sign in with Telegram only" });
+    const visitor = await (await browser.newContext()).newPage();
+    try {
+      await owner.goto("/en/settings/general");
+      await all.click();
+      // The rule for every centre includes this one.
+      await expect(own).toBeChecked();
+      await expect(own).toBeDisabled();
+      await owner.getByTestId("org-save").click();
+      await expect(owner.getByTestId("org-saved")).toBeVisible();
+
+      // The sign-in page has the Telegram button and nothing else.
+      await visitor.goto("/en/login");
+      await expect(visitor.getByTestId("login-telegram-only")).toBeVisible();
+      await expect(visitor.getByLabel("Password")).toHaveCount(0);
+      // A right password sent past the page is refused all the same.
+      const refused = await visitor.request.post("/api/v1/auth/login", {
+        data: { phone: TEACHER_PHONE, password: PASSWORD },
+      });
+      expect(refused.status()).toBe(403);
+    } finally {
+      // Back to passwords, whatever happened above: the other tests sign in with one.
+      await owner.goto("/en/settings/general");
+      if (await all.isChecked()) await all.click();
+      if (await own.isChecked()) await own.click();
+      if (await owner.getByTestId("org-save").isEnabled()) {
+        await owner.getByTestId("org-save").click();
+        await expect(owner.getByTestId("org-saved")).toBeVisible();
+      }
+    }
+    await visitor.goto("/en/login");
+    await expect(visitor.getByLabel("Password")).toBeVisible();
+    await expect(visitor.getByTestId("login-telegram")).toBeVisible();
   });
 });

@@ -845,7 +845,10 @@
       "staffSignIn": {
         "title": "Staff sign-in",
         "hint": "Staff can always sign in with Telegram when the centre's bot has the login keys: Telegram confirms their phone and it must be the number on their staff card. Switch this on to refuse passwords altogether. You can switch it on only while you are signed in with Telegram yourself.",
-        "telegramOnly": "Staff sign in with Telegram only"
+        "telegramOnly": "Staff sign in with Telegram only",
+        "everyCentre": "Every centre on this server signs in with Telegram only",
+        "everyCentreHint": "Only you, the site owner, see this switch. With it on, passwords are refused in every centre, new centres included, and the sign-in page shows only the Telegram button. Staff whose Telegram number differs from the phone on their staff card cannot get in until the phone is corrected in Settings → Staff.",
+        "heldByServer": "The site owner has set Telegram only for every centre on this server, so this cannot be switched off here."
       }
     },
     "switches": {

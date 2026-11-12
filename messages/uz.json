@@ -845,7 +845,10 @@
       "staffSignIn": {
         "title": "Xodimlarning kirishi",
         "hint": "Markaz botida kirish kalitlari bo‘lsa, xodimlar har doim Telegram orqali kira oladi: Telegram telefonni tasdiqlaydi va u xodim kartasidagi raqam bo‘lishi kerak. Parollarni butunlay rad etish uchun buni yoqing. Uni faqat o‘zingiz Telegram orqali kirgan paytda yoqa olasiz.",
-        "telegramOnly": "Xodimlar faqat Telegram orqali kiradi"
+        "telegramOnly": "Xodimlar faqat Telegram orqali kiradi",
+        "everyCentre": "Bu serverdagi barcha markazlar faqat Telegram orqali kiradi",
+        "everyCentreHint": "Bu tugmani faqat siz, sayt egasi ko‘rasiz. Yoqilganda parollar barcha markazlarda, yangi markazlarda ham, qabul qilinmaydi va kirish sahifasida faqat Telegram tugmasi qoladi. Telegram raqami xodim kartasidagi telefondan farq qiladigan xodimlar telefon Sozlamalar → Xodimlar bo‘limida to‘g‘rilanmaguncha kira olmaydi.",
+        "heldByServer": "Sayt egasi bu serverdagi barcha markazlar uchun faqat Telegram orqali kirishni yoqqan, shuning uchun uni bu yerda o‘chirib bo‘lmaydi."
       }
     },
     "switches": {
