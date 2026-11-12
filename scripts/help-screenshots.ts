@@ -4,15 +4,25 @@
  * local database that was seeded with `npm run db:seed`, never against a
  * live centre.
  *
- *   npm run dev            # or npm start, on APP_URL (default http://localhost:3000)
- *   npx tsx scripts/help-screenshots.ts [uz ru en] [--only name,name]
+ *   TELEGRAM_LOGIN_FAKE=1 npm start   # or npm run dev, on APP_URL (default http://localhost:3000)
+ *   npx tsx scripts/help-screenshots.ts [uz ru en] [--only=name,name]
  *
  * Every shot is 1280×800 (or the element's own size) and saved as JPEG so the
  * set stays small enough to ship with the app. A shot that fails is reported
  * and skipped; the rest are still written.
+ *
+ * Before the first shot the script adds the demo rows the newer pages need (a
+ * PDF under a group's materials, a homework with an answer, a post, a chat
+ * line, a group that sells lesson packages, two siblings) and gives the demo
+ * centre made-up Telegram login keys; re-runs find them and move on. With
+ * TELEGRAM_LOGIN_FAKE=1 on the server the sign-in page is pictured the way a
+ * live centre has it, with Telegram only; without it the password form shows.
+ * The video-lesson shots run a real call between two browsers on this machine
+ * with a drawn picture in place of each camera.
  */
 import "dotenv/config";
-import { mkdirSync } from "node:fs";
+import { mkdirSync, mkdtempSync, writeFileSync } from "node:fs";
+import os from "node:os";
 import path from "node:path";
 
 import {
@@ -48,12 +58,32 @@ const LABELS: Record<string, Record<string, string>> = {
 };
 
 type Shot = { name: string; take: (ctx: Ctx) => Promise<void> };
-type Ctx = {
-  page: Page;
+type Base = {
   locale: string;
   browser: Browser;
   teacherGroupId: string;
   studentToken: string;
+  /** The group that sells lesson packages, and the two siblings' family page. */
+  packageGroupId: string | null;
+  familyToken: string | null;
+};
+type Ctx = Base & { page: Page };
+
+/** The words of the demo rows the script adds. One language: the demo centre teaches English. */
+const DEMO = {
+  material: "Unit 3 slides",
+  homework:
+    "Workbook p. 24, exercises 1-4. Then write five sentences about your day in the Present Simple and send them here.",
+  answer:
+    "I get up at seven. I have breakfast with my family. My sister goes to school by bus. We have English on Tuesday and Thursday. In the evening I read a book.",
+  post: "This week we start Unit 3: daily routines. Bring your workbook on Thursday; the slides are under Materials.",
+  comment: "Will there be a test on Saturday?",
+  chatTeacher: "Hello everyone! Thursday's homework is open. Write here if something is unclear.",
+  chatStudent: "Thank you! Is exercise 4 for Thursday too?",
+  packageGroup: "Speaking Club",
+  callChat: "Open page 12, please",
+  callReply: "Done!",
+  poll: { question: "Ready for the test?", options: ["Yes", "Not yet"] },
 };
 
 function out(locale: string, name: string) {
@@ -80,6 +110,29 @@ async function shotElement(el: Locator, locale: string, name: string) {
   await el.waitFor({ state: "visible" });
   await el.page().waitForTimeout(400);
   await el.screenshot({ path: out(locale, name), type: "jpeg", quality: QUALITY });
+}
+
+/** A card that may be taller than a screen: its top `maxHeight` pixels, wherever it sits on the page. */
+async function shotCard(el: Locator, locale: string, name: string, maxHeight = 600) {
+  await el.waitFor({ state: "visible" });
+  const page = el.page();
+  await page.waitForLoadState("networkidle").catch(() => undefined);
+  await page.waitForTimeout(400);
+  const box = await el.boundingBox();
+  if (!box) throw new Error(`${name}: nothing to picture`);
+  const scroll = await page.evaluate(() => ({ x: window.scrollX, y: window.scrollY }));
+  await page.screenshot({
+    path: out(locale, name),
+    type: "jpeg",
+    quality: QUALITY,
+    fullPage: true,
+    clip: {
+      x: box.x + scroll.x,
+      y: box.y + scroll.y,
+      width: box.width,
+      height: Math.min(box.height, maxHeight),
+    },
+  });
 }
 
 /** Scrolls so that `el` sits just under the sticky header, for shots of a tab further down a page. */
@@ -127,14 +180,232 @@ async function ensureRow(page: Page, listPath: string, createPath: string, body:
   await mutate(page, "post", createPath, body);
 }
 
-/** A POST or PATCH with the double-submit CSRF token the app's own fetches send. */
-async function mutate(page: Page, method: "post" | "patch", apiPath: string, body: unknown) {
+async function csrfHeaders(page: Page): Promise<Record<string, string>> {
   const csrf = (await page.context().cookies(BASE)).find((c) => c.name === "kampus_csrf")?.value;
+  return csrf ? { "x-csrf-token": csrf } : {};
+}
+
+/** A write with the double-submit CSRF token the app's own fetches send; returns the answer's JSON. */
+async function mutate<T = unknown>(
+  page: Page,
+  method: "post" | "patch" | "put",
+  apiPath: string,
+  body: unknown,
+): Promise<T> {
   const res = await page.request[method](`${BASE}/api/v1${apiPath}`, {
     data: body,
-    headers: csrf ? { "x-csrf-token": csrf } : {},
+    headers: await csrfHeaders(page),
   });
   if (!res.ok()) throw new Error(`${method.toUpperCase()} ${apiPath} failed: ${res.status()}`);
+  return (await res.json().catch(() => null)) as T;
+}
+
+async function getJson<T>(page: Page, apiPath: string): Promise<T> {
+  const res = await page.request.get(`${BASE}/api/v1${apiPath}`);
+  if (!res.ok()) throw new Error(`GET ${apiPath} failed: ${res.status()}`);
+  return (await res.json()) as T;
+}
+
+/** Rows of a list answer, whether it is an array or `{ items }`. */
+async function rows<T>(page: Page, apiPath: string): Promise<T[]> {
+  const body = await getJson<{ items?: T[] } | T[]>(page, apiPath);
+  return Array.isArray(body) ? body : (body.items ?? []);
+}
+
+/** What a student's page sends: no session, the link in the path and the page's own origin. */
+async function asStudent(
+  page: Page,
+  token: string,
+  apiPath: string,
+  body: { data?: unknown; multipart?: Record<string, string> },
+) {
+  const res = await page.request.post(`${BASE}/api/v1/public/class/${token}${apiPath}`, {
+    ...body,
+    headers: { origin: BASE },
+  });
+  if (!res.ok()) throw new Error(`student POST ${apiPath} failed: ${res.status()}`);
+}
+
+/** Three slides as a PDF, printed by the browser: the file a teacher shows in a lesson. */
+async function slidesPdf(browser: Browser): Promise<Buffer> {
+  const slide = (title: string, body: string) =>
+    `<section><p class="unit">General English · A1 · Unit 3</p><h1>${title}</h1>${body}</section>`;
+  const html = `<!doctype html><meta charset="utf-8"><style>
+    @page { size: 1280px 720px; margin: 0 }
+    body { margin: 0; font-family: Arial, Helvetica, sans-serif; color: #17203d }
+    section { box-sizing: border-box; width: 1280px; height: 720px; padding: 64px 88px; page-break-after: always;
+      background: #f7f5ef; border-left: 28px solid #1d2a5c }
+    .unit { margin: 0 0 12px; font-size: 22px; color: #0f8a83; letter-spacing: 0.02em }
+    h1 { margin: 0 0 36px; font-size: 60px }
+    p, li, td, th { font-size: 32px; line-height: 1.5 }
+    table { border-collapse: collapse } td, th { border: 2px solid #c9cfdf; padding: 12px 28px; text-align: left }
+    th { background: #e6eaf5 } b { color: #b4530f }
+  </style>
+  ${slide("Daily routines", "<p>What do you do every day?</p><ul><li>get up · have breakfast · go to work</li><li>have lunch · come home · go to bed</li></ul><p>Today: the <b>Present Simple</b></p>")}
+  ${slide("Present Simple", "<table><tr><th>I / You / We / They</th><th>He / She / It</th></tr><tr><td>I <b>get</b> up at seven.</td><td>She <b>gets</b> up at seven.</td></tr><tr><td>We <b>have</b> lunch at one.</td><td>He <b>has</b> lunch at one.</td></tr><tr><td>They <b>go</b> to bed late.</td><td>It <b>goes</b> to bed late.</td></tr></table>")}
+  ${slide("Your turn", "<ol><li>My brother ____ (get) up at six.</li><li>We ____ (have) English on Tuesday.</li><li>She ____ (go) to school by bus.</li><li>I ____ (read) a book in the evening.</li></ol>")}`;
+  const page = await browser.newPage();
+  await page.setContent(html);
+  const pdf = await page.pdf({ width: "1280px", height: "720px", printBackground: true });
+  await page.close();
+  return pdf;
+}
+
+/** Uploads a document the way the materials and homework forms do; returns its stored URL. */
+async function upload(page: Page, name: string, mimeType: string, buffer: Buffer): Promise<string> {
+  const res = await page.request.post(`${BASE}/api/v1/uploads/documents`, {
+    multipart: { file: { name, mimeType, buffer } },
+    headers: await csrfHeaders(page),
+  });
+  if (!res.ok()) throw new Error(`upload of ${name} failed: ${res.status()}`);
+  return ((await res.json()) as { url: string }).url;
+}
+
+/**
+ * The demo rows the newer pages need, made once. `teacher` teaches the group
+ * the shots use; `ceo` may do the rest. Each step looks before it writes, so a
+ * re-run adds nothing.
+ */
+async function prepare(ceo: Page, teacher: Page, base: Base): Promise<void> {
+  const g = base.teacherGroupId;
+  const today = tashkentToday();
+
+  // Made-up Telegram login keys: the sign-in pages then offer "Log in with Telegram".
+  const telegram = await getJson<{ isEnabled: boolean; config: Record<string, unknown> }>(
+    ceo,
+    "/integrations/telegram",
+  );
+  if (!telegram.isEnabled || !telegram.config.loginClientId) {
+    await mutate(ceo, "put", "/integrations/telegram", {
+      isEnabled: true,
+      botToken: "",
+      botUsername: "kampus_demo_bot",
+      webhookSecret: "",
+      weeklyReport: true,
+      lessonSummary: false,
+      loginClientId: "123456",
+      loginClientSecret: "demo-secret",
+    });
+  }
+
+  // A PDF under the group's materials: the file the teacher shows in the video lesson.
+  const materials = await rows<{ title: string }>(teacher, `/groups/${g}/materials`);
+  if (!materials.some((m) => m.title === DEMO.material)) {
+    const url = await upload(
+      teacher,
+      `${DEMO.material}.pdf`,
+      "application/pdf",
+      await slidesPdf(base.browser),
+    );
+    await mutate(teacher, "post", `/groups/${g}/materials`, {
+      kind: "FILE",
+      title: DEMO.material,
+      url,
+      lessonId: null,
+    });
+  }
+
+  // Homework on the lesson last taught, with one student's answer waiting to be checked.
+  const homework = await getJson<{
+    items: unknown[];
+    lessons: Array<{ id: string; date: string }>;
+    today: string;
+  }>(teacher, `/groups/${g}/homework`);
+  if (homework.items.length === 0) {
+    const lesson = homework.lessons
+      .filter((l) => l.date <= homework.today)
+      .sort((a, b) => b.date.localeCompare(a.date))[0];
+    if (lesson) {
+      await mutate(teacher, "put", `/lessons/${lesson.id}/homework`, { text: DEMO.homework });
+      const mine = await getJson<Array<{ id: string }>>(
+        teacher,
+        `/public/class/${base.studentToken}/homework`,
+      );
+      if (mine[0]) {
+        await asStudent(teacher, base.studentToken, `/homework/${mine[0].id}`, {
+          multipart: { note: DEMO.answer },
+        });
+      }
+    }
+  }
+
+  // A post in the class stream with a student's comment, and two lines of group chat.
+  const posts = await rows<{ id: string }>(teacher, `/groups/${g}/stream`);
+  if (posts.length === 0) {
+    const post = await mutate<{ id: string }>(teacher, "post", `/groups/${g}/stream`, {
+      body: DEMO.post,
+      pinned: true,
+    });
+    await asStudent(teacher, base.studentToken, `/stream/${post.id}/comments`, {
+      data: { body: DEMO.comment },
+    });
+  }
+  const chat = await getJson<{ messages: unknown[] }>(teacher, `/groups/${g}/chat`);
+  if (chat.messages.length === 0) {
+    await mutate(teacher, "post", `/groups/${g}/chat`, { text: DEMO.chatTeacher });
+    await asStudent(teacher, base.studentToken, "/chat", { data: { text: DEMO.chatStudent } });
+  }
+
+  // A group that sells lesson packages, with one package sold.
+  const groups = await rows<{ id: string; name: string }>(ceo, "/groups?pageSize=100");
+  let packageGroupId = groups.find((x) => x.name === DEMO.packageGroup)?.id ?? null;
+  const students = await rows<{ id: string }>(ceo, "/students?pageSize=5");
+  if (!packageGroupId) {
+    const like = await getJson<{ branchId: string; courseId: string }>(ceo, `/groups/${g}`);
+    const created = await mutate<{ id: string }>(ceo, "post", "/groups", {
+      branchId: like.branchId,
+      name: DEMO.packageGroup,
+      courseId: like.courseId,
+      billingMode: "PACKAGES",
+      weekdayPattern: "ODD",
+      slots: [1, 3, 5].map((weekday) => ({ weekday, startTime: "16:00", endTime: "17:00" })),
+      startDate: `${today.slice(0, 8)}01`,
+      ignoreClashes: true,
+    });
+    packageGroupId = created.id;
+    for (const student of students.slice(0, 2)) {
+      await mutate(ceo, "post", `/groups/${packageGroupId}/members`, {
+        studentId: student.id,
+        joinedAt: `${today.slice(0, 8)}01`,
+      });
+    }
+    const eight = await mutate<{ id: string }>(ceo, "post", `/groups/${packageGroupId}/packages`, {
+      name: "8 lessons",
+      lessons: 8,
+      price: 480000,
+    });
+    await mutate(ceo, "post", `/groups/${packageGroupId}/packages`, {
+      name: "12 lessons",
+      lessons: 12,
+      price: 660000,
+      sortOrder: 1,
+    });
+    const sold = await getJson<{ credits: Array<{ membershipId: string }> }>(
+      ceo,
+      `/groups/${packageGroupId}/packages`,
+    );
+    const methods = await rows<{ id: string }>(ceo, "/payment-methods");
+    if (sold.credits[0] && methods[0]) {
+      await mutate(ceo, "post", `/groups/${packageGroupId}/packages/sell`, {
+        membershipId: sold.credits[0].membershipId,
+        packageId: eight.id,
+        paymentMethodId: methods[0].id,
+        paidAt: today,
+      });
+    }
+  }
+  base.packageGroupId = packageGroupId;
+
+  // Two siblings, so there is a parents' page to show.
+  if (students.length >= 2) {
+    const first = students[0]!.id;
+    let family = await getJson<{ url: string } | null>(ceo, `/students/${first}/family/page`);
+    if (!family) {
+      await mutate(ceo, "post", `/students/${first}/family/link`, { studentId: students[1]!.id });
+      family = await getJson<{ url: string } | null>(ceo, `/students/${first}/family/page`);
+    }
+    base.familyToken = family?.url.split("/").pop() ?? null;
+  }
 }
 
 /** Today's date in Tashkent (UTC+5), as the app counts days. */
@@ -311,7 +582,10 @@ const CEO_SHOTS: Shot[] = [
     name: "payment-dialog",
     take: async ({ page, locale }) => {
       await go(page, locale, "/students");
-      await page.getByTestId("student-row").first().getByRole("link").first().click();
+      // A student of a monthly group who owes something, so the dialog has a balance to show.
+      const rows = page.getByTestId("student-row");
+      const debtor = rows.filter({ hasText: "Demo Student One" });
+      await ((await debtor.count()) > 0 ? debtor : rows).first().getByRole("link").first().click();
       await page.getByTestId("pay-student").click();
       await page.getByTestId("payment-info").waitFor();
       await shotPage(page, locale, "payment-dialog");
@@ -673,6 +947,23 @@ const CEO_SHOTS: Shot[] = [
       await shotPage(page, locale, "organizations");
     },
   },
+  {
+    name: "account",
+    take: async ({ page, locale }) => {
+      await go(page, locale, "/account");
+      await page.getByTestId("account-title").waitFor();
+      await shotPage(page, locale, "account");
+    },
+  },
+  {
+    name: "group-packages",
+    take: async ({ page, locale, packageGroupId }) => {
+      if (!packageGroupId) throw new Error("no group that sells lesson packages");
+      await go(page, locale, `/groups/${packageGroupId}?tab=packages`);
+      await page.getByTestId("tab-packages").waitFor();
+      await shotPage(page, locale, "group-packages");
+    },
+  },
 ];
 
 /** Shots taken as a teacher, on the group they teach. */
@@ -753,6 +1044,30 @@ const TEACHER_SHOTS: Shot[] = [
       await shotPage(page, locale, "my-salary");
     },
   },
+  {
+    name: "checking",
+    take: async ({ page, locale }) => {
+      await go(page, locale, "/checking");
+      await page.getByTestId("checking-item").first().waitFor();
+      await shotPage(page, locale, "checking");
+    },
+  },
+  {
+    name: "stream",
+    take: async ({ page, locale, teacherGroupId }) => {
+      await go(page, locale, `/groups/${teacherGroupId}?tab=stream`);
+      await scrollTo(page.getByTestId("tab-stream"));
+      await shotPage(page, locale, "stream");
+    },
+  },
+  {
+    name: "group-chat",
+    take: async ({ page, locale, teacherGroupId }) => {
+      await go(page, locale, `/groups/${teacherGroupId}?tab=chat`);
+      await scrollTo(page.getByTestId("tab-chat"));
+      await shotPage(page, locale, "group-chat");
+    },
+  },
 ];
 
 /** Shots of a student's personal page; no sign-in. */
@@ -778,34 +1093,361 @@ const STUDENT_SHOTS: Shot[] = [
       });
     },
   },
-  {
-    name: "portal-homework",
+  ...(
+    [
+      ["portal-lessons", null],
+      ["portal-homework", "homework"],
+      ["portal-chat", "chat"],
+      ["portal-materials", "materials"],
+      ["portal-stream", "stream"],
+      ["portal-tests", "tests"],
+      ["portal-results", "results"],
+    ] as const
+  ).map(([name, tab]): Shot => ({
+    name,
     take: async ({ page, locale, studentToken }) => {
       await go(page, locale, `/class/${studentToken}`);
-      await page.getByTestId("portal-tab-homework").click();
-      await scrollTo(page.getByTestId("portal-tab-homework"));
-      await shotPage(page, locale, "portal-homework");
+      await page.getByTestId("class-title").waitFor();
+      if (tab) await page.getByTestId(`portal-tab-${tab}`).click();
+      await shotCard(page.getByTestId("portal-tabs"), locale, name);
     },
-  },
+  })),
   {
     name: "portal-money",
     take: async ({ page, locale, studentToken }) => {
       await go(page, locale, `/class/${studentToken}?paid=1`);
       await page.getByTestId("class-title").waitFor();
-      await scrollTo(page.getByTestId("portal-tab-homework"));
-      await shotPage(page, locale, "portal-money");
+      await shotCard(page.getByTestId("portal-tabs"), locale, "portal-money");
     },
   },
   {
-    name: "portal-tests",
-    take: async ({ page, locale, studentToken }) => {
-      await go(page, locale, `/class/${studentToken}`);
-      await page.getByTestId("portal-tab-tests").click();
-      await scrollTo(page.getByTestId("portal-tab-tests"));
-      await shotPage(page, locale, "portal-tests");
+    name: "student-login",
+    take: async ({ page, locale }) => {
+      await go(page, locale, "/student/login");
+      await page.getByTestId("student-login").waitFor();
+      await shotPage(page, locale, "student-login");
+    },
+  },
+  {
+    name: "family-page",
+    take: async ({ page, locale, familyToken }) => {
+      if (!familyToken) throw new Error("no family in the demo data");
+      await go(page, locale, `/family/${familyToken}`);
+      await page.getByTestId("family-portal").waitFor();
+      await shotPage(page, locale, "family-page");
+    },
+  },
+  {
+    name: "web-form",
+    take: async ({ page, locale }) => {
+      await go(page, locale, "/forms/website");
+      await shotPage(page, locale, "web-form");
     },
   },
 ];
+
+/* ----- the video lesson: a real call between two browsers ---------------------------------- */
+
+const CALL_SHOTS = [
+  "video-room",
+  "video-show-file",
+  "portal-video-phone",
+  "video-whiteboard",
+  "video-poll",
+] as const;
+
+/** A drawn portrait as a one-frame MJPEG file: what Chromium's fake camera plays instead of its test pattern. */
+async function cameraFile(browser: Browser, dir: string, who: "teacher" | "student") {
+  const [back, wall, figure] =
+    who === "teacher" ? ["#24336b", "#31427f", "#e4e9fa"] : ["#0f8a83", "#17a39a", "#e6f7f4"];
+  const page = await browser.newPage({ viewport: { width: 640, height: 480 } });
+  await page.setContent(`<body style="margin:0"><svg xmlns="http://www.w3.org/2000/svg" width="640" height="480">
+    <rect width="640" height="480" fill="${back}"/>
+    <rect x="0" y="0" width="640" height="300" fill="${wall}"/>
+    <rect x="430" y="60" width="150" height="110" rx="6" fill="${back}" opacity="0.55"/>
+    <circle cx="320" cy="178" r="62" fill="${figure}"/>
+    <path d="M176 420c0-98 64-150 144-150s144 52 144 150z" fill="${figure}"/>
+  </svg></body>`);
+  const jpeg = await page.screenshot({ type: "jpeg", quality: 90 });
+  await page.close();
+  const file = path.join(dir, `${who}.mjpeg`);
+  writeFileSync(file, jpeg);
+  return file;
+}
+
+/** A browser with a camera and microphone that need no permission prompt and no real device. */
+function launchForCall(camera: string): Promise<Browser> {
+  return chromium.launch({
+    ...(process.env.PLAYWRIGHT_CHROMIUM_PATH
+      ? { executablePath: process.env.PLAYWRIGHT_CHROMIUM_PATH }
+      : {}),
+    args: [
+      "--use-fake-device-for-media-stream",
+      "--use-fake-ui-for-media-stream",
+      "--disable-features=WebRtcHideLocalIpsWithMdns",
+      `--use-file-for-fake-video-capture=${camera}`,
+    ],
+  });
+}
+
+/** On a phone a side panel fills the screen; its own close button brings the room back. */
+async function closePhonePanel(page: Page) {
+  await page.locator("aside button").first().click();
+}
+
+/** One pen stroke through `points`, given as fractions of the box. */
+async function stroke(page: Page, el: Locator, points: Array<[number, number]>) {
+  const box = await el.boundingBox();
+  if (!box) throw new Error("nothing to draw on");
+  const at = ([x, y]: [number, number]) => [box.x + box.width * x, box.y + box.height * y] as const;
+  const [x0, y0] = at(points[0]!);
+  await page.mouse.move(x0, y0);
+  await page.mouse.down();
+  for (const point of points.slice(1)) {
+    const [x, y] = at(point);
+    await page.mouse.move(x, y, { steps: 6 });
+  }
+  await page.mouse.up();
+}
+
+/**
+ * The teacher starts the group's video lesson, a student joins from a phone,
+ * and the room is pictured as the lesson goes: chat and a raised hand, a file
+ * shown to everyone, the whiteboard, a poll. The call is ended afterwards.
+ */
+async function callShots(base: Base, failures: string[]) {
+  if (only && !CALL_SHOTS.some((name) => only.includes(name))) return;
+  const { locale } = base;
+  const dir = mkdtempSync(path.join(os.tmpdir(), "kampus-help-"));
+  const teacherBrowser = await launchForCall(await cameraFile(base.browser, dir, "teacher"));
+  const studentBrowser = await launchForCall(await cameraFile(base.browser, dir, "student"));
+  const step = async (name: (typeof CALL_SHOTS)[number], take: () => Promise<void>) => {
+    try {
+      await take();
+      if (!only || only.includes(name)) process.stdout.write(`  ${locale}/${name}\n`);
+    } catch (error) {
+      failures.push(`${locale}/${name}: ${(error as Error).message.split("\n")[0]}`);
+    }
+  };
+  const wanted = (name: (typeof CALL_SHOTS)[number]) => !only || only.includes(name);
+  try {
+    const media = { permissions: ["camera", "microphone"] };
+    const [, teacher] = await newPage(teacherBrowser, media);
+    teacher.setDefaultTimeout(30_000);
+    await signIn(teacher, locale, TEACHER);
+    await go(teacher, locale, `/groups/${base.teacherGroupId}`);
+    const card = teacher.getByTestId("group-video");
+    const start = card.getByTestId("video-start");
+    await start.or(card.getByTestId("video-join")).first().waitFor();
+    // A call left open by an earlier run is joined instead of started.
+    await ((await start.isVisible()) ? start : card.getByTestId("video-join")).click();
+    await teacher.getByTestId("join-call").click();
+    await teacher.getByTestId("call-room").waitFor();
+
+    const [, student] = await newPage(studentBrowser, {
+      ...media,
+      viewport: { width: 390, height: 844 },
+      deviceScaleFactor: 2,
+      isMobile: true,
+      hasTouch: true,
+    });
+    student.setDefaultTimeout(30_000);
+    await go(student, locale, `/class/${base.studentToken}`);
+    await student.getByTestId("join-call").click();
+    await student.getByTestId("call-room").waitFor();
+    await teacher.getByTestId("tile-peer").first().waitFor();
+    // The pictures need a moment to arrive on both sides.
+    await teacher.waitForTimeout(4000);
+
+    await step("video-room", async () => {
+      await student.getByTestId("toggle-hand").click();
+      await teacher.getByTestId("toggle-chat").click();
+      await teacher.getByTestId("chat-input").fill(DEMO.callChat);
+      await teacher.getByTestId("chat-send").click();
+      await student.getByTestId("toggle-chat").click();
+      await student.getByTestId("chat-input").fill(DEMO.callReply);
+      await student.getByTestId("chat-input").press("Enter");
+      await closePhonePanel(student);
+      await teacher.getByTestId("chat-message").nth(1).waitFor();
+      await teacher.getByTestId("hand-mark").first().waitFor();
+      if (wanted("video-room")) await shotPage(teacher, locale, "video-room");
+      await teacher.getByTestId("toggle-chat").click();
+      await student.getByTestId("toggle-hand").click();
+    });
+
+    await step("video-show-file", async () => {
+      await teacher.getByTestId("toggle-lesson").click();
+      const panel = teacher.getByTestId("lesson-panel");
+      await panel
+        .getByTestId("lesson-material")
+        .filter({ hasText: DEMO.material })
+        .first()
+        .getByTestId("lesson-material-show")
+        .click();
+      const stage = teacher.getByTestId("material-stage");
+      await stage.getByTestId("material-pdf-page").waitFor();
+      await stage.getByTestId("material-next").click();
+      await teacher.waitForTimeout(1500);
+      await stage.getByTestId("material-pen").click();
+      const sheet = stage.getByTestId("material-page-box");
+      // Underline the three verbs that take an "s".
+      for (const [from, to, y] of [
+        [0.455, 0.515, 0.49],
+        [0.445, 0.495, 0.595],
+        [0.425, 0.495, 0.7],
+      ] as const) {
+        await stroke(teacher, sheet, [
+          [from, y],
+          [(from + to) / 2, y + 0.004],
+          [to, y],
+        ]);
+      }
+      await teacher.waitForTimeout(800);
+      if (wanted("video-show-file")) await shotPage(teacher, locale, "video-show-file");
+    });
+
+    await step("portal-video-phone", async () => {
+      await student.getByTestId("material-stage").getByTestId("material-pdf-page").waitFor();
+      await student.waitForTimeout(1500);
+      if (wanted("portal-video-phone")) await shotPage(student, locale, "portal-video-phone");
+    });
+    // Whatever happened above, take the file off the screens and close the panel.
+    await teacher
+      .getByTestId("material-stop")
+      .click({ timeout: 5000 })
+      .catch(() => undefined);
+    if (await teacher.getByTestId("lesson-panel").isVisible()) {
+      await teacher.getByTestId("toggle-lesson").click();
+    }
+
+    await step("video-whiteboard", async () => {
+      await teacher.getByTestId("toggle-board").click();
+      const canvas = teacher.getByTestId("board-canvas");
+      await canvas.waitFor();
+      // A timeline: yesterday, today, tomorrow.
+      await stroke(teacher, canvas, [
+        [0.12, 0.5],
+        [0.5, 0.5],
+        [0.88, 0.5],
+      ]);
+      for (const x of [0.25, 0.5, 0.75]) {
+        await stroke(teacher, canvas, [
+          [x, 0.42],
+          [x, 0.58],
+        ]);
+      }
+      await stroke(teacher, canvas, [
+        [0.84, 0.44],
+        [0.88, 0.5],
+        [0.84, 0.56],
+      ]);
+      // Two hops along it: from yesterday to today, from today to tomorrow.
+      for (const x of [0.25, 0.5]) {
+        await stroke(teacher, canvas, [
+          [x, 0.4],
+          [x + 0.06, 0.3],
+          [x + 0.125, 0.27],
+          [x + 0.19, 0.3],
+          [x + 0.25, 0.4],
+        ]);
+      }
+      await teacher.waitForTimeout(800);
+      if (wanted("video-whiteboard")) await shotPage(teacher, locale, "video-whiteboard");
+      await teacher.getByTestId("toggle-board").click();
+    });
+
+    await step("video-poll", async () => {
+      await teacher.getByTestId("toggle-poll").click();
+      // A call left open by an earlier run may already hold a poll.
+      if (await teacher.getByTestId("poll-new").isVisible()) {
+        await teacher.getByTestId("poll-new").click();
+      }
+      await teacher.getByTestId("poll-question-input").fill(DEMO.poll.question);
+      const inputs = teacher.getByTestId("poll-option-input");
+      await inputs.nth(0).fill(DEMO.poll.options[0]!);
+      await inputs.nth(1).fill(DEMO.poll.options[1]!);
+      await teacher.getByTestId("poll-open").click();
+      await student.getByTestId("poll-notice").click();
+      await student.getByTestId("poll-option").first().click();
+      await closePhonePanel(student);
+      await teacher.getByTestId("poll-question").waitFor();
+      await teacher.waitForTimeout(2500);
+      if (wanted("video-poll")) await shotPage(teacher, locale, "video-poll");
+      await teacher.getByTestId("poll-close").click();
+    });
+
+    await teacher.getByTestId("end-call").click();
+    await teacher.getByRole("alertdialog").getByRole("button").last().click();
+    await teacher.getByTestId("call-done").waitFor();
+  } catch (error) {
+    failures.push(`${locale}/video lesson: ${(error as Error).message.split("\n")[0]}`);
+  } finally {
+    await teacherBrowser.close();
+    await studentBrowser.close();
+  }
+}
+
+/* ----- the sign-in page, the way a centre that signs in with Telegram only has it ------------ */
+
+/** A staff session opened through the server's stand-in for Telegram (TELEGRAM_LOGIN_FAKE=1). */
+async function telegramSession(
+  browser: Browser,
+  locale: string,
+): Promise<[BrowserContext, Page] | null> {
+  const [context, page] = await newPage(browser);
+  try {
+    await go(page, locale, "/login");
+    const href = await page.getByTestId("login-telegram").getAttribute("href", { timeout: 5000 });
+    const res = await page.request.get(new URL(href!, BASE).toString(), { maxRedirects: 0 });
+    const auth = new URL(res.headers()["location"]!);
+    const back = new URL(auth.searchParams.get("redirect_uri")!);
+    back.searchParams.set("state", auth.searchParams.get("state")!);
+    const claims = { id: "700000001", name: "Demo CEO", phone_number: CEO.replace("+", "") };
+    back.searchParams.set(
+      "code",
+      `fake.${Buffer.from(JSON.stringify(claims)).toString("base64url")}`,
+    );
+    await page.goto(back.toString());
+    await page.waitForURL(/\/(dashboard|today|groups)/, { timeout: 15_000 });
+    return [context, page];
+  } catch {
+    await context.close();
+    return null;
+  }
+}
+
+async function setTelegramOnly(page: Page, on: boolean) {
+  const settings = await getJson<Record<string, unknown>>(page, "/settings/org");
+  await mutate(page, "put", "/settings/org", { ...settings, staffTelegramOnly: on });
+}
+
+async function loginShot(browser: Browser, locale: string, failures: string[]) {
+  if (only && !only.includes("login")) return;
+  // Only a Telegram session may switch passwords off, and the same one switches them back on.
+  const session = await telegramSession(browser, locale);
+  if (!session) {
+    process.stdout.write(
+      "  (no stand-in for Telegram on the server: the sign-in page keeps its password form)\n",
+    );
+  }
+  const [anon, anonPage] = await newPage(browser);
+  try {
+    if (session) await setTelegramOnly(session[1], true);
+    await go(anonPage, locale, "/login");
+    await shotPage(anonPage, locale, "login");
+    process.stdout.write(`  ${locale}/login\n`);
+  } catch (error) {
+    failures.push(`${locale}/login: ${(error as Error).message.split("\n")[0]}`);
+  } finally {
+    if (session) {
+      await setTelegramOnly(session[1], false).catch((error: Error) =>
+        failures.push(`${locale}/login: passwords were not switched back on: ${error.message}`),
+      );
+      await session[0].close();
+    }
+    await anon.close();
+  }
+}
 
 async function run(shots: Shot[], ctx: Ctx, failures: string[]) {
   for (const shot of shots) {
@@ -819,10 +1461,14 @@ async function run(shots: Shot[], ctx: Ctx, failures: string[]) {
   }
 }
 
-async function newPage(browser: Browser): Promise<[BrowserContext, Page]> {
+async function newPage(
+  browser: Browser,
+  options: Parameters<Browser["newContext"]>[0] = {},
+): Promise<[BrowserContext, Page]> {
   const context = await browser.newContext({
     viewport: { width: 1280, height: 800 },
     deviceScaleFactor: 1,
+    ...options,
   });
   // The development build's status badge has no place in a manual.
   await context.addInitScript(() => {
@@ -850,19 +1496,6 @@ async function main() {
   for (const locale of LOCALES) {
     mkdirSync(path.join(OUT, locale), { recursive: true });
 
-    // The login page itself, before anyone signs in.
-    const [anon, anonPage] = await newPage(browser);
-    if (!only || only.includes("login")) {
-      try {
-        await go(anonPage, locale, "/login");
-        await shotPage(anonPage, locale, "login");
-        process.stdout.write(`  ${locale}/login\n`);
-      } catch (error) {
-        failures.push(`${locale}/login: ${(error as Error).message.split("\n")[0]}`);
-      }
-    }
-    await anon.close();
-
     // The teacher's group and one student's link, read through the API.
     const [teacherCtx, teacherPage] = await newPage(browser);
     await signIn(teacherPage, locale, TEACHER);
@@ -874,19 +1507,38 @@ async function main() {
     );
     const links = (await linksRes.json()) as Array<{ token: string }>;
     const studentToken = links[0]!.token;
-    const base = { locale, browser, teacherGroupId, studentToken };
+    const base: Base = {
+      locale,
+      browser,
+      teacherGroupId,
+      studentToken,
+      packageGroupId: null,
+      familyToken: null,
+    };
+
+    const [ceoCtx, ceoPage] = await newPage(browser);
+    await signIn(ceoPage, locale, CEO);
+    try {
+      await prepare(ceoPage, teacherPage, base);
+    } catch (error) {
+      failures.push(`${locale}/demo rows: ${(error as Error).message.split("\n")[0]}`);
+    }
+
+    // The call first: the group page then shows its last video lesson.
+    await callShots(base, failures);
 
     await run(TEACHER_SHOTS, { ...base, page: teacherPage }, failures);
     await teacherCtx.close();
 
-    const [ceoCtx, ceoPage] = await newPage(browser);
-    await signIn(ceoPage, locale, CEO);
     await run(CEO_SHOTS, { ...base, page: ceoPage }, failures);
     await ceoCtx.close();
 
     const [studentCtx, studentPage] = await newPage(browser);
     await run(STUDENT_SHOTS, { ...base, page: studentPage }, failures);
     await studentCtx.close();
+
+    // Last, so that the password sessions above are over when passwords go off for a moment.
+    await loginShot(browser, locale, failures);
   }
 
   await browser.close();

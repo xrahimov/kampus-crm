@@ -1,6 +1,9 @@
+import { existsSync, readdirSync } from "node:fs";
+import path from "node:path";
+
 import { describe, expect, it } from "vitest";
 
-import { HELP_ARTICLES, HELP_AUDIENCES } from "@/features/help/catalog";
+import { HELP_ARTICLES, HELP_AUDIENCES, type HelpSectionSpec } from "@/features/help/catalog";
 import { en } from "@/features/help/content/en";
 import { ru } from "@/features/help/content/ru";
 import type { HelpSectionText } from "@/features/help/content/types";
@@ -10,6 +13,26 @@ import { searchHelp, tokenize } from "@/features/help/search";
 const LANGS = { en, ru, uz };
 
 describe("help catalogue", () => {
+  it("ships every picture it names, in every language, and no picture nobody names", () => {
+    const named = new Set<string>();
+    for (const spec of HELP_ARTICLES) {
+      for (const section of spec.sections as readonly HelpSectionSpec[]) {
+        if (section.screenshot) named.add(section.screenshot);
+        for (const name of section.more ?? []) named.add(name);
+      }
+    }
+    for (const lang of Object.keys(LANGS)) {
+      const dir = path.join(process.cwd(), "public", "help", lang);
+      for (const name of named) {
+        expect(existsSync(path.join(dir, `${name}.jpg`)), `${lang}/${name}.jpg`).toBe(true);
+      }
+      const unused = readdirSync(dir)
+        .map((file) => file.replace(/\.jpg$/, ""))
+        .filter((name) => !named.has(name));
+      expect(unused, `${lang}: pictures no section shows`).toEqual([]);
+    }
+  });
+
   it("has text in every language for every article, section and audience", () => {
     for (const [lang, content] of Object.entries(LANGS)) {
       for (const spec of HELP_ARTICLES) {

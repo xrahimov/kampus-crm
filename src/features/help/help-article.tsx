@@ -4,7 +4,7 @@ import { getTranslations } from "next-intl/server";
 import { Button } from "@/components/ui/button";
 import { Link } from "@/i18n/navigation";
 
-import type { HelpArticleSpec } from "./catalog";
+import type { HelpArticleSpec, HelpSectionSpec } from "./catalog";
 import type { HelpArticleText, HelpBlock, HelpContent, HelpSectionText } from "./content";
 import { HelpMarkup } from "./help-markup";
 import { HelpScreenshot } from "./help-screenshot";
@@ -116,6 +116,14 @@ export async function HelpArticle({
                 )}
                 {section.text.body.map((block, i) => (
                   <Block key={i} block={block} />
+                ))}
+                {(section as HelpSectionSpec).more?.map((name) => (
+                  <HelpScreenshot
+                    key={name}
+                    locale={locale}
+                    name={name}
+                    caption={section.text.title}
+                  />
                 ))}
               </section>
             ))}

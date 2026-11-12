@@ -234,7 +234,7 @@ export function PortalPage({
       <TimeZoneCard token={token} timeZone={portal.student.timeZone} />
       {referral && <ReferralCard referral={referral} />}
 
-      <Card>
+      <Card data-testid="portal-tabs">
         <CardContent className="pt-6">
           <Tabs defaultValue={initialTab === "money" && showMoney ? "money" : "lessons"}>
             <TabsList className="w-full justify-start overflow-x-auto">

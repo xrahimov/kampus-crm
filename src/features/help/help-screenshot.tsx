@@ -1,6 +1,10 @@
 import Image from "next/image";
 
-/** Screenshots are 1280×800 captures from the demo data, one set per language. */
+/**
+ * Screenshots are captures from the demo data, one set per language: most are
+ * a 1280×800 page, some a single card or a phone screen. Each is shown at its
+ * own size, never stretched, and a tall one is held to a readable height.
+ */
 export const SCREENSHOT_WIDTH = 1280;
 export const SCREENSHOT_HEIGHT = 800;
 
@@ -25,7 +29,7 @@ export function HelpScreenshot({
         width={SCREENSHOT_WIDTH}
         height={SCREENSHOT_HEIGHT}
         unoptimized
-        className="block h-auto w-full"
+        className="mx-auto block h-auto max-h-[40rem] w-auto max-w-full"
       />
       <figcaption className="border-t px-3 py-1.5 text-xs text-muted-foreground">
         {caption}
