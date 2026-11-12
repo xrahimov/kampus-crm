@@ -32,9 +32,6 @@ import { CoinReasonDialog } from "./coin-reason-dialog";
 
 type RuleDraft = { event: CoinEvent; amount: string; isActive: boolean };
 
-/** Rules without a trigger in v1 (A-79): shown, saved, not yet fired. */
-const UNWIRED: CoinEvent[] = ["HOMEWORK"];
-
 /** Settings → "Coin sozlamalari" (EXP §8): automatic rules and manual reasons. */
 export function CoinsSettingsPage({
   settings,
@@ -124,9 +121,6 @@ export function CoinsSettingsPage({
                   <TableRow key={rule.event} data-testid="coin-rule">
                     <TableCell>
                       <div className="font-medium">{t(`events.${rule.event}`)}</div>
-                      {UNWIRED.includes(rule.event) && (
-                        <div className="text-xs text-muted-foreground">{t("notWired")}</div>
-                      )}
                     </TableCell>
                     <TableCell>
                       <Input

@@ -307,9 +307,19 @@ test.describe("video lessons", () => {
       .getByRole("button", { name: "End for everyone" })
       .click();
     await expect(teacher.getByTestId("call-done")).toContainText("The video lesson has ended.");
+    // The card no longer asks to check the camera and join.
+    await expect(teacher.getByText(/Check your camera and microphone/)).toHaveCount(0);
     await expect(student.getByTestId("call-done")).toContainText("The video lesson has ended.", {
       timeout: 15_000,
     });
+
+    // With no lesson running the student's camera stays off until they ask to check it.
+    await student.reload();
+    await expect(student.getByTestId("lobby-check")).toBeVisible();
+    await expect(student.getByTestId("lobby-preview")).toHaveCount(0);
+    await expect(student.getByTestId("join-call")).toBeDisabled();
+    await student.getByTestId("lobby-check").click();
+    await expect(student.getByTestId("lobby-preview")).toBeVisible();
 
     await teacher.goto(`/en/groups/${groupId}`);
     await expect(teacher.getByTestId("video-start")).toBeVisible();

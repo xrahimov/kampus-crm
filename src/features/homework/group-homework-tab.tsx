@@ -35,6 +35,7 @@ import { FormDialog } from "@/features/settings/shared/form-dialog";
 import { useRouter } from "@/i18n/navigation";
 import { api, ApiError, uploadFile } from "@/lib/api-client";
 import { parseDateOnly } from "@/lib/dates";
+import { defaultHomeworkLesson } from "@/lib/homework";
 import { useDateFormat } from "@/lib/use-date-format";
 import type { RubricCriterion } from "@/lib/validation/groups";
 import type {
@@ -132,6 +133,7 @@ export function GroupHomeworkTab({
         open={editing !== null}
         homework={editing === "new" ? null : editing}
         lessons={data.lessons}
+        today={data.today}
         onOpenChange={(open) => !open && setEditing(null)}
         onSaved={refresh}
       />
@@ -177,6 +179,8 @@ function HomeworkCard({
 }) {
   const t = useTranslations("groups.homework");
   const [reviewing, setReviewing] = useState<HomeworkSubmissionDto | null>(null);
+  // An answer waiting for a check can go either way; the dialog follows the button pressed.
+  const [returning, setReturning] = useState(false);
   const [exercises, setExercises] = useState(false);
   const answered = homework.submissions.filter((s) => s.status !== null).length;
   const accepted = homework.submissions.filter((s) => s.status === "ACCEPTED").length;
@@ -321,17 +325,23 @@ function HomeworkCard({
                     <Button
                       variant="outline"
                       size="sm"
-                      onClick={() => setReviewing(s)}
+                      onClick={() => {
+                        setReturning(false);
+                        setReviewing(s);
+                      }}
                       data-testid="homework-accept"
                     >
                       <Check /> {t("accept")}
                     </Button>
                   )}
-                  {s.status === "ACCEPTED" && (
+                  {(s.status === "ACCEPTED" || s.status === "SUBMITTED") && (
                     <Button
                       variant="ghost"
                       size="sm"
-                      onClick={() => setReviewing(s)}
+                      onClick={() => {
+                        setReturning(true);
+                        setReviewing(s);
+                      }}
                       data-testid="homework-return"
                     >
                       <Undo2 /> {t("return")}
@@ -348,6 +358,7 @@ function HomeworkCard({
         speaking={homework.speaking}
         rubric={homework.rubric}
         submission={reviewing}
+        returning={returning}
         onOpenChange={(open) => !open && setReviewing(null)}
         onSaved={onChanged}
       />
@@ -359,12 +370,14 @@ function HomeworkDialog({
   open,
   homework,
   lessons,
+  today,
   onOpenChange,
   onSaved,
 }: {
   open: boolean;
   homework: HomeworkDto | null;
   lessons: GroupHomeworkDto["lessons"];
+  today: string;
   onOpenChange: (open: boolean) => void;
   onSaved: () => void;
 }) {
@@ -383,7 +396,7 @@ function HomeworkDialog({
   const current = homework?.id ?? null;
   if (open && seen !== current) {
     setSeen(current);
-    setLessonId(homework?.lessonId ?? lessons.find((l) => !l.hasHomework)?.id ?? "");
+    setLessonId(homework?.lessonId ?? defaultHomeworkLesson(lessons, today));
     setAttachmentUrl(homework?.attachmentUrl ?? null);
     setSpeaking(homework?.speaking ?? false);
     setFields({});
@@ -515,6 +528,7 @@ function ReviewDialog({
   speaking,
   rubric,
   submission,
+  returning,
   onOpenChange,
   onSaved,
 }: {
@@ -522,6 +536,8 @@ function ReviewDialog({
   speaking: boolean;
   rubric: RubricCriterion[];
   submission: HomeworkSubmissionDto | null;
+  /** The teacher pressed Return: the answer goes back with the comment. */
+  returning: boolean;
   onOpenChange: (open: boolean) => void;
   onSaved: () => void;
 }) {
@@ -530,7 +546,7 @@ function ReviewDialog({
   const [error, setError] = useState<string | null>(null);
   const [reply, setReply] = useState<File | null>(null);
   const [points, setPoints] = useState<number[]>([]);
-  const accepting = submission?.status !== "ACCEPTED";
+  const accepting = !returning;
   const maxScore = rubric.reduce((sum, c) => sum + c.max, 0);
   // Fresh points each time another answer opens: the stored ones, or zeros.
   const [seen, setSeen] = useState<string | null>(null);

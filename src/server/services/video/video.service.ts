@@ -16,7 +16,7 @@ import { generateToken, safeEqual, sha256 } from "@/server/auth/tokens";
 import { prisma, type DbClient } from "@/server/db/prisma";
 import { AppError } from "@/server/errors/app-error";
 import { authorize, can, type Actor } from "@/server/rbac/authorize";
-import { findGroupInScope, today } from "@/server/services/groups/shared";
+import { centreToday, findGroupInScope } from "@/server/services/groups/shared";
 import { loadIntegrationConfig } from "@/server/services/integrations/integrations.service";
 import { deliverMessage } from "@/server/services/sms/sms.service";
 import { notifyLessonStarted } from "@/server/services/telegram/student-telegram.service";
@@ -430,7 +430,7 @@ export async function getGroupVideo(
     loadVideoConfig(db, actor.organizationId),
     findLiveRoom(db, groupId),
     db.lesson.findFirst({
-      where: { groupId, date: isoToDate(today()) },
+      where: { groupId, date: isoToDate(centreToday()) },
       orderBy: { startTime: "asc" },
     }),
     lastEndedRoom(db, groupId),
@@ -471,7 +471,7 @@ export async function startVideoRoom(
     }
   } else if (input.lessonId === undefined) {
     const lesson = await db.lesson.findFirst({
-      where: { groupId, date: isoToDate(today()) },
+      where: { groupId, date: isoToDate(centreToday()) },
       orderBy: { startTime: "asc" },
     });
     lessonId = lesson?.id ?? null;
@@ -686,11 +686,6 @@ export async function getClassPage(
   };
 }
 
-/** The calendar day in Tashkent, which lessons and trial dates use. */
-function tashkentDate(now = new Date()): string {
-  return new Date(now.getTime() + 5 * 3600_000).toISOString().slice(0, 10);
-}
-
 /** What a trial visitor's link shows (A-172): whose visit, when, and whether class is on. */
 export async function getTrialPage(
   token: string,
@@ -704,7 +699,7 @@ export async function getTrialPage(
     select: { organizationId: true, organization: { select: { name: true } } },
   });
   const date = dateToIso(trial.date);
-  const isToday = date === tashkentDate(now);
+  const isToday = date === centreToday(now);
   const open = isToday && (trial.status === "BOOKED" || trial.status === "ATTENDED");
   const [config, live] = await Promise.all([
     loadVideoConfig(db, branch.organizationId),
@@ -738,7 +733,7 @@ export async function joinVideoRoomAsTrial(
   if (trial.status === "CANCELLED" || trial.status === "NO_SHOW" || trial.status === "CONVERTED") {
     throw AppError.conflict("errors.trialClosed");
   }
-  if (dateToIso(trial.date) !== tashkentDate(now)) throw AppError.conflict("errors.trialNotToday");
+  if (dateToIso(trial.date) !== centreToday(now)) throw AppError.conflict("errors.trialNotToday");
   const config = await loadVideoConfig(db, await organizationOfBranch(db, trial.group.branchId));
   if (!config.enabled) throw AppError.conflict("errors.videoDisabled");
   const live = await findLiveRoom(db, trial.group.id, now);

@@ -18,7 +18,7 @@ import {
   rethrowAsAppError,
 } from "@/server/services/settings/shared";
 
-import { findGroupInScope, ownGroupsOnly, today } from "./shared";
+import { centreToday, findGroupInScope, ownGroupsOnly } from "./shared";
 
 /* Lessons, attendance and grades (EXP §5 DAVOMAT / BAHO tabs). */
 
@@ -330,7 +330,7 @@ export async function markAttendance(
     where: { organizationId: actor.organizationId },
     select: { attendanceOnlyDuringLesson: true },
   });
-  if (settings?.attendanceOnlyDuringLesson && dateToIso(lesson.date) !== today()) {
+  if (settings?.attendanceOnlyDuringLesson && dateToIso(lesson.date) !== centreToday()) {
     throw AppError.forbidden("errors.attendanceOutsideLesson");
   }
   await checkMemberships(

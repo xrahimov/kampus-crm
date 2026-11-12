@@ -3,13 +3,28 @@
 import { Globe } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
-import { useState } from "react";
+import { useState, useSyncExternalStore } from "react";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { APP_TIME_ZONE } from "@/lib/dates";
-import { listTimeZones, timeZoneLabel } from "@/lib/time-zones";
+import { listTimeZones, sameClock, timeZoneLabel } from "@/lib/time-zones";
+
+const noSubscription = () => () => {};
+
+/**
+ * The zone this device reports, or null on the server and during hydration:
+ * the server runs in UTC, so reading it while rendering made the first render
+ * differ from the server's page and React threw the page away on every load.
+ */
+function useDeviceZone(): string | null {
+  return useSyncExternalStore(
+    noSubscription,
+    () => Intl.DateTimeFormat().resolvedOptions().timeZone || null,
+    () => null,
+  );
+}
 
 /*
  * "Your time zone" on the student's page (A-177). A student abroad picks the
@@ -22,9 +37,10 @@ export function TimeZoneCard({ token, timeZone }: { token: string; timeZone: str
   const [value, setValue] = useState(timeZone ?? "");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const device =
-    typeof Intl !== "undefined" ? Intl.DateTimeFormat().resolvedOptions().timeZone : undefined;
-  const deviceDiffers = device && device !== (timeZone ?? APP_TIME_ZONE);
+  const device = useDeviceZone();
+  // Offered only when the device's clock differs from the one in use: a phone in
+  // Uzbekistan often reports Asia/Samarkand, which is the centre's time already.
+  const deviceDiffers = device !== null && !sameClock(device, timeZone ?? APP_TIME_ZONE);
 
   async function save(next: string) {
     setBusy(true);
@@ -74,10 +90,9 @@ export function TimeZoneCard({ token, timeZone }: { token: string; timeZone: str
             aria-label={t("title")}
             data-testid="portal-time-zone-input"
           />
+          {/* The list of zones differs between the server and browsers, so it is drawn in the browser. */}
           <datalist id="portal-time-zone-list">
-            {listTimeZones().map((zone) => (
-              <option key={zone} value={zone} />
-            ))}
+            {device !== null && listTimeZones().map((zone) => <option key={zone} value={zone} />)}
           </datalist>
           <Button type="submit" size="sm" disabled={busy} data-testid="portal-time-zone-save">
             {t("save")}
@@ -88,7 +103,7 @@ export function TimeZoneCard({ token, timeZone }: { token: string; timeZone: str
               size="sm"
               variant="outline"
               disabled={busy}
-              onClick={() => void save(device)}
+              onClick={() => void save(device ?? "")}
               data-testid="portal-time-zone-device"
             >
               {t("useDevice", { zone: device })}

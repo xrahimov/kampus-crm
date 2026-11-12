@@ -1724,7 +1724,9 @@
       "deleteText": "O‘quvchilar uni boshqa ko‘rmaydi. Yozuv fayli ham birga o‘chiriladi.",
       "addedBy": "{name} qo‘shdi",
       "duration": "{minutes} daqiqa",
-      "size": "{mb} MB"
+      "size": "{mb} MB",
+      "adaptive": "moslashuvchan sifatda uzatiladi",
+      "watched": "{started} o‘quvchi ochdi, {finished} tasi oxirigacha ko‘rdi"
     },
     "syllabus": {
       "progress": "{total} mavzudan {done} tasi o‘tildi",
@@ -3386,7 +3388,6 @@
         "REFERRAL": "Tavsiya",
         "VOCAB_STREAK": "So‘z seriyasi (7 kun)"
       },
-      "notWired": "Saqlandi, lekin hali hech narsa ishga tushirmaydi (uy vazifasi yozuvi keyinroq).",
       "reasonsTitle": "Qo‘lda beriladigan coin sabablari",
       "reasonsDescription": "O‘qituvchi coin berishda shulardan birini tanlaydi va maksimumdan oshira olmaydi.",
       "addReason": "Sabab qo‘shish",
@@ -5415,7 +5416,8 @@
     "title": "Video dars",
     "backToGroup": "Guruhga qaytish",
     "staff": {
-      "startedBy": "{name} boshladi. Kamera va mikrofonni tekshirib, qo‘shiling."
+      "startedBy": "{name} boshladi. Kamera va mikrofonni tekshirib, qo‘shiling.",
+      "live": "{name} boshladi."
     },
     "roles": {
       "HOST": "O‘qituvchi",
@@ -5431,7 +5433,12 @@
       "partial": "Brauzer qurilmalarning faqat bir qismiga ruxsat berdi. Baribir qo‘shilish mumkin; kamera va mikrofonni manzil satrida ruxsat bering.",
       "denied": "Kamera yoki mikrofon topilmadi. Ko‘rish va eshitish uchun qo‘shilishingiz mumkin; qatnashish uchun manzil satrida ruxsat bering va sahifani yangilang.",
       "join": "Darsga qo‘shilish",
-      "joining": "Qo‘shilmoqda…"
+      "joining": "Qo‘shilmoqda…",
+      "check": "Kamera va mikrofonni tekshirish"
+    },
+    "player": {
+      "speed": "Tezlik",
+      "resumed": "{time} dan davom etdi"
     },
     "room": {
       "muted": "Mikrofon o‘chiq",

@@ -63,6 +63,16 @@ function offsetMinutes(at: Date, zone: string): number {
   return Math.round((asUtc - at.getTime()) / 60_000);
 }
 
+/** True when two zones show the same wall clock at that instant (Tashkent and Samarkand do). */
+export function sameClock(a: string, b: string, at: Date = new Date()): boolean {
+  if (a === b) return true;
+  try {
+    return offsetMinutes(at, a) === offsetMinutes(at, b);
+  } catch {
+    return false;
+  }
+}
+
 /** The instant at which a wall clock in `zone` reads `date` `time` ("2026-11-06", "19:30"). */
 export function zonedToUtc(date: string, time: string, zone: string): Date {
   const [y, m, d] = date.split("-").map(Number) as [number, number, number];

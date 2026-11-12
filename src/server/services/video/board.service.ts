@@ -2,9 +2,8 @@ import { recordAudit } from "@/server/audit/audit";
 import { prisma, type DbClient } from "@/server/db/prisma";
 import { AppError } from "@/server/errors/app-error";
 import { authorize, type Actor } from "@/server/rbac/authorize";
-import { findGroupInScope } from "@/server/services/groups/shared";
+import { centreToday, findGroupInScope } from "@/server/services/groups/shared";
 import { notifyMaterial } from "@/server/services/telegram/student-telegram.service";
-import { dateToIso } from "@/server/services/settings/shared";
 import { getStorage, newStorageKey } from "@/server/storage/local";
 
 /*
@@ -46,12 +45,14 @@ export async function saveBoardImage(
     throw error;
   }
   if (stored.size === 0) throw AppError.validation({ file: ["validation.fileRequired"] });
-  const date = room.lesson ? dateToIso(room.lesson.date) : dateToIso(room.startedAt);
+  // The day and the time of saving, both on the centre's clock.
+  const now = new Date();
+  const date = centreToday(now);
   const time = new Intl.DateTimeFormat("en-GB", {
     hour: "2-digit",
     minute: "2-digit",
     timeZone: "Asia/Tashkent",
-  }).format(new Date());
+  }).format(now);
   return db.$transaction(async (tx) => {
     const row = await tx.lessonMaterial.create({
       data: {

@@ -13,7 +13,12 @@ import { AppError } from "@/server/errors/app-error";
 import { authorize, type Actor } from "@/server/rbac/authorize";
 import { checkBadges } from "@/server/services/badges/badges.service";
 import { awardAutoCoins } from "@/server/services/coins/coins.service";
-import { findGroupInScope, ownGroupsOnly, today } from "@/server/services/groups/shared";
+import {
+  centreToday,
+  findGroupInScope,
+  ownGroupsOnly,
+  today,
+} from "@/server/services/groups/shared";
 import { dateToIso, isoToDate, mustFind } from "@/server/services/settings/shared";
 import { notifyHomework } from "@/server/services/telegram/student-telegram.service";
 import {
@@ -82,6 +87,8 @@ export interface GroupHomeworkDto {
   items: HomeworkDto[];
   /** Lessons a homework can be set for: past ones and the next two weeks, newest first. */
   lessons: Array<{ id: string; date: string; topic: string | null; hasHomework: boolean }>;
+  /** The centre's day, so the dialog can start on the lesson just taught. */
+  today: string;
 }
 
 /** What one student sees of a homework through their link. */
@@ -233,6 +240,7 @@ export async function listGroupHomework(
       topic: l.topic,
       hasHomework: Boolean(l.homework),
     })),
+    today: centreToday(),
   };
 }
 

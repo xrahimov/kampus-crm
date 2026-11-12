@@ -457,9 +457,9 @@ export const uz: HelpContent = {
             "Har darsga bitta uy vazifasi. O‘quvchilar shaxsiy havolasidan javob beradi; siz har bir javobni shu yerda qabul qilasiz yoki qaytarasiz.",
             {
               steps: [
-                "**Uy vazifasi** yorlig‘ida **Vazifa berish** ni bosing, darsni tanlang va vazifani yozing. Nutq mashqi uchun **Og‘zaki vazifa** ni belgilang: o‘quvchi javobini o‘z sahifasida ovozli yozib oladi. Xohlasangiz, havola yoki fayl va muddat qo‘shing.",
+                "**Uy vazifasi** yorlig‘ida **Vazifa berish** ni bosing, darsni tekshiring (oyna oxirgi o‘tilgan darsda ochiladi) va vazifani yozing. Nutq mashqi uchun **Og‘zaki vazifa** ni belgilang: o‘quvchi javobini o‘z sahifasida ovozli yozib oladi. Xohlasangiz, havola yoki fayl va muddat qo‘shing.",
                 "Har bir vazifa kartochkasi nechta o‘quvchi javob bergani va nechta javobni qabul qilganingizni ko‘rsatadi. Javoblarni o‘qish uchun kartochkani oching; har birida o‘quvchining matni va fayli bor.",
-                "**Qabul qilish** yoki **Qaytarish** ni bosing, kerak bo‘lsa, o‘quvchi uchun izoh bilan; og‘zaki vazifada o‘quvchi yozuvi shu yerda eshitiladi va o‘z ovozli javobingizni yozib olishingiz mumkin. Qaytarilgan javob o‘quvchiga “bajarish kerak” holatida qaytadi.",
+                "Tekshirishni kutayotgan javobda ikkala tugma ham bor: **Qabul qilish** yoki **Qaytarish** ni bosing, kerak bo‘lsa, o‘quvchi uchun izoh bilan; og‘zaki vazifada o‘quvchi yozuvi shu yerda eshitiladi va o‘z ovozli javobingizni yozib olishingiz mumkin. Qaytarilgan javob o‘quvchiga “bajarish kerak” holatida qaytadi.",
               ],
             },
             "Telegramga ulangan o‘quvchilar vazifa berilganda, o‘zgartirilganda, qabul qilinganda yoki qaytarilganda xabar oladi. Uy vazifasi uchun avtomatik coinlar yoqilgan bo‘lsa, qabul qilingan javob coinlarni o‘zi beradi.",
@@ -1286,7 +1286,7 @@ export const uz: HelpContent = {
           body: [
             {
               steps: [
-                "Havolangizni darsdan bir necha daqiqa oldin oching. Yuqori kartochka keyingi dars vaqtini ko‘rsatadi va o‘qituvchini kutadi.",
+                "Havolangizni darsdan bir necha daqiqa oldin oching. Yuqori kartochka keyingi dars vaqtini ko‘rsatadi va o‘qituvchini kutadi. Dars boshlanguncha kamerangiz o‘chiq turadi; oldindan sinab ko‘rish uchun **Kamera va mikrofonni tekshirish** ni bosing.",
                 "O‘qituvchi boshlaganda kartochka o‘zi o‘zgaradi. Brauzer so‘raganda kamera va mikrofonga ruxsat bering, tasviringizni tekshiring va **Darsga qo‘shilish** ni bosing.",
                 "Darsda kamera va mikrofoningizni yoqib-o‘chirishingiz, qo‘l ko‘tarishingiz, chatga yozishingiz va kim borligini ko‘rishingiz mumkin. O‘qituvchi mikrofoningizni o‘chirishi mumkin; siz uni qayta yoqa olasiz.",
                 "Dars tugaganda **Chiqish** ni bosing yoki o‘qituvchi uni yakunlashini kuting.",
