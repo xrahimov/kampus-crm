@@ -398,6 +398,8 @@ model OrgSettings {
   showSetupChecklist         Boolean @default(true)
   /// Staff sign in with Telegram only; the password is refused (A-180).
   staffTelegramOnly          Boolean @default(false)
+  /// The same for every centre on the server; only the site owner's centre can hold it (A-181).
+  staffTelegramOnlyAll       Boolean @default(false)
   /// Students of 1:1 groups may move or cancel their lessons from their page (A-166).
   studentReschedule          Boolean @default(false)
   /// How many hours before the lesson a student may still move or cancel it (A-166).

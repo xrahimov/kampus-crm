@@ -51,9 +51,17 @@ export async function passwordSignInAllowed(
     where: { organizationId },
     select: { staffTelegramOnly: true },
   });
-  if (!settings?.staffTelegramOnly) return true;
+  if (!settings?.staffTelegramOnly && !(await telegramOnlyEverywhere(db))) return true;
   // The switch holds only while the centre has a Telegram login to use instead.
   return !(await telegramSignInReady(db, organizationId));
+}
+
+/**
+ * The site owner switched every centre on the server to Telegram only (A-181).
+ * Only the site owner can save the flag, so one row holding it is the whole rule.
+ */
+export async function telegramOnlyEverywhere(db: DbClient): Promise<boolean> {
+  return (await db.orgSettings.count({ where: { staffTelegramOnlyAll: true } })) > 0;
 }
 
 /** Whether the bot this centre uses (its own or the shared one) has Telegram login keys. */

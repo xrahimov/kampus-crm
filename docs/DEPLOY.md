@@ -147,6 +147,9 @@ when their Telegram number is the phone on their staff card. A centre that wants
 no passwords at all switches on **Staff sign in with Telegram only** under
 Settings → General. The switch can be turned on only by someone who is signed in
 with Telegram at that moment, which proves the login works before passwords go.
+The site owner has a second switch in the same place, **Every centre on this
+server signs in with Telegram only**, which does it for all centres at once, new
+ones included.
 
 ## 7. Update to a new version
 
@@ -291,7 +294,8 @@ the bucket was in use stay there and would have to be copied back by hand.
   `docker compose -f docker-compose.prod.yml up -d app`. Passwords are accepted
   again and the sign-in page shows the password form. Fix the login (section 6),
   then remove the line and run the same command. Passwords also work by
-  themselves whenever the centre's bot has no login keys.
+  themselves whenever the centre's bot has no login keys. The line also overrides
+  the site owner's switch for every centre.
 - **`migrate` failed:** `docker compose -f docker-compose.prod.yml logs migrate`;
   fix `.env` and run `up -d --build` again. Bootstrap errors name the missing variable.
 - **Disk full:** `docker system df`, then `docker image prune -af`; the dumps in

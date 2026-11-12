@@ -37,7 +37,13 @@ type Input = z.input<typeof orgSettingsSchema>;
 type Output = z.output<typeof orgSettingsSchema>;
 
 function toFormValues(settings: OrgSettingsDto): Input {
-  const { organizationId: _id, logoUrl: _logo, ...rest } = settings;
+  const {
+    organizationId: _id,
+    logoUrl: _logo,
+    staffTelegramOnlyServer: _server,
+    canSetStaffTelegramOnlyAll: _can,
+    ...rest
+  } = settings;
   return rest;
 }
 
@@ -56,6 +62,11 @@ export function OrgForm({
   const locale = useLocale();
   const [error, setError] = useState<string | null>(null);
   const [saved, setSaved] = useState(false);
+  // Read-only facts about the server's rule (A-181); they follow the last save.
+  const [server, setServer] = useState({
+    telegramOnly: settings.staffTelegramOnlyServer,
+    canSet: settings.canSetStaffTelegramOnlyAll,
+  });
   const form = useForm<Input, unknown, Output>({
     resolver: zodResolver(orgSettingsSchema),
     defaultValues: toFormValues(settings),
@@ -67,6 +78,10 @@ export function OrgForm({
     try {
       const updated = await api<OrgSettingsDto>("/settings/org", { method: "PUT", body: values });
       form.reset(toFormValues(updated));
+      setServer({
+        telegramOnly: updated.staffTelegramOnlyServer,
+        canSet: updated.canSetStaffTelegramOnlyAll,
+      });
       setSaved(true);
       onSaved();
     } catch (e) {
@@ -76,6 +91,9 @@ export function OrgForm({
 
   const { errors, isSubmitting, isDirty } = form.formState;
   const publicSlug = useWatch({ control: form.control, name: "publicSlug" });
+  const telegramOnlyAll = useWatch({ control: form.control, name: "staffTelegramOnlyAll" });
+  // Someone else's rule for the whole server holds this centre's switch on.
+  const heldByServer = server.telegramOnly && !server.canSet;
 
   return (
     <form onSubmit={form.handleSubmit(onSubmit)} noValidate>
@@ -285,12 +303,45 @@ export function OrgForm({
                 render={({ field }) => (
                   <Switch
                     id="switch-staffTelegramOnly"
-                    checked={field.value === true}
+                    checked={field.value === true || heldByServer || telegramOnlyAll === true}
+                    disabled={heldByServer || telegramOnlyAll === true}
                     onCheckedChange={field.onChange}
                   />
                 )}
               />
             </div>
+            {heldByServer && (
+              <p className="text-xs text-muted-foreground" data-testid="staff-sign-in-held">
+                {t("settings.general.staffSignIn.heldByServer")}
+              </p>
+            )}
+            {server.canSet && (
+              <>
+                <div className="flex items-center justify-between gap-4 rounded-lg border px-4 py-3">
+                  <Label htmlFor="switch-staffTelegramOnlyAll" className="font-normal">
+                    {t("settings.general.staffSignIn.everyCentre")}
+                  </Label>
+                  <Controller
+                    control={form.control}
+                    name="staffTelegramOnlyAll"
+                    render={({ field }) => (
+                      <Switch
+                        id="switch-staffTelegramOnlyAll"
+                        checked={field.value === true}
+                        onCheckedChange={(on) => {
+                          field.onChange(on);
+                          // The rule for every centre includes this one.
+                          if (on) form.setValue("staffTelegramOnly", true, { shouldDirty: true });
+                        }}
+                      />
+                    )}
+                  />
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  {t("settings.general.staffSignIn.everyCentreHint")}
+                </p>
+              </>
+            )}
           </fieldset>
 
           <fieldset className="space-y-3" data-testid="public-page">
