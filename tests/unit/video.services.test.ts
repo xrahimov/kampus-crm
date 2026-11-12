@@ -6,6 +6,7 @@
 import { createHmac } from "node:crypto";
 
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
+import type { z } from "zod";
 
 import { videoBitrate } from "@/features/video/call-engine";
 import { DEFAULT_ROLE_PERMISSIONS } from "@/lib/rbac/default-roles";
@@ -70,7 +71,7 @@ let previousVideo: { isEnabled: boolean; config: unknown } | null = null;
 const sync = (
   id: string,
   secret: string,
-  extra: Partial<Parameters<typeof syncVideoPeer>[1]> = {},
+  extra: Partial<Omit<z.input<typeof videoSyncSchema>, "secret">> = {},
 ) => syncVideoPeer(id, videoSyncSchema.parse({ secret, ...extra }));
 
 beforeAll(async () => {
@@ -375,7 +376,12 @@ describe("video lessons", () => {
         { to: guest.participantId, kind: "react", payload: { reaction: "clap" } },
       ],
     });
-    expect(notHost.stage).toEqual({ spotlight: null, focus: false, board: false });
+    expect(notHost.stage).toEqual({
+      spotlight: null,
+      focus: false,
+      board: false,
+      material: null,
+    });
     const hostStage = await sync(host.participantId, host.secret, {
       room: { spotlight: student.participantId, focus: true, board: false },
       signals: [{ to: student.participantId, kind: "lower", payload: null }],
@@ -384,6 +390,7 @@ describe("video lessons", () => {
       spotlight: student.participantId,
       focus: true,
       board: false,
+      material: null,
     });
     const studentView = await sync(student.participantId, student.secret, {
       state: { audio: true, video: false, screen: false, hand: false },
@@ -392,6 +399,7 @@ describe("video lessons", () => {
       spotlight: student.participantId,
       focus: true,
       board: false,
+      material: null,
     });
     expect(studentView.handRaisedAt).toBeNull();
     expect(studentView.signals.map((s) => [s.from, s.kind])).toEqual([
@@ -405,7 +413,7 @@ describe("video lessons", () => {
     const stray = await sync(host.participantId, host.secret, {
       room: { spotlight: "not-in-this-room", focus: false, board: false },
     });
-    expect(stray.stage).toEqual({ spotlight: null, focus: false, board: false });
+    expect(stray.stage).toEqual({ spotlight: null, focus: false, board: false, material: null });
 
     // Polls (A-153): the teacher asks, the student answers, counts stay hidden until closed.
     const studentOpens = await sync(student.participantId, student.secret, {
@@ -611,6 +619,113 @@ describe("video lessons", () => {
     await expect(getCallLesson(host.participantId, host.secret)).rejects.toMatchObject({
       code: "CONFLICT",
     });
+  });
+
+  it("puts a material on everyone's stage and keeps page and playback for all (A-183)", async () => {
+    const pdf = await addMaterial(teacher, groupA, {
+      lessonId: null,
+      kind: "FILE",
+      title: "Unit 3 slides",
+      url: "/api/v1/files/documents/unit3slides.pdf",
+    });
+    const clip = await addMaterial(teacher, groupA, {
+      lessonId: null,
+      kind: "FILE",
+      title: "Listening 3",
+      url: "/api/v1/files/documents/listening3.mp3",
+    });
+    const room = await startVideoRoom(teacher, groupA, {});
+    const host = await joinVideoRoomAsStaff(teacher, room.id);
+    const student = await joinVideoRoomAsStudent(tokenOne);
+    const stageOf = { spotlight: null, focus: false, board: false };
+
+    // Nothing is shown at first, and a student cannot show anything.
+    const byStudent = await sync(student.participantId, student.secret, {
+      room: { ...stageOf, material: { id: pdf.id } },
+    });
+    expect(byStudent.stage.material).toBeNull();
+    expect(Number.isFinite(Date.parse(byStudent.now))).toBe(true);
+
+    // The teacher shows the PDF: staff open the stored file, students their personal-link copy.
+    const shown = await sync(host.participantId, host.secret, {
+      room: { ...stageOf, material: { id: pdf.id } },
+    });
+    expect(shown.stage.material).toMatchObject({
+      id: pdf.id,
+      title: "Unit 3 slides",
+      view: "pdf",
+      url: "/api/v1/files/documents/unit3slides.pdf",
+      page: 1,
+      playing: false,
+      position: 0,
+    });
+    const seen = await sync(student.participantId, student.secret);
+    expect(seen.stage.material).toMatchObject({
+      id: pdf.id,
+      view: "pdf",
+      url: `/api/v1/public/class/${tokenOne}/files/documents/unit3slides.pdf`,
+      page: 1,
+    });
+
+    // A page turn reaches everyone and does not touch the playback stamp; a stage change
+    // that leaves the material out keeps it.
+    const turned = await sync(host.participantId, host.secret, {
+      room: { ...stageOf, material: { id: pdf.id, page: 4 } },
+    });
+    expect(turned.stage.material).toMatchObject({ page: 4, at: shown.stage.material!.at });
+    const focused = await sync(host.participantId, host.secret, {
+      room: { ...stageOf, focus: true },
+    });
+    expect(focused.stage).toMatchObject({ focus: true, material: { id: pdf.id, page: 4 } });
+    expect((await sync(student.participantId, student.secret)).stage.material?.page).toBe(4);
+
+    // A material of another group (or none at all) is ignored.
+    const stray = await sync(host.participantId, host.secret, {
+      room: { ...stageOf, material: { id: "not-a-material-of-this-group" } },
+    });
+    expect(stray.stage.material?.id).toBe(pdf.id);
+
+    // Audio: play at 12.5 s stamps the moment; the same state sent again keeps the stamp.
+    const playing = await sync(host.participantId, host.secret, {
+      room: { ...stageOf, material: { id: clip.id, playing: true, position: 12.5 } },
+    });
+    expect(playing.stage.material).toMatchObject({
+      id: clip.id,
+      view: "audio",
+      playing: true,
+      position: 12.5,
+    });
+    const stamp = playing.stage.material!.at;
+    expect(Math.abs(Date.parse(stamp) - Date.parse(playing.now))).toBeLessThan(2000);
+    const again = await sync(host.participantId, host.secret, {
+      room: { ...stageOf, material: { id: clip.id, playing: true, position: 12.5 } },
+    });
+    expect(again.stage.material!.at).toBe(stamp);
+    const forStudent = await sync(student.participantId, student.secret);
+    expect(forStudent.stage.material).toMatchObject({
+      playing: true,
+      position: 12.5,
+      at: stamp,
+      url: `/api/v1/public/class/${tokenOne}/files/documents/listening3.mp3`,
+    });
+    const paused = await sync(host.participantId, host.secret, {
+      room: { ...stageOf, material: { id: clip.id, playing: false, position: 20 } },
+    });
+    expect(paused.stage.material).toMatchObject({ playing: false, position: 20 });
+
+    // A deleted material leaves the stage; null stops showing.
+    await prisma.lessonMaterial.delete({ where: { id: clip.id } });
+    expect((await sync(student.participantId, student.secret)).stage.material).toBeNull();
+    await sync(host.participantId, host.secret, {
+      room: { ...stageOf, material: { id: pdf.id } },
+    });
+    const stopped = await sync(host.participantId, host.secret, {
+      room: { ...stageOf, material: null },
+    });
+    expect(stopped.stage.material).toBeNull();
+    expect((await sync(student.participantId, student.secret)).stage.material).toBeNull();
+    await prisma.lessonMaterial.delete({ where: { id: pdf.id } });
+    await endVideoRoom(teacher, room.id);
   });
 
   it("ends a call by itself 150 minutes after it started", async () => {

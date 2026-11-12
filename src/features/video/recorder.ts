@@ -4,8 +4,9 @@ import type { CallEngine } from "./call-engine";
 
 /*
  * Records a video lesson in the teacher's browser (A-105): a canvas shows the
- * shared screen when someone shares one, else the teacher's camera, and every
- * microphone in the room is mixed into one audio track. MediaRecorder turns
+ * material the teacher shows to everyone (A-183), else the shared screen when
+ * someone shares one, else the teacher's camera, and every microphone in the
+ * room (plus a shared screen's own sound) is mixed into one audio track. MediaRecorder turns
  * that into webm (mp4 in Safari); when the teacher stops, the file is uploaded
  * and becomes a material of the lesson.
  */
@@ -105,6 +106,9 @@ export class CallRecorder {
 
   private syncSources(): void {
     const streams = [this.engine.localStream, ...this.engine.peers().map((p) => p.stream)];
+    // The sound of the teacher's own shared screen is not in the microphone's stream.
+    const screenSound = this.engine.screenAudioTrack;
+    if (screenSound) streams.push(new MediaStream([screenSound]));
     const seen = new Set<string>();
     for (const stream of streams) {
       for (const track of stream.getAudioTracks()) {
@@ -134,6 +138,23 @@ export class CallRecorder {
     const ctx = this.ctx;
     ctx.fillStyle = "#0f172a";
     ctx.fillRect(0, 0, WIDTH, HEIGHT);
+    // A shown page, picture or video is what the lesson is about: it goes first.
+    const surface = this.engine.currentStage.material ? this.engine.stageSurface : null;
+    if (surface) {
+      const [sw, sh] =
+        surface instanceof HTMLVideoElement
+          ? [surface.videoWidth, surface.videoHeight]
+          : surface instanceof HTMLImageElement
+            ? [surface.naturalWidth, surface.naturalHeight]
+            : [surface.width, surface.height];
+      if (sw > 0 && sh > 0) {
+        const scale = Math.min(WIDTH / sw, HEIGHT / sh);
+        const w = sw * scale;
+        const h = sh * scale;
+        ctx.drawImage(surface, (WIDTH - w) / 2, (HEIGHT - h) / 2, w, h);
+        return;
+      }
+    }
     const v = this.video;
     if (this.currentTrack && v.videoWidth > 0 && v.videoHeight > 0) {
       const scale = Math.min(WIDTH / v.videoWidth, HEIGHT / v.videoHeight);

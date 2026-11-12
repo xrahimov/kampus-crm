@@ -15,6 +15,7 @@ import type {
   BreakoutDto,
   JoinDto,
   PeerDto,
+  ShownMaterialDto,
   StageDto,
   SyncDto,
 } from "@/server/services/video/video.service";
@@ -122,7 +123,20 @@ export class CallEngine {
   /** Set when the teacher lowered this hand; the room shows a notice. */
   loweredBy: { name: string; at: number } | null = null;
   /** The teacher's spotlight and focus mode, as the server last reported them. */
-  stage: StageDto = { spotlight: null, focus: false, board: false };
+  stage: StageDto = { spotlight: null, focus: false, board: false, material: null };
+  /** This browser's clock minus the server's, in milliseconds (A-183). */
+  private clockOffset = 0;
+  /**
+   * What the shown material looks like in this browser (its page canvas, picture
+   * or video), for the recorder to draw; set by the stage, null otherwise.
+   */
+  stageSurface: HTMLCanvasElement | HTMLImageElement | HTMLVideoElement | null = null;
+  /** The shared screen's sound mixed with the microphone, while a screen with sound is shared. */
+  private screenAudio: {
+    context: AudioContext;
+    mixed: MediaStreamTrack;
+    source: MediaStreamTrack;
+  } | null = null;
   /** The teacher's own change, sent on every poll until the server reports it back. */
   private stageDraft: StageDto | null = null;
   /** When this browser's hand went up (server time), for its place in the queue. */
@@ -290,6 +304,60 @@ export class CallEngine {
     return this.stageDraft ?? this.stage;
   }
 
+  /* ----- a material on everyone's stage (A-183) ------------------------------------------- */
+
+  /** The stage tells the recorder what the shown material looks like here; null when it goes. */
+  setStageSurface(surface: HTMLCanvasElement | HTMLImageElement | HTMLVideoElement | null): void {
+    this.stageSurface = surface;
+  }
+
+  /** The server's clock as this browser reckons it, in milliseconds. */
+  serverNow(): number {
+    return Date.now() - this.clockOffset;
+  }
+
+  /** Teacher only: puts a lesson material on everyone's stage, from its first page or second. */
+  showMaterial(material: Pick<ShownMaterialDto, "id" | "title" | "kind" | "view" | "url">): void {
+    this.setStage({
+      // The pen starts off; the whiteboard's own drawing stays as it was.
+      board: false,
+      material: {
+        ...material,
+        page: 1,
+        playing: false,
+        position: 0,
+        at: new Date(this.serverNow()).toISOString(),
+      },
+    });
+  }
+
+  /** Teacher only: takes the material off everyone's stage. */
+  hideMaterial(): void {
+    if (!this.currentStage.material) return;
+    this.setStage({ material: null, board: false });
+  }
+
+  /** Teacher only: turns the shown material to a page for everyone. */
+  turnMaterialPage(page: number): void {
+    const shown = this.currentStage.material;
+    if (!shown || page < 1 || page === shown.page) return;
+    this.setStage({ material: { ...shown, page } });
+  }
+
+  /** Teacher only: play, pause or jump in the shown video or audio; everyone follows. */
+  setMaterialPlayback(playing: boolean, position: number): void {
+    const shown = this.currentStage.material;
+    if (!shown) return;
+    this.setStage({
+      material: {
+        ...shown,
+        playing,
+        position: Math.max(0, Number(position.toFixed(2))),
+        at: new Date(this.serverNow()).toISOString(),
+      },
+    });
+  }
+
   /**
    * Sends a reaction. Everyone sees ordinary ones on the sender's picture;
    * "slower" and "faster" go only to the teacher and staff.
@@ -366,19 +434,24 @@ export class CallEngine {
     this.broadcastBoard({ op: "stroke", stroke });
   }
 
-  /** Removes this browser's latest stroke everywhere. */
-  undoStroke(): void {
-    const mine = [...this.board].reverse().find((s) => s.by === null);
+  /** Removes this browser's latest stroke on a layer everywhere. */
+  undoStroke(layer = ""): void {
+    const mine = [...this.board].reverse().find((s) => s.by === null && s.layer === layer);
     if (!mine) return;
     this.applyBoard({ op: "undo", id: mine.id }, null);
     this.broadcastBoard({ op: "undo", id: mine.id });
   }
 
-  /** Teacher only: wipes the board for everyone. */
-  clearBoard(): void {
+  /** Teacher only: wipes one layer (the whiteboard, or the pen marks on one page) for everyone. */
+  clearBoard(layer = ""): void {
     if (this.self.role !== "HOST") return;
-    this.applyBoard({ op: "clear" }, null);
-    this.broadcastBoard({ op: "clear" });
+    this.applyBoard({ op: "clear", layer }, null);
+    this.broadcastBoard({ op: "clear", layer });
+  }
+
+  /** The strokes of one layer, in drawing order. */
+  boardLayer(layer: string): Array<BoardStroke & { by: string | null }> {
+    return this.board.filter((s) => s.layer === layer);
   }
 
   /** Teacher only: lets students draw, or stops them. */
@@ -404,7 +477,7 @@ export class CallEngine {
       if (target.by !== from && !fromHost && from !== null) return;
       this.board = this.board.filter((s) => s.id !== op.id);
     } else if (op.op === "clear") {
-      this.board = [];
+      this.board = this.board.filter((s) => s.layer !== op.layer);
     } else if (op.op === "sync") {
       const known = new Set(this.board.map((s) => s.id));
       const fresh = op.strokes.filter((s) => !known.has(s.id)).map((s) => ({ ...s, by: from }));
@@ -543,19 +616,33 @@ export class CallEngine {
     this.changed(true);
   }
 
-  /** Sends the screen instead of the camera until sharing stops. */
+  /**
+   * Sends the screen instead of the camera until sharing stops. Where the browser
+   * can capture a tab's or the computer's sound (Chrome, Edge), that sound is sent
+   * too, mixed with the microphone (A-184). Closing the browser's picker is not an error.
+   */
   async shareScreen(): Promise<void> {
     if (this.screen || !navigator.mediaDevices?.getDisplayMedia) return;
-    const display = await navigator.mediaDevices.getDisplayMedia({
-      video: { frameRate: { ideal: 10, max: 15 } },
-      audio: false,
-    });
+    let display: MediaStream;
+    try {
+      display = await navigator.mediaDevices.getDisplayMedia({
+        video: { frameRate: { ideal: 10, max: 15 } },
+        audio: screenAudioSupported(),
+      });
+    } catch {
+      return;
+    }
     const track = display.getVideoTracks()[0];
-    if (!track) return;
+    if (!track) {
+      for (const t of display.getTracks()) t.stop();
+      return;
+    }
     track.contentHint = "detail";
     track.addEventListener("ended", () => void this.stopScreen());
     this.screen = track;
     await this.replaceVideo(track);
+    const sound = display.getAudioTracks()[0];
+    if (sound) await this.startScreenAudio(sound);
     this.media = { ...this.media, screen: true };
     this.changed(true);
   }
@@ -564,9 +651,69 @@ export class CallEngine {
     if (!this.screen) return;
     this.screen.stop();
     this.screen = null;
+    await this.stopScreenAudio();
     await this.replaceVideo(this.camera);
     this.media = { ...this.media, screen: false };
     this.changed(true);
+  }
+
+  /** The shared screen's own sound, for the recorder; null when none is shared. */
+  get screenAudioTrack(): MediaStreamTrack | null {
+    return this.screenAudio?.source ?? null;
+  }
+
+  /** The audio track peers get: the microphone, or the microphone mixed with a shared screen's sound. */
+  private outgoingAudio(): MediaStreamTrack | null {
+    return this.screenAudio?.mixed ?? this.local.getAudioTracks()[0] ?? null;
+  }
+
+  /**
+   * Mixes the shared screen's sound with the microphone into one track and sends
+   * that. The microphone switch keeps working: a switched-off microphone is
+   * silent in the mix while the screen's sound goes on.
+   */
+  private async startScreenAudio(source: MediaStreamTrack): Promise<void> {
+    try {
+      const context = new AudioContext();
+      const mix = context.createMediaStreamDestination();
+      const microphone = this.local.getAudioTracks()[0];
+      if (microphone) context.createMediaStreamSource(new MediaStream([microphone])).connect(mix);
+      context.createMediaStreamSource(new MediaStream([source])).connect(mix);
+      if (context.state === "suspended") await context.resume().catch(() => undefined);
+      const mixed = mix.stream.getAudioTracks()[0];
+      if (!mixed) {
+        void context.close().catch(() => undefined);
+        source.stop();
+        return;
+      }
+      this.screenAudio = { context, mixed, source };
+      await this.replaceAudio(mixed);
+    } catch {
+      // No mixing in this browser: the screen goes without its sound, the microphone as before.
+      source.stop();
+      this.screenAudio = null;
+    }
+  }
+
+  private async stopScreenAudio(): Promise<void> {
+    const sound = this.screenAudio;
+    if (!sound) return;
+    this.screenAudio = null;
+    await this.replaceAudio(this.local.getAudioTracks()[0] ?? null);
+    sound.source.stop();
+    sound.mixed.stop();
+    void sound.context.close().catch(() => undefined);
+  }
+
+  private async replaceAudio(track: MediaStreamTrack | null): Promise<void> {
+    await Promise.all(
+      [...this.links.values()].map((l) => {
+        const sender = l.pc
+          .getTransceivers()
+          .find((t) => t.receiver.track.kind === "audio" && t.sender)?.sender;
+        return sender?.replaceTrack(track).catch(() => undefined);
+      }),
+    );
   }
 
   get screenTrack(): MediaStreamTrack | null {
@@ -605,6 +752,13 @@ export class CallEngine {
     for (const id of [...this.links.keys()]) this.dropPeer(id);
     for (const t of this.local.getTracks()) t.stop();
     this.screen?.stop();
+    if (this.screenAudio) {
+      this.screenAudio.source.stop();
+      this.screenAudio.mixed.stop();
+      void this.screenAudio.context.close().catch(() => undefined);
+      this.screenAudio = null;
+    }
+    this.stageSurface = null;
   }
 
   /* ----- polling -------------------------------------------------------------------------- */
@@ -666,6 +820,8 @@ export class CallEngine {
       return;
     }
     if (this.status === "connecting") this.status = "live";
+    const serverNow = Date.parse(result.now);
+    if (Number.isFinite(serverNow)) this.clockOffset = Date.now() - serverNow;
     this.stage = result.stage;
     // The server applied the change this poll carried (or dropped a spotlight on someone gone).
     if (sentStage && this.stageDraft === sentStage) this.stageDraft = null;
@@ -755,9 +911,7 @@ export class CallEngine {
     if (link.offerer) {
       for (const kind of ["audio", "video"] as const) {
         const track =
-          kind === "audio"
-            ? (this.local.getAudioTracks()[0] ?? null)
-            : (this.local.getVideoTracks()[0] ?? null);
+          kind === "audio" ? this.outgoingAudio() : (this.local.getVideoTracks()[0] ?? null);
         if (track) pc.addTransceiver(track, { direction: "sendrecv", streams: [this.local] });
         else pc.addTransceiver(kind, { direction: "sendrecv" });
       }
@@ -820,7 +974,7 @@ export class CallEngine {
         for (const t of pc.getTransceivers()) {
           const k = t.receiver.track.kind;
           const track =
-            k === "audio" ? this.local.getAudioTracks()[0] : this.local.getVideoTracks()[0];
+            k === "audio" ? (this.outgoingAudio() ?? undefined) : this.local.getVideoTracks()[0];
           if (track && t.sender.track !== track) await t.sender.replaceTrack(track);
           t.direction = "sendrecv";
         }
@@ -943,4 +1097,13 @@ export function nextCameraId(ids: readonly string[], currentId: string | null): 
   if (ids.length < 2) return null;
   const at = currentId ? ids.indexOf(currentId) : -1;
   return ids[(at + 1) % ids.length] ?? null;
+}
+
+/**
+ * Whether to ask for the screen's sound when sharing. Only Chromium browsers
+ * capture it, and asking elsewhere can make the request fail, so the request is
+ * made only where `navigator.userAgentData` exists (Chrome, Edge, Opera).
+ */
+export function screenAudioSupported(): boolean {
+  return typeof navigator !== "undefined" && "userAgentData" in navigator;
 }

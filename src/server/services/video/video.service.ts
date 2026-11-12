@@ -1,6 +1,7 @@
 import { createHmac } from "node:crypto";
 
-import type { Prisma, VideoPeerRole, VideoRoomStatus } from "@/generated/prisma/client";
+import { Prisma, type VideoPeerRole, type VideoRoomStatus } from "@/generated/prisma/client";
+import { materialView, type MaterialView } from "@/lib/video-material";
 import { slotInZone } from "@/lib/time-zones";
 import { DEFAULT_STUN_URLS } from "@/lib/validation/integrations";
 import {
@@ -29,6 +30,7 @@ import {
   type PollResultDto,
 } from "@/server/services/video/video-polls.service";
 import { dateToIso, isoToDate, organizationOfBranch } from "@/server/services/settings/shared";
+import { fileUrl, studentFileToken } from "@/server/services/video/call-lesson.service";
 import { checkNoShow } from "@/server/services/video/no-show.service";
 import { scheduleLessonSummary } from "@/server/services/telegram/lesson-summary.service";
 
@@ -135,6 +137,24 @@ export interface StageDto {
   focus: boolean;
   /** The shared whiteboard is on everyone's stage (A-155). */
   board: boolean;
+  /** The lesson material on everyone's stage (A-183), or null. */
+  material: ShownMaterialDto | null;
+}
+
+/** A material the teacher shows to everyone, as this browser should open it. */
+export interface ShownMaterialDto {
+  id: string;
+  title: string;
+  kind: "FILE" | "LINK" | "RECORDING";
+  view: MaterialView;
+  /** This participant's own address of the file (students: through their personal link). */
+  url: string;
+  /** The page everyone is on (PDF). */
+  page: number;
+  /** Video and audio: whether it plays, and the second it was at when `at` was stamped. */
+  playing: boolean;
+  position: number;
+  at: string;
 }
 
 /** Breakout rooms as this browser sees them (A-156). */
@@ -167,6 +187,8 @@ export interface SyncDto {
   breakout: BreakoutDto;
   /** Set for the teacher once the 1:1 student was marked absent for not joining (A-167). */
   noShow: string | null;
+  /** The server's clock, so browsers can keep a shown video in step (A-183). */
+  now: string;
 }
 
 /** What a trial visitor's link shows (A-172). */
@@ -803,6 +825,7 @@ export async function syncVideoPeer(
           spotlightId: true,
           focusMode: true,
           boardOpen: true,
+          shownMaterial: true,
           breakoutRooms: true,
           breakoutEndsAt: true,
           noShowAt: true,
@@ -815,11 +838,12 @@ export async function syncVideoPeer(
     status,
     peers: [],
     signals: [],
-    stage: { spotlight: null, focus: false, board: false },
+    stage: { spotlight: null, focus: false, board: false, material: null },
     handRaisedAt: null,
     poll: null,
     breakout: { rooms: 0, endsAt: null, mine: null, everyone: null },
     noShow: null,
+    now: new Date().toISOString(),
   });
   if (await closeIfOverTime(db, me.room)) return gone("ENDED");
   // Left already, or replaced by the same person's newer tab.
@@ -921,6 +945,7 @@ export async function syncVideoPeer(
     spotlight: me.room.spotlightId,
     focus: me.room.focusMode,
     board: me.room.boardOpen,
+    material: null,
   };
   if (input.room && me.role === "HOST") {
     const spotlight =
@@ -937,8 +962,21 @@ export async function syncVideoPeer(
         data: { spotlightId: spotlight, focusMode: input.room.focus, boardOpen: input.room.board },
       });
     }
-    stage = { spotlight, focus: input.room.focus, board: input.room.board };
+    stage = { ...stage, spotlight, focus: input.room.focus, board: input.room.board };
   }
+  // The material on everyone's stage (A-183): the teacher's change first, then what to show.
+  let shown = parseShown(me.room.shownMaterial);
+  if (input.room && me.role === "HOST" && input.room.material !== undefined) {
+    const next = await nextShown(db, me.room.groupId, shown, input.room.material, now);
+    if (next !== shown) {
+      await db.videoRoom.update({
+        where: { id: me.roomId },
+        data: { shownMaterial: next ?? Prisma.DbNull },
+      });
+      shown = next;
+    }
+  }
+  if (shown) stage = { ...stage, material: await shownMaterialFor(db, me, me.room.groupId, shown) };
   if (stage.spotlight && stage.spotlight !== me.id && !peerIds.has(stage.spotlight)) {
     stage = { ...stage, spotlight: null };
   }
@@ -992,6 +1030,95 @@ export async function syncVideoPeer(
     poll,
     breakout,
     noShow: noShow?.toISOString() ?? null,
+    now: now.toISOString(),
+  };
+}
+
+/* ----- the material on everyone's stage (A-183) --------------------------------------------- */
+
+/** What the room row keeps about the shown material. */
+type StoredShown = {
+  id: string;
+  page: number;
+  playing: boolean;
+  position: number;
+  /** When the teacher last pressed play, pause or jumped (the server's clock). */
+  at: string;
+};
+
+function parseShown(value: unknown): StoredShown | null {
+  if (!value || typeof value !== "object") return null;
+  const v = value as Record<string, unknown>;
+  if (typeof v.id !== "string" || typeof v.at !== "string") return null;
+  return {
+    id: v.id,
+    page: typeof v.page === "number" && v.page >= 1 ? Math.floor(v.page) : 1,
+    playing: v.playing === true,
+    position: typeof v.position === "number" && v.position >= 0 ? v.position : 0,
+    at: v.at,
+  };
+}
+
+/**
+ * The teacher's change applied to what is shown. Returns the same object when
+ * nothing changed, so the caller writes only real changes. A material of
+ * another group is ignored. The time stamp moves only when the playback does,
+ * so a page turn or an unrelated stage change does not make a playing video jump.
+ */
+async function nextShown(
+  db: DbClient,
+  groupId: string,
+  shown: StoredShown | null,
+  wanted: { id: string; page: number; playing: boolean; position: number } | null,
+  now: Date,
+): Promise<StoredShown | null> {
+  if (wanted === null) return null;
+  const sameFile = shown?.id === wanted.id;
+  if (!sameFile) {
+    const exists = await db.lessonMaterial.findFirst({
+      where: { id: wanted.id, groupId },
+      select: { id: true },
+    });
+    if (!exists) return shown;
+  }
+  const samePlayback =
+    sameFile &&
+    shown !== null &&
+    shown.playing === wanted.playing &&
+    Math.abs(shown.position - wanted.position) < 0.01;
+  if (samePlayback && shown.page === wanted.page) return shown;
+  return {
+    id: wanted.id,
+    page: wanted.page,
+    playing: wanted.playing,
+    position: wanted.position,
+    at: samePlayback ? shown.at : now.toISOString(),
+  };
+}
+
+/** The shown material as this participant opens it; null once the material was deleted. */
+async function shownMaterialFor(
+  db: DbClient,
+  me: { role: string; studentId: string | null },
+  groupId: string,
+  shown: StoredShown,
+): Promise<ShownMaterialDto | null> {
+  const material = await db.lessonMaterial.findFirst({
+    where: { id: shown.id, groupId },
+    select: { id: true, title: true, kind: true, url: true },
+  });
+  if (!material) return null;
+  const token = await studentFileToken(db, me, groupId);
+  return {
+    id: material.id,
+    title: material.title,
+    kind: material.kind,
+    view: materialView(material.kind, material.url),
+    url: fileUrl(token, material.url) ?? material.url,
+    page: shown.page,
+    playing: shown.playing,
+    position: shown.position,
+    at: shown.at,
   };
 }
 

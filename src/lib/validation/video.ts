@@ -43,6 +43,9 @@ export const REACTIONS = ["like", "clap", "heart", "laugh", "wow", "slower", "fa
 export type Reaction = (typeof REACTIONS)[number];
 export const PACE_REACTIONS: readonly Reaction[] = ["slower", "faster"];
 
+/** The highest page number a shown material may be turned to. */
+export const MATERIAL_MAX_PAGE = 5000;
+
 export const POLL_QUESTION_MAX = 200;
 export const POLL_OPTION_MAX = 100;
 export const POLL_MIN_OPTIONS = 2;
@@ -106,6 +109,24 @@ export const videoSyncSchema = z.object({
       focus: z.boolean(),
       /** The shared whiteboard is shown on everyone's stage (A-155). */
       board: z.boolean().default(false),
+      /**
+       * The lesson material on everyone's stage (A-183): null stops showing, left out
+       * keeps what is shown. `position` is the player's second when the teacher last
+       * pressed play, pause or jumped.
+       */
+      material: z
+        .object({
+          id: z.string().min(1).max(64),
+          page: z.number().int().min(1).max(MATERIAL_MAX_PAGE).default(1),
+          playing: z.boolean().default(false),
+          position: z
+            .number()
+            .min(0)
+            .max(24 * 60 * 60)
+            .default(0),
+        })
+        .nullable()
+        .optional(),
     })
     .optional(),
   /** Breakout rooms (A-156), teacher only: how many, for how long, and who goes where. */
@@ -162,6 +183,8 @@ export const BOARD_STROKE_MAX_POINTS = 400;
 /** Strokes kept on a board; the oldest fall away beyond this. */
 export const BOARD_MAX_STROKES = 2000;
 
+export const BOARD_LAYER_MAX = 90;
+
 /** One pen stroke in board coordinates (0-1 of the board's width and height). */
 export const boardStrokeSchema = z.object({
   id: z.string().min(1).max(40),
@@ -169,6 +192,11 @@ export const boardStrokeSchema = z.object({
   width: z.number().min(1).max(40),
   /** true for the eraser: drawn in the background colour. */
   erase: z.boolean().default(false),
+  /**
+   * Which surface the stroke belongs to: "" is the whiteboard, anything else one
+   * page of a shown material (A-183), so each page keeps its own pen marks.
+   */
+  layer: z.string().max(BOARD_LAYER_MAX).default(""),
   points: z
     .array(z.tuple([z.number().min(0).max(1), z.number().min(0).max(1)]))
     .min(1)
@@ -180,7 +208,8 @@ export type BoardStroke = z.infer<typeof boardStrokeSchema>;
 export const boardOpSchema = z.discriminatedUnion("op", [
   z.object({ op: z.literal("stroke"), stroke: boardStrokeSchema }),
   z.object({ op: z.literal("undo"), id: z.string().min(1).max(40) }),
-  z.object({ op: z.literal("clear") }),
+  /** Wipes one layer (the whiteboard when left out). */
+  z.object({ op: z.literal("clear"), layer: z.string().max(BOARD_LAYER_MAX).default("") }),
   /** Teacher → a newcomer: the strokes so far, in batches. */
   z.object({
     op: z.literal("sync"),

@@ -16,6 +16,7 @@ import {
   MonitorX,
   PenLine,
   PhoneOff,
+  Presentation,
   SendHorizontal,
   SmilePlus,
   Square,
@@ -32,10 +33,12 @@ import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { ConfirmDialog } from "@/components/data/confirm-dialog";
 import { PACE_REACTIONS, REACTIONS, type Reaction } from "@/lib/validation/video";
 import { cn } from "@/lib/utils";
+import { canAnnotate } from "@/lib/video-material";
 
 import { CHAT_MAX_LENGTH, type CallEngine, type RemotePeer } from "./call-engine";
 import { BreakoutPanel, breakoutCountdown } from "./breakout-panel";
 import { LessonPanel } from "./lesson-panel";
+import { MaterialStage } from "./material-stage";
 import { PollPanel } from "./poll-panel";
 import { CallRecorder, recordingMimeType, uploadBoard, uploadRecording } from "./recorder";
 import { VideoTile } from "./video-tile";
@@ -205,9 +208,15 @@ export function CallRoom({
       : null;
   // Students watch the teacher; teachers and guests see everyone unless someone leads.
   const stageId = pinnedId ?? spotlightId ?? sharer ?? (isStudent ? host : null) ?? null;
-  // The whiteboard takes the stage from everyone (A-155).
+  // The whiteboard takes the stage from everyone (A-155), and so does a material the teacher
+  // shows (A-183). With both on, the pen draws over the material's page; where a material
+  // cannot be drawn on (a video, a link), the whiteboard covers it until it is closed.
   const BOARD = "board";
-  const stageKey = stage.board ? BOARD : stageId;
+  const MATERIAL = "material";
+  const shown = stage.material;
+  const penOverMaterial = shown !== null && canAnnotate(shown.view);
+  const stageKey =
+    shown && (!stage.board || penOverMaterial) ? MATERIAL : stage.board ? BOARD : stageId;
 
   // Raised hands in the order they went up; this browser's own hand takes its place too.
   const handQueue = [
@@ -293,7 +302,7 @@ export function CallRoom({
       className="fixed inset-0 z-40 flex flex-col bg-sidebar text-sidebar-foreground"
       data-testid="call-room"
     >
-      <header className="flex items-center justify-between gap-3 px-4 py-3">
+      <header className="flex items-center justify-between gap-3 px-4 py-3 short:py-1">
         <div className="min-w-0">
           <h1 className="truncate text-base font-semibold text-white">{self.groupName}</h1>
           <p className="text-xs" data-testid="call-count">
@@ -553,9 +562,11 @@ export function CallRoom({
       <div className="flex min-h-0 flex-1 gap-3 px-3 pb-3 sm:px-4">
         <main className="min-h-0 min-w-0 flex-1">
           {stageKey ? (
-            <div className="flex h-full flex-col gap-3 lg:flex-row">
+            <div className="flex h-full flex-col gap-3 lg:flex-row short:flex-row">
               <div className="min-h-0 flex-1">
-                {stageKey === BOARD ? (
+                {stageKey === MATERIAL && shown ? (
+                  <MaterialStage key={shown.id} engine={engine} material={shown} />
+                ) : stageKey === BOARD ? (
                   <Whiteboard
                     engine={engine}
                     onSave={isHost ? (png) => uploadBoard(self.roomId, png) : undefined}
@@ -565,9 +576,9 @@ export function CallRoom({
                 )}
               </div>
               {others.length > 0 && (
-                <div className="flex shrink-0 gap-3 overflow-x-auto lg:w-56 lg:flex-col lg:overflow-x-visible lg:overflow-y-auto">
+                <div className="flex shrink-0 gap-3 overflow-x-auto lg:w-56 lg:flex-col lg:overflow-x-visible lg:overflow-y-auto short:w-32 short:flex-col short:gap-2 short:overflow-x-visible short:overflow-y-auto">
                   {others.map((id) => (
-                    <div key={id} className="w-40 shrink-0 lg:w-full">
+                    <div key={id} className="w-40 shrink-0 lg:w-full short:w-full">
                       {tile(id, false)}
                     </div>
                   ))}
@@ -683,7 +694,13 @@ export function CallRoom({
             ) : panel === "poll" ? (
               <PollPanel engine={engine} />
             ) : panel === "lesson" ? (
-              <LessonPanel engine={engine} />
+              <LessonPanel
+                engine={engine}
+                onShown={() => {
+                  // On a phone the panel covers the stage: get out of the way.
+                  if (window.matchMedia("(max-width: 767px)").matches) setPanel(null);
+                }}
+              />
             ) : panel === "breakout" ? (
               <BreakoutPanel engine={engine} />
             ) : (
@@ -693,7 +710,7 @@ export function CallRoom({
         )}
       </div>
 
-      <footer className="flex flex-wrap items-center justify-center gap-2 border-t border-sidebar-muted px-3 py-3 sm:gap-3">
+      <footer className="flex flex-wrap items-center justify-center gap-2 border-t border-sidebar-muted px-3 py-3 sm:gap-3 short:py-1.5">
         <ControlButton
           active={media.audio}
           disabled={!hasAudio}
@@ -761,9 +778,27 @@ export function CallRoom({
         </div>
         {isHost && (
           <ControlButton
+            active={!shown}
+            onClick={() => (shown ? engine.hideMaterial() : setPanel("lesson"))}
+            label={shown ? t("stopShowing") : t("showFile")}
+            testId="toggle-present"
+          >
+            <Presentation />
+          </ControlButton>
+        )}
+        {isHost && (
+          <ControlButton
             active={!stage.board}
             onClick={() => engine.setStage({ board: !stage.board })}
-            label={stage.board ? t("boardOff") : t("boardOn")}
+            label={
+              penOverMaterial
+                ? stage.board
+                  ? t("penOff")
+                  : t("penOn")
+                : stage.board
+                  ? t("boardOff")
+                  : t("boardOn")
+            }
             testId="toggle-board"
           >
             <PenLine />
@@ -846,9 +881,11 @@ export function CallRoom({
             type="button"
             onClick={() => setConfirmEnd(true)}
             data-testid="end-call"
-            className="inline-flex h-11 items-center gap-2 rounded-full border border-sidebar-muted px-4 text-sm hover:bg-sidebar-muted focus-visible:outline-2 focus-visible:outline-sidebar-active [&_svg]:size-4"
+            aria-label={t("endForAll")}
+            title={t("endForAll")}
+            className="inline-flex h-11 min-w-11 items-center justify-center gap-2 rounded-full border border-sidebar-muted px-3 text-sm hover:bg-sidebar-muted focus-visible:outline-2 focus-visible:outline-sidebar-active lg:px-4 [&_svg]:size-4"
           >
-            <Square /> {t("endForAll")}
+            <Square /> <span className="hidden lg:inline">{t("endForAll")}</span>
           </button>
         )}
       </footer>
