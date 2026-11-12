@@ -111,7 +111,7 @@ export class CallEngine {
   private local: MediaStream;
   private camera: MediaStreamTrack | null;
   private screen: MediaStreamTrack | null = null;
-  /** Video inputs the browser lists; more than one lets the camera switch (A-181). */
+  /** Video inputs the browser lists; more than one lets the camera switch (A-182). */
   private cameraIds: string[] = [];
   media: MediaState;
   chat: ChatMessage[] = [];
@@ -512,7 +512,7 @@ export class CallEngine {
   }
 
   /**
-   * Switches to the next camera (A-181): on a tablet or phone from the front camera to the
+   * Switches to the next camera (A-182): on a tablet or phone from the front camera to the
    * back one, which stands in for screen sharing where the browser has none. The current
    * camera is stopped first, since phones allow one open camera at a time.
    */

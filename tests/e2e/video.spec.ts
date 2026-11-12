@@ -288,7 +288,7 @@ test.describe("video lessons", () => {
     browser,
   }) => {
     test.setTimeout(90_000);
-    // An iPad in portrait: touch, no getDisplayMedia (A-181).
+    // An iPad in portrait: touch, no getDisplayMedia (A-182).
     const context = await browser.newContext({
       viewport: { width: 820, height: 1180 },
       hasTouch: true,

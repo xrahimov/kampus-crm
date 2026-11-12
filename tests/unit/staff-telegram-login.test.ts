@@ -11,7 +11,11 @@ import { prisma } from "@/server/db/prisma";
 import { AppError } from "@/server/errors/app-error";
 import { fakeTelegramCode } from "@/server/integrations/telegram/login";
 import type { Actor } from "@/server/rbac/authorize";
-import { login, passwordSignInAllowed } from "@/server/services/auth.service";
+import {
+  login,
+  passwordSignInAllowed,
+  telegramOnlyEverywhere,
+} from "@/server/services/auth.service";
 import { getOrgSettings, updateOrgSettings } from "@/server/services/settings/org-settings.service";
 import { createStaff } from "@/server/services/staff/staff.service";
 import {
@@ -305,5 +309,103 @@ describe("Telegram only (A-180)", () => {
     await expect(
       updateOrgSettings(actor, { ...current, staffTelegramOnly: true }),
     ).rejects.toMatchObject({ message: "errors.staffTelegramOnlyNoBot" });
+  });
+});
+
+describe("Telegram only for every centre (A-181)", () => {
+  const save = async (actor: Actor, staffTelegramOnlyAll: boolean) => {
+    const { organizationId: _o, logoUrl: _l, ...current } = await getOrgSettings(actor);
+    return updateOrgSettings(actor, { ...current, staffTelegramOnlyAll });
+  };
+  const owner = (signedInWith: "PASSWORD" | "TELEGRAM"): Actor => ({
+    ...ceo,
+    isSiteOwner: true,
+    signedInWith,
+  });
+
+  it("is dropped when anyone but the site owner saves it", async () => {
+    const saved = await save({ ...ceo, signedInWith: "TELEGRAM" }, true);
+    expect(saved.staffTelegramOnlyAll).toBe(false);
+    expect(saved.canSetStaffTelegramOnlyAll).toBe(false);
+    expect(saved.staffTelegramOnly).toBe(false);
+  });
+
+  it("cannot be switched on by the site owner from a password session", async () => {
+    await expect(save(owner("PASSWORD"), true)).rejects.toMatchObject({
+      message: "errors.staffTelegramOnlyNeedsTelegram",
+    });
+    expect((await getOrgSettings(ceo)).staffTelegramOnlyAll).toBe(false);
+  });
+
+  it("covers every centre whose bot has login keys, and only those", async () => {
+    // Inside a transaction that is rolled back, so no other test ever sees the rule.
+    const rollback = new Error("rollback");
+    await prisma
+      .$transaction(async (tx) => {
+        expect(await telegramOnlyEverywhere(tx)).toBe(false);
+        await tx.orgSettings.update({
+          where: { organizationId: orgId },
+          data: { staffTelegramOnly: true, staffTelegramOnlyAll: true },
+        });
+        expect(await telegramOnlyEverywhere(tx)).toBe(true);
+        expect(await staffSignInOptions(tx, HOST)).toEqual({ telegram: true, password: false });
+        expect(await passwordSignInAllowed(tx, orgId)).toBe(false);
+        // A centre with no Telegram login keeps its passwords: nobody is locked out.
+        expect(await passwordSignInAllowed(tx, otherOrgId)).toBe(true);
+        // Once it has the keys, the rule holds there too, without a switch of its own.
+        await tx.integrationSetting.create({
+          data: {
+            organizationId: otherOrgId,
+            provider: "TELEGRAM",
+            isEnabled: true,
+            config: { loginClientId: `2${RUN}`, loginClientSecret: `${TAG}-other-secret` },
+          },
+        });
+        expect(await passwordSignInAllowed(tx, otherOrgId)).toBe(false);
+        // The server's switch is still the way back in.
+        process.env.STAFF_PASSWORD_LOGIN = "on";
+        expect(await passwordSignInAllowed(tx, otherOrgId)).toBe(true);
+        expect(await staffSignInOptions(tx, HOST)).toEqual({ telegram: true, password: true });
+        delete process.env.STAFF_PASSWORD_LOGIN;
+        throw rollback;
+      })
+      .catch((error: unknown) => {
+        delete process.env.STAFF_PASSWORD_LOGIN;
+        if (error !== rollback) throw error;
+      });
+    expect(await passwordSignInAllowed(prisma, orgId)).toBe(true);
+  });
+
+  it("is switched on by the site owner from a Telegram session, and off again by anyone's password session", async () => {
+    try {
+      const saved = await save(owner("TELEGRAM"), true);
+      expect(saved).toMatchObject({
+        staffTelegramOnlyAll: true,
+        staffTelegramOnly: true,
+        staffTelegramOnlyServer: true,
+        canSetStaffTelegramOnlyAll: true,
+      });
+      // Another centre's CEO sees the rule but cannot change it.
+      const elsewhere: Actor = { ...ceo, organizationId: otherOrgId, branchIds: [] };
+      const seen = await getOrgSettings(elsewhere);
+      expect(seen).toMatchObject({
+        staffTelegramOnlyServer: true,
+        staffTelegramOnlyAll: false,
+        canSetStaffTelegramOnlyAll: false,
+      });
+      await expect(login({ phone: phone(2), password: PASSWORD }, ctx)).rejects.toMatchObject({
+        message: "errors.passwordSignInOff",
+      });
+    } finally {
+      // Off straight away: the rule is visible to every test that runs beside this one.
+      const off = await save(owner("PASSWORD"), false);
+      expect(off.staffTelegramOnlyAll).toBe(false);
+      expect(off.staffTelegramOnlyServer).toBe(false);
+    }
+    // The centre's own switch stays as the rule left it until it is switched off too.
+    const { organizationId: _o, logoUrl: _l, ...current } = await getOrgSettings(ceo);
+    expect(current.staffTelegramOnly).toBe(true);
+    await updateOrgSettings(ceo, { ...current, staffTelegramOnly: false });
+    expect((await login({ phone: phone(2), password: PASSWORD }, ctx)).kind).toBe("session");
   });
 });

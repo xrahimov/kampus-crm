@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import { cameraConstraints, nextCameraId } from "@/features/video/call-engine";
 
-describe("camera switching (A-181)", () => {
+describe("camera switching (A-182)", () => {
   it("cycles through the browser's cameras and wraps around", () => {
     expect(nextCameraId(["front", "back"], "front")).toBe("back");
     expect(nextCameraId(["front", "back"], "back")).toBe("front");

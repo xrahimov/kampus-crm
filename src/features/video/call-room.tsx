@@ -80,7 +80,7 @@ export function CallRoom({
   const [reactionsOpen, setReactionsOpen] = useState(false);
   const canShare =
     typeof navigator !== "undefined" && Boolean(navigator.mediaDevices?.getDisplayMedia);
-  // Where the browser cannot share a screen (iPads and phones, A-181), the button explains.
+  // Where the browser cannot share a screen (iPads and phones, A-182), the button explains.
   const [shareHelp, setShareHelp] = useState(false);
   const [recorder, setRecorder] = useState<CallRecorder | null>(null);
   const [saving, setSaving] = useState(false);

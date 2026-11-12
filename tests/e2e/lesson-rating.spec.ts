@@ -67,6 +67,14 @@ test.describe("lesson note and rating (A-168)", () => {
     const links = (await (
       await page.request.get(`/api/v1/groups/${groupId}/video/links`, { headers })
     ).json()) as Array<{ token: string; membershipId: string }>;
+    // Only someone who was at the lesson may rate it, and the seed marks every
+    // fifth lesson of this student absent, so which mark the latest past lesson
+    // carries depends on the day the test runs. The student was there.
+    const present = await page.request.put(`/api/v1/lessons/${lesson.id}/attendance`, {
+      headers,
+      data: { marks: [{ membershipId: links[0]!.membershipId, status: "PRESENT" }] },
+    });
+    expect(present.status()).toBe(204);
     const student = await (await browser.newContext()).newPage();
     await student.goto(`/en/class/${links[0]!.token}`);
     const row = student.getByRole("row").filter({ hasText: note });

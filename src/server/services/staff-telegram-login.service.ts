@@ -1,7 +1,11 @@
 import type { IssuedSession } from "@/server/auth/session";
 import type { DbClient } from "@/server/db/prisma";
 import { AppError } from "@/server/errors/app-error";
-import { issueSession, type LoginContext } from "@/server/services/auth.service";
+import {
+  issueSession,
+  telegramOnlyEverywhere,
+  type LoginContext,
+} from "@/server/services/auth.service";
 import { organizationForHost } from "@/server/services/settings/domains.service";
 import {
   phoneFromTelegram,
@@ -28,8 +32,9 @@ export interface StaffSignInOptions {
 
 /**
  * What the staff sign-in page offers on this address. The password form goes
- * away only when every centre the page serves signs in with Telegram only and
- * a Telegram login is there to use.
+ * away only when every centre the page serves signs in with Telegram only (one
+ * by one, or all at once by the site owner's switch) and a Telegram login is
+ * there to use.
  */
 export async function staffSignInOptions(
   db: DbClient,
@@ -37,6 +42,8 @@ export async function staffSignInOptions(
 ): Promise<StaffSignInOptions> {
   const telegram = Boolean(await resolveLoginSetup(db, host));
   if (!telegram || process.env.STAFF_PASSWORD_LOGIN === "on") return { telegram, password: true };
+  // The site owner's rule covers every centre, new ones included (A-181).
+  if (await telegramOnlyEverywhere(db)) return { telegram, password: false };
   const brand = await organizationForHost(host, db);
   const organizations = await db.organization.findMany({
     where: brand ? { id: brand.organizationId } : { suspendedAt: null },
