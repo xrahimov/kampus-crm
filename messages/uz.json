@@ -1849,7 +1849,7 @@
   },
   "assistant": {
     "title": "Yordamchi",
-    "hint": "Markaz haqida oddiy so'zlar bilan so'rang: qarzdorlar, o'quvchilar, to'lovlar, bugungi darslar, yoki SMS qoralamasini so'rang. Javoblar sizning ma'lumotlaringizdan olinadi; yordamchi faqat rolingizga ruxsat etilganini ko'radi.",
+    "hint": "Markaz haqida oddiy so'zlar bilan so'rang: qarzdorlar, o'quvchilar, to'lovlar, bugungi darslar, yoki SMS qoralamasini so'rang. Javoblar sizning ma'lumotlaringizdan olinadi; yordamchi faqat rolingizga ruxsat etilganini ko'radi. U markazning Kampus'dagi ishi va o'qitishga oid savollar (mavzu, dars rejasi, mashqlar) bo'yicha javob beradi; boshqa mavzudagi savollarga javob bermaydi.",
     "placeholder": "Savol bering yoki nima tuzish kerakligini yozing…",
     "send": "Yuborish",
     "thinking": "O'ylayapman…",

@@ -13,7 +13,7 @@ assumptions, and lists the few items left out on purpose. Decisions that go beyo
 are numbered in [docs/ASSUMPTIONS.md](docs/ASSUMPTIONS.md); the ones still marked **OPEN** need an
 answer from the product owner before the behaviour is treated as final.
 
-Everything built since then (PRs #13 to #108, as of 2026-11-12) goes beyond the reference: video
+Everything built since then (PRs #13 to #109, as of 2026-11-12) goes beyond the reference: video
 lessons with recordings, pages and sign-in for students and parents, homework, online payments,
 several organisations on one server, the round-2 items and the online-lesson tools up to lesson
 packages. Each addition is one row in [docs/ASSUMPTIONS.md](docs/ASSUMPTIONS.md) from A-100 onwards,
