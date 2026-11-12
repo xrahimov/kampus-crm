@@ -74,7 +74,9 @@ const FAKE_ROUTES: Array<{ tool: string; words: RegExp; input: Record<string, un
 
 /**
  * Picks a tool by the words in the question, then phrases the result; a
- * request for a draft gets a plain draft. Deterministic, so tests can assert it.
+ * request for a draft gets a plain draft and anything else the same short
+ * decline the real model is told to give (A-185). Deterministic, so tests
+ * can assert it.
  */
 export class FakeAiClient implements AiClient {
   readonly name = "fake" as const;
@@ -121,7 +123,7 @@ export class FakeAiClient implements AiClient {
         content: [
           {
             type: "text",
-            text: "Test mode: I can look up debtors, students, payments, groups and today's lessons, or draft a message. Ask about one of those.",
+            text: "I only help with this centre's work in Kampus. Test mode: I can look up debtors, students, payments, groups and today's lessons, or draft a message. Ask about one of those.",
             citations: null,
           },
         ],
