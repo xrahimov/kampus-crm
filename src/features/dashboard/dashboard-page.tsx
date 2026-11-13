@@ -1,6 +1,23 @@
 "use client";
 
-import { Eye, EyeOff, Gauge } from "lucide-react";
+import {
+  CalendarClock,
+  ClipboardCheck,
+  Contact,
+  Eye,
+  EyeOff,
+  Funnel,
+  Gauge,
+  GraduationCap,
+  HandCoins,
+  type LucideIcon,
+  Sparkles,
+  UserMinus,
+  UserPlus,
+  UserRoundCheck,
+  Users,
+  Wallet,
+} from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useSearchParams } from "next/navigation";
 import { useState, useTransition } from "react";
@@ -16,6 +33,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Odometer } from "@/components/motion/odometer";
+import { RevealText } from "@/components/motion/reveal-text";
 import { Donut, YearBars } from "@/features/finance/charts";
 import { Link, usePathname, useRouter } from "@/i18n/navigation";
 import { parseDateOnly } from "@/lib/dates";
@@ -33,6 +52,22 @@ import { RevenueForecast } from "./revenue-forecast";
 import { SetupChecklist } from "./setup-checklist";
 
 const ALL = "__all";
+
+/** The small picture in the corner of each figure's card; it wakes up when the card is hovered (A-192). */
+const KPI_ICON: Record<string, LucideIcon> = {
+  activeLeads: Funnel,
+  groups: Users,
+  remainingDebt: Wallet,
+  debtors: HandCoins,
+  dueSoon: CalendarClock,
+  activeStudents: UserRoundCheck,
+  studentsInGroups: Contact,
+  trial: Sparkles,
+  leftThisMonth: UserMinus,
+  teachers: GraduationCap,
+  exams: ClipboardCheck,
+  newAdmissions: UserPlus,
+};
 
 export interface DashboardFilters {
   branchId?: string;
@@ -130,7 +165,7 @@ export function DashboardPage({
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
           <h1 className="text-2xl font-semibold tracking-tight">
-            {t("welcome", { name: userName })}
+            <RevealText text={t("welcome", { name: userName })} />
           </h1>
           <p className="text-sm text-muted-foreground">{t("subtitle")}</p>
         </div>
@@ -181,21 +216,43 @@ export function DashboardPage({
         className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
         data-testid="dashboard-kpis"
       >
-        {cards.map((c) => (
-          <Link key={c.key} href={c.href} className="group" data-testid={`dash-${c.key}`}>
-            <Card className="transition-colors group-hover:border-primary/60">
-              <CardContent className="pt-5">
-                <div className="flex items-center justify-between gap-2 text-xs text-muted-foreground">
-                  {t(`kpis.${c.key}`)}
-                  {c.badge && <Badge variant="success">{c.badge}</Badge>}
-                </div>
-                <div className="mt-1 text-2xl font-semibold tabular-nums" data-testid="dash-value">
-                  {c.value}
-                </div>
-              </CardContent>
-            </Card>
-          </Link>
-        ))}
+        {cards.map((c, i) => {
+          const Icon = KPI_ICON[c.key];
+          return (
+            <Link
+              key={c.key}
+              href={c.href}
+              className="group tile-in rounded-lg"
+              style={{ "--i": i } as React.CSSProperties}
+              data-testid={`dash-${c.key}`}
+            >
+              <Card className="card-link h-full">
+                <CardContent className="pt-5">
+                  <div className="flex items-center justify-between gap-2 text-xs text-muted-foreground">
+                    <span className="flex items-center gap-2">
+                      {t(`kpis.${c.key}`)}
+                      {c.badge && <Badge variant="success">{c.badge}</Badge>}
+                    </span>
+                    {Icon && (
+                      <Icon
+                        aria-hidden="true"
+                        strokeWidth={1.75}
+                        className="size-[18px] shrink-0 opacity-45 transition-[color,opacity,transform] duration-300 ease-arrive group-hover:-translate-y-0.5 group-hover:scale-110 group-hover:text-accent-foreground group-hover:opacity-100"
+                      />
+                    )}
+                  </div>
+                  <div
+                    className="mt-1.5 text-2xl leading-9 font-semibold tracking-tight tabular-nums 2xl:text-[1.75rem]"
+                    data-testid="dash-value"
+                  >
+                    {/* Asked for, the figures roll in like counters, a card after a card (A-192). */}
+                    <Odometer text={c.value} play={shown} delay={i * 30} />
+                  </div>
+                </CardContent>
+              </Card>
+            </Link>
+          );
+        })}
       </div>
 
       {forecast && <RevenueForecast data={forecast} mask={mask} />}
@@ -278,7 +335,7 @@ export function DashboardPage({
                     href={href}
                     className="mt-1 block text-xl font-semibold tabular-nums hover:underline"
                   >
-                    {mask(money(value))}
+                    <Odometer text={mask(money(value))} play={shown} />
                   </Link>
                 </CardContent>
               </Card>

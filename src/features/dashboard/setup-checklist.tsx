@@ -47,7 +47,10 @@ export function SetupChecklist({ data }: { data: SetupChecklistDto }) {
       </CardHeader>
       <CardContent className="space-y-3">
         <div className="h-2 w-full overflow-hidden rounded-full bg-muted" aria-hidden>
-          <div className="h-full rounded-full bg-primary" style={{ width: `${percent}%` }} />
+          <div
+            className="h-full origin-left animate-fill-across rounded-full bg-primary"
+            style={{ width: `${percent}%` }}
+          />
         </div>
         <ul className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
           {data.steps.map((step) => (

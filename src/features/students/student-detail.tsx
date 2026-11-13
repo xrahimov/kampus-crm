@@ -19,6 +19,7 @@ import { useState, useTransition } from "react";
 import { ConfirmDialog } from "@/components/data/confirm-dialog";
 import { EmptyState } from "@/components/data/empty-state";
 import { Pagination } from "@/components/data/pagination";
+import { Morph } from "@/components/motion/page-transition";
 import { Avatar } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -291,14 +292,19 @@ export function StudentDetail({
                 </div>
               </div>
               <div className="flex flex-col items-center gap-2 text-center">
-                <Avatar
-                  src={student.photoUrl}
-                  name={student.fullName}
-                  className="size-24 text-3xl"
-                />
-                <h1 className="text-xl font-semibold tracking-tight" data-testid="student-title">
-                  {student.fullName}
-                </h1>
+                {/* The photo and the name travel here from the row that was pressed (A-192). */}
+                <Morph name={`student-photo-${student.id}`}>
+                  <Avatar
+                    src={student.photoUrl}
+                    name={student.fullName}
+                    className="size-24 text-3xl"
+                  />
+                </Morph>
+                <Morph name={`student-name-${student.id}`}>
+                  <h1 className="text-xl font-semibold tracking-tight" data-testid="student-title">
+                    {student.fullName}
+                  </h1>
+                </Morph>
                 <div className="flex flex-wrap justify-center gap-1">
                   {student.isArchived && <Badge variant="muted">{td("archived")}</Badge>}
                   {student.isBlacklisted && (

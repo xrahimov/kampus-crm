@@ -87,6 +87,7 @@ export const en: HelpContent = {
             "Every course, room, group and student belongs to a branch. The branch selector in the header decides which branch the pages show. People who may see the whole organisation can also pick **All branches**.",
             "The language button switches between Uzbek, Russian and English. The choice is yours alone and stays for your next visit. Dates, money and Excel files follow the language you pick.",
             "The theme button next to it offers **Light**, **Dark** and **Same as the device**: the last one follows your phone or computer, so the app turns dark in the evening when the device does. The choice is kept on this device, also on the sign-in page and the students' pages; receipts and badges always print light.",
+            "On a phone the header shows the branch and language buttons as icons only; press one to see the names. Pages, counters and charts move a little when they open: a page settles into place, the figures on Home roll in, a name you press travels to the heading of its page, and the star in the logo turns while the next page loads. If you prefer a still screen, switch on **Reduce motion** in your phone's or computer's accessibility settings and Kampus stops all of it at once.",
           ],
         },
         notifications: {

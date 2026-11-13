@@ -19,6 +19,7 @@ import { EmptyState } from "@/components/data/empty-state";
 import { Pagination } from "@/components/data/pagination";
 import { SearchBox } from "@/components/data/search-box";
 import { SortHeader } from "@/components/data/sort-header";
+import { Morph } from "@/components/motion/page-transition";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -285,9 +286,11 @@ export function GroupsPage({
                   }
                 >
                   <TableCell className="font-medium">
-                    <Link href={`/groups/${g.id}`} className="hover:underline">
-                      {g.name}
-                    </Link>
+                    <Morph name={`group-name-${g.id}`}>
+                      <Link href={`/groups/${g.id}`} className="hover:underline">
+                        {g.name}
+                      </Link>
+                    </Morph>
                   </TableCell>
                   <TableCell>{g.courseName}</TableCell>
                   <TableCell>{g.teachers.map((x) => x.fullName).join(", ") || "—"}</TableCell>
