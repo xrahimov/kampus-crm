@@ -95,6 +95,32 @@ export const en: HelpContent = {
             "The bell in the header shows how many notices you have not read: a payment received, a new lead from a web form, students who owe money today, birthdays. Click the bell for the latest ones, or **View all notifications** for the full list with an unread filter.",
           ],
         },
+        summary: {
+          title: "Your daily summary",
+          body: [
+            "The first time you open Kampus each day, a panel opens in the lower right corner with a summary made for you. The director sees the whole centre, a branch manager sees their branch, a teacher sees their own groups. Nobody sees figures from a page they may not open.",
+            "It starts with the **Conclusion**: three to five short lines about what matters most, each marked as good news, something to watch or a problem. Below it are the figures it was written from. The office sees payments received, lessons held, absences, students not marked, new leads and leads nobody contacted, new students, students who left and debtors; a centre with several branches also gets one line per branch. A teacher sees today's lessons, lessons held, who was absent, students not marked, homework to check and students who stopped coming. Press a figure's name to open the page where you can act on it.",
+            {
+              steps: [
+                "Choose **Yesterday**, **Today** or **7 days** at the top.",
+                "If you both manage and teach, switch between **Centre** and **My groups**.",
+                "Press **Understood** to close the summary. It does not open by itself again that day.",
+                "Switch off **Open by itself once a day** if you would rather open it yourself.",
+              ],
+            },
+            {
+              note: "Kampus always counts the figures itself. With an Anthropic key in Settings → Integrations → AI assistant, the conclusion is written by Claude from those figures and then kept: it is written again only after the figures change, at most once in half an hour for today and once in three hours for the other periods. Without a key, Kampus writes plain lines by its own rules.",
+            },
+          ],
+        },
+        assistantButton: {
+          title: "The assistant button",
+          body: [
+            "The round button with a sparkle in the lower right corner is on every page. Press it to open the panel again: **Summary** shows your summary, **Ask** lets you ask a question without leaving the page you are on. A ring around the button means today's summary has not been opened yet.",
+            "In **Ask**, type a question or press one of the suggestions. The office can ask who owes money or what came in this month. A teacher can ask which lessons they have today, which homework waits to be checked or who was absent in their groups, and can have a warm-up for a lesson or a message to parents drafted. The assistant sees only what your role may see and never changes data.",
+            "The conversation is the same one as on the **Assistant** page in the sidebar; **Open as a page** takes you there. Press Esc or the round button to close the panel.",
+          ],
+        },
         roles: {
           title: "Who may do what",
           body: [
@@ -1173,6 +1199,7 @@ export const en: HelpContent = {
           title: "AI assistant",
           body: [
             "**Assistant** in the sidebar answers questions about your centre in plain words: who owes money, how many active students there are, what came in this month, what is on today, or a draft SMS to send. The assistant looks the facts up in Kampus through the same rules as the screens, so a cashier sees debtors and a teacher does not; it never changes data. It answers about two things: the centre's work in Kampus (students, groups, lessons, payments, debts, messages to students and parents, how to do something in Kampus) and teaching questions (explaining a topic, a lesson plan, exercises and test questions with answers, checking a student's answer, teaching methods). A question about anything else, such as news, entertainment or personal advice, gets a one-line decline. It runs through Claude once you paste an Anthropic API key into Settings → Integrations → AI assistant (kai or the centre owner creates the key at console.anthropic.com and pays Anthropic for use). Without a key the page works in test mode: set phrases over your real data, so the flow can be tried.",
+            "The same assistant is behind the round button in the lower right corner of every page, and it writes the conclusion of the daily summary (see Getting started). Everyone who has the Home page or the Today page can use it, so teachers have it too, each with their own groups only. With a key, every question and every newly written conclusion is paid from the centre's Anthropic balance. A conclusion is kept and shown again while the figures stay the same, so opening the summary a second time costs nothing.",
           ],
         },
         jobs: {

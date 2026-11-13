@@ -111,6 +111,7 @@ export type ModuleKey = (typeof MODULES)[number];
 export const MODULE_VIEW_PERMISSION: Record<ModuleKey, Permission> = {
   dashboard: "dashboard.view",
   // Questions over the centre's data, answered within the asker's own permissions (A-149).
+  // Teachers have it too, through `canUseAssistant` below (A-190).
   assistant: "dashboard.view",
   today: "groups.view",
   // Homework answers waiting for a verdict, across the teacher's groups (A-160).
@@ -136,4 +137,19 @@ export const MODULE_VIEW_PERMISSION: Record<ModuleKey, Permission> = {
 
 export function hasPermission(grants: readonly string[], permission: Permission): boolean {
   return grants.includes(ALL_PERMISSIONS) || grants.includes(permission);
+}
+
+/**
+ * Who has the assistant and the daily summary (A-190): everyone with a
+ * Dashboard and everyone with a Today page, so the office and the teachers.
+ * What each of them is told still follows their own permissions.
+ */
+export function canUseAssistant(grants: readonly string[]): boolean {
+  return hasPermission(grants, "dashboard.view") || hasPermission(grants, "groups.view");
+}
+
+/** Whether a navigation item is shown to someone with these grants. */
+export function canViewModule(grants: readonly string[], module: ModuleKey): boolean {
+  if (module === "assistant") return canUseAssistant(grants);
+  return hasPermission(grants, MODULE_VIEW_PERMISSION[module]);
 }

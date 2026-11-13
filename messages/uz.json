@@ -1863,12 +1863,97 @@
       "students": "Bizda qancha faol o'quvchi bor?",
       "payments": "Bu oy qancha tushum bo'ldi?",
       "today": "Bugun qanday darslar bor?",
-      "sms": "Ota-onaga to'lanmagan oy haqida qisqa SMS eslatma tuz."
+      "sms": "Ota-onaga to'lanmagan oy haqida qisqa SMS eslatma tuz.",
+      "myDay": "Bugun qaysi darslarim bor?",
+      "checking": "Qaysi uy vazifalari tekshirishimni kutyapti?",
+      "absentees": "Bu hafta guruhlarimda kim kelmadi?",
+      "lessonPlan": "Boshlang‘ich guruh uchun 10 daqiqalik mashq o‘ylab ber.",
+      "parentMessage": "Ertangi test haqida ota-onalarga qisqa xabar yozib ber."
     },
     "usedTools": "Ko'rildi: {tools}",
     "empty": "Birinchi savolni bering yoki quyidan tanlang.",
     "clear": "Yangi suhbat",
-    "error": "Yordamchi javob bera olmadi. Qayta urinib ko'ring."
+    "error": "Yordamchi javob bera olmadi. Qayta urinib ko'ring.",
+    "hintTeacher": "O‘z ishingiz haqida oddiy so‘zlar bilan so‘rang: bugungi darslar, kim kelmagani, tekshirishni kutayotgan uy vazifalari, yoki dars rejasi, mashqlar, ota-onalarga xabar so‘rang. Yordamchi faqat siz dars beradigan guruhlarni ko‘radi. Boshqa mavzularga javob bermaydi.",
+    "launcher": {
+      "open": "Yordamchini ochish",
+      "close": "Yordamchini yopish",
+      "greeting": "Assalomu alaykum, {name}",
+      "tagline": "Xulosangiz va yordamchingiz",
+      "summary": "Xulosa",
+      "chat": "So‘rash",
+      "fullPage": "Sahifa qilib ochish",
+      "auto": "Kuniga bir marta o‘zi ochilsin",
+      "understood": "Tushunarli"
+    },
+    "briefing": {
+      "period": "Davr",
+      "periods": {
+        "yesterday": "Kecha",
+        "today": "Bugun",
+        "week": "7 kun"
+      },
+      "viewLabel": "Kimning ko‘rsatkichlari",
+      "views": {
+        "management": "Markaz",
+        "teaching": "Guruhlarim"
+      },
+      "scope": {
+        "centre": "Butun markaz {name}",
+        "branch": "Filial {name}",
+        "groups": "Sizning guruhlaringiz"
+      },
+      "range": "{from} – {to}",
+      "stats": {
+        "payments": "Qabul qilingan to‘lovlar",
+        "todayLessons": "Bugungi darslar",
+        "lessons": "O‘tilgan darslar",
+        "absent": "Kelmaganlar",
+        "unmarked": "Davomat qilinmagan o‘quvchilar",
+        "homeworkToCheck": "Tekshiriladigan uy vazifalari",
+        "stoppedComing": "Kelmay qo‘yganlar",
+        "newLeads": "Yangi lidlar",
+        "uncontactedLeads": "Bog‘lanilmagan lidlar",
+        "newStudents": "Yangi kelgan o‘quvchilar",
+        "leftStudents": "Ketgan o‘quvchilar",
+        "debtors": "Hozirgi qarzdorlar"
+      },
+      "owedTotal": "Jami qarz",
+      "missed": "{count} ta dars qoldirgan",
+      "more": "va yana {count} ta",
+      "branches": {
+        "branch": "Filial",
+        "payments": "To‘lovlar",
+        "lessons": "Darslar",
+        "absent": "Kelmagan",
+        "unmarked": "Davomatsiz"
+      },
+      "conclusion": "Xulosa",
+      "loading": "Hisoblanmoqda…",
+      "error": "Xulosani yuklab bo‘lmadi.",
+      "retry": "Qayta urinish",
+      "refresh": "Xulosani qayta yozish",
+      "byModel": "Yuqoridagi ko‘rsatkichlar asosida {model} yozdi.",
+      "plain": "Oddiy xulosa. Sozlamalar → Integratsiyalar → AI yordamchi bo‘limiga API kalit kiritilsa, xulosani AI yozadi.",
+      "failed": "AI bilan bog‘lanib bo‘lmadi, shuning uchun oddiy xulosa ko‘rsatildi.",
+      "rules": {
+        "quiet": "Bu davrda dars bo‘lmadi.",
+        "payments": "Qabul qilingan to‘lovlar: {amount}.",
+        "noPayments": "To‘lov tushmadi.",
+        "allMarked": "{lessons} ta darsning barchasida davomat qilingan.",
+        "unmarked": "{groups} ta guruhda {students} ta o‘quvchiga davomat qilinmagan. Ularni «Bugun» sahifasida belgilang.",
+        "absent": "{count} ta kelmaganlik belgilandi. Kimga qo‘ng‘iroq qilish kerakligini ko‘ring.",
+        "leadsWaiting": "{count} ta yangi lid bilan hali hech kim bog‘lanmadi.",
+        "studentsFlow": "Kelgan o‘quvchilar: {joined} ta, ketganlar: {left} ta.",
+        "debtors": "{count} ta o‘quvchi jami {amount} qarzdor.",
+        "homeworkWaiting": "{count} ta uy vazifasi tekshirishni kutyapti.",
+        "stoppedComing": "{count} ta o‘quvchi ketma-ket bir necha darsni qoldirdi.",
+        "todayLessons": "Bugun {count} ta dars bor.",
+        "noLessonsToday": "Bugun dars yo‘q."
+      },
+      "writing": "Xulosa yozilmoqda…",
+      "writingNote": "Quyidagi ko‘rsatkichlar tayyor; xulosa bir necha soniya oladi."
+    }
   },
   "students": {
     "title": "O‘quvchilar",
@@ -4519,7 +4604,8 @@
           "suspend": "Markaz to‘xtatildi",
           "resume": "Markaz davom ettirildi",
           "export": "Markaz ma‘lumotlari eksport qilindi",
-          "aiAsk": "Yordamchiga savol"
+          "aiAsk": "Yordamchiga savol",
+          "aiBriefing": "AI xulosa yozdi"
         },
         "balance": {
           "adjust": "Qoldiq to'g'rilandi",

@@ -1,0 +1,164 @@
+/*
+ * The assistant's own motion and depth (A-191). Kept beside the feature, on
+ * the app's colour tokens, so the shared stylesheet is not touched for it.
+ * One moment is animated on purpose: the conclusion arriving line by line.
+ */
+
+@keyframes kampus-ai-float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-4px);
+  }
+}
+
+@keyframes kampus-ai-ring {
+  from {
+    box-shadow: 0 0 0 0 color-mix(in oklch, var(--sidebar-active) 65%, transparent);
+  }
+  to {
+    box-shadow: 0 0 0 16px transparent;
+  }
+}
+
+@keyframes kampus-ai-pop {
+  from {
+    opacity: 0;
+    transform: translateY(12px) scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes kampus-ai-line {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes kampus-ai-shimmer {
+  from {
+    background-position: 200% 0;
+  }
+  to {
+    background-position: -200% 0;
+  }
+}
+
+@keyframes kampus-ai-dot {
+  0%,
+  80%,
+  100% {
+    opacity: 0.25;
+    transform: translateY(0);
+  }
+  40% {
+    opacity: 1;
+    transform: translateY(-2px);
+  }
+}
+
+/*
+ * The button itself stays still, so it is always where the finger or the
+ * pointer expects it; the disc inside it floats.
+ */
+.kampus-ai-fab-face {
+  animation: kampus-ai-float 4.5s ease-in-out infinite;
+  box-shadow:
+    0 12px 26px -10px color-mix(in oklch, var(--primary) 75%, transparent),
+    0 2px 6px -2px color-mix(in oklch, var(--sidebar) 45%, transparent);
+  transition:
+    scale 160ms ease,
+    background-color 160ms ease;
+}
+
+.kampus-ai-fab:hover .kampus-ai-fab-face,
+.kampus-ai-fab:focus-visible .kampus-ai-fab-face {
+  animation-play-state: paused;
+  scale: 1.06;
+}
+
+/* A summary nobody has opened today: a slow turquoise ring, nothing louder. */
+.kampus-ai-fab[data-fresh="true"] .kampus-ai-fab-face::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 9999px;
+  animation: kampus-ai-ring 2.4s ease-out infinite;
+  pointer-events: none;
+}
+
+.kampus-ai-panel {
+  transform-origin: bottom right;
+  animation: kampus-ai-pop 220ms cubic-bezier(0.2, 0.8, 0.2, 1);
+  box-shadow:
+    0 28px 64px -24px color-mix(in oklch, var(--sidebar) 60%, transparent),
+    0 6px 16px -8px color-mix(in oklch, var(--sidebar) 35%, transparent);
+}
+
+.kampus-ai-line {
+  animation: kampus-ai-line 420ms ease-out both;
+  animation-delay: calc(var(--i, 0) * 110ms);
+}
+
+.kampus-ai-skeleton {
+  border-radius: 0.375rem;
+  background: linear-gradient(
+    90deg,
+    var(--muted) 25%,
+    color-mix(in oklch, var(--muted) 55%, var(--card)) 50%,
+    var(--muted) 75%
+  );
+  background-size: 200% 100%;
+  animation: kampus-ai-shimmer 1.5s linear infinite;
+}
+
+.kampus-ai-dots {
+  display: inline-flex;
+  gap: 3px;
+}
+
+.kampus-ai-dots span {
+  width: 5px;
+  height: 5px;
+  border-radius: 9999px;
+  background: currentColor;
+  animation: kampus-ai-dot 1.2s ease-in-out infinite;
+}
+
+.kampus-ai-dots span:nth-child(2) {
+  animation-delay: 150ms;
+}
+
+.kampus-ai-dots span:nth-child(3) {
+  animation-delay: 300ms;
+}
+
+/* Amber that stays readable as text on porcelain and on the dark card. */
+.kampus-ai-warn {
+  color: oklch(0.56 0.13 68);
+}
+
+.dark .kampus-ai-warn {
+  color: oklch(0.84 0.13 82);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .kampus-ai-fab-face,
+  .kampus-ai-fab[data-fresh="true"] .kampus-ai-fab-face::after,
+  .kampus-ai-panel,
+  .kampus-ai-line,
+  .kampus-ai-skeleton,
+  .kampus-ai-dots span {
+    animation: none;
+  }
+}

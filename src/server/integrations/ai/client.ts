@@ -15,11 +15,20 @@ export interface AiCompletion {
 export interface AiClient {
   readonly name: "fake" | "anthropic";
   readonly model: string;
-  complete(params: {
-    system: string;
-    messages: Anthropic.MessageParam[];
-    tools: Anthropic.Tool[];
-  }): Promise<AiCompletion>;
+  complete(params: AiRequest): Promise<AiCompletion>;
+}
+
+export interface AiRequest {
+  system: string;
+  /**
+   * What changes from one request to the next (the page the person is on), sent
+   * after the stable prompt so that prompt stays cached.
+   */
+  context?: string;
+  messages: Anthropic.MessageParam[];
+  tools: Anthropic.Tool[];
+  /** How hard the model works; a chat over data is "medium", a short summary "low". */
+  effort?: "low" | "medium";
 }
 
 export const DEFAULT_AI_MODEL = "claude-opus-5-5";
@@ -36,18 +45,17 @@ export class AnthropicAiClient implements AiClient {
     this.client = new Anthropic({ apiKey, maxRetries: 1, timeout: 90_000 });
   }
 
-  async complete(params: {
-    system: string;
-    messages: Anthropic.MessageParam[];
-    tools: Anthropic.Tool[];
-  }): Promise<AiCompletion> {
+  async complete(params: AiRequest): Promise<AiCompletion> {
     const response = await this.client.messages.create({
       model: this.model,
       max_tokens: MAX_TOKENS,
       // Adaptive thinking is on by default on current models; medium effort fits a chat over data.
-      output_config: { effort: "medium" },
-      system: [{ type: "text", text: params.system, cache_control: { type: "ephemeral" } }],
-      tools: params.tools,
+      output_config: { effort: params.effort ?? "medium" },
+      system: [
+        { type: "text", text: params.system, cache_control: { type: "ephemeral" } },
+        ...(params.context ? [{ type: "text" as const, text: params.context }] : []),
+      ],
+      ...(params.tools.length > 0 ? { tools: params.tools } : {}),
       messages: params.messages,
     });
     return { content: response.content, stopReason: response.stop_reason };
@@ -56,6 +64,13 @@ export class AnthropicAiClient implements AiClient {
 
 /** Keywords in several languages that pick the tool the fake client "decides" to call. */
 const FAKE_ROUTES: Array<{ tool: string; words: RegExp; input: Record<string, unknown> }> = [
+  { tool: "homework_to_check", words: /(homework|uyga vazifa|домашн)/i, input: {} },
+  {
+    tool: "attendance_overview",
+    words: /(absent|attendance|davomat|kelmagan|посещаем|отсутств)/i,
+    input: {},
+  },
+  { tool: "my_day", words: /(do i have|my day|my lessons|darslarim|у меня|мои уроки)/i, input: {} },
   { tool: "list_debtors", words: /\b(debt|owe|qarz|долг|должн)/i, input: { limit: 10 } },
   {
     tool: "payments_summary",
@@ -82,11 +97,7 @@ export class FakeAiClient implements AiClient {
   readonly name = "fake" as const;
   readonly model = "test";
 
-  async complete(params: {
-    system: string;
-    messages: Anthropic.MessageParam[];
-    tools: Anthropic.Tool[];
-  }): Promise<AiCompletion> {
+  async complete(params: AiRequest): Promise<AiCompletion> {
     const last = params.messages.at(-1);
     // Second round: the tool answered; phrase it.
     if (last?.role === "user" && Array.isArray(last.content)) {
@@ -123,7 +134,7 @@ export class FakeAiClient implements AiClient {
         content: [
           {
             type: "text",
-            text: "I only help with this centre's work in Kampus and with teaching questions. Test mode: without an API key I can only look up debtors, students, payments, groups and today's lessons, or draft a message. Ask about one of those.",
+            text: "I only help with this centre's work in Kampus and with teaching questions. Test mode: without an API key I can only look up debtors, students, payments, groups, lessons, attendance and homework to check, or draft a message. Ask about one of those.",
             citations: null,
           },
         ],

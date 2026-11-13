@@ -98,6 +98,32 @@ export const uz: HelpContent = {
             "Yuqori paneldagi qo‘ng‘iroq nechta o‘qilmagan xabaringiz borligini ko‘rsatadi: qabul qilingan to‘lov, veb-formadan kelgan yangi lid, bugun qarzdor bo‘lgan o‘quvchilar, tug‘ilgan kunlar. Oxirgilarini ko‘rish uchun qo‘ng‘iroqni bosing, o‘qilmaganlar filtri bilan to‘liq ro‘yxat uchun esa **Barcha xabarnomalarni ko‘rish** ni bosing.",
           ],
         },
+        summary: {
+          title: "Kunlik xulosangiz",
+          body: [
+            "Kampus'ni kun davomida birinchi marta ochganingizda, o‘ng pastki burchakda siz uchun tayyorlangan xulosa paneli ochiladi. Direktor butun markazni, filial menejeri o‘z filialini, o‘qituvchi o‘z guruhlarini ko‘radi. Hech kim o‘zi ocha olmaydigan sahifaning raqamlarini ko‘rmaydi.",
+            "Avval **Xulosa** keladi: eng muhim narsalar haqida uchtadan beshtagacha qisqa satr, har biri belgi bilan: yaxshi xabar, e’tibor berish kerak yoki muammo. Pastida xulosa yozilgan raqamlar turadi. Ofis qabul qilingan to‘lovlar, o‘tilgan darslar, kelmaganlar, davomat qilinmagan o‘quvchilar, yangi lidlar va bog‘lanilmagan lidlar, yangi kelgan va ketgan o‘quvchilar hamda qarzdorlarni ko‘radi; bir nechta filiali bor markazda har bir filial uchun alohida satr ham bo‘ladi. O‘qituvchi bugungi darslarni, o‘tilgan darslarni, kim kelmaganini, davomat qilinmagan o‘quvchilarni, tekshiriladigan uy vazifalarini va kelmay qo‘yganlarni ko‘radi. Raqam nomini bossangiz, u bilan ishlash mumkin bo‘lgan sahifa ochiladi.",
+            {
+              steps: [
+                "Yuqorida **Kecha**, **Bugun** yoki **7 kun** ni tanlang.",
+                "Ham boshqarsangiz, ham dars bersangiz, **Markaz** va **Guruhlarim** o‘rtasida almashing.",
+                "Xulosani yopish uchun **Tushunarli** ni bosing. Shu kuni u boshqa o‘zi ochilmaydi.",
+                "O‘zingiz ochishni xohlasangiz, **Kuniga bir marta o‘zi ochilsin** ni o‘chiring.",
+              ],
+            },
+            {
+              note: "Raqamlarni har doim Kampus o‘zi sanaydi. Sozlamalar → Integratsiyalar → AI yordamchi bo‘limida Anthropic kaliti bo‘lsa, xulosani shu raqamlar asosida Claude yozadi va u saqlanadi: faqat raqamlar o‘zgargandan keyin qayta yoziladi, bugungi kun uchun yarim soatda ko‘pi bilan bir marta, boshqa davrlar uchun uch soatda bir marta. Kalitsiz Kampus o‘z qoidalari bo‘yicha oddiy satrlar yozadi.",
+            },
+          ],
+        },
+        assistantButton: {
+          title: "Yordamchi tugmasi",
+          body: [
+            "O‘ng pastki burchakdagi uchqunli dumaloq tugma har bir sahifada bor. Panelni qayta ochish uchun uni bosing: **Xulosa** xulosangizni ko‘rsatadi, **So‘rash** esa turgan sahifangizdan chiqmasdan savol berish imkonini beradi. Tugma atrofidagi halqa bugungi xulosa hali ochilmaganini bildiradi.",
+            "**So‘rash** bo‘limida savol yozing yoki tavsiyalardan birini bosing. Ofis kim qarzdorligini yoki bu oy qancha tushum bo‘lganini so‘rashi mumkin. O‘qituvchi bugun qaysi darslari borligini, qaysi uy vazifalari tekshirishni kutayotganini yoki guruhlarida kim kelmaganini so‘rashi, shuningdek dars uchun mashq yoki ota-onalarga xabar tuzdirishi mumkin. Yordamchi faqat rolingizga ruxsat etilgan narsalarni ko‘radi va ma’lumotlarni hech qachon o‘zgartirmaydi.",
+            "Suhbat yon menyudagi **Yordamchi** sahifasidagi suhbatning o‘zi; **Sahifa qilib ochish** sizni o‘sha yerga olib boradi. Panelni yopish uchun Esc yoki dumaloq tugmani bosing.",
+          ],
+        },
         roles: {
           title: "Kim nima qila oladi",
           body: [
@@ -1177,6 +1203,7 @@ export const uz: HelpContent = {
           title: "AI yordamchi",
           body: [
             "Yon menyudagi **Yordamchi** markaz haqidagi savollarga oddiy so'zlar bilan javob beradi: kim qarzdor, qancha faol o'quvchi bor, bu oy qancha tushum bo'ldi, bugun nima bor, yoki yuboriladigan SMS qoralamasi. Yordamchi faktlarni Kampus'dan ekranlardagi qoidalar bilan qidiradi: kassir qarzdorlarni ko'radi, o'qituvchi ko'rmaydi; ma'lumotlarni hech qachon o'zgartirmaydi. U ikki narsa bo'yicha javob beradi: markazning Kampus'dagi ishi (o'quvchilar, guruhlar, darslar, to'lovlar, qarzlar, o'quvchi va ota-onalarga xabarlar, Kampus'da biror ishni qanday bajarish) va o'qitishga oid savollar (mavzuni tushuntirish, dars rejasi, javoblari bilan mashq va test savollari, o'quvchi javobini tekshirish, o'qitish usullari). Boshqa mavzudagi savolga, masalan yangiliklar, ko'ngilochar mavzular yoki shaxsiy maslahat, bir jumla bilan rad javobi beradi. Sozlamalar → Integratsiyalar → AI yordamchi bo'limiga Anthropic API kaliti joylangach Claude orqali ishlaydi (kalitni kai yoki markaz egasi console.anthropic.com da yaratadi va foydalanish uchun Anthropic'ga to'laydi). Kalitsiz sahifa sinov rejimida ishlaydi: haqiqiy ma'lumotlaringiz bo'yicha tayyor iboralar, jarayonni sinab ko'rish uchun.",
+            "Xuddi shu yordamchi har bir sahifaning o‘ng pastki burchagidagi dumaloq tugma ortida ishlaydi va kunlik xulosaning xulosa qismini yozadi (“Ishni boshlash” maqolasiga qarang). Undan Bosh sahifa yoki Bugun sahifasi bor har bir xodim foydalanadi, ya’ni o‘qituvchilar ham, har biri faqat o‘z guruhlari bo‘yicha. Kalit bilan har bir savol va har bir yangi yozilgan xulosa markazning Anthropic balansidan to‘lanadi. Raqamlar o‘zgarmaguncha xulosa saqlanadi va qayta ko‘rsatiladi, shuning uchun xulosani ikkinchi marta ochish hech narsa turmaydi.",
           ],
         },
         jobs: {

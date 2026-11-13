@@ -19,6 +19,13 @@ export default defineConfig({
     baseURL,
     trace: "retain-on-failure",
     locale: "en-US",
+    // The daily summary (A-190) opens by itself once a day and would cover the
+    // page under test, so every spec starts with that switch off; the
+    // assistant spec clears this state to test the opening itself.
+    storageState: {
+      cookies: [],
+      origins: [{ origin: baseURL, localStorage: [{ name: "kampus.summary.auto", value: "off" }] }],
+    },
   },
   projects: [
     {

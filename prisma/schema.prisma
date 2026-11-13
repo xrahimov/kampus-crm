@@ -62,6 +62,7 @@ model Organization {
   leadConversations LeadConversation[]
   fiscalReceipts    FiscalReceipt[]
   importRefs        ImportRef[]
+  aiBriefings       AiBriefing[]
 }
 
 /// A record that was copied in from the centre's previous system (A-189): which of
@@ -83,6 +84,36 @@ model ImportRef {
 
   @@unique([organizationId, source, kind, externalId])
   @@index([organizationId, source, kind, entityId])
+}
+
+/// The conclusion the AI wrote under one person's summary (A-190): one row per
+/// person, view, branch choice, period and language, kept so the model is asked
+/// once and not on every open. The figures above it are never stored.
+model AiBriefing {
+  id             String   @id @default(cuid())
+  organizationId String
+  userId         String
+  /// "management" (the centre or a branch) or "teaching" (the person's own groups).
+  view           String
+  /// The branch looked at, or "all".
+  scope          String
+  /// "yesterday", "today" or "week".
+  period         String
+  locale         String
+  /// The Tashkent day it was written on; another day asks again.
+  day            DateTime @db.Date
+  /// A hash of the figures it was written from, so unchanged figures keep the text.
+  factsHash      String
+  model          String
+  lines          String[]
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, view, scope, period, locale])
+  @@index([organizationId])
 }
 
 model Branch {
@@ -239,6 +270,7 @@ model User {
   leadMessagesSent LeadMessage[]      @relation("leadMessageAuthor")
   chatMessages     GroupChatMessage[] @relation("chatAuthor")
   chatReads        GroupChatRead[]
+  aiBriefings      AiBriefing[]
 
   @@index([organizationId])
 }

@@ -24,12 +24,7 @@ import { useTranslations } from "next-intl";
 import { useEffect, useState } from "react";
 
 import { Link, usePathname } from "@/i18n/navigation";
-import {
-  hasPermission,
-  MODULE_VIEW_PERMISSION,
-  MODULES,
-  type ModuleKey,
-} from "@/lib/rbac/permissions";
+import { canViewModule, MODULES, type ModuleKey } from "@/lib/rbac/permissions";
 import { api } from "@/lib/api-client";
 import { cn } from "@/lib/utils";
 
@@ -89,7 +84,7 @@ export function MainNav({
   const t = useTranslations("nav");
   const pathname = usePathname();
 
-  const visible = MODULES.filter((m) => hasPermission(permissions, MODULE_VIEW_PERMISSION[m]));
+  const visible = MODULES.filter((m) => canViewModule(permissions, m));
   const waiting = useCheckingCount(visible.includes("checking"), pathname);
 
   return (
