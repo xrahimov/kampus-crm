@@ -1,4 +1,4 @@
-import { beforeAll, describe, expect, it } from "vitest";
+import { afterAll, beforeAll, describe, expect, it } from "vitest";
 
 import { prisma } from "@/server/db/prisma";
 import type { Actor } from "@/server/rbac/authorize";
@@ -16,11 +16,11 @@ import { createCourse } from "@/server/services/settings/courses.service";
 import { dateToIso, isoToDate } from "@/server/services/settings/shared";
 import { membershipBalances } from "@/server/services/students/balances";
 
-import { DEMO_ORG_ID, demoBranchIds } from "./support/tenant";
-
 /*
  * A-189: the full copy of a centre's SOFF CRM. The export below is made up, in the
- * shape the old system's API answers in; no real record is in it.
+ * shape the old system's API answers in; no real record is in it. It is copied into
+ * a centre of its own, which is removed at the end: the copy writes payment methods,
+ * leave reasons and lead boards, which every page of a centre lists.
  */
 
 const RUN = String(Date.now() % 100_000).padStart(5, "0");
@@ -32,7 +32,7 @@ const ceo: Actor = {
   fullName: "CEO",
   roles: ["CEO"],
   permissions: ["*"],
-  organizationId: DEMO_ORG_ID,
+  organizationId: "",
   branchIds: [],
   activeBranchId: null,
 };
@@ -549,6 +549,7 @@ const shovot = {
   },
 };
 
+let orgId = "";
 let urganchId: string;
 let shovotId: string;
 let kampusGroupId: string;
@@ -559,23 +560,23 @@ const branchIds = () => [urganchId, shovotId];
 const snapshotOf = (...args: Parameters<typeof urganch>): SoffSnapshot =>
   normalizeSoffExports([shovot, supplement, urganch(...args)]);
 const apply = (snapshot: SoffSnapshot, dryRun: boolean) =>
-  applySoffSnapshot(snapshot, { organizationId: DEMO_ORG_ID, dryRun });
+  applySoffSnapshot(snapshot, { organizationId: orgId, dryRun });
 
 beforeAll(async () => {
-  // The made-up export uses the same old ids on every run of this file.
-  await prisma.importRef.deleteMany({ where: { organizationId: DEMO_ORG_ID, source: "soff" } });
+  orgId = (await prisma.organization.create({ data: { name: `${TAG} Centre` } })).id;
+  ceo.organizationId = orgId;
   const user = await prisma.user.create({
     data: {
       phone: phone(99),
       fullName: `${TAG} CEO`,
       passwordHash: "x",
-      organizationId: DEMO_ORG_ID,
+      organizationId: orgId,
     },
   });
   ceo.userId = user.id;
   urganchId = (await createBranch(ceo, { name: `${TAG} Urganch`, isActive: true })).id;
   shovotId = (await createBranch(ceo, { name: `${TAG} Shovot`, isActive: true })).id;
-  ceo.branchIds = await demoBranchIds();
+  ceo.branchIds = [urganchId, shovotId];
   ceo.activeBranchId = urganchId;
 
   // What an earlier, partial migration left in Kampus: the group under its old name,
@@ -639,6 +640,29 @@ beforeAll(async () => {
   });
   // Kampus has been charging the student since that made-up join date.
   await membershipBalances(prisma, [membership.id]);
+});
+
+afterAll(async () => {
+  // A failed set-up leaves the id unset; an unset filter would match every centre.
+  if (!orgId) return;
+  const inBranches = { branchId: { in: [urganchId, shovotId].filter(Boolean) } };
+  await prisma.auditLog.deleteMany({ where: { OR: [inBranches, { organizationId: orgId }] } });
+  await prisma.exam.deleteMany({ where: inBranches });
+  await prisma.financeEntry.deleteMany({ where: inBranches });
+  await prisma.financeCategory.deleteMany({ where: { organizationId: orgId } });
+  await prisma.lead.deleteMany({ where: inBranches });
+  await prisma.leadBoard.deleteMany({ where: inBranches });
+  await prisma.legacyPayment.deleteMany({ where: inBranches });
+  await prisma.balanceAdjustment.deleteMany({ where: inBranches });
+  await prisma.debtCase.deleteMany({ where: inBranches });
+  await prisma.group.deleteMany({ where: inBranches });
+  await prisma.student.deleteMany({ where: inBranches });
+  await prisma.course.deleteMany({ where: inBranches });
+  await prisma.room.deleteMany({ where: inBranches });
+  await prisma.user.deleteMany({ where: { organizationId: orgId } });
+  await prisma.branch.deleteMany({ where: { organizationId: orgId } });
+  await prisma.organization.deleteMany({ where: { id: orgId } });
+  await prisma.$disconnect();
 });
 
 describe("normalizeSoffExports (A-189)", () => {
@@ -866,7 +890,7 @@ describe("applySoffSnapshot (A-189)", () => {
       where: { lesson: { group: { branchId: { in: branchIds() } } } },
     }),
     refs: await prisma.importRef.count({
-      where: { organizationId: DEMO_ORG_ID, kind: "student", entityId: aliId },
+      where: { organizationId: orgId, kind: "student", entityId: aliId },
     }),
   });
   let dryCounts: unknown;
