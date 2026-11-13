@@ -19,7 +19,13 @@ import { AppError } from "@/server/errors/app-error";
 import type { ParsedList } from "@/server/http/list-query";
 import { authorize, authorizeBranch, branchScope, type Actor } from "@/server/rbac/authorize";
 import { notifyUsers } from "@/server/services/dashboard/notifications.service";
-import { dateToIso, decimalToNumber, isoToDate, mustFind } from "@/server/services/settings/shared";
+import {
+  dateToIso,
+  decimalToNumber,
+  isoToDate,
+  mustFind,
+  prismaCode,
+} from "@/server/services/settings/shared";
 import { queueAutoSms } from "@/server/services/sms/auto-sms.service";
 import { membershipBalances } from "@/server/services/students/balances";
 import { notifyStudents } from "@/server/services/telegram/student-telegram.service";
@@ -189,6 +195,16 @@ export interface DebtSyncResult {
 }
 
 /**
+ * A case goes with its student. When the student was deleted since the balances
+ * were read, the case can no longer be opened (P2003) or is already gone (P2025):
+ * there is no one left to chase, so the sync skips it instead of failing its caller.
+ */
+function studentGone(error: unknown): boolean {
+  const code = prismaCode(error);
+  return code === "P2003" || code === "P2025";
+}
+
+/**
  * Brings the cases of the given branches (or students) in line with the balances:
  * opens a case for every new debtor, refreshes amounts, settles promises and
  * closes cases whose debt is gone.
@@ -215,14 +231,19 @@ export async function syncDebtCases(
   for (const [key, t] of totals) {
     const existing = byKey.get(key);
     if (!existing) {
-      await db.debtCase.create({
-        data: {
-          studentId: t.studentId,
-          branchId: t.branchId,
-          openedAt: isoToDate(t.since ?? todayIso),
-          amount: t.amount,
-        },
-      });
+      try {
+        await db.debtCase.create({
+          data: {
+            studentId: t.studentId,
+            branchId: t.branchId,
+            openedAt: isoToDate(t.since ?? todayIso),
+            amount: t.amount,
+          },
+        });
+      } catch (error) {
+        if (!studentGone(error)) throw error;
+        continue;
+      }
       opened += 1;
       continue;
     }
@@ -259,7 +280,11 @@ export async function syncDebtCases(
       }
     }
     if (Object.keys(data).length > 0) {
-      await db.debtCase.update({ where: { id: existing.id }, data });
+      try {
+        await db.debtCase.update({ where: { id: existing.id }, data });
+      } catch (error) {
+        if (!studentGone(error)) throw error;
+      }
     }
   }
 
@@ -270,10 +295,15 @@ export async function syncDebtCases(
       : c.status === "PROMISED"
         ? "PROMISE_KEPT"
         : "PAID";
-    await db.debtCase.update({
-      where: { id: c.id },
-      data: { status: "CLOSED", closedAt: now, closedReason: reason, taskAt: null },
-    });
+    try {
+      await db.debtCase.update({
+        where: { id: c.id },
+        data: { status: "CLOSED", closedAt: now, closedReason: reason, taskAt: null },
+      });
+    } catch (error) {
+      if (!studentGone(error)) throw error;
+      continue;
+    }
     closed += 1;
   }
   return { opened, closed, totals };
