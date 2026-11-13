@@ -266,6 +266,33 @@ describe("debt cases", () => {
     expect(all.items.find((d) => d.id === row!.id)?.closedReason).toBe("PAID");
   });
 
+  it("skips a student who is deleted while the cases are brought in line", async () => {
+    const gone = await student("Gone", 19, daysAgo(60));
+    await prisma.debtCase.deleteMany({ where: { studentId: gone.id } });
+    // The delete lands between reading the balances and opening the case.
+    const racing = new Proxy(prisma, {
+      get(client, model) {
+        if (model !== "debtCase") return Reflect.get(client, model);
+        return new Proxy(client.debtCase, {
+          get(cases, method) {
+            if (method !== "create") return Reflect.get(cases, method);
+            return async (args: Parameters<typeof prisma.debtCase.create>[0]) => {
+              if (args.data.studentId === gone.id) {
+                await prisma.groupMembership.deleteMany({ where: { studentId: gone.id } });
+                await prisma.student.delete({ where: { id: gone.id } });
+              }
+              return cases.create(args);
+            };
+          },
+        });
+      },
+    });
+    const result = await syncDebtCases(racing, { branchIds: [branchId] });
+    expect(result.totals.size).toBeGreaterThanOrEqual(1);
+    expect(await prisma.student.count({ where: { id: gone.id } })).toBe(0);
+    expect(await prisma.debtCase.count({ where: { studentId: gone.id } })).toBe(0);
+  });
+
   it("keeps a teacher out and a cashier inside their own branch", async () => {
     await expect(listDebtCases(teacher, list(), {})).rejects.toMatchObject({ status: 403 });
     const other = (await demoBranchIds()).find((id) => id !== branchId)!;
