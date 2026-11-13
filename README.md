@@ -135,6 +135,7 @@ src/features/<module>/  client UI per module: tables, dialogs, forms, charts
 src/lib/                shared by client and server: zod schemas, rbac catalogue, api client, dates
 src/server/             auth, rbac, audit, errors, http helpers, services, jobs, excel, storage, db
 scripts/worker.ts       background job worker
+scripts/import-soff-export.ts  copies a whole centre from SOFF CRM, dry run first (docs/DEPLOY.md §11)
 scripts/copy-pdf-worker.mjs  copies the PDF reader's worker into public/pdfjs after a pdfjs-dist update
 tests/unit, tests/e2e   Vitest and Playwright suites
 docs/                   ARCHITECTURE.md, ASSUMPTIONS.md, DEMO-GUIDE.md, DEPLOY.md, EXPLORATION.md, TRACEABILITY.md

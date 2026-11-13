@@ -282,6 +282,68 @@ bucket's own versioning or copy it with `rclone` if you want a second copy.
 To go back to the disk, set `STORAGE_DRIVER=local` again; files uploaded while
 the bucket was in use stay there and would have to be copied back by hand.
 
+## 11. Copy a whole centre from SOFF CRM
+
+For a centre that is moving over from SOFF CRM with everything it has (A-189). The
+Excel import in Settings (A-143) brings staff, groups, students and payments;
+this copy brings the rest as well: archived students, real join and leave dates,
+balances, attendance, leads, finance, exams, parents and comments. It is run by
+the person who runs the server, not from the browser.
+
+**The input** is a folder with one export file per branch of the old system
+(`soff-export/1` JSON, plain or `.gz`) and any supplement files. The files are the
+old system's own read-only answers, saved while signed in there; they hold the
+centre's real data, so keep them off the repository and delete them from the
+server when the copy is done.
+
+**What the run does**
+
+- Everything is written in one transaction: it all lands or nothing does. Without
+  `--write` the same run is rolled back at the end (a dry run), so the report is
+  exactly what a real run would do.
+- Records the centre already has are matched first: staff by phone, courses and
+  rooms by name, students by phone and name, groups by the students they share
+  (then by name, also a name the group carried before). Every copied record is
+  remembered (`ImportRef`), so a second run adds only what is new and brings the
+  rest up to date.
+- Each student's balance equals the old system's: the old balance becomes an
+  opening balance, Kampus starts charging from the old system's next payment day,
+  and the charges Kampus made before that day are removed. Old payments are kept
+  as history and change no balance.
+- Nothing is sent: no SMS, no Telegram message, no coins, no notifications.
+- Kampus records the old system does not know are left alone and counted under
+  `kampusOnly` in the report.
+
+**Steps**
+
+1. Take a dump first (section 8).
+2. Copy the export files to the server, for example to `/root/soff-import`.
+3. Dry run:
+
+   ```bash
+   docker compose -f docker-compose.prod.yml run --rm --no-deps \
+     -v /root/soff-import:/import:ro worker \
+     npx tsx scripts/import-soff-export.ts --org "CENTRE NAME" --dir /import
+   ```
+
+   Read the report: `counts` (created, updated, unchanged, skipped, removed per
+   kind), `studentMatches`, `groupMatches`, `newStaffRoles`, `kampusOnly`, `money` (owed and in credit per branch,
+   the old system beside Kampus) and `notes`. The last lines must say
+   `BALANCES MATCH THE OLD SYSTEM` and `DRY_RUN_DONE`.
+
+4. The real run is the same line with `--write` at the end; it ends with
+   `IMPORT_DONE`.
+5. On the day the centre stops using the old system, take a fresh export after
+   the last entry there and repeat steps 1 to 4.
+6. Delete `/root/soff-import`.
+
+The branches must exist in Kampus under the same names as in the old system; the
+run stops before writing anything when one is missing. New staff accounts get the
+role they had in the old system (teacher, support teacher, admin, marketer, branch
+manager, cashier), never CEO, and no usable password: they sign in with Telegram
+or the CEO sets a password. Staff who are archived in the old system are created
+archived.
+
 ## Troubleshooting
 
 - **No certificate / browser warning:** the DNS record does not point at the
