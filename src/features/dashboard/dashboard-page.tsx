@@ -242,7 +242,7 @@ export function DashboardPage({
                     )}
                   </div>
                   <div
-                    className="mt-1.5 text-[1.75rem] leading-9 font-semibold tracking-tight tabular-nums"
+                    className="mt-1.5 text-2xl leading-9 font-semibold tracking-tight tabular-nums 2xl:text-[1.75rem]"
                     data-testid="dash-value"
                   >
                     {/* Asked for, the figures roll in like counters, a card after a card (A-192). */}

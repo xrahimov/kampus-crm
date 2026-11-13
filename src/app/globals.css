@@ -447,9 +447,9 @@
    * in the page (unseen) so it can be read aloud, copied and tested; the
    * rolling strip is drawn by the stylesheet and announced as nothing.
    */
+  /* Inline, so a long sum still wraps at its spaces inside a narrow card. */
   .odo {
-    display: inline-flex;
-    white-space: pre;
+    display: inline;
   }
   .odo-digit {
     position: relative;
