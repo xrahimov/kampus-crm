@@ -16,6 +16,7 @@ import { useSearchParams } from "next/navigation";
 import { useState, useTransition } from "react";
 
 import { ConfirmDialog } from "@/components/data/confirm-dialog";
+import { Morph } from "@/components/motion/page-transition";
 import { Alert } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -252,9 +253,12 @@ export function GroupDetail({
       )}
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div className="flex flex-wrap items-center gap-3">
-          <h1 className="text-2xl font-semibold tracking-tight" data-testid="group-title">
-            {group.name}
-          </h1>
+          {/* The name travels here from the row that was pressed (A-192). */}
+          <Morph name={`group-name-${group.id}`}>
+            <h1 className="text-2xl font-semibold tracking-tight" data-testid="group-title">
+              {group.name}
+            </h1>
+          </Morph>
           <GroupStatusBadge status={group.status} />
           {group.courseColor && (
             <span

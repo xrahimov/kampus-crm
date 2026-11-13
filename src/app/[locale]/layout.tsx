@@ -3,6 +3,8 @@ import { hasLocale, NextIntlClientProvider } from "next-intl";
 import { setRequestLocale } from "next-intl/server";
 import { notFound } from "next/navigation";
 
+import { NavigationPulse } from "@/components/motion/navigation-pulse";
+import { PointerGlow } from "@/components/motion/pointer-glow";
 import { routing } from "@/i18n/routing";
 import { THEME_BOOT_SCRIPT } from "@/lib/theme";
 
@@ -47,6 +49,8 @@ export default async function LocaleLayout({
         <script dangerouslySetInnerHTML={{ __html: THEME_BOOT_SCRIPT }} />
       </head>
       <body className="min-h-screen">
+        <NavigationPulse />
+        <PointerGlow />
         <NextIntlClientProvider>{children}</NextIntlClientProvider>
       </body>
     </html>

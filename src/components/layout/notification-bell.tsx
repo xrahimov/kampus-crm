@@ -79,10 +79,11 @@ export function NotificationBell({ initialUnread }: { initialUnread: number }) {
         data-testid="notification-bell"
         className="relative"
       >
-        <Bell />
+        {/* A bell with something unread rings once when the page opens (A-192). */}
+        <Bell className={unread > 0 ? "origin-top animate-ring" : undefined} />
         {unread > 0 && (
           <span
-            className="absolute -top-0.5 -right-0.5 inline-flex min-w-4 items-center justify-center rounded-full bg-destructive px-1 text-[10px] font-semibold text-white"
+            className="absolute -top-0.5 -right-0.5 inline-flex animate-pop min-w-4 items-center justify-center rounded-full bg-destructive px-1 text-[10px] font-semibold text-white"
             data-testid="notification-count"
           >
             {unread > 99 ? "99+" : unread}
@@ -91,7 +92,7 @@ export function NotificationBell({ initialUnread }: { initialUnread: number }) {
       </Button>
       {open && (
         <div
-          className="absolute top-full right-0 z-50 mt-1 w-80 rounded-md border bg-popover p-2 text-popover-foreground shadow-md"
+          className="absolute top-full right-0 z-50 mt-1 w-80 origin-top-right animate-pop rounded-md border bg-popover p-2 text-popover-foreground shadow-lift"
           data-testid="notification-panel"
         >
           <div className="flex items-center justify-between px-1 pb-2">

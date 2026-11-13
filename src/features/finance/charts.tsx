@@ -2,7 +2,18 @@
 
 /* Small dependency-free SVG charts for the finance page (EXP §9 donut and yearly bars). */
 
+import { WhenSeen } from "@/components/motion/when-seen";
+
 const PALETTE = ["#0f766e", "#f59e0b", "#3b82f6", "#ef4444", "#8b5cf6", "#10b981", "#64748b"];
+
+/** A bar grows from its own baseline, the months one after the other (A-192). */
+function grow(index: number, extra = 0): React.CSSProperties {
+  return {
+    transformBox: "fill-box",
+    transformOrigin: "bottom",
+    animationDelay: `${index * 30 + extra}ms`,
+  };
+}
 
 export function Donut({
   slices,
@@ -23,7 +34,7 @@ export function Donut({
     return [...acc, { label: s.label, len, offset }];
   }, []);
   return (
-    <div className="flex flex-wrap items-center gap-6" data-testid="donut">
+    <WhenSeen className="flex flex-wrap items-center gap-6" data-testid="donut">
       <svg viewBox="0 0 100 100" className="size-36 shrink-0" role="img" aria-label={format(total)}>
         {arcs.map((a, i) => (
           <circle
@@ -37,6 +48,9 @@ export function Donut({
             strokeDasharray={`${a.len} ${c - a.len}`}
             strokeDashoffset={-a.offset}
             transform="rotate(-90 50 50)"
+            // Each slice is drawn from its start, one after the other (A-192).
+            className="animate-arc-draw"
+            style={{ "--arc-full": c, animationDelay: `${i * 90}ms` } as React.CSSProperties}
           />
         ))}
       </svg>
@@ -54,7 +68,7 @@ export function Donut({
           </li>
         ))}
       </ul>
-    </div>
+    </WhenSeen>
   );
 }
 
@@ -75,7 +89,7 @@ export function YearBars({
   const gap = 8;
   const width = months.length * (2 * w + gap) + gap;
   return (
-    <div className="space-y-2" data-testid="year-bars">
+    <WhenSeen className="space-y-2" data-testid="year-bars">
       <svg viewBox={`0 0 ${width} ${h + 24}`} className="h-44 w-full" role="img">
         {months.map((m, i) => {
           const x = gap + i * (2 * w + gap);
@@ -83,10 +97,26 @@ export function YearBars({
           const he = (m.expenses / max) * h;
           return (
             <g key={labels[i]}>
-              <rect x={x} y={h - hi} width={w} height={hi} fill={PALETTE[0]}>
+              <rect
+                x={x}
+                y={h - hi}
+                width={w}
+                height={hi}
+                fill={PALETTE[0]}
+                className="animate-bar-grow"
+                style={grow(i)}
+              >
                 <title>{`${labels[i]}: ${legend.income} ${format(m.income)}`}</title>
               </rect>
-              <rect x={x + w} y={h - he} width={w} height={he} fill={PALETTE[1]}>
+              <rect
+                x={x + w}
+                y={h - he}
+                width={w}
+                height={he}
+                fill={PALETTE[1]}
+                className="animate-bar-grow"
+                style={grow(i, 40)}
+              >
                 <title>{`${labels[i]}: ${legend.expenses} ${format(m.expenses)}`}</title>
               </rect>
               <text x={x + w} y={h + 16} textAnchor="middle" fontSize="10" fill="currentColor">
@@ -106,6 +136,6 @@ export function YearBars({
           {legend.expenses}
         </span>
       </div>
-    </div>
+    </WhenSeen>
   );
 }

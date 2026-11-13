@@ -62,6 +62,8 @@ export function AttendanceGrid({
   const [, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
   const [extraOpen, setExtraOpen] = useState(false);
+  // Marks animate only after the first press, not when the grid is opened.
+  const [touched, setTouched] = useState(false);
   const [topicLesson, setTopicLesson] = useState<MonthGridDto["lessons"][number] | null>(null);
   const refresh = () => startTransition(() => router.refresh());
   const day = (iso: string) => fmt(parseDateOnly(iso), { day: "numeric", month: "short" });
@@ -90,6 +92,7 @@ export function AttendanceGrid({
   }
 
   async function cycle(lessonId: string, membershipId: string, current: AttendanceStatus) {
+    setTouched(true);
     if (!canMark) return;
     const next = CYCLE[(CYCLE.indexOf(current) + 1) % CYCLE.length]!;
     setError(null);
@@ -267,7 +270,13 @@ export function AttendanceGrid({
                               "relative after:absolute after:top-0.5 after:right-0.5 after:size-1.5 after:rounded-full after:bg-foreground/60 after:content-['']",
                           )}
                         >
-                          {MARK[status]}
+                          {/* A mark that was just changed pops into its cell (A-192). */}
+                          <span
+                            key={status}
+                            className={touched ? "inline-block animate-pop" : undefined}
+                          >
+                            {MARK[status]}
+                          </span>
                         </button>
                       </td>
                     );
