@@ -41,6 +41,14 @@ const shift = (n: number) => {
   d.setUTCDate(d.getUTCDate() + n);
   return iso(d);
 };
+/*
+ * The group starts on the first day of the month that held the day 20 days
+ * ago. Its first twelve daily lessons are then all over and sit in one
+ * calendar month, whatever today is; the perfect-month badge counts by
+ * calendar month, and a start of "20 days ago" split them 7 and 5 across two
+ * months on the 14th to 16th after a 31-day month.
+ */
+const START = `${shift(-20).slice(0, 7)}-01`;
 const ITEMS: ExerciseItem[] = [
   { kind: "CHOICE", prompt: "Pick the fruit", options: ["Apple", "Car"], correct: [0] },
   { kind: "TRUE_FALSE", prompt: "Berlin is in Germany", correct: true },
@@ -117,7 +125,7 @@ beforeAll(async () => {
         roomId: null,
       })),
       teachers: [{ userId: teacher.userId, role: "MAIN", shareType: "PERCENT", shareValue: 0 }],
-      startDate: shift(-20),
+      startDate: START,
       endDate: null,
       status: "ACTIVE",
     })
@@ -133,7 +141,7 @@ beforeAll(async () => {
     sourceId: null,
     schoolId: null,
     note: null,
-    membership: { groupId, joinedAt: shift(-20), customPrice: null, note: null, status: "ACTIVE" },
+    membership: { groupId, joinedAt: START, customPrice: null, note: null, status: "ACTIVE" },
   });
   const link = (await listStudentLinks(ceo, groupId)).find((l) => l.studentId === s.id)!;
   anna = { studentId: s.id, membershipId: link.membershipId, token: link.token };
