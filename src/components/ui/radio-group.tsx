@@ -55,7 +55,7 @@ function SegmentedItem({
   return (
     <RadioGroupPrimitive.Item
       className={cn(
-        "flex-1 rounded-sm px-2 py-1.5 text-xs font-medium whitespace-nowrap text-muted-foreground transition-colors focus-visible:ring-2 focus-visible:ring-ring/40 focus-visible:outline-hidden data-[state=checked]:bg-card data-[state=checked]:text-foreground data-[state=checked]:shadow-sm",
+        "flex-1 rounded-[8px] px-2 py-1.5 text-xs font-medium whitespace-nowrap text-muted-foreground transition-[color,background-color,box-shadow] duration-200 focus-visible:ring-2 focus-visible:ring-ring/40 focus-visible:outline-hidden data-[state=checked]:bg-card data-[state=checked]:text-foreground data-[state=checked]:shadow-sm",
         className,
       )}
       {...props}

@@ -10,6 +10,7 @@ import { EmptyState } from "@/components/data/empty-state";
 import { Pagination } from "@/components/data/pagination";
 import { SearchBox } from "@/components/data/search-box";
 import { SortHeader } from "@/components/data/sort-header";
+import { Morph } from "@/components/motion/page-transition";
 import { Avatar } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -499,12 +500,16 @@ export function StudentsPage({
                     </TableCell>
                   )}
                   <TableCell>
-                    <Avatar src={s.photoUrl} name={s.fullName} />
+                    <Morph name={`student-photo-${s.id}`}>
+                      <Avatar src={s.photoUrl} name={s.fullName} />
+                    </Morph>
                   </TableCell>
                   <TableCell className="font-medium">
-                    <Link href={`/students/${s.id}`} className="hover:underline">
-                      {s.fullName}
-                    </Link>
+                    <Morph name={`student-name-${s.id}`}>
+                      <Link href={`/students/${s.id}`} className="hover:underline">
+                        {s.fullName}
+                      </Link>
+                    </Morph>
                     {s.isBlacklisted && (
                       <Badge variant="destructive" className="ml-2">
                         {ts("blacklisted")}

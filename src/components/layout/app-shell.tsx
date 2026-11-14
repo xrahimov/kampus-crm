@@ -3,6 +3,7 @@ import { getTranslations } from "next-intl/server";
 import type { Actor } from "@/server/rbac/authorize";
 
 import { KampusMark, KampusWordmark } from "@/components/brand/logo";
+import { TileWall } from "@/components/brand/tile-wall";
 import { Link } from "@/i18n/navigation";
 
 import { unreadCount } from "@/server/services/dashboard/notifications.service";
@@ -57,7 +58,13 @@ export async function AppShell({
 
   return (
     <div className="min-h-screen lg:grid lg:grid-cols-[14.5rem_minmax(0,1fr)]">
-      <aside className="sticky top-0 hidden h-screen flex-col bg-sidebar text-sidebar-foreground lg:flex">
+      <aside className="sticky top-0 isolate hidden h-screen flex-col bg-sidebar text-sidebar-foreground lg:flex">
+        {/* The same tiles as the sign-in wall, faint, at the foot of the sidebar (A-192). */}
+        <TileWall
+          id="sidebar-wall"
+          quiet
+          className="-z-10 [mask-image:linear-gradient(to_top,black,transparent_55%)]"
+        />
         <div className="flex h-14 items-center px-5 text-white">
           <Link href="/dashboard" className="rounded-md focus-visible:outline-sidebar-active">
             <KampusWordmark name={appName} />
@@ -68,7 +75,8 @@ export async function AppShell({
       </aside>
 
       <div className="flex min-h-screen min-w-0 flex-col">
-        <header className="sticky top-0 z-40 border-b bg-background/90 backdrop-blur supports-[backdrop-filter]:bg-background/75">
+        {/* The page is a porcelain sheet laid on the lapis frame: its corner by the sidebar is round (A-192). */}
+        <header className="app-header sticky top-0 z-40 border-b bg-background/90 backdrop-blur supports-[backdrop-filter]:bg-background/75 lg:before:pointer-events-none lg:before:absolute lg:before:top-0 lg:before:left-0 lg:before:size-5 lg:before:bg-[radial-gradient(circle_at_100%_100%,transparent_1.25rem,var(--sidebar)_calc(1.25rem+0.5px))]">
           <div className="flex h-14 items-center gap-2 px-4 lg:px-6">
             <MobileNav permissions={permissions} appName={appName} />
             <Link href="/dashboard" className="lg:hidden" aria-label={appName}>

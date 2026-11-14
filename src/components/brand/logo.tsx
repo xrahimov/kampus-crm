@@ -14,9 +14,10 @@ export function KampusMark({ className }: { className?: string }) {
       fill="none"
     >
       <rect width="32" height="32" rx="7" className="fill-sidebar-active" />
+      {/* .kampus-star turns while a page is loading (A-192). */}
       <path
         d="M16 5.5 18.9 12l6.6-2.5L23 16l2.5 6.5L18.9 20 16 26.5 13.1 20l-6.6 2.5L9 16 6.5 9.5l6.6 2.5z"
-        className="fill-sidebar"
+        className="kampus-star fill-sidebar"
       />
       <circle cx="16" cy="16" r="3" className="fill-sidebar-active" />
     </svg>

@@ -39,7 +39,7 @@ export function LocaleSwitcher() {
       <DropdownMenuTrigger asChild>
         <Button variant="ghost" size="sm" aria-label={t("common.language")} disabled={isPending}>
           <Languages />
-          <span className="uppercase">{locale}</span>
+          <span className="uppercase max-sm:hidden">{locale}</span>
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">

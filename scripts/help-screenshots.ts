@@ -1491,6 +1491,8 @@ async function newPage(
   const context = await browser.newContext({
     viewport: { width: 1280, height: 800 },
     deviceScaleFactor: 1,
+    // Pictures show every page at rest: no entrance half done, no counter mid-roll (A-192).
+    reducedMotion: "reduce",
     ...options,
   });
   // The development build's status badge has no place in a manual, and the

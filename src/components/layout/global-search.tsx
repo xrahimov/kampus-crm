@@ -114,12 +114,12 @@ export function GlobalSearch() {
         }}
         placeholder={t("placeholder")}
         aria-label={t("placeholder")}
-        className="h-9 w-56 border-transparent bg-secondary pl-8 hover:bg-muted focus-visible:bg-card lg:w-80"
+        className="h-9 w-56 border-transparent bg-secondary pl-8 transition-[width,background-color,border-color,box-shadow] duration-300 ease-arrive hover:bg-muted focus-visible:w-72 focus-visible:bg-card lg:w-80 lg:focus-visible:w-96"
         data-testid="global-search"
       />
       {open && term.length >= 2 && (
         <div
-          className="absolute top-full right-0 left-0 z-50 mt-1 max-h-96 overflow-y-auto rounded-md border bg-popover p-1 text-popover-foreground shadow-md"
+          className="absolute top-full right-0 left-0 z-50 mt-1 max-h-96 origin-top animate-pop overflow-y-auto rounded-md border bg-popover p-1 text-popover-foreground shadow-lift"
           data-testid="global-search-results"
           role="listbox"
         >

@@ -36,7 +36,14 @@
   --border: oklch(0.905 0.012 260);
   --input: oklch(0.88 0.014 260);
   --ring: oklch(0.62 0.11 195);
-  --radius: 0.5rem;
+  --radius: 0.75rem;
+  /* Depth is lapis-tinted, never grey: a whisper under cards, a lift under what floats. */
+  --elev-card: 0 1px 2px oklch(0.27 0.075 268 / 0.05);
+  --elev-lift:
+    0 1px 2px oklch(0.27 0.075 268 / 0.06), 0 12px 32px -12px oklch(0.27 0.075 268 / 0.22);
+  /* The glaze of a tile: a light upper edge on what can be pressed. */
+  --glaze: inset 0 1px 0 oklch(1 0 0 / 0.16), 0 1px 2px oklch(0.27 0.075 268 / 0.18);
+  --scrim: oklch(0.2 0.06 268 / 0.45);
   --sidebar: oklch(0.27 0.075 268);
   --sidebar-foreground: oklch(0.84 0.035 262);
   --sidebar-muted: oklch(0.34 0.075 268);
@@ -67,6 +74,10 @@
   --border: oklch(0.32 0.035 268);
   --input: oklch(0.34 0.035 268);
   --ring: oklch(0.75 0.11 195);
+  --elev-card: 0 1px 2px oklch(0 0 0 / 0.25);
+  --elev-lift: 0 1px 2px oklch(0 0 0 / 0.3), 0 16px 36px -14px oklch(0 0 0 / 0.6);
+  --glaze: inset 0 1px 0 oklch(1 0 0 / 0.14), 0 1px 2px oklch(0 0 0 / 0.3);
+  --scrim: oklch(0.1 0.03 268 / 0.6);
   --sidebar: oklch(0.15 0.035 268);
   --sidebar-foreground: oklch(0.84 0.035 262);
   --sidebar-muted: oklch(0.22 0.05 268);
@@ -101,10 +112,31 @@
   --color-sidebar-foreground: var(--sidebar-foreground);
   --color-sidebar-muted: var(--sidebar-muted);
   --color-sidebar-active: var(--sidebar-active);
-  --radius-sm: calc(var(--radius) - 4px);
+  /* Small things (ticks, swatches) keep a 4px corner; the steps above them grow with --radius. */
+  --radius-sm: 0.25rem;
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
   --radius-xl: calc(var(--radius) + 4px);
+  --shadow-card: var(--elev-card);
+  --shadow-lift: var(--elev-lift);
+  --shadow-glaze: var(--glaze);
+  --color-scrim: var(--scrim);
+  /*
+   * Motion (A-192). One curve for things that arrive, one for things that
+   * travel between two places; nothing in the interface runs longer than 320ms
+   * unless it is drawing data or sitting on the sign-in page.
+   */
+  --ease-arrive: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-travel: cubic-bezier(0.65, 0, 0.35, 1);
+  --animate-rise: rise 280ms var(--ease-arrive) both;
+  --animate-pop: pop 320ms var(--ease-arrive) both;
+  --animate-bar-grow: bar-grow 560ms var(--ease-arrive) both;
+  --animate-arc-draw: arc-draw 720ms var(--ease-arrive) both;
+  --animate-fill-across: fill-across 640ms var(--ease-arrive) both;
+  --animate-star-turn: star-turn 1400ms var(--ease-travel) infinite;
+  --animate-tile-in: tile-in 460ms var(--ease-arrive) both;
+  --animate-ring: ring 900ms var(--ease-travel) 700ms both;
+  --animate-shake: shake 420ms var(--ease-travel) both;
   --font-sans:
     "Onest Variable", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue",
     Arial, "Noto Sans", sans-serif;
@@ -126,6 +158,531 @@
   :focus-visible {
     @apply outline-2 outline-offset-2 outline-ring;
   }
+  ::selection {
+    background: oklch(0.8 0.11 192 / 0.35);
+  }
+  /* Quiet scrollbars: the lists scroll, the bars need not shout about it. */
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: color-mix(in oklch, var(--muted-foreground) 35%, transparent) transparent;
+  }
+}
+
+/*
+ * Motion (A-192). Everything here moves by transform or opacity only, so
+ * phones and tablets keep their frame rate, and all of it switches off for
+ * people who asked their device for less motion (see the last block).
+ */
+
+/* A page, a card or a panel arriving: a short lift into place. */
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+}
+/* A badge or a tick appearing where there was none. */
+@keyframes pop {
+  from {
+    opacity: 0;
+    transform: scale(0.6);
+  }
+  60% {
+    transform: scale(1.08);
+  }
+}
+/* A chart bar growing from its baseline. */
+@keyframes bar-grow {
+  from {
+    transform: scaleY(0);
+  }
+}
+/* A donut slice drawn from its start; --arc-full is the circle's length. */
+@keyframes arc-draw {
+  from {
+    stroke-dasharray: 0 var(--arc-full, 252);
+  }
+}
+/* A progress bar filling from the left. */
+@keyframes fill-across {
+  from {
+    transform: scaleX(0);
+  }
+}
+/* While a page is on its way the star in the brand mark turns: once round, a breath, round again. */
+@keyframes star-turn {
+  to {
+    transform: rotate(360deg);
+  }
+}
+/* A card laid like a tile: up from a little below and a little small. */
+@keyframes tile-in {
+  from {
+    opacity: 0;
+    transform: translateY(16px) scale(0.96);
+  }
+}
+/* A table row arriving. */
+@keyframes row-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+}
+/* The bell that has something to say. */
+@keyframes ring {
+  0%,
+  100% {
+    transform: rotate(0);
+  }
+  15% {
+    transform: rotate(16deg);
+  }
+  35% {
+    transform: rotate(-13deg);
+  }
+  55% {
+    transform: rotate(9deg);
+  }
+  75% {
+    transform: rotate(-5deg);
+  }
+}
+/* "No": a refused form shakes its head once. */
+@keyframes shake {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  20% {
+    transform: translateX(-7px);
+  }
+  40% {
+    transform: translateX(6px);
+  }
+  60% {
+    transform: translateX(-4px);
+  }
+  80% {
+    transform: translateX(2px);
+  }
+}
+/* One column of a counter rolling a full round and landing on its digit. */
+@keyframes odo-roll {
+  from {
+    transform: translateY(calc(var(--d) * -5%));
+  }
+}
+/* Light crossing a glazed surface. */
+@keyframes sheen {
+  to {
+    transform: translateX(260%) skewX(-20deg);
+  }
+}
+/* The sign-in wall being uncovered from its far corner. */
+@keyframes wall-unveil {
+  from {
+    mask-position: 0% 100%;
+  }
+}
+/* A band of daylight wandering over the sign-in wall; --day is where the band is. */
+@property --day {
+  syntax: "<percentage>";
+  inherits: false;
+  initial-value: -20%;
+}
+@keyframes wall-daylight {
+  from {
+    --day: -20%;
+  }
+  to {
+    --day: 120%;
+  }
+}
+/* A page leaving and the next one arriving (view transitions). */
+@keyframes page-leave {
+  to {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+}
+@keyframes page-arrive {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+}
+@keyframes header-lift {
+  to {
+    box-shadow: 0 8px 24px -16px oklch(0.27 0.075 268 / 0.35);
+  }
+}
+/* The line under the header while a page is on its way. */
+@keyframes route-line {
+  0% {
+    transform: scaleX(0);
+  }
+  40% {
+    transform: scaleX(0.6);
+  }
+  100% {
+    transform: scaleX(0.92);
+  }
+}
+
+/* What can be pressed gives a little under the finger. */
+@utility press {
+  transition-property: color, background-color, border-color, box-shadow, transform, opacity;
+  transition-duration: 150ms;
+  transition-timing-function: var(--ease-arrive);
+  &:active {
+    transform: scale(0.97);
+  }
+}
+
+@layer components {
+  /*
+   * A card that leads somewhere: on hover it lifts a little and lights the
+   * same turquoise edge the sidebar uses for "you are here". Put the class on
+   * the card; the link around it (or the card itself) is what is hovered.
+   */
+  .card-link {
+    position: relative;
+    transition:
+      transform 200ms var(--ease-arrive),
+      box-shadow 200ms var(--ease-arrive),
+      border-color 200ms var(--ease-arrive);
+  }
+  .card-link::before {
+    content: "";
+    position: absolute;
+    left: -1px;
+    top: 0.875rem;
+    bottom: 0.875rem;
+    width: 3px;
+    border-radius: 0 9999px 9999px 0;
+    background: var(--sidebar-active);
+    transform: scaleY(0);
+    transition: transform 240ms var(--ease-arrive);
+  }
+  @media (hover: hover) {
+    a:hover > .card-link,
+    a.card-link:hover {
+      transform: translateY(-2px);
+      box-shadow: var(--elev-lift);
+      border-color: color-mix(in oklch, var(--ring) 55%, var(--border));
+    }
+    a:hover > .card-link::before,
+    a.card-link:hover::before {
+      transform: scaleY(1);
+    }
+  }
+  a:focus-visible > .card-link::before,
+  a.card-link:focus-visible::before {
+    transform: scaleY(1);
+  }
+}
+
+@layer components {
+  /* Cards laid one after the other; --i is the card's place in the row. */
+  .tile-in {
+    animation: var(--animate-tile-in);
+    animation-delay: calc(var(--i, 0) * 38ms);
+  }
+
+  /*
+   * Rows of a list arrive top to bottom. Only the first screenful is
+   * staggered; the rest come together so a long list is never kept waiting.
+   */
+  .rows-in > tr {
+    animation: row-in 320ms var(--ease-arrive) both;
+    animation-delay: 270ms;
+  }
+  .rows-in > tr:nth-child(1) {
+    animation-delay: 0ms;
+  }
+  .rows-in > tr:nth-child(2) {
+    animation-delay: 18ms;
+  }
+  .rows-in > tr:nth-child(3) {
+    animation-delay: 36ms;
+  }
+  .rows-in > tr:nth-child(4) {
+    animation-delay: 54ms;
+  }
+  .rows-in > tr:nth-child(5) {
+    animation-delay: 72ms;
+  }
+  .rows-in > tr:nth-child(6) {
+    animation-delay: 90ms;
+  }
+  .rows-in > tr:nth-child(7) {
+    animation-delay: 108ms;
+  }
+  .rows-in > tr:nth-child(8) {
+    animation-delay: 126ms;
+  }
+  .rows-in > tr:nth-child(9) {
+    animation-delay: 144ms;
+  }
+  .rows-in > tr:nth-child(10) {
+    animation-delay: 162ms;
+  }
+  .rows-in > tr:nth-child(11) {
+    animation-delay: 180ms;
+  }
+  .rows-in > tr:nth-child(12) {
+    animation-delay: 198ms;
+  }
+  .rows-in > tr:nth-child(13) {
+    animation-delay: 216ms;
+  }
+  .rows-in > tr:nth-child(14) {
+    animation-delay: 234ms;
+  }
+
+  /*
+   * A counter (A-192). Each digit is a column that rolls one full round and
+   * lands on its figure, the columns one after the other. The real digit stays
+   * in the page (unseen) so it can be read aloud, copied and tested; the
+   * rolling strip is drawn by the stylesheet and announced as nothing.
+   */
+  /* Inline, so a long sum still wraps at its spaces inside a narrow card. */
+  .odo {
+    display: inline;
+  }
+  .odo-digit {
+    position: relative;
+    display: inline-block;
+    overflow: hidden;
+  }
+  .odo-digit > span {
+    opacity: 0;
+  }
+  .odo-digit::before {
+    content: "0\A 1\A 2\A 3\A 4\A 5\A 6\A 7\A 8\A 9\A 0\A 1\A 2\A 3\A 4\A 5\A 6\A 7\A 8\A 9" / "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    text-align: center;
+    white-space: pre;
+    transform: translateY(calc((10 + var(--d)) * -5%));
+    animation: odo-roll 1100ms var(--ease-arrive) both;
+    animation-delay: calc(var(--i, 0) * 45ms + var(--odo-delay, 0ms));
+  }
+
+  /* Light crosses a filled button when the pointer arrives on it. */
+  .sheen {
+    position: relative;
+    overflow: hidden;
+  }
+  .sheen::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: -60%;
+    width: 50%;
+    background: linear-gradient(90deg, transparent, oklch(1 0 0 / 0.28), transparent);
+    transform: translateX(0) skewX(-20deg);
+    pointer-events: none;
+  }
+  @media (hover: hover) {
+    .sheen:hover::after {
+      animation: sheen 700ms var(--ease-arrive);
+    }
+  }
+
+  /*
+   * A soft turquoise light that follows the pointer over a card or over the
+   * sign-in wall. --mx and --my are set by PointerGlow, in pixels from the
+   * element's own corner; without a mouse nothing is lit.
+   */
+  .card-link::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    background: radial-gradient(
+      220px circle at var(--mx, -400px) var(--my, -400px),
+      oklch(0.8 0.11 192 / 0.16),
+      transparent 70%
+    );
+    opacity: 0;
+    transition: opacity 250ms linear;
+    pointer-events: none;
+  }
+  @media (hover: hover) {
+    a:hover > .card-link::after,
+    a.card-link:hover::after {
+      opacity: 1;
+    }
+  }
+
+  /* The sign-in wall: uncovered once, then daylight and the pointer light it. */
+  .wall-base {
+    mask-image: linear-gradient(to top right, transparent 40%, black 60%);
+    mask-size: 300% 300%;
+    mask-repeat: no-repeat;
+    mask-position: 80% 20%;
+    animation: wall-unveil 1600ms var(--ease-arrive) both;
+  }
+  .wall-daylight {
+    mask-image: linear-gradient(
+      115deg,
+      transparent calc(var(--day) - 16%),
+      black var(--day),
+      transparent calc(var(--day) + 16%)
+    );
+    animation: wall-daylight 9s var(--ease-travel) 1.6s infinite both;
+  }
+  /* Charts and cards below the fold wait until they are scrolled to (see when-seen.tsx). */
+  .when-seen:not([data-seen]) :is(.animate-bar-grow, .animate-arc-draw, .tile-in),
+  .when-seen:not([data-seen]):is(.tile-in) {
+    animation-play-state: paused;
+  }
+  /* The brand mark answers the pointer with one turn. */
+  @media (hover: hover) {
+    a:hover .kampus-star {
+      transition: transform 700ms var(--ease-arrive);
+      transform: rotate(180deg);
+    }
+  }
+  .wall-pointer {
+    mask-image: radial-gradient(
+      280px circle at var(--mx, -600px) var(--my, -600px),
+      black,
+      transparent 72%
+    );
+  }
+
+  /* The header gains a shadow once the page has moved under it. */
+  @supports (animation-timeline: scroll()) {
+    .app-header {
+      animation: header-lift linear both;
+      animation-timeline: scroll(root);
+      animation-range: 0 96px;
+    }
+  }
+}
+
+/*
+ * Page changes (A-192). React hands the browser the old page and the new one;
+ * the frame (sidebar, header) stays put and only what is inside changes: the
+ * old page lifts away, the new one settles, and a name that is on both pages
+ * (a student, a group) travels from its row to the heading. Browsers without
+ * view transitions just show the new page.
+ */
+::view-transition-group(root) {
+  animation: none;
+}
+::view-transition-old(root) {
+  display: none;
+}
+::view-transition-new(root) {
+  animation: none;
+}
+::view-transition-old(.page-leave) {
+  animation: page-leave 140ms ease-in both;
+}
+::view-transition-new(.page-arrive) {
+  animation:
+    page-arrive 380ms var(--ease-arrive) both,
+    fade-in 220ms ease-out 80ms both;
+}
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+}
+::view-transition-group(.morph) {
+  animation-duration: 420ms;
+  animation-timing-function: var(--ease-travel);
+  z-index: 50;
+}
+/* The header keeps its place above the pages passing under it. */
+.app-header {
+  view-transition-name: app-header;
+}
+::view-transition-group(app-header) {
+  animation: none;
+  z-index: 100;
+}
+::view-transition-old(app-header) {
+  display: none;
+}
+::view-transition-new(app-header) {
+  animation: none;
+}
+/*
+ * Light ↔ dark: the new colours open in a circle from the button that was
+ * pressed (theme-toggle.tsx drives the circle; here the old picture simply
+ * waits underneath).
+ */
+html[data-theme-flip] .app-header {
+  view-transition-name: none;
+}
+html[data-theme-flip]::view-transition-old(root) {
+  display: block;
+  animation: none;
+}
+html[data-theme-flip]::view-transition-new(root) {
+  mix-blend-mode: normal;
+}
+
+/* The star inside the brand mark; turns while html[data-navigating] is set. */
+.kampus-star {
+  transform-box: view-box;
+  transform-origin: 50% 50%;
+}
+html[data-navigating] .kampus-star {
+  animation: var(--animate-star-turn);
+  animation-delay: 120ms;
+}
+
+/* The line across the top of the screen while the next page loads. */
+.route-line {
+  position: fixed;
+  inset: 0 0 auto 0;
+  z-index: 60;
+  height: 2px;
+  background: var(--sidebar-active);
+  transform: scaleX(0);
+  transform-origin: left;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 200ms linear;
+}
+html[data-navigating] .route-line {
+  opacity: 1;
+  animation: route-line 4s var(--ease-arrive) 160ms both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  ::before,
+  ::after {
+    animation-duration: 0.01ms !important;
+    animation-delay: 0ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+  html[data-navigating] .kampus-star,
+  .wall-daylight,
+  .odo-digit::before,
+  .sheen::after {
+    animation: none !important;
+  }
+  .wall-daylight {
+    display: none;
+  }
+  ::view-transition-group(*),
+  ::view-transition-old(*),
+  ::view-transition-new(*) {
+    animation: none !important;
+  }
 }
 
 @media print {
@@ -134,5 +691,13 @@
   }
   body {
     background: white;
+  }
+  .route-line {
+    display: none;
+  }
+  *,
+  ::before,
+  ::after {
+    animation: none !important;
   }
 }

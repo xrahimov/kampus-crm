@@ -54,7 +54,10 @@ export function BranchSelector({
       <DropdownMenuTrigger asChild>
         <Button variant="outline" size="sm" disabled={isPending} aria-label={t("branch.select")}>
           <Building2 />
-          <span className="max-w-32 truncate">{activeBranch?.name ?? t("common.allBranches")}</span>
+          {/* On a phone the header has room for the icon only; the menu names the branch (A-192). */}
+          <span className="max-w-32 truncate max-sm:hidden">
+            {activeBranch?.name ?? t("common.allBranches")}
+          </span>
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
