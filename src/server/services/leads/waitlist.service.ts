@@ -16,6 +16,7 @@ import { AppError } from "@/server/errors/app-error";
 import type { ParsedList } from "@/server/http/list-query";
 import { authorize, authorizeBranch, branchScope, type Actor } from "@/server/rbac/authorize";
 import { addMember } from "@/server/services/groups/memberships.service";
+import { timeRanges } from "@/server/services/groups/schedule";
 import { findGroupInScope } from "@/server/services/groups/shared";
 import { addLeadsToGroup } from "@/server/services/leads/leads.service";
 import { dateToIso, mustFind } from "@/server/services/settings/shared";
@@ -444,8 +445,8 @@ export async function offerSeats(
     where: { organizationId_event: { organizationId, event: "WAITLIST_OFFER" } },
   });
   const slots = [...group.slots].sort((a, b) => a.weekday - b.weekday);
-  const first = slots[0];
-  const time = first ? `${first.startTime}–${first.endTime}` : "";
+  // Days in order, then their times in the same order when they differ (A-193).
+  const time = timeRanges(slots, "–", " / ") ?? "";
   const days = weekdayNames(slots.map((s) => s.weekday));
   const startDate = dateToIso(group.startDate);
   const now = new Date();

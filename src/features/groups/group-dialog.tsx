@@ -35,6 +35,7 @@ import {
   WEEKDAY_PATTERNS,
   WEEKDAYS,
   type GroupInput,
+  type GroupScheduleInput,
   type GroupUpdateInput,
   type Weekday,
 } from "@/lib/validation/groups";
@@ -89,6 +90,9 @@ const formSchema = z
     startDate: z.string().min(1, "validation.required"),
     endDate: z.string(),
     status: z.enum(GROUP_STATUSES),
+    /** A running group: the day its new times start, and whether the students hear of it (A-193). */
+    scheduleFrom: z.string(),
+    notifySchedule: z.boolean(),
   })
   .refine((g) => g.weekdayPattern !== "CUSTOM" || g.customDays.length > 0, {
     message: "validation.slotsMin",
@@ -101,13 +105,36 @@ const formSchema = z
   .refine((g) => !g.endDate || g.endDate >= g.startDate, {
     message: "validation.endAfterStart",
     path: ["endDate"],
+  })
+  .superRefine((g, ctx) => {
+    if (!g.perDay) return;
+    // Each lesson day's own row must end after it starts.
+    for (const weekday of patternDays(g.weekdayPattern, g.customDays as Weekday[])) {
+      const row = g.days[weekday - 1];
+      if (row && row.endTime <= row.startTime) {
+        ctx.addIssue({
+          code: "custom",
+          message: "validation.workHours",
+          path: ["days", weekday - 1, "endTime"],
+        });
+      }
+    }
   });
 type FormInput = z.input<typeof formSchema>;
 type FormOutput = z.output<typeof formSchema>;
 
-function toApiBody(v: FormOutput): GroupInput {
-  const days = patternDays(v.weekdayPattern, v.customDays as Weekday[]);
-  const slots = days.map((weekday) => {
+/** The slots the form describes: one per lesson day, with the common time or the day's own. */
+function formSlots(v: {
+  weekdayPattern: FormOutput["weekdayPattern"];
+  customDays: Array<number | string | unknown>;
+  perDay: boolean;
+  startTime: string;
+  endTime: string;
+  roomId: string | null;
+  days: FormOutput["days"];
+}) {
+  const days = [...patternDays(v.weekdayPattern, v.customDays.map(Number) as Weekday[])].sort();
+  return days.map((weekday) => {
     const row = v.perDay ? v.days.find((d) => d.weekday === weekday) : undefined;
     return {
       weekday,
@@ -116,6 +143,10 @@ function toApiBody(v: FormOutput): GroupInput {
       roomId: (row ? row.roomId : v.roomId) || null,
     };
   });
+}
+
+function toApiBody(v: FormOutput): GroupInput {
+  const slots = formSlots(v);
   return {
     branchId: v.branchId,
     name: v.name,
@@ -142,9 +173,12 @@ export function GroupDialog({
   gradingSystems,
   teachers,
   onSaved,
+  mode = "full",
 }: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  /** "schedule" shows only the days, times and rooms of an existing group (A-193). */
+  mode?: "full" | "schedule";
   group: GroupDto | null;
   branches: BranchOption[];
   defaultBranchId: string;
@@ -180,6 +214,8 @@ export function GroupDialog({
     startDate: todayIso(),
     endDate: "",
     status: "ACTIVE",
+    scheduleFrom: todayIso(),
+    notifySchedule: true,
   });
 
   const form = useForm<FormInput, unknown, FormOutput>({
@@ -231,6 +267,8 @@ export function GroupDialog({
       startDate: group.startDate,
       endDate: group.endDate,
       status: group.status,
+      scheduleFrom: todayIso(),
+      notifySchedule: true,
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open, group, defaultBranchId]);
@@ -243,10 +281,25 @@ export function GroupDialog({
     setError(null);
     // "Save anyway" resends the very form state the warning was shown for.
     const body: GroupInput = { ...toApiBody(values), ignoreClashes: clashes !== null };
+    // A running group whose days or times change: from which day, and who hears of it (A-193).
+    const change = timesChanged
+      ? {
+          ...(running ? { scheduleFrom: values.scheduleFrom || todayIso() } : {}),
+          notifySchedule: values.notifySchedule,
+        }
+      : {};
     try {
-      if (group) {
+      if (group && mode === "schedule") {
+        const patch: GroupScheduleInput = {
+          weekdayPattern: body.weekdayPattern,
+          slots: body.slots,
+          ignoreClashes: body.ignoreClashes,
+          ...change,
+        };
+        await api(`/groups/${group.id}/schedule`, { method: "PATCH", body: patch });
+      } else if (group) {
         const { branchId: _branchId, ...rest } = body;
-        const patch: GroupUpdateInput = rest;
+        const patch: GroupUpdateInput = { ...rest, ...change };
         await api(`/groups/${group.id}`, { method: "PATCH", body: patch });
       } else {
         await api("/groups", { method: "POST", body });
@@ -281,6 +334,29 @@ export function GroupDialog({
   const customDays = useWatch({ control: form.control, name: "customDays" }) ?? [];
   const perDay = useWatch({ control: form.control, name: "perDay" });
   const activeDays = patternDays(pattern ?? "EVEN", customDays.map(Number) as Weekday[]);
+  const scheduleOnly = mode === "schedule" && !!group;
+  /* Changed days or times of a saved group: the form then asks from which day (A-193). */
+  const timesOf = (slots: Array<{ weekday: number; startTime: string; endTime: string }>) =>
+    slots.map((x) => `${x.weekday}:${x.startTime}-${x.endTime}`).join("|");
+  const timesChanged =
+    !!group &&
+    timesOf(
+      formSlots({
+        weekdayPattern: pattern ?? "EVEN",
+        customDays,
+        perDay: !!perDay,
+        startTime: watchedAll.startTime ?? "",
+        endTime: watchedAll.endTime ?? "",
+        roomId: null,
+        days: (watchedAll.days ?? []).map((d, i) => ({
+          weekday: d?.weekday ?? i + 1,
+          startTime: d?.startTime ?? "",
+          endTime: d?.endTime ?? "",
+          roomId: null,
+        })),
+      }),
+    ) !== timesOf(group.slots);
+  const running = !!group && group.startDate < todayIso();
   const branchCourses = courses.filter((c) => c.branchId === branchId && !c.isArchived);
   const branchRooms = rooms.filter((r) => r.branchId === branchId);
 
@@ -314,7 +390,7 @@ export function GroupDialog({
         }
         onOpenChange(next);
       }}
-      title={group ? tg("edit") : tg("add")}
+      title={scheduleOnly ? tg("scheduleTitle") : group ? tg("edit") : tg("add")}
       onSubmit={form.handleSubmit(onSubmit)}
       submitting={isSubmitting}
       error={error}
@@ -348,13 +424,15 @@ export function GroupDialog({
         />
       )}
 
-      <div className="space-y-2">
-        <Label htmlFor="group-name">{tg("name")}</Label>
-        <Input id="group-name" aria-invalid={!!errors.name} {...form.register("name")} />
-        <FieldError id="group-name-error" message={errors.name?.message} />
-      </div>
+      {!scheduleOnly && (
+        <div className="space-y-2">
+          <Label htmlFor="group-name">{tg("name")}</Label>
+          <Input id="group-name" aria-invalid={!!errors.name} {...form.register("name")} />
+          <FieldError id="group-name-error" message={errors.name?.message} />
+        </div>
+      )}
 
-      <div className="grid gap-4 sm:grid-cols-2">
+      <div className={scheduleOnly ? "hidden" : "grid gap-4 sm:grid-cols-2"}>
         <Controller
           control={form.control}
           name="courseId"
@@ -409,7 +487,7 @@ export function GroupDialog({
         control={form.control}
         name="billingMode"
         render={({ field }) => (
-          <div className="space-y-2">
+          <div className={scheduleOnly ? "hidden" : "space-y-2"}>
             <Label htmlFor="group-billing">{tg("billing")}</Label>
             <Select value={field.value} onValueChange={field.onChange}>
               <SelectTrigger id="group-billing" data-testid="group-billing">
@@ -487,9 +565,39 @@ export function GroupDialog({
         control={form.control}
         name="perDay"
         render={({ field }) => (
-          <div className="flex items-center gap-2">
-            <Switch id="group-perday" checked={!!field.value} onCheckedChange={field.onChange} />
-            <Label htmlFor="group-perday">{tg("perDay")}</Label>
+          <div className="space-y-1">
+            <div className="flex items-center gap-2">
+              <Switch
+                id="group-perday"
+                data-testid="group-perday"
+                checked={!!field.value}
+                onCheckedChange={(next) => {
+                  const v = form.getValues();
+                  if (next) {
+                    // Every day starts from the common time and room, ready to be changed.
+                    form.setValue(
+                      "days",
+                      WEEKDAYS.map((weekday) => ({
+                        weekday,
+                        startTime: v.startTime,
+                        endTime: v.endTime,
+                        roomId: v.roomId,
+                      })),
+                    );
+                  } else {
+                    const firstDay = v.days[activeDays[0] ? activeDays[0] - 1 : 0];
+                    if (firstDay) {
+                      form.setValue("startTime", firstDay.startTime);
+                      form.setValue("endTime", firstDay.endTime);
+                      form.setValue("roomId", firstDay.roomId);
+                    }
+                  }
+                  field.onChange(next);
+                }}
+              />
+              <Label htmlFor="group-perday">{tg("perDay")}</Label>
+            </div>
+            <p className="text-xs text-muted-foreground">{tg("perDayHint")}</p>
           </div>
         )}
       />
@@ -519,22 +627,26 @@ export function GroupDialog({
         </div>
       ) : (
         <div className="space-y-2">
-          {activeDays.map((weekday) => {
+          {[...activeDays].sort().map((weekday) => {
             const index = weekday - 1;
+            const rowError =
+              errors.days?.[index]?.endTime?.message ?? errors.days?.[index]?.startTime?.message;
             return (
               <div
                 key={weekday}
+                data-testid={`group-day-${weekday}`}
                 className="grid items-end gap-2 rounded-md border p-2 sm:grid-cols-[5rem_1fr_1fr_1fr]"
               >
                 <span className="text-sm font-medium">{weekdayLabel(fmt, weekday)}</span>
                 <Input
                   type="time"
-                  aria-label={tg("startTime")}
+                  aria-label={`${weekdayLabel(fmt, weekday, "long")}: ${tg("startTime")}`}
                   {...form.register(`days.${index}.startTime`)}
                 />
                 <Input
                   type="time"
-                  aria-label={tg("endTime")}
+                  aria-label={`${weekdayLabel(fmt, weekday, "long")}: ${tg("endTime")}`}
+                  aria-invalid={!!rowError}
                   {...form.register(`days.${index}.endTime`)}
                 />
                 <Controller
@@ -544,6 +656,11 @@ export function GroupDialog({
                     roomSelect(field.value, field.onChange, `group-room-${weekday}`)
                   }
                 />
+                {rowError && (
+                  <div className="sm:col-span-4">
+                    <FieldError id={`group-day-${weekday}-error`} message={rowError} />
+                  </div>
+                )}
               </div>
             );
           })}
@@ -554,7 +671,41 @@ export function GroupDialog({
         </div>
       )}
 
-      <fieldset className="space-y-2">
+      {timesChanged && (
+        <div className="space-y-3 rounded-md border bg-muted/40 p-3" data-testid="schedule-change">
+          {running && (
+            <div className="space-y-2">
+              <Label htmlFor="group-schedule-from">{tg("scheduleFrom")}</Label>
+              <Input
+                id="group-schedule-from"
+                type="date"
+                min={group?.startDate}
+                max={todayIso()}
+                aria-invalid={!!errors.scheduleFrom}
+                {...form.register("scheduleFrom")}
+              />
+              <p className="text-xs text-muted-foreground">{tg("scheduleFromHint")}</p>
+              <FieldError id="group-schedule-from-error" message={errors.scheduleFrom?.message} />
+            </div>
+          )}
+          <Controller
+            control={form.control}
+            name="notifySchedule"
+            render={({ field }) => (
+              <label className="flex items-center gap-2 text-sm">
+                <Checkbox
+                  checked={!!field.value}
+                  onCheckedChange={(next) => field.onChange(next === true)}
+                  data-testid="schedule-notify"
+                />
+                {tg("notifySchedule")}
+              </label>
+            )}
+          />
+        </div>
+      )}
+
+      <fieldset className={scheduleOnly ? "hidden" : "space-y-2"}>
         <legend className="text-sm font-medium">{tg("teachers")}</legend>
         {teacherRows.fields.map((row, index) => (
           <div key={row.id} className="grid grid-cols-[1fr_auto] gap-2 rounded-md border p-2">
@@ -654,7 +805,7 @@ export function GroupDialog({
         />
       </fieldset>
 
-      <div className="grid gap-4 sm:grid-cols-2">
+      <div className={scheduleOnly ? "hidden" : "grid gap-4 sm:grid-cols-2"}>
         <div className="space-y-2">
           <Label htmlFor="group-startDate">{tg("startDate")}</Label>
           <Input id="group-startDate" type="date" {...form.register("startDate")} />
@@ -668,7 +819,7 @@ export function GroupDialog({
         </div>
       </div>
 
-      {group && (
+      {group && !scheduleOnly && (
         <Controller
           control={form.control}
           name="status"

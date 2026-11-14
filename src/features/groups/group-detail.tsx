@@ -4,6 +4,7 @@ import {
   ArrowLeft,
   ArrowRightLeft,
   CalendarOff,
+  Clock,
   ListOrdered,
   Flag,
   Pencil,
@@ -179,6 +180,8 @@ export function GroupDetail({
   allBranches: boolean;
   can: {
     update: boolean;
+    /** May change the days and times: `groups.update`, or the group's own teacher where the centre allows it (A-193). */
+    schedule: boolean;
     delete: boolean;
     mark: boolean;
     createStudent: boolean;
@@ -205,6 +208,7 @@ export function GroupDetail({
   const [dialog, setDialog] = useState<
     | null
     | "edit"
+    | "schedule"
     | "move"
     | "finish"
     | "archive"
@@ -365,7 +369,20 @@ export function GroupDetail({
                 />
               </dl>
 
-              <h3 className="mt-4 mb-1 text-sm font-medium">{td("schedule")}</h3>
+              <div className="mt-4 mb-1 flex flex-wrap items-center justify-between gap-2">
+                <h3 className="text-sm font-medium">{td("schedule")}</h3>
+                {can.schedule && !archived && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-7 px-2"
+                    onClick={() => setDialog("schedule")}
+                    data-testid="group-schedule-edit"
+                  >
+                    <Clock /> {td("changeSchedule")}
+                  </Button>
+                )}
+              </div>
               <ul className="text-sm" data-testid="group-schedule">
                 {group.slots.map((s) => (
                   <li key={s.weekday} className="flex justify-between gap-2 py-0.5">
@@ -616,7 +633,8 @@ export function GroupDetail({
       </div>
 
       <GroupDialog
-        open={dialog === "edit"}
+        open={dialog === "edit" || dialog === "schedule"}
+        mode={dialog === "schedule" ? "schedule" : "full"}
         onOpenChange={(open) => !open && close()}
         group={group}
         branches={branchOptions}

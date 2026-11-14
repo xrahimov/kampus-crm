@@ -171,6 +171,12 @@ Then repeat the checks of section 6. On a small server the build needs swap
 not at all. Nothing deploys by itself: merging to `main` changes the server only
 when these commands are run.
 
+The update that brings a time of its own per lesson day (A-193) adds one column,
+`OrgSettings.teacherCanChangeSchedule`, off for every centre: nothing changes for
+anyone until a director switches on **Teachers can change the lesson days and
+times of their own groups** in Settings → General. Existing groups and their
+lessons are not touched by the migration.
+
 The `backup` service reads `docker/backup.sh` when it starts, so after an update
 that changed the script, restart it once:
 `docker compose -f docker-compose.prod.yml restart backup`. It takes a dump

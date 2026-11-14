@@ -21,6 +21,7 @@ const org = {
   payTeacherOnGroupDayOff: false,
   payOnlyAttendedLessons: false,
   teacherCanAddStudents: false,
+  teacherCanChangeSchedule: false,
   bookAnySupportTeacher: false,
   groupSupportSessions: false,
   studentReschedule: false,

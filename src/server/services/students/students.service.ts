@@ -28,6 +28,7 @@ import {
   ownGroupsOnly,
   today,
 } from "@/server/services/groups/shared";
+import { timeRanges } from "@/server/services/groups/schedule";
 import { canCreateStudents } from "@/server/services/students/create-access";
 import {
   dateToIso,
@@ -207,7 +208,6 @@ function toGroupDto(
   m: StudentRow["memberships"][number],
   balance: MembershipBalance | undefined,
 ): StudentGroupDto {
-  const first = m.group.slots[0];
   const teacher = m.group.teachers[0];
   return {
     membershipId: m.id,
@@ -223,7 +223,7 @@ function toGroupDto(
     groupStatus: m.group.status,
     teacherName: teacher?.user.fullName ?? null,
     teacherId: teacher?.userId ?? null,
-    time: first ? `${first.startTime} – ${first.endTime}` : null,
+    time: timeRanges(m.group.slots),
     weekdays: m.group.slots.map((s) => s.weekday),
     customPrice: m.customPrice ? decimalToNumber(m.customPrice) : null,
     note: m.note,
@@ -543,7 +543,7 @@ export async function getStudentOptions(
         branchId: true,
         courseId: true,
         status: true,
-        slots: { select: { startTime: true, endTime: true }, take: 1, orderBy: { weekday: "asc" } },
+        slots: { select: { weekday: true, startTime: true, endTime: true } },
         teachers: {
           where: { role: "MAIN" },
           take: 1,
@@ -580,7 +580,7 @@ export async function getStudentOptions(
       status: g.status,
       teacherId: g.teachers[0]?.userId ?? null,
       teacherName: g.teachers[0]?.user.fullName ?? null,
-      time: g.slots[0] ? `${g.slots[0].startTime} – ${g.slots[0].endTime}` : null,
+      time: timeRanges(g.slots),
     })),
     teachers,
     paymentMethods,

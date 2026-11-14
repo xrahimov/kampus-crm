@@ -5,6 +5,11 @@ import {
   courseMonths,
   isoWeekday,
   planLessons,
+  sameTimes,
+  shortWeekday,
+  slotOn,
+  slotTimes,
+  timeRanges,
   weekdaysFor,
 } from "@/server/services/groups/schedule";
 
@@ -69,5 +74,46 @@ describe("schedule arithmetic", () => {
       "2027-03",
     ]);
     expect(courseMonths("2026-09-01", "2026-09-30")).toEqual(["2026-09"]);
+  });
+
+  describe("a time of its own for each day (A-193)", () => {
+    const even = [2, 4, 6].map((weekday) => ({ weekday, startTime: "19:30", endTime: "21:30" }));
+    const monFri = [
+      { weekday: 5, startTime: "16:30", endTime: "18:00" },
+      { weekday: 1, startTime: "20:30", endTime: "22:00" },
+    ];
+    const en = (weekday: number) => shortWeekday("en", weekday);
+
+    it("plans each weekday at its own time", () => {
+      // 2026-11-16 is a Monday.
+      expect(planLessons("2026-11-16", "2026-11-22", monFri)).toEqual([
+        { date: "2026-11-16", startTime: "20:30", endTime: "22:00" },
+        { date: "2026-11-20", startTime: "16:30", endTime: "18:00" },
+      ]);
+    });
+
+    it("writes one range when the days agree and every day when they do not", () => {
+      expect(sameTimes(even)).toBe(true);
+      expect(sameTimes(monFri)).toBe(false);
+      expect(slotTimes(even, en)).toBe("19:30–21:30");
+      expect(slotTimes(monFri, en)).toBe("Mon 20:30–22:00, Fri 16:30–18:00");
+      expect(slotTimes([], en)).toBeNull();
+      expect(timeRanges(even)).toBe("19:30 – 21:30");
+      expect(timeRanges(monFri)).toBe("20:30 – 22:00, 16:30 – 18:00");
+      expect(timeRanges(monFri, "–", " / ")).toBe("20:30–22:00 / 16:30–18:00");
+      expect(timeRanges([])).toBeNull();
+    });
+
+    it("finds the time of a date by its weekday", () => {
+      expect(slotOn(monFri, "2026-11-20")).toEqual({ startTime: "16:30", endTime: "18:00" });
+      expect(slotOn(monFri, "2026-11-16")).toEqual({ startTime: "20:30", endTime: "22:00" });
+      expect(slotOn(monFri, "2026-11-17")).toEqual({ startTime: null, endTime: null });
+    });
+
+    it("names weekdays in the three languages", () => {
+      expect(shortWeekday("en", 1)).toBe("Mon");
+      expect(shortWeekday("ru", 5)).toBe("пт");
+      expect(shortWeekday("uz", 1)).toBe("Dush");
+    });
   });
 });

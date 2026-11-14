@@ -85,3 +85,58 @@ export function courseMonths(startDate: string, endDate: string): string[] {
   }
   return months;
 }
+
+/** Whether every lesson day starts and ends at the same time. */
+export function sameTimes(slots: SlotLike[]): boolean {
+  const first = slots[0];
+  return slots.every((s) => s.startTime === first?.startTime && s.endTime === first?.endTime);
+}
+
+/**
+ * A group's lesson times in one line (A-193): "19:30–21:30" when every day
+ * meets at the same time, otherwise each day with its own time,
+ * "Mon 20:30–22:00, Fri 16:30–18:00". Null without slots.
+ */
+export function slotTimes(
+  slots: SlotLike[],
+  dayName: (weekday: number) => string,
+  dash = "–",
+): string | null {
+  const sorted = [...slots].sort((a, b) => a.weekday - b.weekday);
+  const first = sorted[0];
+  if (!first) return null;
+  const range = (s: SlotLike) => `${s.startTime}${dash}${s.endTime}`;
+  if (sameTimes(sorted)) return range(first);
+  return sorted.map((s) => `${dayName(s.weekday)} ${range(s)}`).join(", ");
+}
+
+const WEEKDAY_LOCALES = { uz: "uz-Latn-UZ", ru: "ru-RU", en: "en-GB" } as const;
+
+/** Short weekday name on the server (Node carries the Uzbek names; browsers do not, A-58). */
+export function shortWeekday(locale: keyof typeof WEEKDAY_LOCALES, weekday: number): string {
+  // 2024-01-01 was a Monday.
+  return new Intl.DateTimeFormat(WEEKDAY_LOCALES[locale], {
+    weekday: "short",
+    timeZone: "UTC",
+  }).format(new Date(Date.UTC(2024, 0, weekday)));
+}
+
+/** When the group meets on that date, going by the date's weekday; nulls when it does not. */
+export function slotOn(
+  slots: SlotLike[],
+  date: string,
+): { startTime: string | null; endTime: string | null } {
+  const slot = slots.find((s) => s.weekday === isoWeekday(date));
+  return { startTime: slot?.startTime ?? null, endTime: slot?.endTime ?? null };
+}
+
+/**
+ * The group's time ranges in weekday order without the day names, each once:
+ * "19:30 – 21:30", or "20:30 – 22:00, 16:30 – 18:00" when the days differ (A-193).
+ */
+export function timeRanges(slots: SlotLike[], dash = " – ", separator = ", "): string | null {
+  const ranges = [...slots]
+    .sort((a, b) => a.weekday - b.weekday)
+    .map((s) => `${s.startTime}${dash}${s.endTime}`);
+  return ranges.length ? [...new Set(ranges)].join(separator) : null;
+}

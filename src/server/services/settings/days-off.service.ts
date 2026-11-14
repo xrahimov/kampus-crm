@@ -6,7 +6,7 @@ import type { ParsedList } from "@/server/http/list-query";
 import { authorize, authorizeBranch, branchScope, type Actor } from "@/server/rbac/authorize";
 import { notifyLessonChange, tashkentToday } from "@/server/services/groups/day-off.service";
 import { syncLessons } from "@/server/services/groups/groups.service";
-import { isoWeekday } from "@/server/services/groups/schedule";
+import { isoWeekday, slotOn } from "@/server/services/groups/schedule";
 
 import { dateToIso, isoToDate, mustFind, rethrowAsAppError } from "./shared";
 
@@ -92,8 +92,7 @@ export async function createDayOff(
             groupName: g.name,
             kind: "lessonCancelled",
             date: input.date,
-            startTime: g.slots[0]?.startTime ?? null,
-            endTime: g.slots[0]?.endTime ?? null,
+            ...slotOn(g.slots, input.date),
             reason: input.reason,
             moveTo: null,
             refKey: `holiday:${row.id}:${g.id}`,
@@ -194,15 +193,15 @@ export async function deleteDayOff(actor: Actor, id: string, db: DbClient = pris
     const groups = await groupsMeetingOn(tx, existing.branchId, date);
     const notified = { telegram: 0, sms: 0 };
     for (const g of groups) {
-      await syncLessons(tx, g, g.slots);
+      // Only that day comes back; the group's other lessons stay as they are (A-193).
+      await syncLessons(tx, g, g.slots, [{ from: date, to: date }]);
       if (existing.notifiedAt && date >= tashkentToday()) {
         const n = await notifyLessonChange(tx, {
           groupId: g.id,
           groupName: g.name,
           kind: "lessonRestored",
           date,
-          startTime: g.slots[0]?.startTime ?? null,
-          endTime: g.slots[0]?.endTime ?? null,
+          ...slotOn(g.slots, date),
           reason: existing.reason,
           moveTo: null,
           refKey: `holiday:${existing.id}:${g.id}:restored`,

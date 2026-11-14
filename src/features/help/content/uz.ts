@@ -332,13 +332,13 @@ export const uz: HelpContent = {
               steps: [
                 "**Yangi guruh** ni bosing.",
                 "Nom bering va kursni tanlang. Kurs o‘zi bilan oylik narxini, davomiyligini va baholash tizimini olib keladi; boshqa baholash tizimini faqat shu guruh boshqacha baholansa belgilang.",
-                "Kunlarni tanlang: toq kunlar (Du, Cho, Ju), juft kunlar (Se, Pa, Sha), har kuni yoki boshqa to‘plam. Boshlanish va tugash vaqtini hamda xonani belgilang. Kunlar farq qilsa, **Har kun uchun alohida vaqt yoki xona** ni belgilang.",
+                "Kunlarni tanlang: toq kunlar (Du, Cho, Ju), juft kunlar (Se, Pa, Sha), har kuni yoki boshqa to‘plam. Boshlanish va tugash vaqtini hamda xonani belgilang. Kunlar bir xil vaqtda boshlanmasa, masalan dushanba 20:30 va juma 16:30, **Har kun uchun alohida vaqt yoki xona** ni yoqing: har bir dars kuni uchun boshlanish, tugash va xona yoziladigan alohida qator chiqadi. Bunday kunlar uchun **Boshqa** ni tanlab, kunlarni belgilang.",
                 "Uchtagacha o‘qituvchi qo‘shing. Har biri uchun rolni (asosiy o‘qituvchi, yordamchi, hamkor o‘qituvchi) va shu guruh uchun qanday haq olishini tanlang: kurs narxidan foiz, har dars uchun haq yoki har o‘quvchi uchun haq.",
                 "Boshlanish sanasini belgilang. Kampus tugash sanasini kurs davomiyligidan hisoblashi uchun uni bo‘sh qoldiring.",
                 "**Saqlash** ni bosing. Kampus ikki sana orasidagi har bir darsni filialning dam olish kunlarini tashlab o‘tgan holda rejalashtiradi.",
               ],
             },
-            "Jadvalni keyin tahrirlash hali o‘tilmagan darslarni qayta rejalashtiradi; belgilangan darslar saqlanib qoladi.",
+            "Ishlab turgan guruhning kunlari yoki vaqti o‘zgartirilsa, o‘tgan darslar saqlanadi: forma **Yangi vaqt shu kundan boshlanadi** ni so‘raydi (bugun, xatoni tuzatish uchun avvalgi kunni tanlamasangiz), shu kungacha bo‘lgan darslar davomat va baholari bilan o‘zgarishsiz qoladi, shu kundan keyingi darslar esa yangi kun va vaqtga o‘tadi. Hammaga yangi vaqtni yuborish uchun **O‘quvchilar va ota-onalarga Telegram orqali xabar berish** ni belgilang.",
           ],
         },
         detail: {
@@ -372,6 +372,7 @@ export const uz: HelpContent = {
         changes: {
           title: "Dam kunlari, o‘qituvchini o‘zgartirish va tugatish",
           body: [
+            "Guruh sahifasida jadval yonidagi **Vaqtni o‘zgartirish** faqat guruhning kunlari, vaqti va xonalarini ochadi; **Tahrirlash** da shu maydonlar qolgan hamma narsa bilan birga turadi. Guruh butunlay yangi vaqtga o‘tganda foydalaning, masalan seshanba, payshanba va shanba 19:30 dan dushanba 20:30 va juma 16:30 ga. Guruhlar ro‘yxati, dars jadvali, Bugun sahifasi, o‘quvchilar sahifalari va eslatmalar har bir kunning o‘z vaqtini ko‘rsatadi. Bitta dars uchun quyidagi dam berishdan foydalaning.",
             "**Dam berish** shu guruh uchun bitta sanadagi darsni olib tashlaydi, masalan o‘qituvchining safari uchun, va o‘quvchilar bilan ota-onalarga darhol Telegram va SMS orqali xabar bera oladi (SMS tugmalari Sozlamalar → Umumiy → Avto SMS bo‘limida). Darsni bekor qilish o‘rniga ko‘chirish uchun yangi sana va vaqtni tanlang. Oyning bekor qilingan va ko‘chirilgan darslari davomat jadvali tepasida ro‘yxat bo‘lib chiqadi, dam kunini o‘sha yerda qaytarish mumkin. Filial bo‘yicha bayramlar esa Sozlamalar → Dam olish kunlari bo‘limiga kiritiladi va har bir guruhga amal qiladi.",
             "Sozlamalar → Umumiy bo'limida **O'quvchilar yakka darslarini o'zlari ko'chirishi yoki bekor qilishi mumkin** yoqilgan bo'lsa, guruhning yagona o'quvchisi kelgusi darsni o'z sahifasidan belgilangan soatlar oldin ko'chirishi yoki bekor qilishi mumkin. Bunday o'zgarishlar shu ro'yxatda **O'quvchi ko'chirdi** yoki **O'quvchi bekor qildi** sifatida ko'rinadi, sizga ham o'quvchilar kabi Telegram orqali xabar beriladi.",
             "O'qituvchilar **Yakka darslar uchun band qilish soatlari**ni o'z hisob sahifasida belgilaydi (ofis buni o'qituvchi sahifasida qila oladi): yakka guruh o'quvchisi o'z sahifasidan qo'shimcha dars band qilishi yoki darsni ko'chirishi mumkin bo'lgan haftalik vaqt oynalari. O'quvchiga ko'rsatiladigan bo'sh vaqtlar shu oynalardan sizning boshqa darslaringiz chiqarib tashlangani; oynalar bo'lmasa, o'quvchilar markaz ish vaqtidagi istalgan bo'sh vaqtni tanlaydi. Band qilingan darslar guruh jadvalida qo'shimcha dars sifatida ko'rinadi, har bir o'quvchi uchun oldindan ko'pi bilan ikkita.",
@@ -452,6 +453,7 @@ export const uz: HelpContent = {
           body: [
             "Tizimga kirganingizdan so‘ng **Bugun** sahifasiga tushasiz — kun darslari bir bosishda davomat bilan; Guruhlar sahifasida faqat siz dars beradigan yoki support qiladigan guruhlar ko‘rinadi. Bugungi dars haqida hamma narsani bitta sahifada topish uchun guruhni oching. Yon panelda sizga Guruhlar, O‘quvchilar va Imtihonlar ko‘rinadi; Kampusning qolgan qismi ofis uchun.",
             "Imtihon jadvali faqat administrator uni o‘qituvchilar uchun yoqqan bo‘lsa ko‘rinadi. To‘lovlar va o‘quvchi balanslari, administrator buni sozlamagan bo‘lsa, sizga ko‘rinmaydi.",
+            "Markazingiz ruxsat bergan bo‘lsa, guruh sahifasida jadval yonida **Vaqtni o‘zgartirish** tugmasi chiqadi: dars kunlarini tanlang va har bir kunga o‘z boshlanish va tugash vaqtini bering, masalan dushanba 20:30 va juma 16:30. O‘tgan darslaringiz o‘zgarmaydi, yangi vaqt bugundan boshlanadi, o‘quvchilarga esa Telegram orqali xabar berish mumkin. Boshqa guruhning xonasi yoki o‘zingizning boshqa darslaringiz bilan to‘qnashadigan vaqt qabul qilinmaydi; bunda ofisga murojaat qiling.",
           ],
         },
         attendance: {
@@ -1073,7 +1075,7 @@ export const uz: HelpContent = {
         switches: {
           title: "Qoidalar",
           body: [
-            "**O‘quvchining ortiqcha to‘lovi keyingi oylarga bo‘lib yuborilsin**: oylik narxdan ortiq summa keyingi oylarni qoplaydi. **Pul qaytarish funksiyasi**: pul qaytarish tugmasini ko‘rsatadi. **To‘lovdan so‘ng chek chiqsin**: to‘lov saqlanganda chekni ochadi. **Davomatga izoh yozish**. **Ustozlar va support ustozlar imtihon jadvalini ko‘rsin**. **Faqat dars vaqtida yo‘qlama qilish mumkin**: admin va CEO uchun cheklov yo‘q. **O‘qituvchiga oylik maoshi ko‘rinsin**. **Guruhga dam berilganida o‘qituvchiga oylik yozilsin** va **O‘qituvchiga faqat kelgan darslar uchun oylik yozilsin** ish haqini o‘zgartiradi. **O‘qituvchi o‘quvchi qo‘sha oladi** o‘z guruhlariga. Qolganlari support o‘qituvchilar va guruhli support uchrashuvlariga tegishli.",
+            "**O‘quvchining ortiqcha to‘lovi keyingi oylarga bo‘lib yuborilsin**: oylik narxdan ortiq summa keyingi oylarni qoplaydi. **Pul qaytarish funksiyasi**: pul qaytarish tugmasini ko‘rsatadi. **To‘lovdan so‘ng chek chiqsin**: to‘lov saqlanganda chekni ochadi. **Davomatga izoh yozish**. **Ustozlar va support ustozlar imtihon jadvalini ko‘rsin**. **Faqat dars vaqtida yo‘qlama qilish mumkin**: admin va CEO uchun cheklov yo‘q. **O‘qituvchiga oylik maoshi ko‘rinsin**. **Guruhga dam berilganida o‘qituvchiga oylik yozilsin** va **O‘qituvchiga faqat kelgan darslar uchun oylik yozilsin** ish haqini o‘zgartiradi. **O‘qituvchi o‘quvchi qo‘sha oladi** o‘z guruhlariga. **O‘qituvchi o‘z guruhining dars kunlari va vaqtini o‘zgartira oladi**: dastlab o‘chiq; yoqilsa, guruhning o‘z o‘qituvchisi guruh sahifasida **Vaqtni o‘zgartirish** tugmasini ko‘radi, xona yoki o‘qituvchi to‘qnashuvi ustidan saqlay olmaydi, o‘zgarish esa guruh tarixiga yoziladi. Qolganlari support o‘qituvchilar va guruhli support uchrashuvlariga tegishli.",
           ],
         },
         catalog: {
