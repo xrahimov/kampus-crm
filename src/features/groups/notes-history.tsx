@@ -9,9 +9,13 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { useRouter } from "@/i18n/navigation";
 import { api, ApiError } from "@/lib/api-client";
+import type { DateFormatter } from "@/lib/dates";
 import type { Page } from "@/lib/validation/common";
+import type { Weekday } from "@/lib/validation/groups";
 import { useDateFormat } from "@/lib/use-date-format";
 import type { GroupHistoryDto, GroupNoteDto } from "@/server/services/groups/groups.service";
+
+import { weekdayLabel } from "./weekday";
 
 /** EXP §5 ESLATMALAR. */
 export function NotesTab({
@@ -92,7 +96,11 @@ export function NotesTab({
   );
 }
 
-function renderValue(value: unknown, t: ReturnType<typeof useTranslations>): string {
+function renderValue(
+  value: unknown,
+  t: ReturnType<typeof useTranslations>,
+  fmt: DateFormatter,
+): string {
   if (value === null || value === undefined || value === "") return "—";
   if (typeof value === "string") {
     for (const ns of ["groups.statuses", "groups.patterns"]) {
@@ -110,8 +118,9 @@ function renderValue(value: unknown, t: ReturnType<typeof useTranslations>): str
               "shareValue" in o ? ` ${o.shareValue}${o.shareType === "PERCENT" ? "%" : ""}` : "";
             return `${o.fullName}${extra}`;
           }
+          // The day by its name, since each day may have its own time (A-193).
           if ("weekday" in o)
-            return `${o.weekday}: ${o.startTime}–${o.endTime}${o.roomName ? ` (${o.roomName})` : ""}`;
+            return `${weekdayLabel(fmt, Number(o.weekday) as Weekday)} ${o.startTime}–${o.endTime}${o.roomName ? ` (${o.roomName})` : ""}`;
         }
         return String(v);
       })
@@ -150,9 +159,11 @@ export function HistoryTab({ history }: { history: Page<GroupHistoryDto> }) {
                     : th(`actions.${h.action.split(".")[1] ?? "update"}`)}
                 </td>
                 <td className="max-w-xs px-3 py-2 text-muted-foreground">
-                  {h.field ? renderValue(h.before, t) : "—"}
+                  {h.field ? renderValue(h.before, t, fmt) : "—"}
                 </td>
-                <td className="max-w-xs px-3 py-2">{h.field ? renderValue(h.after, t) : "—"}</td>
+                <td className="max-w-xs px-3 py-2">
+                  {h.field ? renderValue(h.after, t, fmt) : "—"}
+                </td>
                 <td className="px-3 py-2 whitespace-nowrap">{h.actorName ?? "—"}</td>
                 <td className="px-3 py-2 whitespace-nowrap">
                   {fmt(new Date(h.at), { dateStyle: "medium", timeStyle: "short" })}

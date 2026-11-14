@@ -2,6 +2,7 @@ import type { Prisma } from "@/generated/prisma/client";
 import type { Page } from "@/lib/validation/common";
 import type {
   GroupInput,
+  GroupScheduleInput,
   GroupSortField,
   GroupStatus,
   GroupTeacherInput,
@@ -15,7 +16,7 @@ import { diffFields, recordAudit } from "@/server/audit/audit";
 import { prisma, type DbClient } from "@/server/db/prisma";
 import { AppError } from "@/server/errors/app-error";
 import type { ParsedList } from "@/server/http/list-query";
-import { authorize, authorizeBranch, type Actor } from "@/server/rbac/authorize";
+import { authorize, authorizeBranch, can, type Actor } from "@/server/rbac/authorize";
 import {
   dateToIso,
   decimalToNumber,
@@ -25,9 +26,10 @@ import {
 } from "@/server/services/settings/shared";
 import { TEACHER_ROLE_CODES } from "@/server/services/staff/staff.service";
 
-import { addMonths, courseMonths, PATTERN_WEEKDAYS, planLessons } from "./schedule";
+import { addDays, addMonths, courseMonths, PATTERN_WEEKDAYS, planLessons } from "./schedule";
 import { assertNoClashes } from "./clashes.service";
-import { findGroupInScope, groupScope, today } from "./shared";
+import { notifyScheduleChange } from "./schedule-notice";
+import { centreToday, findGroupInScope, groupScope, today } from "./shared";
 
 /* Groups (EXP §5): list, drawer form, detail card, actions. */
 
@@ -297,45 +299,70 @@ async function daysOffFor(
   return [...branchDays, ...groupDays].map((d) => dateToIso(d.date));
 }
 
+/** Days a lesson sync may touch, both ends included. */
+export interface SyncWindow {
+  from: string;
+  to: string;
+}
+
 /**
  * Brings the generated lessons in line with the schedule (A-54): planned
  * lessons that do not exist yet are created; existing non-extra lessons that
  * fall outside the plan and carry no attendance or grade are removed.
+ *
+ * With `windows` only those days are planned and cleaned (A-193): a running
+ * group keeps the lessons it already had before the day its new times start,
+ * and one restored day off brings back only its own lesson. Unmarked lessons
+ * outside the group's period go either way. A day whose regular lesson is
+ * already marked keeps that lesson and gets no second one at another time.
  */
 export async function syncLessons(
   tx: DbClient,
   group: { id: string; branchId: string; startDate: Date; endDate: Date },
   slots: Array<{ weekday: number; startTime: string; endTime: string }>,
+  windows?: SyncWindow[],
 ) {
-  const plan = planLessons(
-    dateToIso(group.startDate),
-    dateToIso(group.endDate),
-    slots,
-    await daysOffFor(tx, group.branchId, group.id),
-  );
-  const existing = await tx.lesson.findMany({
-    where: { groupId: group.id },
-    select: {
-      id: true,
-      date: true,
-      startTime: true,
-      isExtra: true,
-      _count: { select: { attendances: true, grades: true } },
-    },
-  });
-  const key = (date: string, start: string) => `${date}|${start}`;
+  const start = dateToIso(group.startDate);
+  const end = dateToIso(group.endDate);
+  const ranges = (windows ?? [{ from: start, to: end }])
+    .map((w) => ({ from: w.from < start ? start : w.from, to: w.to > end ? end : w.to }))
+    .filter((w) => w.from <= w.to);
+  const inRange = (date: string) => ranges.some((w) => w.from <= date && date <= w.to);
+  const daysOff = await daysOffFor(tx, group.branchId, group.id);
+  const plan = ranges.flatMap((w) => planLessons(w.from, w.to, slots, daysOff));
+  const existing = (
+    await tx.lesson.findMany({
+      where: { groupId: group.id },
+      select: {
+        id: true,
+        date: true,
+        startTime: true,
+        isExtra: true,
+        _count: { select: { attendances: true, grades: true } },
+      },
+    })
+  ).map((l) => ({
+    id: l.id,
+    date: dateToIso(l.date),
+    startTime: l.startTime,
+    isExtra: l.isExtra,
+    marked: l._count.attendances > 0 || l._count.grades > 0,
+  }));
+  const key = (date: string, startTime: string) => `${date}|${startTime}`;
   const planned = new Set(plan.map((p) => key(p.date, p.startTime)));
-  const have = new Set(existing.map((l) => key(dateToIso(l.date), l.startTime)));
+  const have = new Set(existing.map((l) => key(l.date, l.startTime)));
+  const heldDays = new Set(existing.filter((l) => !l.isExtra && l.marked).map((l) => l.date));
 
   const stale = existing.filter(
     (l) =>
       !l.isExtra &&
-      !planned.has(key(dateToIso(l.date), l.startTime)) &&
-      l._count.attendances === 0 &&
-      l._count.grades === 0,
+      !l.marked &&
+      (l.date < start ||
+        l.date > end ||
+        (inRange(l.date) && !planned.has(key(l.date, l.startTime)))),
   );
   if (stale.length) await tx.lesson.deleteMany({ where: { id: { in: stale.map((l) => l.id) } } });
-  const missing = plan.filter((p) => !have.has(key(p.date, p.startTime)));
+  const missing = plan.filter((p) => !have.has(key(p.date, p.startTime)) && !heldDays.has(p.date));
   if (missing.length) {
     await tx.lesson.createMany({
       data: missing.map((p) => ({
@@ -436,6 +463,82 @@ export async function updateGroup(
   db: DbClient = prisma,
 ): Promise<GroupDto> {
   authorize(actor, "groups.update");
+  return applyGroupUpdate(actor, id, input, db);
+}
+
+/**
+ * Whether the centre lets teachers change the lesson days and times of the
+ * groups they teach (A-193): the switch in Settings → General, off by default.
+ */
+export async function teachersChangeSchedule(actor: Actor, db: DbClient = prisma) {
+  const settings = await db.orgSettings.findFirst({
+    where: { organizationId: actor.organizationId },
+    select: { teacherCanChangeSchedule: true },
+  });
+  return Boolean(settings?.teacherCanChangeSchedule);
+}
+
+/**
+ * Whether this person may change the group's days and times (A-193): anyone
+ * with `groups.update`, or one of the group's own teachers where the centre
+ * allows it and the group is not archived.
+ */
+export async function canChangeSchedule(
+  actor: Actor,
+  group: { status: GroupStatus; teachers: Array<{ userId: string }> },
+  db: DbClient = prisma,
+): Promise<boolean> {
+  if (can(actor, "groups.update")) return true;
+  if (!can(actor, "groups.view") || group.status === "ARCHIVED") return false;
+  if (!group.teachers.some((t) => t.userId === actor.userId)) return false;
+  return teachersChangeSchedule(actor, db);
+}
+
+/**
+ * Changes only a group's days, times and rooms (A-193). The group's own teacher
+ * may do it where the centre allows it, but may not save over a room or teacher
+ * clash: that stays with the people who hold `groups.update`.
+ */
+export async function updateGroupSchedule(
+  actor: Actor,
+  id: string,
+  input: GroupScheduleInput,
+  db: DbClient = prisma,
+): Promise<GroupDto> {
+  authorize(actor, "groups.view");
+  const group = await findGroupInScope(db, actor, id, {
+    teachers: { select: { userId: true } },
+  });
+  if (!(await canChangeSchedule(actor, group, db))) {
+    throw AppError.forbidden("errors.scheduleForbidden");
+  }
+  return applyGroupUpdate(
+    actor,
+    id,
+    {
+      weekdayPattern: input.weekdayPattern,
+      slots: input.slots,
+      scheduleFrom: input.scheduleFrom,
+      notifySchedule: input.notifySchedule,
+      ignoreClashes: can(actor, "groups.update") ? input.ignoreClashes : false,
+    },
+    db,
+  );
+}
+
+/** Days and times only: a changed room moves no lesson. */
+const timesKey = (slots: Array<{ weekday: number; startTime: string; endTime: string }>) =>
+  [...slots]
+    .sort((a, b) => a.weekday - b.weekday)
+    .map((s) => `${s.weekday}:${s.startTime}-${s.endTime}`)
+    .join("|");
+
+async function applyGroupUpdate(
+  actor: Actor,
+  id: string,
+  input: GroupUpdateInput,
+  db: DbClient,
+): Promise<GroupDto> {
   const existing = await findGroupInScope(db, actor, id, include);
   const before = toGroupDto(existing);
   const courseId = input.courseId ?? existing.courseId;
@@ -467,6 +570,23 @@ export async function updateGroup(
       ? addMonths(startDate, course.durationMonths)
       : before.endDate);
   if (endDate < startDate) throw AppError.validation({ endDate: ["validation.endAfterStart"] });
+  // Lessons the group already had stay as they were (A-193): new days and times
+  // start today, or on the earlier day the user names. A later day is refused,
+  // because the timetable and the clash check read the times the group has now.
+  const now = centreToday();
+  const scheduleFrom = input.scheduleFrom ?? now;
+  if (scheduleFrom > now) {
+    throw AppError.validation({ scheduleFrom: ["validation.scheduleFromFuture"] });
+  }
+  const timesChanged = timesKey(slots) !== timesKey(existing.slots);
+  const windows: SyncWindow[] | undefined =
+    scheduleFrom <= before.startDate
+      ? undefined
+      : [
+          // Days the period did not cover before are planned afresh.
+          { from: startDate, to: addDays(before.startDate, -1) },
+          { from: scheduleFrom, to: endDate },
+        ];
   // Only a changed schedule, teacher list or period is checked for clashes (A-116).
   const teacherIds = (input.teachers ?? existing.teachers).map((t) => t.userId);
   const plan = (x: {
@@ -535,9 +655,18 @@ export async function updateGroup(
         },
         select: { id: true, branchId: true, startDate: true, endDate: true },
       });
-      await syncLessons(tx, updated, slots);
+      await syncLessons(tx, updated, slots, windows);
       const row = await tx.group.findUniqueOrThrow({ where: { id }, include });
       const after = toGroupDto(row);
+      if (timesChanged && input.notifySchedule && endDate >= now && row.status !== "ARCHIVED") {
+        await notifyScheduleChange(tx, {
+          groupId: id,
+          groupName: row.name,
+          slots,
+          from: scheduleFrom > startDate ? scheduleFrom : startDate,
+          refKey: `schedule:${id}:${row.updatedAt.getTime()}`,
+        });
+      }
       await recordAudit(tx, actor, {
         action: "group.update",
         entity: "Group",

@@ -414,8 +414,10 @@ describe("groups", () => {
         addExtraLesson(ceo, groupId, { date: "2026-09-02", startTime: "11:00", endTime: "12:00" }),
       ).rejects.toMatchObject({ code: "VALIDATION" });
 
-      // EVEN → ODD: unmarked Tue/Thu/Sat lessons go, Mon/Wed/Fri arrive, the marked lesson and the extra stay.
+      // EVEN → ODD from the group's first day (A-193 keeps the past otherwise): unmarked
+      // Tue/Thu/Sat lessons go, Mon/Wed/Fri arrive, the marked lesson and the extra stay.
       const updated = await updateGroup(ceo, groupId, {
+        scheduleFrom: "2026-09-01",
         weekdayPattern: "ODD",
         slots: [1, 3, 5].map((weekday) => ({
           weekday,

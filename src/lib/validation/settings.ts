@@ -86,6 +86,7 @@ export const ORG_SWITCHES = [
   "payTeacherOnGroupDayOff",
   "payOnlyAttendedLessons",
   "teacherCanAddStudents",
+  "teacherCanChangeSchedule",
   "bookAnySupportTeacher",
   "groupSupportSessions",
   "showSetupChecklist",

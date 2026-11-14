@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { addMemberSchema, groupSchema } from "@/lib/validation/groups";
+import { addMemberSchema, groupSchema, groupUpdateSchema } from "@/lib/validation/groups";
 
 const base = {
   branchId: "b1",
@@ -13,6 +13,15 @@ const base = {
 };
 
 describe("group schema", () => {
+  it("a patch changes only what it names: no default days, teachers or status slip in", () => {
+    expect(groupUpdateSchema.parse({ name: "GE-2" })).toEqual({ name: "GE-2" });
+    expect(groupUpdateSchema.parse({ teachers: [] })).toEqual({ teachers: [] });
+    expect(groupUpdateSchema.parse({ scheduleFrom: "2026-11-14", notifySchedule: true })).toEqual({
+      scheduleFrom: "2026-11-14",
+      notifySchedule: true,
+    });
+  });
+
   it("accepts a minimal group and applies defaults", () => {
     const parsed = groupSchema.parse(base);
     expect(parsed.status).toBe("ACTIVE");

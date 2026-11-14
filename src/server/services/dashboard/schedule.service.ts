@@ -1,6 +1,7 @@
 import type { ScheduleFilters, ScheduleStep } from "@/lib/validation/dashboard";
 import { prisma, type DbClient } from "@/server/db/prisma";
 import { authorize, type Actor } from "@/server/rbac/authorize";
+import { hoursWindow } from "@/server/services/groups/schedule";
 import { branchIn, reportBranch } from "@/server/services/reports/shared";
 
 /* EXP §1 schedule grid: rooms × time slots for one weekday, blocks per group. */
@@ -18,6 +19,7 @@ export interface ScheduleBlockDto {
 export interface ScheduleDto {
   weekday: number;
   step: ScheduleStep;
+  /** The hours the grid shows: the working hours, wider where a lesson lies outside them (A-193). */
   workStart: string;
   workEnd: string;
   /** Column starts, "HH:MM", from workStart to workEnd exclusive. */
@@ -79,8 +81,12 @@ export async function getDashboardSchedule(
       orderBy: [{ startTime: "asc" }, { group: { name: "asc" } }],
     }),
   ]);
-  const workStart = settings?.workStart ?? "08:00";
-  const workEnd = settings?.workEnd ?? "20:00";
+  // The working hours, wider where a lesson of this weekday lies outside them (A-193).
+  const { start: workStart, end: workEnd } = hoursWindow(
+    settings?.workStart ?? "08:00",
+    settings?.workEnd ?? "20:00",
+    slots,
+  );
   const columns: string[] = [];
   for (let m = minutes(workStart); m < minutes(workEnd); m += step) columns.push(hhmm(m));
   const block = (s: (typeof slots)[number]): ScheduleBlockDto => ({

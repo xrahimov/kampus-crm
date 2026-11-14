@@ -144,7 +144,18 @@ export function GroupsPage({
     const same = g.slots.every(
       (s) => s.startTime === first.startTime && s.endTime === first.endTime,
     );
-    return same ? `${first.startTime} – ${first.endTime}` : t("groups.perDaySchedule");
+    if (same) return `${first.startTime} – ${first.endTime}`;
+    // Each day with its own time (A-193).
+    return (
+      <span className="block space-y-0.5" data-testid="group-times">
+        {g.slots.map((s) => (
+          <span key={s.weekday} className="block">
+            <span className="text-muted-foreground">{weekdayLabel(fmt, s.weekday)}</span>{" "}
+            {s.startTime} – {s.endTime}
+          </span>
+        ))}
+      </span>
+    );
   };
 
   return (

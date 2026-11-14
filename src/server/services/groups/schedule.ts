@@ -85,3 +85,84 @@ export function courseMonths(startDate: string, endDate: string): string[] {
   }
   return months;
 }
+
+/** Whether every lesson day starts and ends at the same time. */
+export function sameTimes(slots: SlotLike[]): boolean {
+  const first = slots[0];
+  return slots.every((s) => s.startTime === first?.startTime && s.endTime === first?.endTime);
+}
+
+/**
+ * A group's lesson times in one line (A-193): "19:30–21:30" when every day
+ * meets at the same time, otherwise each day with its own time,
+ * "Mon 20:30–22:00, Fri 16:30–18:00". Null without slots.
+ */
+export function slotTimes(
+  slots: SlotLike[],
+  dayName: (weekday: number) => string,
+  dash = "–",
+): string | null {
+  const sorted = [...slots].sort((a, b) => a.weekday - b.weekday);
+  const first = sorted[0];
+  if (!first) return null;
+  const range = (s: SlotLike) => `${s.startTime}${dash}${s.endTime}`;
+  if (sameTimes(sorted)) return range(first);
+  return sorted.map((s) => `${dayName(s.weekday)} ${range(s)}`).join(", ");
+}
+
+const WEEKDAY_LOCALES = { uz: "uz-Latn-UZ", ru: "ru-RU", en: "en-GB" } as const;
+
+/** Short weekday name on the server (Node carries the Uzbek names; browsers do not, A-58). */
+export function shortWeekday(locale: keyof typeof WEEKDAY_LOCALES, weekday: number): string {
+  // 2024-01-01 was a Monday.
+  return new Intl.DateTimeFormat(WEEKDAY_LOCALES[locale], {
+    weekday: "short",
+    timeZone: "UTC",
+  }).format(new Date(Date.UTC(2024, 0, weekday)));
+}
+
+/** When the group meets on that date, going by the date's weekday; nulls when it does not. */
+export function slotOn(
+  slots: SlotLike[],
+  date: string,
+): { startTime: string | null; endTime: string | null } {
+  const slot = slots.find((s) => s.weekday === isoWeekday(date));
+  return { startTime: slot?.startTime ?? null, endTime: slot?.endTime ?? null };
+}
+
+/**
+ * The group's time ranges in weekday order without the day names, each once:
+ * "19:30 – 21:30", or "20:30 – 22:00, 16:30 – 18:00" when the days differ (A-193).
+ */
+export function timeRanges(slots: SlotLike[], dash = " – ", separator = ", "): string | null {
+  const ranges = [...slots]
+    .sort((a, b) => a.weekday - b.weekday)
+    .map((s) => `${s.startTime}${dash}${s.endTime}`);
+  return ranges.length ? [...new Set(ranges)].join(separator) : null;
+}
+
+const toMinutes = (time: string) => Number(time.slice(0, 2)) * 60 + Number(time.slice(3, 5));
+const toTime = (m: number) =>
+  `${String(Math.floor(m / 60)).padStart(2, "0")}:${String(m % 60).padStart(2, "0")}`;
+
+/**
+ * The hours a weekly or daily grid must show to hold every lesson on it (A-193):
+ * the centre's working hours, stretched outward to whole hours where a lesson
+ * starts earlier or ends later, such as a 20:30 lesson at a centre that closes
+ * its day at 20:00. Without such lessons it is the working hours themselves.
+ */
+export function hoursWindow(
+  workStart: string,
+  workEnd: string,
+  lessons: Array<{ startTime: string; endTime: string }>,
+): { start: string; end: string } {
+  let start = toMinutes(workStart);
+  let end = toMinutes(workEnd);
+  for (const l of lessons) {
+    const from = toMinutes(l.startTime);
+    const to = toMinutes(l.endTime);
+    if (from < start) start = Math.floor(from / 60) * 60;
+    if (to > end) end = Math.min(24 * 60, Math.ceil(to / 60) * 60);
+  }
+  return { start: toTime(start), end: toTime(end) };
+}

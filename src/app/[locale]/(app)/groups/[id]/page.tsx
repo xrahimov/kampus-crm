@@ -15,6 +15,7 @@ import { getGroupProgress } from "@/server/services/progress/course-progress.ser
 import { listGroupStream } from "@/server/services/stream/stream.service";
 import { listGroupDaysOff } from "@/server/services/groups/day-off.service";
 import {
+  canChangeSchedule,
   getGroup,
   listGroupHistory,
   listGroupNotes,
@@ -183,6 +184,7 @@ export default async function Page({ params, searchParams }: Props) {
       allBranches={canAccessAllBranches(current.actor)}
       can={{
         update: can(current.actor, "groups.update"),
+        schedule: await canChangeSchedule(current.actor, group),
         delete: can(current.actor, "groups.delete"),
         mark: can(current.actor, "groups.attendance.mark"),
         createStudent: await canCreateStudents(current.actor),

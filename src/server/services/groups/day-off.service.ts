@@ -284,6 +284,8 @@ export async function removeGroupDayOff(
     if (row.movedTo && row.movedTo._count.attendances === 0 && row.movedTo._count.grades === 0) {
       await tx.lesson.delete({ where: { id: row.movedTo.id } });
     }
+    const date = dateToIso(row.date);
+    // Only that day comes back; the group's other lessons stay as they are (A-193).
     await syncLessons(
       tx,
       {
@@ -293,8 +295,8 @@ export async function removeGroupDayOff(
         endDate: group.endDate,
       },
       group.slots,
+      [{ from: date, to: date }],
     );
-    const date = dateToIso(row.date);
     const slot = group.slots.find((s) => s.weekday === isoWeekday(date));
     let notified = { telegram: 0, sms: 0 };
     if (row.notifiedAt && date >= tashkentToday()) {

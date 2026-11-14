@@ -444,6 +444,8 @@ model OrgSettings {
   payTeacherOnGroupDayOff    Boolean @default(false)
   payOnlyAttendedLessons     Boolean @default(false)
   teacherCanAddStudents      Boolean @default(false)
+  /// Teachers may change the lesson days and times of the groups they teach (A-193).
+  teacherCanChangeSchedule   Boolean @default(false)
   bookAnySupportTeacher      Boolean @default(false)
   groupSupportSessions       Boolean @default(false)
   /// "Avtomatik coin tizimi" (EXP §8 Coins); manual coins work regardless.

@@ -182,7 +182,7 @@ export const en: HelpContent = {
         schedule: {
           title: "Room schedule",
           body: [
-            "Below the cards is a grid of rooms against the working hours set in Settings → General. Each group's lessons appear in its room at its time; groups without a room sit in the last row. Switch weekdays with the tabs and the time step between 30 and 60 minutes.",
+            "Below the cards is a grid of rooms against the working hours set in Settings → General. Each group's lessons appear in its room at its time; groups without a room sit in the last row. A lesson outside the working hours, for example one at 20:30 when the day ends at 20:00, widens the grid so it is still shown; the timetable does the same. Switch weekdays with the tabs and the time step between 30 and 60 minutes.",
             "Use it to find a free room and time for a new group, or to see who is teaching right now. Rooms are added under Settings → Rooms; a group gets its room in its schedule.",
           ],
         },
@@ -329,13 +329,13 @@ export const en: HelpContent = {
               steps: [
                 "Press **New group**.",
                 "Give it a name and choose the course. The course brings its monthly price, its length and its grading system; set a different grading system only if this group is graded differently.",
-                "Choose the days: odd days (Mon, Wed, Fri), even days (Tue, Thu, Sat), every day or a custom set. Set the start and end time and the room. Tick **Different time or room per day** if the days differ.",
+                "Choose the days: odd days (Mon, Wed, Fri), even days (Tue, Thu, Sat), every day or a custom set. Set the start and end time and the room. Switch on **Different time or room per day** when the days do not start at the same time, for example Monday 20:30 and Friday 16:30: every lesson day then gets its own row with a start, an end and a room. For such days choose **Custom** and tick them.",
                 "Add up to three teachers. For each one choose the role (main teacher, assistant, co-teacher) and how they are paid for this group: a percent of the course price, a fee per lesson or a fee per student.",
                 "Set the start date. Leave the end date empty to let Kampus compute it from the course length.",
                 "Press **Save**. Kampus plans every lesson between the two dates, skipping the branch's days off.",
               ],
             },
-            "Editing the schedule later re-plans the lessons that have not been held yet; marked lessons are kept.",
+            "Changing the days or times of a group that is already running keeps the lessons behind it: the form asks **New times start from** (today unless you pick an earlier day to correct a mistake), lessons before that day stay as they were with their attendance and grades, and the lessons from that day on follow the new days and times. Tick **Tell the students and parents on Telegram** to send everyone the new times.",
           ],
         },
         detail: {
@@ -369,6 +369,7 @@ export const en: HelpContent = {
         changes: {
           title: "Days off, teacher changes and finishing",
           body: [
+            "**Change times**, next to the schedule on the group page, opens only the days, times and rooms of the group; **Edit** holds the same fields with everything else. Use it when the group moves for good, for example from Tuesday, Thursday and Saturday at 19:30 to Monday at 20:30 and Friday at 16:30. The groups list, the timetable, Today, the students' pages and the reminders all follow each day's own time. For one lesson only, use the day off below.",
             "**Give a day off** removes one date's lesson for this group, for example a teacher's trip, and can tell the students and parents at once by Telegram and SMS (the SMS switches are in Settings → General → Auto SMS). Pick a new date and time to move the lesson instead of dropping it. The month's cancelled and moved lessons are listed above the attendance grid, where a day off can be undone. Branch-wide holidays go to Settings → Days off instead and apply to every group.",
             "When Settings → General has **Students may move or cancel their own 1:1 lessons** on, the only student of a group can move or cancel an upcoming lesson from their own page up to the set number of hours before it starts. Such changes appear in the same list as **Moved by the student** or **Cancelled by the student**, and you are told by Telegram like the students are.",
             "Teachers set their **Hours open for 1:1 booking** on their own account page (the office can do it on the teacher's page): weekly windows in which a 1:1 student may book an extra lesson or move one from their page. The free times shown to the student are those windows minus every lesson you already give; with no windows, students may pick any free time inside the centre's hours. Booked lessons appear as extra lessons in the group's grid, at most two ahead per student.",
@@ -449,6 +450,7 @@ export const en: HelpContent = {
           body: [
             "After signing in you land on **Today**, the day's lessons with one-tap attendance; Groups lists only the groups you teach or support. Open a group to find everything about today's lesson on one page. The sidebar shows you Groups, Students and Exams; the rest of Kampus is for the office.",
             "The exam schedule is visible only if the administrator switched it on for teachers. Payments and student balances are not yours to see unless the administrator set that up.",
+            "If your centre allows it, the group page shows **Change times** next to the schedule: choose the lesson days and give each day its own start and end, for example Monday 20:30 and Friday 16:30. Lessons you already held stay as they were, the new times start today, and the students can be told on Telegram. A time that clashes with another group's room or with your other lessons is refused; ask the office then.",
           ],
         },
         attendance: {
@@ -1069,7 +1071,7 @@ export const en: HelpContent = {
         switches: {
           title: "The behaviour switches",
           body: [
-            "**Spread a student's overpayment over the next months**: an amount above the monthly price covers following months. **Refunds enabled**: shows the refund button. **Print a receipt after each payment**: opens the receipt when a payment is saved. **Allow comments on attendance**. **Teachers and support teachers see the exam schedule**. **Attendance can be marked only during the lesson**: admins and the CEO are exempt. **Teachers see their monthly salary**. **Pay the teacher when a group has a day off** and **Pay teachers only for lessons they attended** change payroll. **Teachers can add students** to their groups. The rest concern support teachers and group support sessions.",
+            "**Spread a student's overpayment over the next months**: an amount above the monthly price covers following months. **Refunds enabled**: shows the refund button. **Print a receipt after each payment**: opens the receipt when a payment is saved. **Allow comments on attendance**. **Teachers and support teachers see the exam schedule**. **Attendance can be marked only during the lesson**: admins and the CEO are exempt. **Teachers see their monthly salary**. **Pay the teacher when a group has a day off** and **Pay teachers only for lessons they attended** change payroll. **Teachers can add students** to their groups. **Teachers can change the lesson days and times of their own groups**: off at first; when on, a group's own teacher sees **Change times** on the group page, cannot save over a room or teacher clash, and the change is written to the group's history. The rest concern support teachers and group support sessions.",
           ],
         },
         catalog: {

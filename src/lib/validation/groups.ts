@@ -86,8 +86,41 @@ export const groupSchema = groupBase
   });
 export type GroupInput = z.infer<typeof groupSchema>;
 
-export const groupUpdateSchema = groupBase.omit({ branchId: true }).partial();
+/**
+ * How a change of days or times lands on a group that is already running (A-193):
+ * lessons before `scheduleFrom` stay as they were (today in Tashkent when left out,
+ * never a later day), and the students may be told about the new times.
+ */
+const scheduleChange = {
+  scheduleFrom: dateOnlySchema.optional(),
+  notifySchedule: z.boolean().optional(),
+};
+
+/**
+ * A patch changes only what it names. The create form's defaults are taken off
+ * first: Zod applies a default inside an optional field, so `{ name }` alone
+ * would otherwise reset the days to EVEN, clear the teachers and reactivate the group.
+ */
+export const groupUpdateSchema = groupBase
+  .omit({ branchId: true })
+  .extend({
+    weekdayPattern: z.enum(WEEKDAY_PATTERNS),
+    teachers: z.array(groupTeacherSchema).max(3, "validation.teachersMax"),
+    status: z.enum(GROUP_STATUSES),
+  })
+  .partial()
+  .extend(scheduleChange);
 export type GroupUpdateInput = z.infer<typeof groupUpdateSchema>;
+
+/** Only the days, times and rooms of a group: what its own teacher may change (A-193). */
+export const groupScheduleSchema = groupBase
+  .pick({ weekdayPattern: true, slots: true, ignoreClashes: true })
+  .extend(scheduleChange)
+  .refine((g) => new Set(g.slots.map((s) => s.weekday)).size === g.slots.length, {
+    message: "validation.slotsUnique",
+    path: ["slots"],
+  });
+export type GroupScheduleInput = z.infer<typeof groupScheduleSchema>;
 
 export const GROUP_SORT_FIELDS = ["name", "startDate", "endDate", "createdAt"] as const;
 export type GroupSortField = (typeof GROUP_SORT_FIELDS)[number];

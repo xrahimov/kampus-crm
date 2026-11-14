@@ -70,6 +70,7 @@ export type BotMessageKind =
   | "lessonCancelled"
   | "lessonMoved"
   | "lessonRestored"
+  | "scheduleChanged"
   | "noShow"
   | "lessonNote"
   | "lessonBooked"
