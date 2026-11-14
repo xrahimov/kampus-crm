@@ -1863,12 +1863,97 @@
       "students": "How many active students do we have?",
       "payments": "How much came in this month?",
       "today": "What lessons are on today?",
-      "sms": "Draft a short SMS reminding a parent about an unpaid month."
+      "sms": "Draft a short SMS reminding a parent about an unpaid month.",
+      "myDay": "What lessons do I have today?",
+      "checking": "Which homework is waiting for me to check?",
+      "absentees": "Who was absent in my groups this week?",
+      "lessonPlan": "Give me a 10-minute warm-up for a beginner group.",
+      "parentMessage": "Draft a short message to parents about tomorrow's test."
     },
     "usedTools": "Looked at: {tools}",
     "empty": "Ask the first question or pick one below.",
     "clear": "New conversation",
-    "error": "The assistant could not answer. Try again."
+    "error": "The assistant could not answer. Try again.",
+    "hintTeacher": "Ask about your own work in plain words: today's lessons, who was absent, homework waiting to be checked, or ask for a lesson plan, exercises or a message to parents. The assistant reads only the groups you teach. Other topics are declined.",
+    "launcher": {
+      "open": "Open the assistant",
+      "close": "Close the assistant",
+      "greeting": "Hello, {name}",
+      "tagline": "Your summary and your assistant",
+      "summary": "Summary",
+      "chat": "Ask",
+      "fullPage": "Open as a page",
+      "auto": "Open by itself once a day",
+      "understood": "Understood"
+    },
+    "briefing": {
+      "period": "Period",
+      "periods": {
+        "yesterday": "Yesterday",
+        "today": "Today",
+        "week": "7 days"
+      },
+      "viewLabel": "Whose figures",
+      "views": {
+        "management": "Centre",
+        "teaching": "My groups"
+      },
+      "scope": {
+        "centre": "Whole centre {name}",
+        "branch": "Branch {name}",
+        "groups": "Your groups"
+      },
+      "range": "{from} to {to}",
+      "stats": {
+        "payments": "Payments received",
+        "todayLessons": "Lessons today",
+        "lessons": "Lessons held",
+        "absent": "Absences",
+        "unmarked": "Students not marked",
+        "homeworkToCheck": "Homework to check",
+        "stoppedComing": "Stopped coming",
+        "newLeads": "New leads",
+        "uncontactedLeads": "Leads nobody contacted",
+        "newStudents": "New students",
+        "leftStudents": "Students who left",
+        "debtors": "Debtors now"
+      },
+      "owedTotal": "Owed in total",
+      "missed": "{count} missed",
+      "more": "and {count} more",
+      "branches": {
+        "branch": "Branch",
+        "payments": "Payments",
+        "lessons": "Lessons",
+        "absent": "Absent",
+        "unmarked": "Not marked"
+      },
+      "conclusion": "Conclusion",
+      "loading": "Counting…",
+      "error": "The summary could not be loaded.",
+      "retry": "Try again",
+      "refresh": "Write the conclusion again",
+      "byModel": "Written by {model} from the figures above.",
+      "plain": "Plain summary. With an API key in Settings → Integrations → AI assistant, the conclusion is written by AI.",
+      "failed": "The AI could not be reached, so this is the plain summary.",
+      "rules": {
+        "quiet": "No lessons took place in this period.",
+        "payments": "Payments received: {amount}.",
+        "noPayments": "No payments came in.",
+        "allMarked": "Attendance is marked for {lessons, plural, one {the lesson} other {all # lessons}}.",
+        "unmarked": "{students, plural, one {# student was} other {# students were}} not marked in {groups, plural, one {# group} other {# groups}}. Mark them on Today.",
+        "absent": "{count, plural, one {# absence was} other {# absences were}} marked. See who needs a call.",
+        "leadsWaiting": "{count, plural, one {# new lead has} other {# new leads have}} not been contacted yet.",
+        "studentsFlow": "Students joined: {joined}, left: {left}.",
+        "debtors": "{count, plural, one {# student owes} other {# students owe}} {amount} in total.",
+        "homeworkWaiting": "{count, plural, one {# homework answer waits} other {# homework answers wait}} to be checked.",
+        "stoppedComing": "{count, plural, one {# student has} other {# students have}} missed several lessons in a row.",
+        "todayLessons": "{count, plural, one {# lesson} other {# lessons}} today.",
+        "noLessonsToday": "No lessons today."
+      },
+      "writing": "Writing the conclusion…",
+      "writingNote": "The figures below are ready; the conclusion takes a few seconds."
+    }
   },
   "students": {
     "title": "Students",
@@ -4519,7 +4604,8 @@
           "suspend": "Centre suspended",
           "resume": "Centre resumed",
           "export": "Centre data exported",
-          "aiAsk": "Assistant asked"
+          "aiAsk": "Assistant asked",
+          "aiBriefing": "Summary written by AI"
         },
         "balance": {
           "adjust": "Balance adjusted",

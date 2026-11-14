@@ -932,6 +932,29 @@ const CEO_SHOTS: Shot[] = [
     },
   },
   {
+    name: "assistant-summary",
+    take: async ({ page, locale }) => {
+      await go(page, locale, "/dashboard");
+      await page.getByTestId("assistant-fab").click();
+      const panel = page.getByTestId("assistant-panel");
+      await panel.getByTestId("briefing-line").first().waitFor();
+      await shotPage(page, locale, "assistant-summary");
+    },
+  },
+  {
+    name: "assistant-ask",
+    take: async ({ page, locale }) => {
+      await go(page, locale, "/students");
+      await page.getByTestId("assistant-fab").click();
+      const panel = page.getByTestId("assistant-panel");
+      await panel.getByTestId("assistant-tab-chat").click();
+      // The last suggestion asks for a draft SMS, which test mode answers in words.
+      await panel.getByTestId("assistant-panel-suggestion").last().click();
+      await panel.getByTestId("assistant-panel-message").nth(1).waitFor();
+      await shotPage(page, locale, "assistant-ask");
+    },
+  },
+  {
     name: "soff-import",
     take: async ({ page, locale }) => {
       await go(page, locale, "/settings/migration");
@@ -1472,8 +1495,14 @@ async function newPage(
     reducedMotion: "reduce",
     ...options,
   });
-  // The development build's status badge has no place in a manual.
+  // The development build's status badge has no place in a manual, and the
+  // daily summary (A-190) must not open over the page being pictured.
   await context.addInitScript(() => {
+    try {
+      localStorage.setItem("kampus.summary.auto", "off");
+    } catch {
+      // A page without storage is pictured as it is.
+    }
     document.addEventListener("DOMContentLoaded", () => {
       const style = document.createElement("style");
       style.textContent = "nextjs-portal { display: none !important; }";

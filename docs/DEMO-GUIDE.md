@@ -326,13 +326,19 @@ anyone changes is in the log."
   with other centres except the bot, if the site owner allows it.
 - **Assistant**: ask "Who owes money this month?" and then "Draft a short SMS reminding a parent
   about an unpaid month". Then ask it for five exercises on the Present Simple.
+- **The round button in the corner**: it is on every page. Open it to show the daily summary
+  (figures of yesterday and a short conclusion) and switch to **Ask** to put a question without
+  leaving the page. Sign in as a teacher to show that the same panel then covers only that
+  teacher's groups.
 
 **Say:** "The assistant reads the centre's own data with the rights of the person asking, and it
 never changes anything. It answers about the centre and about teaching, and declines everything
-else."
+else." "Every morning each person gets their own summary: the director for the whole centre, a branch
+manager for the branch, a teacher for their groups."
 
 ![Integrations](../public/help/en/integrations.jpg)
 ![The assistant](../public/help/en/assistant.jpg)
+![The daily summary](../public/help/en/assistant-summary.jpg)
 
 ## 13. Several centres, moving from an old CRM, and help
 

@@ -12,7 +12,9 @@ import { BranchSelector } from "./branch-selector";
 import { GlobalSearch } from "./global-search";
 import { HelpLink } from "./help-link";
 import { NotificationBell } from "./notification-bell";
+import { AssistantLauncher } from "@/features/assistant/assistant-launcher";
 import { PayButton } from "@/features/payments/pay-button";
+import { canUseAssistant, hasPermission } from "@/lib/rbac/permissions";
 
 import { LocaleSwitcher } from "./locale-switcher";
 import { ThemeToggle } from "./theme-toggle";
@@ -99,6 +101,14 @@ export async function AppShell({
 
         <main className="w-full max-w-[96rem] flex-1 px-4 py-6 lg:px-8 lg:py-8">{children}</main>
       </div>
+
+      {canUseAssistant(permissions) && (
+        <AssistantLauncher
+          userId={user.id}
+          userName={user.fullName}
+          audience={hasPermission(permissions, "dashboard.view") ? "office" : "teacher"}
+        />
+      )}
     </div>
   );
 }

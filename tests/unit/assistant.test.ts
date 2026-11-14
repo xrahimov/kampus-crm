@@ -5,12 +5,15 @@
  * conversation must end with the user's turn, and the question is audited.
  * The model is told to keep to the centre's work in Kampus and to teaching
  * questions (A-185), and the test client declines a question about anything
- * else without a lookup.
+ * else without a lookup. Teachers have it too (A-190): their own day comes from
+ * the Today lookup, the model is told which lookups the role has, and someone
+ * with neither a Dashboard nor a Today page is refused.
  */
 import { randomInt } from "node:crypto";
 
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 
+import { DEFAULT_ROLE_PERMISSIONS } from "@/lib/rbac/default-roles";
 import { prisma } from "@/server/db/prisma";
 import { isAppError } from "@/server/errors/app-error";
 import type { Actor } from "@/server/rbac/authorize";
@@ -131,6 +134,51 @@ describe("the assistant", () => {
     expect(dto.answer).toContain(
       "I only help with this centre's work in Kampus and with teaching questions",
     );
+  });
+
+  it("lets a teacher without a Dashboard ask about their own day", async () => {
+    const plain: Actor = {
+      ...teacher,
+      roles: ["TEACHER"],
+      permissions: [...DEFAULT_ROLE_PERMISSIONS.TEACHER],
+    };
+    const dto = await askAssistant(plain, {
+      messages: [{ role: "user", content: "What lessons do I have today?" }],
+      locale: "en",
+      page: "/today",
+    });
+    expect(dto.tools).toEqual(["my_day"]);
+    expect(dto.answer).toContain('"lessons"');
+    const waiting = await askAssistant(plain, {
+      messages: [{ role: "user", content: "Which homework is waiting for me to check?" }],
+      locale: "en",
+    });
+    expect(waiting.tools).toEqual(["homework_to_check"]);
+    expect(waiting.answer).toContain('"waiting"');
+    const absent = await askAssistant(plain, {
+      messages: [{ role: "user", content: "Who was absent in my groups this week?" }],
+      locale: "en",
+    });
+    expect(absent.tools).toEqual(["attendance_overview"]);
+    expect(absent.answer).toContain('"lessonsHeld"');
+
+    // The model is told which lookups this role has, so it does not try the others.
+    const prompt = assistantSystemPrompt(plain, "Demo centre", "en");
+    expect(prompt).toContain(
+      "can use these lookups: search_students, list_groups, my_day, homework_to_check, attendance_overview.",
+    );
+    expect(assistantSystemPrompt(ceo, "Demo centre", "en")).toContain(
+      "list_debtors, search_students",
+    );
+  });
+
+  it("refuses someone with neither a Dashboard nor a Today page", async () => {
+    await expect(
+      askAssistant(
+        { ...teacher, roles: [], permissions: ["students.view"] },
+        { messages: [{ role: "user", content: "Who owes money?" }], locale: "en" },
+      ),
+    ).rejects.toSatisfy((e) => isAppError(e) && e.code === "FORBIDDEN");
   });
 
   it("refuses a conversation that does not end with the user's turn", async () => {

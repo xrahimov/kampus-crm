@@ -82,6 +82,8 @@ export const HELP_ARTICLES = [
       { id: "search", screenshot: "search" },
       { id: "branchAndLanguage" },
       { id: "notifications", screenshot: "notifications" },
+      { id: "summary", screenshot: "assistant-summary" },
+      { id: "assistantButton", screenshot: "assistant-ask" },
       { id: "roles" },
       { id: "account", screenshot: "account" },
       { id: "mySalary", screenshot: "my-salary" },

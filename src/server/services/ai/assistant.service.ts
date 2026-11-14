@@ -3,20 +3,25 @@ import type Anthropic from "@anthropic-ai/sdk";
 import type { AssistantAskInput } from "@/lib/validation/ai";
 import { DEBT_SORT_FIELDS } from "@/lib/validation/debts";
 import { GROUP_SORT_FIELDS } from "@/lib/validation/groups";
+import { canUseAssistant, type Permission } from "@/lib/rbac/permissions";
 import { STUDENT_SORT_FIELDS } from "@/lib/validation/students";
 import { recordAudit } from "@/server/audit/audit";
 import { prisma, type DbClient } from "@/server/db/prisma";
 import { AppError, isAppError } from "@/server/errors/app-error";
 import type { ParsedList } from "@/server/http/list-query";
-import { authorize, type Actor } from "@/server/rbac/authorize";
+import { can, type Actor } from "@/server/rbac/authorize";
 import { getDashboardKpis } from "@/server/services/dashboard/kpis.service";
 import { getDashboardSchedule } from "@/server/services/dashboard/schedule.service";
 import { listDebtCases } from "@/server/services/debts/debts.service";
 import { listGroups } from "@/server/services/groups/groups.service";
-import { today } from "@/server/services/groups/shared";
+import { centreToday, groupScope, today } from "@/server/services/groups/shared";
+import { listCheckingQueue } from "@/server/services/homework/checking-queue.service";
 import { getAiClient } from "@/server/services/integrations/integrations.service";
 import { getPaymentsReport } from "@/server/services/reports/payments-report.service";
 import { listStudents } from "@/server/services/students/students.service";
+import { getToday } from "@/server/services/today/today.service";
+
+import { attendanceNumbers } from "./briefing.service";
 
 /*
  * The AI assistant (round 2 item G4, A-149). A staff member asks in plain
@@ -24,7 +29,9 @@ import { listStudents } from "@/server/services/students/students.service";
  * services and run as the asking user, so every permission rule of the
  * screens holds and nothing is ever written. The system prompt keeps it to
  * the centre's work in Kampus and to teaching questions (A-185): other
- * topics get a short decline.
+ * topics get a short decline. Teachers have it too (A-190): their lookups are
+ * their own day, their groups and the homework waiting for them, and the
+ * services keep them to the groups they teach.
  */
 
 export interface AssistantAnswerDto {
@@ -134,7 +141,62 @@ const tools: Anthropic.Tool[] = [
       },
     },
   },
+  {
+    name: "my_day",
+    description:
+      "The asker's own lessons on one day, as their Today page shows them: time, group, room, topic, how many students are expected, present and marked, homework handed in and waiting to be checked, trial students; plus their next lesson and the students of their groups who owe money. A teacher sees the groups they teach. Defaults to today.",
+    input_schema: {
+      type: "object",
+      properties: {
+        date: { type: "string", description: "The day as YYYY-MM-DD" },
+      },
+    },
+  },
+  {
+    name: "homework_to_check",
+    description:
+      "Homework answers waiting for the asker's verdict, oldest first: student, group, the task, the answer and when it was handed in.",
+    input_schema: {
+      type: "object",
+      properties: { limit: { type: "integer", minimum: 1, maximum: 50 } },
+    },
+  },
+  {
+    name: "attendance_overview",
+    description:
+      "Attendance in the groups the asker may see over a range of days: lessons held, students present, absent and excused, students nobody marked with their groups, and who was absent. Defaults to the last 7 days.",
+    input_schema: {
+      type: "object",
+      properties: {
+        from: { type: "string", description: "First day as YYYY-MM-DD" },
+        to: { type: "string", description: "Last day as YYYY-MM-DD" },
+      },
+    },
+  },
 ];
+
+/** The permission each lookup needs, so the model is told which ones this person has. */
+const TOOL_PERMISSION: Record<string, Permission> = {
+  list_debtors: "payments.create",
+  search_students: "students.view",
+  count_students: "dashboard.view",
+  dashboard_kpis: "dashboard.view",
+  payments_summary: "reports.payments",
+  todays_schedule: "dashboard.view",
+  list_groups: "groups.view",
+  my_day: "groups.view",
+  homework_to_check: "groups.attendance.mark",
+  attendance_overview: "groups.view",
+};
+
+const isDay = (v: unknown): v is string =>
+  typeof v === "string" && /^\d{4}-\d{2}-\d{2}$/.test(v) && !Number.isNaN(Date.parse(v));
+
+function shiftDay(iso: string, days: number): string {
+  const d = new Date(`${iso}T00:00:00.000Z`);
+  d.setUTCDate(d.getUTCDate() + days);
+  return d.toISOString().slice(0, 10);
+}
 
 type ToolInput = Record<string, unknown>;
 const str = (v: unknown) => (typeof v === "string" && v ? v : undefined);
@@ -273,6 +335,82 @@ async function runTool(
           })),
         });
       }
+      case "my_day": {
+        const day = await getToday(actor, isDay(input.date) ? input.date : undefined, db);
+        return JSON.stringify({
+          date: day.date,
+          lessons: day.lessons.map((l) => ({
+            time: `${l.startTime}–${l.endTime}`,
+            group: l.groupName,
+            course: l.courseName,
+            room: l.roomName,
+            topic: l.topic,
+            teachers: l.teacherNames,
+            students: l.members.length,
+            present: l.present,
+            marked: l.marked,
+            notMarked: l.members.length - l.marked,
+            trialStudents: l.trials.length,
+            homework: l.homework
+              ? { handedIn: l.homework.submitted, toCheck: l.homework.toCheck }
+              : null,
+          })),
+          nextLesson: day.next
+            ? {
+                date: day.next.date,
+                time: `${day.next.startTime}–${day.next.endTime}`,
+                group: day.next.groupName,
+                room: day.next.roomName,
+              }
+            : null,
+          debtorsInTheseGroups: day.canSeeBalances
+            ? {
+                count: day.debtorCount,
+                total: day.debtTotal,
+                largest: day.debtors.slice(0, 10).map((d) => ({
+                  student: d.fullName,
+                  group: d.groupName,
+                  owes: d.amount,
+                })),
+              }
+            : "not shown to this role",
+        });
+      }
+      case "homework_to_check": {
+        const queue = await listCheckingQueue(actor, db);
+        return JSON.stringify({
+          waiting: queue.total,
+          answers: queue.items.slice(0, int(input.limit, 50) ?? LIST_LIMIT).map((i) => ({
+            student: i.fullName,
+            group: i.groupName,
+            lessonDate: i.lessonDate,
+            task: (i.title ?? i.text).slice(0, 200),
+            answer: i.note?.slice(0, 300) ?? null,
+            hasFile: Boolean(i.attachmentUrl),
+            handedInAt: i.submittedAt,
+          })),
+        });
+      }
+      case "attendance_overview": {
+        if (!can(actor, "groups.view")) throw AppError.forbidden();
+        const to = isDay(input.to) ? input.to : centreToday();
+        const from = isDay(input.from) && input.from <= to ? input.from : shiftDay(to, -6);
+        // At most a quarter, so one question cannot read a whole year of marks.
+        const range = { from: from < shiftDay(to, -92) ? shiftDay(to, -92) : from, to };
+        const numbers = await attendanceNumbers(db, groupScope(actor), range, true);
+        return JSON.stringify({
+          ...range,
+          lessonsHeld: numbers.lessons,
+          present: numbers.present,
+          absent: numbers.absent,
+          excused: numbers.excused,
+          notMarked: numbers.unmarked,
+          groupsWithUnmarkedStudents: numbers.unmarkedGroups
+            .slice(0, LIST_LIMIT)
+            .map((g) => ({ group: g.name, students: g.students })),
+          absentees: numbers.absentees.slice(0, 50),
+        });
+      }
       default:
         return `Unknown tool ${name}.`;
     }
@@ -291,11 +429,18 @@ async function runTool(
  */
 export function assistantSystemPrompt(actor: Actor, centre: string, locale: string): string {
   const language = { uz: "Uzbek (Latin)", ru: "Russian", en: "English" }[locale] ?? "English";
+  const allowed = tools
+    .map((t) => t.name)
+    .filter((n) => {
+      const needs = TOOL_PERMISSION[n];
+      return needs !== undefined && can(actor, needs);
+    });
   return [
     `You are the assistant inside Kampus, the CRM of the learning centre "${centre}".`,
-    `You are talking to ${actor.fullName} (roles: ${actor.roles.join(", ") || "staff"}). Today is ${today()} (Tashkent).`,
+    `You are talking to ${actor.fullName} (roles: ${actor.roles.join(", ") || "staff"}). Today is ${centreToday()} (Tashkent).`,
     `Answer in ${language} unless the person writes in another language; then answer in theirs.`,
     "Use the tools for every fact about students, debts, payments, groups and lessons; never invent names or numbers. If a tool says the data is not permitted, say so plainly.",
+    `This person's role can use these lookups: ${allowed.join(", ") || "none"}. For anything only another lookup holds, say plainly that their role does not show that data in Kampus, without calling it. A teacher's lookups cover the groups they teach and the students in them, nobody else's.`,
     "Money is in Uzbek so'm; write amounts with thousands separators. Keep answers short and concrete: a few sentences or a compact list. Draft messages (SMS, Telegram) when asked, in the language the recipient would read.",
     "You cannot change anything in Kampus; point the person to the right screen (Students, Debtors, Cash desk, Groups, Reports) for actions.",
     "Scope: you help with two things only. First, the work of this learning centre in Kampus: its students and parents, leads, groups, lessons and timetable, attendance, homework and tests, teachers and staff, payments, debts and reports, drafts of messages from the centre to its students, parents or staff, and how to do something in Kampus.",
@@ -312,7 +457,7 @@ export async function askAssistant(
   locale = "en",
   db: DbClient = prisma,
 ): Promise<AssistantAnswerDto> {
-  authorize(actor, "dashboard.view");
+  if (!canUseAssistant(actor.permissions)) throw AppError.forbidden();
   if (input.messages.at(-1)?.role !== "user")
     throw AppError.validation({ messages: ["validation.required"] });
   const org = await db.organization.findUniqueOrThrow({
@@ -329,6 +474,10 @@ export async function askAssistant(
   for (let round = 0; round <= MAX_TOOL_ROUNDS; round += 1) {
     const result = await client.complete({
       system: assistantSystemPrompt(actor, org.name, locale),
+      // After the stable prompt, so that one stays cached from page to page.
+      context: input.page
+        ? `The question was asked from the Kampus page ${input.page}; "this page", "here" or "this group" mean what that page shows.`
+        : undefined,
       messages,
       tools,
     });
