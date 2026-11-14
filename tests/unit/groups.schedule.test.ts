@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest";
 import {
   addMonths,
   courseMonths,
+  hoursWindow,
   isoWeekday,
   planLessons,
   sameTimes,
@@ -108,6 +109,20 @@ describe("schedule arithmetic", () => {
       expect(slotOn(monFri, "2026-11-20")).toEqual({ startTime: "16:30", endTime: "18:00" });
       expect(slotOn(monFri, "2026-11-16")).toEqual({ startTime: "20:30", endTime: "22:00" });
       expect(slotOn(monFri, "2026-11-17")).toEqual({ startTime: null, endTime: null });
+    });
+
+    it("stretches a grid's hours to hold a lesson outside the working hours", () => {
+      expect(hoursWindow("08:00", "20:00", [])).toEqual({ start: "08:00", end: "20:00" });
+      expect(hoursWindow("08:00", "20:00", even)).toEqual({ start: "08:00", end: "22:00" });
+      expect(hoursWindow("08:00", "20:00", monFri)).toEqual({ start: "08:00", end: "22:00" });
+      expect(hoursWindow("09:00", "18:00", [{ startTime: "07:30", endTime: "08:45" }])).toEqual({
+        start: "07:00",
+        end: "18:00",
+      });
+      expect(hoursWindow("08:00", "20:00", [{ startTime: "22:30", endTime: "23:50" }])).toEqual({
+        start: "08:00",
+        end: "24:00",
+      });
     });
 
     it("names weekdays in the three languages", () => {

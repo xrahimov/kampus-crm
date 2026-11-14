@@ -182,7 +182,7 @@ export const en: HelpContent = {
         schedule: {
           title: "Room schedule",
           body: [
-            "Below the cards is a grid of rooms against the working hours set in Settings → General. Each group's lessons appear in its room at its time; groups without a room sit in the last row. Switch weekdays with the tabs and the time step between 30 and 60 minutes.",
+            "Below the cards is a grid of rooms against the working hours set in Settings → General. Each group's lessons appear in its room at its time; groups without a room sit in the last row. A lesson outside the working hours, for example one at 20:30 when the day ends at 20:00, widens the grid so it is still shown; the timetable does the same. Switch weekdays with the tabs and the time step between 30 and 60 minutes.",
             "Use it to find a free room and time for a new group, or to see who is teaching right now. Rooms are added under Settings → Rooms; a group gets its room in its schedule.",
           ],
         },

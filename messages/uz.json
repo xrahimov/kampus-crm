@@ -217,7 +217,7 @@
       "noRoom": "Xonasiz",
       "empty": "Hali xonalar yo'q.",
       "emptyHint": "Sozlamalarda xonalar qo'shing va guruh jadvalida tanlang.",
-      "hours": "Ish vaqti {start}–{end}",
+      "hours": "Ko‘rsatilgan vaqt {start}–{end}",
       "h": "soat"
     },
     "finance": {
@@ -1856,7 +1856,7 @@
     "noRooms": "Bu filialda hali xonalar yo‘q.",
     "noTeachers": "Bu filialda hali o‘qituvchilar yo‘q.",
     "noRoom": "Xonasiz",
-    "hours": "Ish vaqti {start}–{end}"
+    "hours": "Ko‘rsatilgan vaqt {start}–{end}"
   },
   "assistant": {
     "title": "Yordamchi",

@@ -96,8 +96,18 @@ const scheduleChange = {
   notifySchedule: z.boolean().optional(),
 };
 
+/**
+ * A patch changes only what it names. The create form's defaults are taken off
+ * first: Zod applies a default inside an optional field, so `{ name }` alone
+ * would otherwise reset the days to EVEN, clear the teachers and reactivate the group.
+ */
 export const groupUpdateSchema = groupBase
   .omit({ branchId: true })
+  .extend({
+    weekdayPattern: z.enum(WEEKDAY_PATTERNS),
+    teachers: z.array(groupTeacherSchema).max(3, "validation.teachersMax"),
+    status: z.enum(GROUP_STATUSES),
+  })
   .partial()
   .extend(scheduleChange);
 export type GroupUpdateInput = z.infer<typeof groupUpdateSchema>;

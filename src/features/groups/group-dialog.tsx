@@ -26,6 +26,8 @@ import { FormDialog } from "@/features/settings/shared/form-dialog";
 import { todayIso } from "@/features/staff/password";
 import { api, ApiError } from "@/lib/api-client";
 import { applyApiError } from "@/lib/api-errors";
+import { APP_TIME_ZONE } from "@/lib/dates";
+import { utcToZoned } from "@/lib/time-zones";
 import { idSchema } from "@/lib/validation/common";
 import {
   GROUP_STATUSES,
@@ -53,6 +55,11 @@ export interface TeacherOption {
 }
 
 const NONE = "__none__";
+/**
+ * Today as the centre sees it (Tashkent): the day the server counts new times
+ * from (A-193). The browser's own date can be a day behind or ahead of it.
+ */
+const centreToday = () => utcToZoned(new Date(), APP_TIME_ZONE).date;
 const money = z.coerce.number().min(0, "validation.min").max(9_999_999_999_999, "validation.max");
 
 /** The drawer's own shape (EXP §5): one time range for all days, or a row per day. */
@@ -214,7 +221,7 @@ export function GroupDialog({
     startDate: todayIso(),
     endDate: "",
     status: "ACTIVE",
-    scheduleFrom: todayIso(),
+    scheduleFrom: centreToday(),
     notifySchedule: true,
   });
 
@@ -267,7 +274,7 @@ export function GroupDialog({
       startDate: group.startDate,
       endDate: group.endDate,
       status: group.status,
-      scheduleFrom: todayIso(),
+      scheduleFrom: centreToday(),
       notifySchedule: true,
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -284,7 +291,7 @@ export function GroupDialog({
     // A running group whose days or times change: from which day, and who hears of it (A-193).
     const change = timesChanged
       ? {
-          ...(running ? { scheduleFrom: values.scheduleFrom || todayIso() } : {}),
+          ...(running ? { scheduleFrom: values.scheduleFrom || centreToday() } : {}),
           notifySchedule: values.notifySchedule,
         }
       : {};
@@ -356,7 +363,7 @@ export function GroupDialog({
         })),
       }),
     ) !== timesOf(group.slots);
-  const running = !!group && group.startDate < todayIso();
+  const running = !!group && group.startDate < centreToday();
   const branchCourses = courses.filter((c) => c.branchId === branchId && !c.isArchived);
   const branchRooms = rooms.filter((r) => r.branchId === branchId);
 
@@ -680,7 +687,7 @@ export function GroupDialog({
                 id="group-schedule-from"
                 type="date"
                 min={group?.startDate}
-                max={todayIso()}
+                max={centreToday()}
                 aria-invalid={!!errors.scheduleFrom}
                 {...form.register("scheduleFrom")}
               />

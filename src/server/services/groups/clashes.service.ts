@@ -6,6 +6,7 @@ import { authorize, type Actor } from "@/server/rbac/authorize";
 import { isoToDate } from "@/server/services/settings/shared";
 import { TEACHER_ROLE_CODES } from "@/server/services/staff/staff.service";
 
+import { hoursWindow } from "./schedule";
 import { groupScope, ownGroupsOnly } from "./shared";
 
 /*
@@ -143,6 +144,7 @@ export interface TimetableDto {
   rooms: Array<{ id: string; name: string }>;
   teachers: Array<{ id: string; fullName: string }>;
   selectedId: string | null;
+  /** The hours the grid shows: the working hours, wider where a lesson lies outside them (A-193). */
   workStart: string;
   workEnd: string;
   blocks: TimetableBlockDto[];
@@ -266,6 +268,8 @@ export async function getTimetable(
         orderBy: [{ weekday: "asc" }, { startTime: "asc" }],
       })
     : [];
+  // The grid shows the working hours, wider where a lesson lies outside them (A-193).
+  const shown = hoursWindow(settings?.workStart ?? "08:00", settings?.workEnd ?? "20:00", slots);
   return {
     mode,
     branchId,
@@ -273,8 +277,8 @@ export async function getTimetable(
     rooms,
     teachers,
     selectedId,
-    workStart: settings?.workStart ?? "08:00",
-    workEnd: settings?.workEnd ?? "20:00",
+    workStart: shown.start,
+    workEnd: shown.end,
     blocks: slots.map((s) => ({
       weekday: s.weekday,
       startTime: s.startTime,

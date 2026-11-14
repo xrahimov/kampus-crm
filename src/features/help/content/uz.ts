@@ -185,7 +185,7 @@ export const uz: HelpContent = {
         schedule: {
           title: "Xonalar jadvali",
           body: [
-            "Kartochkalar ostida Sozlamalar → Umumiy sozlamalarda belgilangan ish vaqtiga nisbatan xonalar jadvali turadi. Har bir guruhning darslari o‘z xonasida, o‘z vaqtida ko‘rinadi; xonasiz guruhlar oxirgi qatorda turadi. Hafta kunlarini yorliqlar bilan, vaqt oralig‘ini esa 30 va 60 daqiqa orasida almashtiring.",
+            "Kartochkalar ostida Sozlamalar → Umumiy sozlamalarda belgilangan ish vaqtiga nisbatan xonalar jadvali turadi. Har bir guruhning darslari o‘z xonasida, o‘z vaqtida ko‘rinadi; xonasiz guruhlar oxirgi qatorda turadi. Ish vaqtidan tashqaridagi dars, masalan kun 20:00 da tugaganda 20:30 dagi dars, ko‘rinishi uchun jadvalni kengaytiradi; dars jadvali ham shunday qiladi. Hafta kunlarini yorliqlar bilan, vaqt oralig‘ini esa 30 va 60 daqiqa orasida almashtiring.",
             "Undan yangi guruh uchun bo‘sh xona va vaqt topishda yoki hozir kim dars berayotganini ko‘rishda foydalaning. Xonalar Sozlamalar → Xonalar bo‘limida qo‘shiladi; guruh xonasini o‘z jadvalida oladi.",
           ],
         },

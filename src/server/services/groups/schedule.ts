@@ -140,3 +140,29 @@ export function timeRanges(slots: SlotLike[], dash = " – ", separator = ", "):
     .map((s) => `${s.startTime}${dash}${s.endTime}`);
   return ranges.length ? [...new Set(ranges)].join(separator) : null;
 }
+
+const toMinutes = (time: string) => Number(time.slice(0, 2)) * 60 + Number(time.slice(3, 5));
+const toTime = (m: number) =>
+  `${String(Math.floor(m / 60)).padStart(2, "0")}:${String(m % 60).padStart(2, "0")}`;
+
+/**
+ * The hours a weekly or daily grid must show to hold every lesson on it (A-193):
+ * the centre's working hours, stretched outward to whole hours where a lesson
+ * starts earlier or ends later, such as a 20:30 lesson at a centre that closes
+ * its day at 20:00. Without such lessons it is the working hours themselves.
+ */
+export function hoursWindow(
+  workStart: string,
+  workEnd: string,
+  lessons: Array<{ startTime: string; endTime: string }>,
+): { start: string; end: string } {
+  let start = toMinutes(workStart);
+  let end = toMinutes(workEnd);
+  for (const l of lessons) {
+    const from = toMinutes(l.startTime);
+    const to = toMinutes(l.endTime);
+    if (from < start) start = Math.floor(from / 60) * 60;
+    if (to > end) end = Math.min(24 * 60, Math.ceil(to / 60) * 60);
+  }
+  return { start: toTime(start), end: toTime(end) };
+}

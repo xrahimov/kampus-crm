@@ -217,7 +217,7 @@
       "noRoom": "No room",
       "empty": "No rooms yet.",
       "emptyHint": "Add rooms in Settings and pick them in each group's schedule.",
-      "hours": "Working hours {start}–{end}",
+      "hours": "Hours shown {start}–{end}",
       "h": "h"
     },
     "finance": {
@@ -1856,7 +1856,7 @@
     "noRooms": "No rooms in this branch yet.",
     "noTeachers": "No teachers in this branch yet.",
     "noRoom": "No room",
-    "hours": "Working hours {start}–{end}"
+    "hours": "Hours shown {start}–{end}"
   },
   "assistant": {
     "title": "Assistant",
