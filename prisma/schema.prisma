@@ -168,6 +168,14 @@ enum SignInCode {
   TELEGRAM
 }
 
+/// Which side of Kampus a person who both teaches and runs things is looking at (A-194).
+enum StaffView {
+  /// Only what a teacher needs: own lessons, homework, own groups and students.
+  TEACHING
+  /// Everything the person's roles allow.
+  FULL
+}
+
 /// How a teacher is paid (EXP §4 "Maosh hisoblash usuli"); see A-12.
 enum SalaryMethod {
   PERCENT
@@ -200,6 +208,8 @@ model User {
   passwordChangedAt  DateTime?
   /// A one-time code by Telegram is asked for after the password (A-124).
   signInCode         SignInCode    @default(OFF)
+  /// The view last chosen with the switch in the header; null until the person chooses (A-194).
+  staffView          StaffView?
   createdAt          DateTime      @default(now())
   updatedAt          DateTime      @updatedAt
 

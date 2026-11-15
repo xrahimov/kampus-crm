@@ -56,7 +56,9 @@
     "finance": "Moliya",
     "reports": "Hisobotlar",
     "announcements": "E‘lonlar",
-    "checking": "Tekshirish"
+    "checking": "Tekshirish",
+    "more": "Yana",
+    "teachingBar": "Dars berish"
   },
   "auth": {
     "signIn": "Kirish",
@@ -183,6 +185,18 @@
   "branch": {
     "select": "Filial",
     "active": "Joriy filial"
+  },
+  "view": {
+    "label": "Ko‘rinish",
+    "full": "Barcha bo‘limlar",
+    "teachingHint": "Faqat darslaringiz, uy vazifalari va o‘quvchilaringiz",
+    "fullHint": "Rollaringiz ruxsat bergan hamma narsa",
+    "hintTitle": "Yangilik: «{role}» ko‘rinishi",
+    "hintText": "Faqat darslaringiz, uy vazifalari va o‘quvchilaringiz. Istalgan payt shu yerdan qaytishingiz mumkin.",
+    "hintClose": "Yopish",
+    "notInTeachingTitle": "Bu sahifa o‘qituvchi ko‘rinishida yo‘q",
+    "notInTeachingText": "U «{role}» ko‘rinishingizga tegishli bo‘lishi mumkin. Ochish uchun ko‘rinishni almashtiring.",
+    "switchTo": "«{role}» ko‘rinishiga o‘tish"
   },
   "dashboard": {
     "title": "Bosh sahifa",
@@ -364,6 +378,33 @@
         "unknown": "Beyjik emas",
         "error": "Xato"
       }
+    },
+    "desk": {
+      "heroLabel": "Keyingi dars",
+      "underWay": "Dars ketmoqda, {end} gacha",
+      "inMinutes": "{minutes} daqiqadan keyin boshlanadi",
+      "inHours": "{hours} soat {minutes} daqiqadan keyin boshlanadi",
+      "tomorrow": "Ertaga, {weekday}",
+      "onDay": "{weekday}, {date}",
+      "noStudents": "Bu guruhda hali o‘quvchi yo‘q.",
+      "namesAndMore": "{names} va yana {count} nafar",
+      "join": "Darsga qo‘shilish",
+      "openGroup": "Guruhni ochish",
+      "noGroupsTitle": "Siz hali hech bir guruhga o‘qituvchi qilib biriktirilmagansiz",
+      "noGroupsSwitch": "Yuqorida «{role}» ko‘rinishiga o‘ting, guruhni oching, «Tahrirlash»ni bosing va o‘zingizni o‘qituvchi qilib tanlang. Shundan so‘ng darslaringiz shu yerda chiqadi.",
+      "noGroupsAsk": "Ma‘muriyatdan sizni guruhlaringizga biriktirishni so‘rang. Shundan so‘ng darslaringiz shu yerda chiqadi.",
+      "noLessonsTitle": "Yaqin ikki haftada dars yo‘q",
+      "noLessonsText": "Dars kunlarini tekshirish yoki hozirning o‘zida video dars boshlash uchun guruhingizni oching.",
+      "openGroups": "Guruhlarimni ochish",
+      "checkingTitle": "Tekshiriladigan uy vazifalari",
+      "checkingNone": "Hech narsa kutmayapti. O‘quvchilaringiz yuborgan javoblar shu yerda chiqadi.",
+      "checkingMore": "va yana {count} ta",
+      "checkingOpen": "Vazifalarni tekshirish",
+      "comingUp": "Keyingi darslar",
+      "students": "O‘quvchilarim",
+      "lastLessons": "oxirgi darslar",
+      "noMarks": "hali belgilanmagan",
+      "allStudents": "Barcha o‘quvchilar: {count}"
     }
   },
   "errors": {
@@ -517,7 +558,8 @@
     "staffTelegramNoPhone": "Telegram telefon raqamingizni bermadi, shuning uchun Kampus sizni taniy olmaydi. Qaytadan urinib, telefon raqamga ruxsat bering.",
     "staffTelegramUnknown": "Bu Telegram hisobining telefon raqami hech bir xodimda yo‘q. Administratordan xodim kartangizdagi raqamni tekshirishni so‘rang.",
     "staffTelegramOnlyNoBot": "Bu markaz uchun Telegram orqali kirish sozlanmagan, shuning uchun parollarni o‘chirib bo‘lmaydi. Avval Sozlamalar → Integratsiyalar → Telegram bo‘limida kirish kalitlarini kiriting.",
-    "staffTelegramOnlyNeedsTelegram": "Avval tizimdan chiqib, Telegram orqali kiring. Bu tugma faqat Telegram orqali kirganingizda ishlaydi, shunda o‘zingizni tashqarida qoldirmaysiz."
+    "staffTelegramOnlyNeedsTelegram": "Avval tizimdan chiqib, Telegram orqali kiring. Bu tugma faqat Telegram orqali kirganingizda ishlaydi, shunda o‘zingizni tashqarida qoldirmaysiz.",
+    "viewNotAvailable": "Hisobingizda faqat bitta ko‘rinish bor."
   },
   "validation": {
     "phone": "+998 90 123 45 67 ko‘rinishida raqam kiriting.",

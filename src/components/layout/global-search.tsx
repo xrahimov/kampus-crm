@@ -7,6 +7,7 @@ import { useEffect, useRef, useState } from "react";
 import { Input } from "@/components/ui/input";
 import { useRouter } from "@/i18n/navigation";
 import { api } from "@/lib/api-client";
+import { cn } from "@/lib/utils";
 import type { SearchResultsDto } from "@/server/services/dashboard/search.service";
 
 type Hit = {
@@ -18,7 +19,12 @@ type Hit = {
 };
 
 /** EXP §0 header "Qidirish...": one box over students, leads and groups (A-98). */
-export function GlobalSearch() {
+export function GlobalSearch({
+  compact = false,
+}: {
+  /** The header also carries the view switch (A-194): the box keeps to its narrow width longer. */
+  compact?: boolean;
+}) {
   const t = useTranslations("search");
   const router = useRouter();
   const [query, setQuery] = useState("");
@@ -114,7 +120,10 @@ export function GlobalSearch() {
         }}
         placeholder={t("placeholder")}
         aria-label={t("placeholder")}
-        className="h-9 w-56 border-transparent bg-secondary pl-8 transition-[width,background-color,border-color,box-shadow] duration-300 ease-arrive hover:bg-muted focus-visible:w-72 focus-visible:bg-card lg:w-80 lg:focus-visible:w-96"
+        className={cn(
+          "h-9 w-56 border-transparent bg-secondary pl-8 transition-[width,background-color,border-color,box-shadow] duration-300 ease-arrive hover:bg-muted focus-visible:w-72 focus-visible:bg-card",
+          compact ? "2xl:w-80 2xl:focus-visible:w-96" : "lg:w-80 lg:focus-visible:w-96",
+        )}
         data-testid="global-search"
       />
       {open && term.length >= 2 && (

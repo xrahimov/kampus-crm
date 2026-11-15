@@ -56,7 +56,9 @@
     "finance": "Finance",
     "reports": "Reports",
     "announcements": "Announcements",
-    "checking": "Checking"
+    "checking": "Checking",
+    "more": "More",
+    "teachingBar": "Teaching"
   },
   "auth": {
     "signIn": "Sign in",
@@ -183,6 +185,18 @@
   "branch": {
     "select": "Branch",
     "active": "Active branch"
+  },
+  "view": {
+    "label": "View",
+    "full": "Full view",
+    "teachingHint": "Only your lessons, homework and students",
+    "fullHint": "Everything your roles allow",
+    "hintTitle": "New: the {role} view",
+    "hintText": "Only your lessons, homework and students. Switch back here any time.",
+    "hintClose": "Close",
+    "notInTeachingTitle": "This page is not in the teacher view",
+    "notInTeachingText": "It may belong to your {role} view. Switch to open it.",
+    "switchTo": "Switch to {role}"
   },
   "dashboard": {
     "title": "Home",
@@ -364,6 +378,33 @@
         "unknown": "Not a badge",
         "error": "Error"
       }
+    },
+    "desk": {
+      "heroLabel": "Next lesson",
+      "underWay": "Under way until {end}",
+      "inMinutes": "Starts in {minutes} min",
+      "inHours": "Starts in {hours} h {minutes} min",
+      "tomorrow": "Tomorrow, {weekday}",
+      "onDay": "{weekday}, {date}",
+      "noStudents": "No students in this group yet.",
+      "namesAndMore": "{names} and {count} more",
+      "join": "Join the lesson",
+      "openGroup": "Open the group",
+      "noGroupsTitle": "No group has you as its teacher yet",
+      "noGroupsSwitch": "Switch to {role} at the top, open the group, press Edit and choose yourself as its teacher. Your lessons then appear here.",
+      "noGroupsAsk": "Ask the office to put you on your groups. Your lessons then appear here.",
+      "noLessonsTitle": "No lessons in the next two weeks",
+      "noLessonsText": "Open your group to check its lesson days, or to start a video lesson now.",
+      "openGroups": "Open my groups",
+      "checkingTitle": "Homework to check",
+      "checkingNone": "Nothing is waiting. Answers your students send appear here.",
+      "checkingMore": "and {count} more",
+      "checkingOpen": "Check homework",
+      "comingUp": "Coming up",
+      "students": "My students",
+      "lastLessons": "last lessons",
+      "noMarks": "no lessons marked yet",
+      "allStudents": "All {count} students"
     }
   },
   "errors": {
@@ -517,7 +558,8 @@
     "staffTelegramNoPhone": "Telegram did not share your phone number, so Kampus cannot tell who you are. Try again and allow the phone number.",
     "staffTelegramUnknown": "No staff member has the phone number of this Telegram account. Ask your administrator to check the number on your staff card.",
     "staffTelegramOnlyNoBot": "Telegram login is not set up for this centre, so passwords cannot be switched off. Add the login keys in Settings → Integrations → Telegram first.",
-    "staffTelegramOnlyNeedsTelegram": "Sign out and sign in with Telegram first. The switch works only from a Telegram sign-in, so you cannot lock yourself out."
+    "staffTelegramOnlyNeedsTelegram": "Sign out and sign in with Telegram first. The switch works only from a Telegram sign-in, so you cannot lock yourself out.",
+    "viewNotAvailable": "Your account has one view only."
   },
   "validation": {
     "phone": "Enter a number like +998 90 123 45 67.",

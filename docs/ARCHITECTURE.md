@@ -202,12 +202,14 @@ Legend: **F** = full (view/create/update/delete), **V** = view, **E** = view+cre
 
 PARENT and OTHER get no default permissions. A parent portal was not observed (A-07).
 
+**Views (A-194).** Someone who holds a teaching role and another role looks at Kampus from either side. The choice (`User.staffView`) decides which of their roles the session carries: in the teaching view `resolveCurrentUser` builds the actor from the teaching roles alone, so every page and API call treats them as a teacher (own groups only); in the full view from all of them. A view never adds a permission. `src/lib/rbac/views.ts` holds the rule, `components/layout/view-switch.tsx` the switch.
+
 ## 5. API list (`/api/v1`)
 
 Every list endpoint takes the common query contract (§2). Every mutation is audited. `:id` values are cuid strings.
 
 **Auth / session**
-`POST /auth/login` · `POST /auth/logout` · `GET /auth/me` · `POST /auth/active-branch`
+`POST /auth/login` · `POST /auth/logout` · `GET /auth/me` · `POST /auth/active-branch` · `POST /auth/view` (the header's view switch, A-194: TEACHING or FULL, only for people who hold a teaching role and another one)
 
 **Dashboard (EXP §1)**
 ✓ `GET /dashboard/kpis?branchId` · ✓ `GET /dashboard/schedule?branchId&weekday&step` · ✓ `GET /dashboard/finance?branchId&year&month&paymentMethodId`

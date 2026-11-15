@@ -1,5 +1,7 @@
 import { z } from "zod";
 
+import { STAFF_VIEWS } from "@/lib/rbac/views";
+
 import { idSchema, passwordSchema, phoneSchema } from "./common";
 
 export const loginSchema = z.object({
@@ -12,6 +14,12 @@ export const activeBranchSchema = z.object({
   branchId: idSchema.nullable(),
 });
 export type ActiveBranchInput = z.infer<typeof activeBranchSchema>;
+
+/** The switch in the header (A-194): the teaching side of Kampus, or everything. */
+export const staffViewSchema = z.object({
+  view: z.enum(STAFF_VIEWS),
+});
+export type StaffViewInput = z.infer<typeof staffViewSchema>;
 
 // --- Account safety (A-124) --------------------------------------------------
 

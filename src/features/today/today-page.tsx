@@ -29,7 +29,10 @@ import type { AttendanceStatus } from "@/lib/validation/groups";
 import type { TrialStatus } from "@/lib/validation/leads";
 import { useDateFormat } from "@/lib/use-date-format";
 import { useMoneyFormat } from "@/lib/use-money-format";
+import type { TeachingDeskDto } from "@/server/services/today/teaching-desk.service";
 import type { TodayDto, TodayLessonDto } from "@/server/services/today/today.service";
+
+import { DeskChecking, DeskComingUp, DeskEmpty, DeskStudents, LessonHero } from "./teaching-desk";
 
 const CYCLE: AttendanceStatus[] = ["NOT_MARKED", "PRESENT", "ABSENT", "EXCUSED"];
 const CHIP: Record<AttendanceStatus, string> = {
@@ -56,61 +59,130 @@ const shiftDay = (iso: string, days: number) => {
  * the homework, then the next lesson and the debtors of the user's groups.
  * Laid out for a phone first; the same page serves the office on a desktop.
  */
-export function TodayPage({ data, userName }: { data: TodayDto; userName: string }) {
+export function TodayPage({
+  data,
+  userName,
+  desk = null,
+  fullViewName = null,
+}: {
+  data: TodayDto;
+  userName: string;
+  /** The teaching view's top of the page (A-194); only on today's date. */
+  desk?: TeachingDeskDto | null;
+  /** The name of the other side of the view switch, for someone who has one. */
+  fullViewName?: string | null;
+}) {
   const t = useTranslations("today");
   const fmt = useDateFormat();
   const isToday = data.date === data.today;
   const dateLabel = fmt(parseDateOnly(data.date), { dateStyle: "medium" });
   const weekday = fmt(parseDateOnly(data.date), { weekday: "long" });
 
+  const header = (
+    <div className="flex flex-wrap items-start justify-between gap-3">
+      <div>
+        <h1 className="text-2xl font-semibold tracking-tight">
+          {isToday ? t("title") : dateLabel}
+        </h1>
+        <p className="text-sm text-muted-foreground">
+          {isToday ? t("subtitle", { name: userName, date: `${weekday}, ${dateLabel}` }) : weekday}
+        </p>
+      </div>
+      <div className="flex items-center gap-1" data-testid="today-nav">
+        {data.canMark && (
+          <Button variant="outline" size="sm" asChild>
+            <Link href="/today/scan" data-testid="today-scan-door">
+              <ScanLine /> {t("scan.button")}
+            </Link>
+          </Button>
+        )}
+        <Button variant="outline" size="icon" asChild>
+          <Link
+            href={`/today?date=${shiftDay(data.date, -1)}`}
+            aria-label={t("prevDay")}
+            data-testid="today-prev"
+          >
+            <ChevronLeft />
+          </Link>
+        </Button>
+        {!isToday && (
+          <Button variant="outline" size="sm" asChild>
+            <Link href="/today" data-testid="today-back">
+              {t("backToToday")}
+            </Link>
+          </Button>
+        )}
+        <Button variant="outline" size="icon" asChild>
+          <Link
+            href={`/today?date=${shiftDay(data.date, 1)}`}
+            aria-label={t("nextDay")}
+            data-testid="today-next"
+          >
+            <ChevronRight />
+          </Link>
+        </Button>
+      </div>
+    </div>
+  );
+  const install = (
+    <Card className="lg:hidden" data-testid="today-install">
+      <CardContent className="flex items-start gap-3 py-4 text-sm">
+        <Smartphone className="mt-0.5 size-5 shrink-0 text-muted-foreground" strokeWidth={1.5} />
+        <div>
+          <p className="font-medium">{t("install.title")}</p>
+          <p className="text-muted-foreground">{t("install.text")}</p>
+        </div>
+      </CardContent>
+    </Card>
+  );
+  const lessons = data.lessons.map((lesson) => (
+    <LessonCard
+      key={lesson.id}
+      lesson={lesson}
+      canMark={data.canMark}
+      canSeeBalances={data.canSeeBalances}
+    />
+  ));
+
+  // The teaching view (A-194): the next lesson with its video call on top, the
+  // day's lessons under it, and homework and students beside them.
+  if (desk) {
+    return (
+      <div className="mx-auto max-w-5xl space-y-5" data-testid="teaching-desk">
+        {header}
+        {desk.focus ? (
+          <LessonHero
+            focus={desk.focus}
+            now={desk.now}
+            today={desk.today}
+            canHost={desk.canHost}
+            canSms={desk.canSms}
+          />
+        ) : (
+          <DeskEmpty groupCount={desk.groupCount} fullViewName={fullViewName} />
+        )}
+        {/* On a phone: the day's lessons, then homework and what comes next, then the students. */}
+        <div className="grid items-start gap-5 lg:grid-cols-[minmax(0,1.55fr)_minmax(0,1fr)] lg:grid-rows-[auto_1fr]">
+          {lessons.length > 0 && <div className="space-y-5 lg:col-start-1">{lessons}</div>}
+          <div className="space-y-5 lg:col-start-2 lg:row-span-2 lg:row-start-1">
+            {desk.checking && <DeskChecking checking={desk.checking} />}
+            <DeskComingUp lessons={desk.comingUp} today={desk.today} />
+            {data.canSeeBalances && data.debtorCount > 0 && <DebtorsCard data={data} />}
+          </div>
+          {desk.studentCount > 0 && (
+            <div className="lg:col-start-1">
+              <DeskStudents students={desk.students} total={desk.studentCount} />
+            </div>
+          )}
+        </div>
+        {install}
+      </div>
+    );
+  }
+
   return (
     <div className="mx-auto max-w-3xl space-y-5">
-      <div className="flex flex-wrap items-start justify-between gap-3">
-        <div>
-          <h1 className="text-2xl font-semibold tracking-tight">
-            {isToday ? t("title") : dateLabel}
-          </h1>
-          <p className="text-sm text-muted-foreground">
-            {isToday
-              ? t("subtitle", { name: userName, date: `${weekday}, ${dateLabel}` })
-              : weekday}
-          </p>
-        </div>
-        <div className="flex items-center gap-1" data-testid="today-nav">
-          {data.canMark && (
-            <Button variant="outline" size="sm" asChild>
-              <Link href="/today/scan" data-testid="today-scan-door">
-                <ScanLine /> {t("scan.button")}
-              </Link>
-            </Button>
-          )}
-          <Button variant="outline" size="icon" asChild>
-            <Link
-              href={`/today?date=${shiftDay(data.date, -1)}`}
-              aria-label={t("prevDay")}
-              data-testid="today-prev"
-            >
-              <ChevronLeft />
-            </Link>
-          </Button>
-          {!isToday && (
-            <Button variant="outline" size="sm" asChild>
-              <Link href="/today" data-testid="today-back">
-                {t("backToToday")}
-              </Link>
-            </Button>
-          )}
-          <Button variant="outline" size="icon" asChild>
-            <Link
-              href={`/today?date=${shiftDay(data.date, 1)}`}
-              aria-label={t("nextDay")}
-              data-testid="today-next"
-            >
-              <ChevronRight />
-            </Link>
-          </Button>
-        </div>
-      </div>
+      {header}
 
       {data.lessons.length === 0 ? (
         <Card data-testid="today-empty">
@@ -121,14 +193,7 @@ export function TodayPage({ data, userName }: { data: TodayDto; userName: string
           </CardContent>
         </Card>
       ) : (
-        data.lessons.map((lesson) => (
-          <LessonCard
-            key={lesson.id}
-            lesson={lesson}
-            canMark={data.canMark}
-            canSeeBalances={data.canSeeBalances}
-          />
-        ))
+        lessons
       )}
 
       <div className="grid gap-5 md:grid-cols-2">
@@ -166,15 +231,7 @@ export function TodayPage({ data, userName }: { data: TodayDto; userName: string
         {data.canSeeBalances && <DebtorsCard data={data} />}
       </div>
 
-      <Card className="lg:hidden" data-testid="today-install">
-        <CardContent className="flex items-start gap-3 py-4 text-sm">
-          <Smartphone className="mt-0.5 size-5 shrink-0 text-muted-foreground" strokeWidth={1.5} />
-          <div>
-            <p className="font-medium">{t("install.title")}</p>
-            <p className="text-muted-foreground">{t("install.text")}</p>
-          </div>
-        </CardContent>
-      </Card>
+      {install}
     </div>
   );
 }

@@ -1,5 +1,6 @@
 import { cache } from "react";
 
+import { resolveStaffView, type StaffView } from "@/lib/rbac/views";
 import { prisma } from "@/server/db/prisma";
 import { AppError } from "@/server/errors/app-error";
 import type { Actor } from "@/server/rbac/authorize";
@@ -20,7 +21,21 @@ export interface CurrentUser {
     /** Has a salary rule or teaches a group, so "My salary" applies (A-127). */
     hasSalary: boolean;
   };
+  /** Every active role the person holds, whichever view they are in. */
   roles: Array<{ code: string; name: string }>;
+  /**
+   * Which side of Kampus the person is looking at (A-194). In the teaching
+   * view the actor carries only the teaching roles; `canSwitch` says the
+   * header offers the other side.
+   */
+  view: {
+    current: StaffView;
+    canSwitch: boolean;
+    /** The person has not used the switch yet. */
+    pristine: boolean;
+    teachingRoles: Array<{ code: string; name: string }>;
+    otherRoles: Array<{ code: string; name: string }>;
+  };
   branches: Array<{ id: string; name: string }>;
   activeBranch: { id: string; name: string } | null;
 }
@@ -51,7 +66,10 @@ export async function resolveCurrentUser(
   if (user.organization.suspendedAt && !user.isSiteOwner) return null;
 
   const roles = user.roles.filter((r) => r.role.isActive).map((r) => r.role);
-  const permissions = Array.from(new Set(roles.flatMap((r) => r.permissions)));
+  const allPermissions = Array.from(new Set(roles.flatMap((r) => r.permissions)));
+  // The view in force decides which of the person's roles act (A-194). It only ever narrows.
+  const view = resolveStaffView(roles, user.staffView);
+  const permissions = Array.from(new Set(view.roles.flatMap((r) => r.permissions)));
   const branches = user.branches
     .map((b) => b.branch)
     .filter((b) => b.isActive)
@@ -59,7 +77,9 @@ export async function resolveCurrentUser(
 
   // Users who see every branch see every branch of their own centre (A-108):
   // the selector lists the active ones, the actor may act in all of them.
-  const allBranchAccess = permissions.includes("*") || permissions.includes("settings.org");
+  // The branches come from all the person's roles, so the groups a director
+  // teaches stay in reach in the teaching view, which shows only those groups.
+  const allBranchAccess = allPermissions.includes("*") || allPermissions.includes("settings.org");
   const orgBranches = allBranchAccess
     ? await prisma.branch.findMany({
         where: { organizationId: user.organizationId },
@@ -87,17 +107,25 @@ export async function resolveCurrentUser(
       hasSalary: user.salaryMethod !== null || user._count.groupsTaught > 0,
     },
     roles: roles.map((r) => ({ code: r.code, name: r.name })),
+    view: {
+      current: view.current,
+      canSwitch: view.canSwitch,
+      pristine: user.staffView === null,
+      teachingRoles: view.teachingRoles.map((r) => ({ code: r.code, name: r.name })),
+      otherRoles: view.otherRoles.map((r) => ({ code: r.code, name: r.name })),
+    },
     branches: visibleBranches,
     activeBranch,
     actor: {
       userId: user.id,
       fullName: user.fullName,
       organizationId: user.organizationId,
-      roles: roles.map((r) => r.code),
+      roles: view.roles.map((r) => r.code),
       permissions,
       branchIds: actorBranchIds,
       activeBranchId: activeBranch?.id ?? null,
-      isSiteOwner: user.isSiteOwner,
+      // Running the server is not a teacher's business either.
+      isSiteOwner: user.isSiteOwner && view.current === "FULL",
       signedInWith: session.signedInWith,
       ip: ip ?? null,
     },
