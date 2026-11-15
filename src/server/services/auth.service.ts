@@ -1,5 +1,6 @@
 import { randomInt } from "node:crypto";
 
+import { resolveStaffView, type StaffView } from "@/lib/rbac/views";
 import type { LoginInput, VerifyCodeInput } from "@/lib/validation/auth";
 import { verifyPassword } from "@/server/auth/password";
 import {
@@ -261,6 +262,26 @@ export async function verifySignInCode(
 
 export async function logout(sessionId: string, db: DbClient = prisma): Promise<void> {
   await revokeSession(db, sessionId);
+}
+
+/**
+ * Remembers which side of Kampus the person wants to see (A-194). Kept on the
+ * account, so it follows them to their phone. Only someone who has both sides
+ * may choose; the choice itself grants nothing, it leaves roles out.
+ */
+export async function setStaffView(
+  userId: string,
+  view: StaffView,
+  db: DbClient = prisma,
+): Promise<void> {
+  const user = await db.user.findUnique({
+    where: { id: userId },
+    select: { roles: { select: { role: true } } },
+  });
+  if (!user) throw AppError.notFound();
+  const roles = user.roles.map((r) => r.role).filter((r) => r.isActive);
+  if (!resolveStaffView(roles, null).canSwitch) throw AppError.forbidden("errors.viewNotAvailable");
+  await db.user.update({ where: { id: userId }, data: { staffView: view } });
 }
 
 /** Switches the header branch selector (EXP §0). `null` means "all branches". */

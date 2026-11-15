@@ -36,6 +36,7 @@ export default async function AppLayout({
       actor={current.actor}
       user={current.user}
       roles={current.roles}
+      view={current.view}
       permissions={current.actor.permissions}
       branches={current.branches}
       activeBranch={current.activeBranch}

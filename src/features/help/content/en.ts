@@ -129,6 +129,23 @@ export const en: HelpContent = {
             "If you open a page your role may not use, it says **No access**. Ask your administrator if you need the right; roles are set under Settings → Roles.",
           ],
         },
+        views: {
+          title: "Teacher view and the switch",
+          body: [
+            "If you teach and also hold another role, for example Teacher and Branch manager, the header carries a switch with your two roles on it. **Teacher** shows only what a teacher needs: your next lesson with the video button, the day's lessons, the homework to check, and your own groups and students. The other side, named after your other role, shows everything that role may use: leads, payments, finance, reports and settings.",
+            {
+              steps: [
+                "Press **Teacher** on the switch. Kampus opens Today, and the menu shrinks to Today, Checking, Groups and Students; the pages you rarely need wait under **More**.",
+                "Press the other side, for example **Branch manager**, to get everything back. It opens Home.",
+                "Your choice is kept on your account: the next time you sign in, on any device, Kampus opens the way you left it. On a phone the switch sits in a row of its own under the header.",
+              ],
+            },
+            "In the teacher view you act as a teacher: you see the groups you teach, not the whole branch, and the office's pages and buttons are away. If you open one of those pages from a link, it tells you so and offers **Switch to …** right there. Nobody gains rights through the switch; it only puts some of your own aside.",
+            {
+              note: "The teacher view shows the groups where you are set as the teacher. If your lessons are missing, switch to your other role, open the group, press Edit and choose yourself under Teachers. People with one role have no switch: a teacher always gets the short teacher menu.",
+            },
+          ],
+        },
         account: {
           title: "Your account and its safety",
           body: [
@@ -389,13 +406,28 @@ export const en: HelpContent = {
     today: {
       title: "Your day on a phone",
       summary:
-        "Today shows the lessons of the day with one-tap attendance, the homework, the next lesson and the debtors of your groups; Kampus installs on a phone like an app.",
+        "Today opens with your next lesson and its video button, then the lessons of the day with one-tap attendance, the homework waiting for you and your students; Kampus installs on a phone like an app.",
       sections: {
         day: {
           title: "What Today shows",
           body: [
             "Teachers land on **Today** after signing in. It lists the lessons of the day for the groups you teach or support, in order of time, with the course, the room and the topic. A lesson without a topic shows the next topic of the course syllabus with a **Use it** button; marking attendance takes it anyway. The arrows at the top move a day back or forward; the office sees every group of the branch here.",
-            "Below the lessons sit the **next lesson** after now and the **debtors in your groups** with what they owe. A friendly word after the lesson helps; payments are taken by the office.",
+            "On another day, and for the office, the page ends with the **next lesson** after now and the **debtors in your groups** with what they owe. A friendly word after the lesson helps; payments are taken by the office.",
+          ],
+        },
+        desk: {
+          title: "Your next lesson on top",
+          body: [
+            "For a teacher, today's page starts with a dark card for the lesson under way or the next one: when it starts (in how many minutes, tomorrow, or the day), its time, the group and its students. It counts down while the page is open.",
+            {
+              steps: [
+                "Press **Start video lesson** on the card to open the group's call; the students get their link at once. When a call is already open, the button says **Join the lesson**.",
+                "**Students' links** opens each student's personal link to copy or send. **Open the group** goes to the group page with attendance, homework, materials and grades.",
+                "**Homework to check** beside it counts the answers waiting for you and names the first few; **Check homework** opens the checking queue.",
+                "**Coming up** lists your next lessons. **My students** shows each student with their last five marked lessons as dots: green came, red absent, yellow excused.",
+              ],
+            },
+            "On a phone the four pages of your day, Today, Checking, Groups and Students, sit in a bar along the bottom of the screen.",
           ],
         },
         attendance: {
@@ -448,7 +480,7 @@ export const en: HelpContent = {
         day: {
           title: "Your groups",
           body: [
-            "After signing in you land on **Today**, the day's lessons with one-tap attendance; Groups lists only the groups you teach or support. Open a group to find everything about today's lesson on one page. The sidebar shows you Groups, Students and Exams; the rest of Kampus is for the office.",
+            "After signing in you land on **Today**, the day's lessons with one-tap attendance; Groups lists only the groups you teach or support. Open a group to find everything about today's lesson on one page. Your menu is short: Today, Checking, Groups and Students, with Timetable, Announcements, Exams and the Assistant folded under **More**; the rest of Kampus is for the office.",
             "The exam schedule is visible only if the administrator switched it on for teachers. Payments and student balances are not yours to see unless the administrator set that up.",
             "If your centre allows it, the group page shows **Change times** next to the schedule: choose the lesson days and give each day its own start and end, for example Monday 20:30 and Friday 16:30. Lessons you already held stay as they were, the new times start today, and the students can be told on Telegram. A time that clashes with another group's room or with your other lessons is refused; ask the office then.",
           ],
@@ -522,7 +554,7 @@ export const en: HelpContent = {
         video: {
           title: "Video lessons",
           body: [
-            "The video lesson card on the group page shows whether a call is running and today's lesson time.",
+            "The video lesson card on the group page shows whether a call is running and today's lesson time. The card at the top of **Today** has the same **Start video lesson** button for your next lesson, so you do not have to open the group first.",
             {
               steps: [
                 "Press **Start video lesson**. Your browser asks for the camera and microphone; allow both, check the preview and press **Join lesson**.",

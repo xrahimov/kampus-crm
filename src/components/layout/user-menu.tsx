@@ -15,12 +15,14 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Link, useRouter } from "@/i18n/navigation";
 import { api } from "@/lib/api-client";
+import { cn } from "@/lib/utils";
 
 export function UserMenu({
   user,
   roles,
   canReceipt = false,
   canSalary = false,
+  compact = false,
 }: {
   user: { fullName: string; phone: string };
   roles: Array<{ code: string; name: string }>;
@@ -28,6 +30,8 @@ export function UserMenu({
   canReceipt?: boolean;
   /** Shows "My salary" (A-127) for people with a salary rule or a group to teach. */
   canSalary?: boolean;
+  /** The header also carries the view switch (A-194): the name shows only on very wide screens. */
+  compact?: boolean;
 }) {
   const t = useTranslations();
   const router = useRouter();
@@ -46,7 +50,9 @@ export function UserMenu({
       <DropdownMenuTrigger asChild>
         <Button variant="ghost" size="sm" aria-label={user.fullName} data-testid="user-menu">
           <UserRound />
-          <span className="hidden max-w-40 truncate md:inline">{user.fullName}</span>
+          <span className={cn("hidden max-w-40 truncate", compact ? "2xl:inline" : "md:inline")}>
+            {user.fullName}
+          </span>
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="min-w-56">

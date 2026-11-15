@@ -413,14 +413,15 @@ function tashkentToday(): string {
   return new Date(Date.now() + 5 * 60 * 60 * 1000).toISOString().slice(0, 10);
 }
 
-/** The first day from tomorrow on which the signed-in teacher has lessons, for the Today page. */
+/** The first day from today on which the signed-in teacher has lessons, for the Today page. */
 async function nextLessonDay(page: Page, locale: string): Promise<string> {
   for (let offset = 0; offset < 7; offset++) {
     const d = new Date();
     d.setUTCDate(d.getUTCDate() + offset);
     const iso = d.toISOString().slice(0, 10);
     await go(page, locale, `/today?date=${iso}`);
-    if ((await page.getByTestId("today-empty").count()) === 0) return iso;
+    // Today's own page opens with the teacher's desk and has no "empty" card, so count the lessons.
+    if ((await page.getByTestId("today-lesson").count()) > 0) return iso;
   }
   throw new Error("the teacher has no lessons in the coming week");
 }
@@ -1052,6 +1053,15 @@ const TEACHER_SHOTS: Shot[] = [
     },
   },
   {
+    // The teacher's desk (A-194): the next lesson with its video button on top of Today.
+    name: "teacher-desk",
+    take: async ({ page, locale }) => {
+      await go(page, locale, "/today");
+      await page.getByTestId("teaching-desk").waitFor();
+      await shotPage(page, locale, "teacher-desk");
+    },
+  },
+  {
     name: "today-scan",
     take: async ({ page, locale }) => {
       await go(page, locale, "/today/scan");
@@ -1410,6 +1420,80 @@ async function callShots(base: Base, failures: string[]) {
   }
 }
 
+/* ----- the teaching view on a phone, and the switch of someone with two roles (A-194) -------- */
+
+const VIEW_SHOTS = ["teacher-desk-phone", "view-switch", "view-teacher"] as const;
+
+async function viewShots(base: Base, ceo: Page, failures: string[]) {
+  const { locale, browser } = base;
+  const wanted = (name: (typeof VIEW_SHOTS)[number]) => !only || only.includes(name);
+  if (!VIEW_SHOTS.some(wanted)) return;
+
+  if (wanted("teacher-desk-phone")) {
+    const [context, page] = await newPage(browser, {
+      viewport: { width: 390, height: 844 },
+      deviceScaleFactor: 2,
+      isMobile: true,
+      hasTouch: true,
+    });
+    try {
+      await signIn(page, locale, TEACHER);
+      await go(page, locale, "/today");
+      await page.getByTestId("teaching-tab-bar").waitFor();
+      await shotPage(page, locale, "teacher-desk-phone");
+      process.stdout.write(`  ${locale}/teacher-desk-phone\n`);
+    } catch (error) {
+      failures.push(`${locale}/teacher-desk-phone: ${(error as Error).message.split("\n")[0]}`);
+    } finally {
+      await context.close();
+    }
+  }
+
+  if (!wanted("view-switch") && !wanted("view-teacher")) return;
+  // For the length of two pictures the demo teacher also runs the branch, like a
+  // teacher who owns their branch; the second role is taken away again below.
+  const staff = await rows<{ id: string; phone: string }>(
+    ceo,
+    `/staff?q=${encodeURIComponent(TEACHER)}`,
+  );
+  const teacherId = staff.find((s) => s.phone === TEACHER)?.id;
+  if (!teacherId) {
+    failures.push(`${locale}/view-switch: the demo teacher was not found`);
+    return;
+  }
+  await mutate(ceo, "patch", `/staff/${teacherId}`, { roleCodes: ["TEACHER", "BRANCH_MANAGER"] });
+  const [context, page] = await newPage(browser);
+  try {
+    await signIn(page, locale, TEACHER);
+    // Everything first, with the switch in the header.
+    await mutate(page, "post", "/auth/view", { view: "FULL" });
+    await go(page, locale, "/dashboard");
+    await page.getByTestId("view-switch").waitFor();
+    if (wanted("view-switch")) {
+      await shotPage(page, locale, "view-switch");
+      process.stdout.write(`  ${locale}/view-switch\n`);
+    }
+    // The other side: the same person as a teacher.
+    await page.getByTestId("view-teaching").click();
+    await page.waitForURL(/\/today/);
+    await page.getByTestId("teaching-desk").waitFor();
+    if (wanted("view-teacher")) {
+      await shotPage(page, locale, "view-teacher");
+      process.stdout.write(`  ${locale}/view-teacher\n`);
+    }
+  } catch (error) {
+    failures.push(`${locale}/view-switch: ${(error as Error).message.split("\n")[0]}`);
+  } finally {
+    await context.close();
+    await mutate(ceo, "patch", `/staff/${teacherId}`, { roleCodes: ["TEACHER"] }).catch(
+      (error: Error) =>
+        failures.push(
+          `${locale}/view-switch: the second role was not taken away: ${error.message}`,
+        ),
+    );
+  }
+}
+
 /* ----- the sign-in page, the way a centre that signs in with Telegram only has it ------------ */
 
 /** A staff session opened through the server's stand-in for Telegram (TELEGRAM_LOGIN_FAKE=1). */
@@ -1562,6 +1646,7 @@ async function main() {
     await teacherCtx.close();
 
     await run(CEO_SHOTS, { ...base, page: ceoPage }, failures);
+    await viewShots(base, ceoPage, failures);
     await ceoCtx.close();
 
     const [studentCtx, studentPage] = await newPage(browser);

@@ -8,11 +8,21 @@ import { KampusWordmark } from "@/components/brand/logo";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 
+import type { StaffView } from "@/lib/rbac/views";
+
 import { HelpLink } from "./help-link";
 import { MainNav } from "./main-nav";
 
 /** Below the lg breakpoint the sidebar folds into a left drawer behind this button. */
-export function MobileNav({ permissions, appName }: { permissions: string[]; appName: string }) {
+export function MobileNav({
+  permissions,
+  appName,
+  view = "FULL",
+}: {
+  permissions: string[];
+  appName: string;
+  view?: StaffView;
+}) {
   const t = useTranslations("common");
   const [open, setOpen] = useState(false);
 
@@ -31,7 +41,7 @@ export function MobileNav({ permissions, appName }: { permissions: string[]; app
         <div className="flex h-14 items-center px-5 text-white">
           <KampusWordmark name={appName} />
         </div>
-        <MainNav permissions={permissions} onNavigate={() => setOpen(false)} />
+        <MainNav permissions={permissions} view={view} onNavigate={() => setOpen(false)} />
         <HelpLink onNavigate={() => setOpen(false)} />
       </DialogContent>
     </Dialog>

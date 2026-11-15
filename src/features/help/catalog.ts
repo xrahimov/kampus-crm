@@ -85,6 +85,7 @@ export const HELP_ARTICLES = [
       { id: "summary", screenshot: "assistant-summary" },
       { id: "assistantButton", screenshot: "assistant-ask" },
       { id: "roles" },
+      { id: "views", screenshot: "view-switch", more: ["view-teacher"] },
       { id: "account", screenshot: "account" },
       { id: "mySalary", screenshot: "my-salary" },
       { id: "help", screenshot: "help" },
@@ -147,6 +148,7 @@ export const HELP_ARTICLES = [
     path: "/today",
     sections: [
       { id: "day", screenshot: "today" },
+      { id: "desk", screenshot: "teacher-desk", more: ["teacher-desk-phone"] },
       { id: "attendance" },
       { id: "homework" },
       { id: "scan", screenshot: "today-scan" },

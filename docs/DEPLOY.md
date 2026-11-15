@@ -177,6 +177,13 @@ anyone until a director switches on **Teachers can change the lesson days and
 times of their own groups** in Settings → General. Existing groups and their
 lessons are not touched by the migration.
 
+The update that brings the teacher view and its switch (A-194) adds one nullable
+column, `User.staffView`. Nobody's pages change through the migration itself:
+people with a teaching role and another role get a switch in the header and stay
+on everything until they press **Teacher**; teacher-only accounts get the short
+menu and the new top of Today at once. The teacher view lists the groups where the
+person is set as teacher, so check that each teacher-manager is on their own group.
+
 The `backup` service reads `docker/backup.sh` when it starts, so after an update
 that changed the script, restart it once:
 `docker compose -f docker-compose.prod.yml restart backup`. It takes a dump

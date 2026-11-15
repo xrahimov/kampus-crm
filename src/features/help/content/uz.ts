@@ -132,6 +132,23 @@ export const uz: HelpContent = {
             "Rolingizga ruxsat berilmagan sahifani ochsangiz, u **Ruxsat yo‘q** deb yozadi. Huquq kerak bo‘lsa, administratoringizdan so‘rang; rollar Sozlamalar → Rollar bo‘limida sozlanadi.",
           ],
         },
+        views: {
+          title: "O‘qituvchi ko‘rinishi va almashtirgich",
+          body: [
+            "Agar siz dars bersangiz va yana bir rolingiz bo‘lsa, masalan «O‘qituvchi» va «Filial menejeri», sahifa tepasida ikkala rolingiz yozilgan almashtirgich chiqadi. **O‘qituvchi** tomoni faqat dars uchun keragini ko‘rsatadi: video dars tugmasi bilan keyingi darsingiz, kun darslari, tekshiriladigan uy vazifalari, o‘z guruhlaringiz va o‘quvchilaringiz. Ikkinchi tomon boshqa rolingiz nomi bilan ataladi va o‘sha rolga ruxsat etilgan hamma narsani ko‘rsatadi: lidlar, to‘lovlar, moliya, hisobotlar va sozlamalar.",
+            {
+              steps: [
+                "Almashtirgichda **O‘qituvchi**ni bosing. Kampus «Bugun» sahifasini ochadi, menyu esa Bugun, Tekshirish, Guruhlar va O‘quvchilar bilan qisqaradi; kam kerak bo‘ladigan sahifalar **Yana** ostida turadi.",
+                "Hammasini qaytarish uchun ikkinchi tomonni, masalan **Filial menejeri**ni bosing. Bosh sahifa ochiladi.",
+                "Tanlovingiz hisobingizda saqlanadi: keyingi safar istalgan qurilmadan kirganingizda Kampus siz qoldirgan ko‘rinishda ochiladi. Telefonda almashtirgich sahifa tepasi ostida alohida qatorda turadi.",
+              ],
+            },
+            "O‘qituvchi ko‘rinishida siz o‘qituvchi sifatida ishlaysiz: butun filialni emas, o‘zingiz dars beradigan guruhlarni ko‘rasiz, ofis sahifalari va tugmalari esa olib qo‘yiladi. Shunday sahifani havola orqali ochsangiz, u buni aytadi va shu yerning o‘zida ko‘rinishni almashtirishni taklif qiladi. Almashtirgich hech kimga huquq qo‘shmaydi: u faqat o‘z huquqlaringizning bir qismini chetga qo‘yadi.",
+            {
+              note: "O‘qituvchi ko‘rinishi siz o‘qituvchi qilib belgilangan guruhlarni ko‘rsatadi. Darslaringiz ko‘rinmasa, ikkinchi rolingizga o‘ting, guruhni oching, «Tahrirlash»ni bosing va «O‘qituvchilar» bo‘limida o‘zingizni tanlang. Bitta roli bor odamlarda almashtirgich yo‘q: o‘qituvchi doim qisqa o‘qituvchi menyusini ko‘radi.",
+            },
+          ],
+        },
         account: {
           title: "Hisobingiz va uning xavfsizligi",
           body: [
@@ -392,13 +409,28 @@ export const uz: HelpContent = {
     today: {
       title: "Kuningiz telefonda",
       summary:
-        "«Bugun» kun darslarini bir bosishda davomat bilan, uy vazifalarini, keyingi darsni va guruhlaringizdagi qarzdorlarni ko‘rsatadi; Kampus telefonga ilova kabi o‘rnatiladi.",
+        "«Bugun» keyingi darsingiz va uning video dars tugmasi bilan ochiladi, pastida kun darslari bir bosishda davomat bilan, tekshiriladigan uy vazifalari va o‘quvchilaringiz turadi; Kampus telefonga ilova kabi o‘rnatiladi.",
       sections: {
         day: {
           title: "«Bugun» nimani ko‘rsatadi",
           body: [
             "O‘qituvchilar tizimga kirganidan so‘ng **Bugun** sahifasiga tushadi. Unda siz dars beradigan yoki support qiladigan guruhlarning kun darslari vaqt tartibida, kurs, xona va mavzu bilan ko‘rsatiladi. Mavzusi yo‘q darsda kurs dasturining keyingi mavzusi **Olish** tugmasi bilan ko‘rsatiladi; davomat belgilanganda u o‘zi olinadi. Yuqoridagi strelkalar kunni oldinga yoki orqaga suradi; ofis bu yerda filialning barcha guruhlarini ko‘radi.",
-            "Darslar ostida hozirgi vaqtdan keyingi **keyingi dars** va qarz summasi bilan **guruhlaringizdagi qarzdorlar** turadi. Darsdan keyin bir og‘iz eslatish yordam beradi; to‘lovni administrator qabul qiladi.",
+            "Boshqa kunda va ofis uchun sahifa oxirida hozirgi vaqtdan keyingi **keyingi dars** va qarz summasi bilan **guruhlaringizdagi qarzdorlar** turadi. Darsdan keyin bir og‘iz eslatish yordam beradi; to‘lovni administrator qabul qiladi.",
+          ],
+        },
+        desk: {
+          title: "Keyingi dars eng tepada",
+          body: [
+            "O‘qituvchi uchun bugungi sahifa hozir ketayotgan yoki keyingi darsning to‘q rangli kartasi bilan boshlanadi: u qachon boshlanishi (necha daqiqadan keyin, ertaga yoki qaysi kuni), vaqti, guruhi va o‘quvchilari. Sahifa ochiq turganda vaqt sanab boriladi.",
+            {
+              steps: [
+                "Guruh qo‘ng‘irog‘ini ochish uchun kartadagi **Video darsni boshlash**ni bosing; o‘quvchilar havolani darhol oladi. Qo‘ng‘iroq allaqachon ochiq bo‘lsa, tugmada **Darsga qo‘shilish** yoziladi.",
+                "**O‘quvchilar havolalari** har bir o‘quvchining shaxsiy havolasini nusxalash yoki yuborish uchun ochadi. **Guruhni ochish** davomat, uy vazifalari, materiallar va baholar turgan guruh sahifasiga olib boradi.",
+                "Yonidagi **Tekshiriladigan uy vazifalari** sizni kutayotgan javoblar sonini ko‘rsatadi va birinchilarini nomma-nom yozadi; **Vazifalarni tekshirish** tekshirish navbatini ochadi.",
+                "**Keyingi darslar** yaqin darslaringizni sanaydi. **O‘quvchilarim** har bir o‘quvchini va uning oxirgi beshta belgilangan darsini nuqtalar bilan ko‘rsatadi: yashil — keldi, qizil — kelmadi, sariq — sababli.",
+              ],
+            },
+            "Telefonda kuningizning to‘rt sahifasi — Bugun, Tekshirish, Guruhlar va O‘quvchilar — ekran pastidagi qatorda turadi.",
           ],
         },
         attendance: {
@@ -451,7 +483,7 @@ export const uz: HelpContent = {
         day: {
           title: "Sizning guruhlaringiz",
           body: [
-            "Tizimga kirganingizdan so‘ng **Bugun** sahifasiga tushasiz — kun darslari bir bosishda davomat bilan; Guruhlar sahifasida faqat siz dars beradigan yoki support qiladigan guruhlar ko‘rinadi. Bugungi dars haqida hamma narsani bitta sahifada topish uchun guruhni oching. Yon panelda sizga Guruhlar, O‘quvchilar va Imtihonlar ko‘rinadi; Kampusning qolgan qismi ofis uchun.",
+            "Tizimga kirganingizdan so‘ng **Bugun** sahifasiga tushasiz — kun darslari bir bosishda davomat bilan; Guruhlar sahifasida faqat siz dars beradigan yoki support qiladigan guruhlar ko‘rinadi. Bugungi dars haqida hamma narsani bitta sahifada topish uchun guruhni oching. Menyungiz qisqa: Bugun, Tekshirish, Guruhlar va O‘quvchilar; Dars jadvali, E‘lonlar, Imtihonlar va Yordamchi **Yana** ostiga yig‘ilgan; Kampusning qolgan qismi ofis uchun.",
             "Imtihon jadvali faqat administrator uni o‘qituvchilar uchun yoqqan bo‘lsa ko‘rinadi. To‘lovlar va o‘quvchi balanslari, administrator buni sozlamagan bo‘lsa, sizga ko‘rinmaydi.",
             "Markazingiz ruxsat bergan bo‘lsa, guruh sahifasida jadval yonida **Vaqtni o‘zgartirish** tugmasi chiqadi: dars kunlarini tanlang va har bir kunga o‘z boshlanish va tugash vaqtini bering, masalan dushanba 20:30 va juma 16:30. O‘tgan darslaringiz o‘zgarmaydi, yangi vaqt bugundan boshlanadi, o‘quvchilarga esa Telegram orqali xabar berish mumkin. Boshqa guruhning xonasi yoki o‘zingizning boshqa darslaringiz bilan to‘qnashadigan vaqt qabul qilinmaydi; bunda ofisga murojaat qiling.",
           ],

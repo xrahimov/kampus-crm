@@ -67,6 +67,13 @@
   }
 }
 
+/* In the teaching view a phone has a bar of pages along the bottom (A-194): the button sits above it. */
+@media (max-width: 1023.98px) {
+  [data-view="teaching"] .kampus-ai-fab {
+    bottom: calc(4.5rem + env(safe-area-inset-bottom));
+  }
+}
+
 /*
  * The button itself stays still, so it is always where the finger or the
  * pointer expects it; the disc inside it floats.
