@@ -131,25 +131,28 @@ credentials in its own Settings → Integrations. Telegram is the exception: the
 site owner can tick **Shared with every centre on this server** on their own
 Telegram card, and centres without a bot of their own use that one.
 
-**Telegram login for students and parents** needs one more step in BotFather:
-open the bot → **Login Widget**, switch it to **OpenID Connect** login (one-way;
-the bot's old widget stops working), add the Redirect URI
+**Sign-in (A-196).** Everyone signs in with their phone number and a password,
+and the first time with a six-digit code from the bot. This needs nothing beyond
+the bot above being switched on with its token and webhook (or the shared bot):
+no extra keys. A person presses **Get a code in Telegram** on the sign-in page,
+opens the bot, presses **Start** and **Share my number** once, and the code
+arrives in that chat; afterwards Kampus offers them to choose a password. A
+staff member's password opens nothing until they have signed in with Telegram
+once. To check, open `https://<DOMAIN>/login`: under the form there is **Get a
+code in Telegram** and the steps, with the bot's name. A phone the centre does
+not have lands under **Sign-in requests** (a line at the top of Students or
+Settings → Staff), where a teacher or manager lets the person in.
+
+**The older sign-in on Telegram's own page** (optional) needs one more step in
+BotFather: open the bot → **Login Widget**, switch it to **OpenID Connect** login
+(one-way; the bot's old widget stops working), add the Redirect URI
 `https://<DOMAIN>/api/v1/student-auth/telegram/callback` and `https://<DOMAIN>/`
 as Trusted Origin, then copy the Client ID and Client Secret into Settings →
 Integrations → Telegram. With the shared switch on, these keys serve every
 centre without a bot of its own. If `<DOMAIN>` changes, change both addresses in
-BotFather. To check, open `https://<DOMAIN>/student` and press **Log in with
-Telegram**: Telegram shows its sign-in page with the bot's name.
-
-**Staff** use the same keys and the same Redirect URI: with the keys saved, the
-staff sign-in page shows **Log in with Telegram**, and a staff member comes in
-when their Telegram number is the phone on their staff card. A centre that wants
-no passwords at all switches on **Staff sign in with Telegram only** under
-Settings → General. The switch can be turned on only by someone who is signed in
-with Telegram at that moment, which proves the login works before passwords go.
-The site owner has a second switch in the same place, **Every centre on this
-server signs in with Telegram only**, which does it for all centres at once, new
-ones included.
+BotFather. Where the keys are saved, both sign-in pages show a small link under
+the form, **Another way: sign in on Telegram's own page**; staff and students use
+the same keys and the same Redirect URI.
 
 ## 7. Update to a new version
 
@@ -187,9 +190,26 @@ person is set as teacher, so check that each teacher-manager is on their own gro
 The update that brings **Copy lesson link** in the video lesson (A-195) has no
 migration and no setting. The link a teacher copies is
 `<site>/student/lesson/<group id>` on the address the teacher is using, and it
-works only where students can sign in with Telegram (Settings → Integrations →
-Telegram, the login Client ID and Secret), which is already the case on a server
-that runs Telegram sign-in.
+works wherever students can sign in (phone and password, or a code from the
+bot, A-196).
+
+The update that brings sign-in with a Telegram code (A-196) has one migration,
+`20261116200000_sign_in_codes`. It only adds: three tables (`TelegramContact`,
+`PhoneSignInCode`, `JoinRequest`), a few nullable columns, and it marks everyone
+who has already signed in with Telegram as verified (`User.telegramVerifiedAt`),
+so they can use their password again at once. What changes for people:
+
+- The sign-in pages show phone and password with **Get a code in Telegram**
+  under it. The first time someone asks for a code they open the bot and press
+  **Share my number**; the page tells them how.
+- The **Telegram only** switches are gone (their columns stay in the database,
+  unused). Staff who have signed in with Telegram before can use a password
+  again if they have one; everyone is offered to choose a password after their
+  next Telegram sign-in.
+- Staff who have never signed in with Telegram cannot use a password until they
+  have come in with a code once.
+- No new environment variable. `TELEGRAM_LOGIN_FAKE` must stay unset on a live
+  server: it makes sign-in codes predictable and is for test servers only.
 
 The `backup` service reads `docker/backup.sh` when it starts, so after an update
 that changed the script, restart it once:
@@ -360,8 +380,8 @@ server when the copy is done.
 The branches must exist in Kampus under the same names as in the old system; the
 run stops before writing anything when one is missing. New staff accounts get the
 role they had in the old system (teacher, support teacher, admin, marketer, branch
-manager, cashier), never CEO, and no usable password: they sign in with Telegram
-or the CEO sets a password. Staff who are archived in the old system are created
+manager, cashier), never CEO, and no usable password: they sign in with a code
+from Telegram and choose their own password then (A-196). Staff who are archived in the old system are created
 archived.
 
 ## Troubleshooting
@@ -370,14 +390,18 @@ archived.
   server yet, or port 80/443 is blocked by the firewall. `docker compose -f docker-compose.prod.yml logs caddy`.
 - **Login works, then logs out at once:** `APP_URL` does not match the address in
   the browser, or you use plain http without `COOKIE_SECURE=false`.
-- **Nobody can sign in after switching to Telegram only** (the bot's login keys
-  were revoked, the site moved to another address, Telegram is unreachable): add
+- **Nobody can get a sign-in code** (the bot's token was revoked, the webhook is
+  not set, Telegram is unreachable): people who already have a password and have
+  signed in with Telegram before still come in with it. For everyone else add
   `STAFF_PASSWORD_LOGIN=on` to `/opt/kampus/.env` and run
-  `docker compose -f docker-compose.prod.yml up -d app`. Passwords are accepted
-  again and the sign-in page shows the password form. Fix the login (section 6),
-  then remove the line and run the same command. Passwords also work by
-  themselves whenever the centre's bot has no login keys. The line also overrides
-  the site owner's switch for every centre.
+  `docker compose -f docker-compose.prod.yml up -d app`: a staff password is then
+  accepted even from someone who has never signed in with Telegram. Fix the bot
+  (section 6), then remove the line and run the same command. The rule is also
+  off by itself wherever the centre's bot has no token.
+- **The code never arrives for one person:** they have not shared their number
+  with the bot, shared a different number than the one they typed, or blocked
+  the bot. Have them open the bot, press **Start** and **Share my number**; the
+  code of the sign-in they started comes at once.
 - **`migrate` failed:** `docker compose -f docker-compose.prod.yml logs migrate`;
   fix `.env` and run `up -d --build` again. Bootstrap errors name the missing variable.
 - **Disk full:** `docker system df`, then `docker image prune -af`; the dumps in

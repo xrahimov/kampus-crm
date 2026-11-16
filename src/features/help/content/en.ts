@@ -51,18 +51,19 @@ export const en: HelpContent = {
         signIn: {
           title: "Signing in",
           body: [
-            "Your administrator creates your account with your phone number. Open Kampus in a browser on a computer, tablet or phone; nothing needs to be installed. You sign in with Telegram.",
+            "Your administrator adds you to Kampus with your phone number. Open Kampus in a browser on a computer, tablet or phone; nothing needs to be installed. **Your first sign-in is with a code from Telegram.** After it you choose a password, and from then on your phone number and password are enough.",
             {
               steps: [
-                "Press **Log in with Telegram**.",
-                "Telegram asks you to confirm; agree to share your phone number.",
-                "Kampus opens your account when that number is the phone number on your staff card. If Kampus says no staff member has that number, ask your administrator to correct the phone on your card.",
+                "On the sign-in page type your phone number in the form +998 90 123 45 67 and press **Get a code in Telegram**.",
+                "In Telegram open the bot the page names, press **Start**, then **Share my number**. This is needed only the first time, and the number must be the one on your staff card.",
+                "The bot sends a six-digit code to that chat. Type it on the sign-in page and press **Confirm**.",
+                "Kampus offers you to choose a password. Save one, or press **Not now** and choose it later under your name → My account.",
               ],
             },
-            "**Phone number and password.** A centre that has not switched to Telegram only also shows a form: enter your phone number in the form +998 90 123 45 67 and your password, and press **Sign in**. If the password is wrong, the page says so; after several wrong attempts in a row, sign-in pauses for a short while. Where the centre signs in with Telegram only, the page shows just the Telegram button and passwords are refused.",
+            "**Phone number and password.** Once you have a password, type your phone number and password and press **Sign in**. If the password is wrong, the page says so; after several wrong attempts in a row, sign-in pauses for a short while. A password opens nothing before your first sign-in with Telegram: the page then asks you to get a code. The Telegram code keeps working afterwards, whenever you prefer it.",
             "To sign out, open your name in the top right corner and choose **Sign out**. Do this on shared computers.",
             {
-              note: "Forgot your password? Only an administrator can set a new one, under Settings → Staff.",
+              note: "Forgot your password? Sign in with a code from Telegram, open your name → My account and set a new one; the old password is not asked for. If Kampus does not know your number yet, the page asks who you are after the code and sends a request to your centre; you come in once a manager has let you in.",
             },
           ],
         },
@@ -563,7 +564,7 @@ export const en: HelpContent = {
                 "Press **End for everyone** when you are done. Students can join again only after you start a new lesson.",
               ],
             },
-            "**Copy lesson link** (the chain button in the bar at the bottom, beside **Leave**) copies one link for the whole group, so you can paste it into the group's Telegram chat without leaving the lesson; it works the same while you share your screen or show a file. The link also stands under **People**, where you can read it out or select it. A student who opens it signs in with Telegram first and then lands on their own page of this group, where they press **Join lesson**. The link is the same for every lesson and carries no secret: someone who is not a student of this group signs in and is told the lesson is for another group. While you are alone in the lesson, a line at the top offers the same button.",
+            "**Copy lesson link** (the chain button in the bar at the bottom, beside **Leave**) copies one link for the whole group, so you can paste it into the group's Telegram chat without leaving the lesson; it works the same while you share your screen or show a file. The link also stands under **People**, where you can read it out or select it. A student who opens it signs in first and then lands on their own page of this group, where they press **Join lesson**. The link is the same for every lesson and carries no secret: someone who is not a student of this group signs in and is told the lesson is for another group. While you are alone in the lesson, a line at the top offers the same button.",
             "If someone cannot connect, their network may block direct calls; the administrator can add a relay server under Settings → Integrations → Video lessons.",
             "**Whiteboard** (the pen button) puts a shared board on everyone's screen: draw with a pen or eraser, let students draw when you want them to, undo and clear, and **Save to materials** keeps a picture of the board under the lesson.",
             "**Rooms** splits the students into 2-6 small rooms for group work, for a set time or until you close them. People in a room see and hear only each other; you can go into any room, move people, send a line to all rooms at once and bring everyone back with one button.",
@@ -581,7 +582,7 @@ export const en: HelpContent = {
           title: "Students' personal links",
           body: [
             "Each student has one personal link for this group; it opens their page with the video lesson, lessons, homework, materials, marks and payments. Press **Students' links** on the video card to see them all, copy one, copy all, or send them by SMS to every student with a phone number. If a link leaks, make a new one for that student; the old one stops working at once.",
-            "The personal link opens a student's page without signing in, so send each one only to its student. For a message to the whole group use **Copy lesson link** inside the video lesson instead: that link asks everyone to sign in with Telegram first.",
+            "The personal link opens a student's page without signing in, so send each one only to its student. For a message to the whole group use **Copy lesson link** inside the video lesson instead: that link asks everyone to sign in first.",
           ],
         },
         coins: {
@@ -630,6 +631,21 @@ export const en: HelpContent = {
               ],
             },
             "Leads that agreed to join are better converted from the lead board, which creates the student and keeps the source; see “Leads”.",
+          ],
+        },
+        signInRequests: {
+          title: "Sign-in requests",
+          body: [
+            "Someone whose phone number is not in Kampus yet can still prove it with the Telegram code on the sign-in page. They are not let in: they type their name, choose the branch, may name their group, and wait. The staff who may add students get a notification, and a line appears at the top of Students: **people signed in with Telegram and wait to be let in**. Requests made on the staff sign-in page show on Settings → Staff instead, to those who may add staff.",
+            {
+              steps: [
+                "Press **Review** on that line, or open the notification.",
+                "Check the name, the phone and the note. The phone is proven by Telegram; who the person is remains for you to judge.",
+                "Press **Let in** and choose who this is: **New student** (with a branch and, if you like, a group), **Existing student** (the phone goes on that student's card) or **Parent of a student** (the phone is added as a parent's). A request from the staff page becomes a new staff member with the role you pick.",
+                "Press **Let in** again. The bot tells the person, and they sign in with the same phone.",
+              ],
+            },
+            "**Decline** tells the person too and moves the request to the **Declined** tab, where you can still let them in later. A request also closes by itself when the same phone is added anywhere in Kampus. Teachers see the requests when **Teachers can add students** is on in Settings → General settings: they can add a new student, while putting the phone on an existing card needs the right to edit students.",
           ],
         },
         profile: {
@@ -1061,7 +1077,7 @@ export const en: HelpContent = {
               steps: [
                 "Press **New teacher** on Teachers or **New staff member** on Settings → Staff.",
                 "Add a photo, the full name, phone number, gender, date of birth and hire date.",
-                "Set the password the person will sign in with, or press **Generate**. Tell them the phone and password; they can be changed here later.",
+                "Leave the password empty: the person's first sign-in is with a code from Telegram, and they choose their own password then. Tell them to open the sign-in page, type their phone number and press **Get a code in Telegram**. A password you set here, or with **Generate**, is temporary and works only after that first Telegram sign-in.",
                 "Choose the branches the person works in and their roles. A person can have several roles; their rights add up.",
                 "Choose the salary method and rate (see below), then press **Save**.",
               ],
@@ -1191,20 +1207,21 @@ export const en: HelpContent = {
           ],
         },
         telegramLogin: {
-          title: "Students sign in with Telegram",
+          title: "Sign-in with Telegram",
           body: [
-            "Students and parents can sign in at **/student** with **Log in with Telegram** instead of using their personal links. Telegram confirms the person and their phone; Kampus lets them in only when that phone is on a student or a parent card of your centre, so nobody can make up an account.",
+            "Everyone signs in to Kampus the same way: phone number and password, and the first time a code from the Telegram bot. For that the centre needs only its bot switched on in the Telegram card (or the server's shared bot); there are no extra keys. The person types their phone on the sign-in page, shares their number with the bot once with **Share my number**, and the bot sends a six-digit code to their chat. Kampus opens the account of the staff member, student or parent who has that phone; anyone else goes on the waiting list (see Students → Sign-in requests).",
+            "**The older way, Telegram's own sign-in page,** keeps working where its keys are saved, as a small link under the form. It needs the steps below; a centre that does not use it can skip them.",
             {
               steps: [
                 "In Telegram open **@BotFather**, press **Open** to start its app, choose your bot and open **Login Widget**.",
                 "Switch the bot to **OpenID Connect** login. Telegram asks you to confirm, because the switch cannot be undone and the bot's old login widget stops working. Kampus does not use the old one.",
                 "Add the **Redirect URI**: your site's address plus **/api/v1/student-auth/telegram/callback**. Add your site's address as the **Trusted Origin**.",
                 "Copy the **Client ID** and **Client Secret** into the Telegram card here and save.",
-                "Open **/student** and press **Log in with Telegram**. Telegram should show its sign-in page with your bot's name.",
+                "Open **/student** and press the link **Another way: sign in on Telegram’s own page** under the form. Telegram should show its sign-in page with your bot's name.",
               ],
             },
             "When the server's owner shares their bot with every centre, its login keys serve those centres too, so a centre without a bot of its own needs none of these steps. If the site moves to another address, change both addresses in BotFather.",
-            "**Staff use the same keys.** Once they are saved, the staff sign-in page shows **Log in with Telegram** as well: a staff member comes in when their Telegram number is the phone on their staff card. To refuse passwords altogether, switch on **Staff sign in with Telegram only** under Settings → General. Kampus lets you switch it on only while you are signed in with Telegram yourself, so you cannot lock yourself out; new staff then need no password. If Telegram login ever stops working, the server's owner can let passwords in again by setting STAFF_PASSWORD_LOGIN=on on the server. The site owner has one more switch in the same place, **Every centre on this server signs in with Telegram only**: it refuses passwords in every centre at once, new centres included, and the other centres then see their own switch held on.",
+            "**Staff.** A staff member's first sign-in is with Telegram, by code or on Telegram's page; until then their password opens nothing. After it they choose a password themselves, and from then on both ways work. If Telegram cannot be used at all, the server's owner can let passwords in by setting STAFF_PASSWORD_LOGIN=on on the server. The switches **Staff sign in with Telegram only** are gone from Settings → General: nobody is limited to one way any more.",
             "Each student's card shows **Kampus app sign-in**: who signs in as the student or as a parent, how they were linked, and buttons to sign them out everywhere or remove the access.",
           ],
         },
@@ -1324,12 +1341,12 @@ export const en: HelpContent = {
           ],
         },
         signIn: {
-          title: "Signing in with Telegram",
+          title: "Signing in",
           body: [
-            "Instead of the link you can sign in at **/student** on your centre's address with **Log in with Telegram**. There is no password: Telegram confirms who you are and shares your phone number once you agree. If that number is on your profile at the centre (or on a parent's card, for parents), Kampus opens **My Kampus**: every group of yours, the next lesson with a **Join** button while it runs, your balance and the homework still to do. Parents see each child.",
-            "On a phone you can also open the centre's bot, press **Share my number** and tap the sign-in link it sends back; the link works once, for ten minutes.",
+            "Instead of the link you can sign in at **/student** on your centre's address. The first time, type your phone number and press **Get a code in Telegram**: open the bot the page names, press **Start**, then **Share my number**, and type the six-digit code the bot sends. If that number is on your profile at the centre (or on a parent's card, for parents), Kampus opens **My Kampus**: every group of yours, the next lesson with a **Join** button while it runs, your balance and the homework still to do. Parents see each child.",
+            "Right after the first sign-in Kampus offers you to **choose a password**. With one, next time your phone number and password are enough. The Telegram code keeps working, and it is the way back in if you forget the password. You can choose or change the password later from **My Kampus**.",
             {
-              note: "Nobody can register on their own. If Kampus says your number is not registered, ask the reception to put your Telegram phone on your profile. Using someone else's phone? Press **Sign out** at the bottom when you are done.",
+              note: "If your number is not at the centre yet, Kampus asks your name and your group and sends a request to the centre. The bot tells you when a teacher or manager has let you in; then sign in again. Using someone else's phone? Press **Sign out** at the bottom when you are done.",
             },
           ],
         },
@@ -1353,7 +1370,7 @@ export const en: HelpContent = {
                 "Press **Leave** when the lesson ends, or wait for the teacher to end it.",
               ],
             },
-            "Your teacher may also send one **lesson link** to the whole group. Open it, sign in with Telegram, and it brings you to this same page, where you press **Join lesson**. If it says the lesson is for another group, you signed in with a Telegram account whose phone number is not the one on your profile at the centre.",
+            "Your teacher may also send one **lesson link** to the whole group. Open it, sign in, and it brings you to this same page, where you press **Join lesson**. If it says the lesson is for another group, you signed in with a phone number that is not the one on your profile at the centre.",
             "If the picture does not connect, check your internet and press **Join again**. On some networks the teacher's centre needs to switch on a relay; tell them.",
           ],
         },

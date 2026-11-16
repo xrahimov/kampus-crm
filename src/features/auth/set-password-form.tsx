@@ -17,7 +17,7 @@ import { passwordSchema } from "@/lib/validation/common";
 
 const schema = z
   .object({
-    currentPassword: z.string().max(128),
+    currentPassword: z.string().max(128).optional(),
     newPassword: passwordSchema,
     confirm: z.string(),
   })
@@ -49,10 +49,9 @@ export function SetPasswordForm({
   const t = useTranslations();
   const [error, setError] = useState<string | null>(null);
   const [saved, setSaved] = useState(false);
-  const form = useForm<FormInput>({
-    resolver: zodResolver(schema),
-    defaultValues: { currentPassword: "", newPassword: "", confirm: "" },
-  });
+  // No defaultValues on purpose: the fields take what the browser already holds
+  // when the form attaches, so typing that started before hydration survives.
+  const form = useForm<FormInput>({ resolver: zodResolver(schema) });
   const { errors, isSubmitting } = form.formState;
 
   async function onSubmit(values: FormInput) {

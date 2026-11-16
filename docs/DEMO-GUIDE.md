@@ -11,7 +11,8 @@ The pictures are the in-app help's own screenshots (`public/help/en/`), taken fr
 Show only the demo centre, **Kampus Demo Learning Center**. A server may host centres with real
 students; never open one of those in front of anyone.
 
-1. Open the site and press **Log in with Telegram**. Come in as the demo CEO, who sees everything.
+1. Open the site and sign in as the demo CEO, who sees everything: phone number and password, or
+   **Get a code in Telegram**.
 2. Open the group **GE-Morning A1** in a second tab. It is the group for the teaching and video part.
 3. On your phone open Demo Student One's personal link (group page → **Students' links** → copy).
    The phone is the student for the whole demo.
@@ -56,8 +57,10 @@ people remember.
 
 **Show:**
 
-- One button, **Log in with Telegram**. Telegram confirms the phone number, and Kampus opens the
-  account of the staff member with that number.
+- Phone number and password, and under it **Get a code in Telegram** with the steps. The first
+  time, the Kampus bot sends a code to the person's Telegram; after that they choose a password.
+  Someone the centre does not know yet waits under **Sign-in requests** until a teacher or manager
+  lets them in.
 - The layout: the menu on the left, search at the top, the saffron **Payment** button that is on
   every page.
 - Type `Demo` in the search box. Students, leads and groups come up in one list.
@@ -170,8 +173,8 @@ up so people see both sides.
 2. On the phone the student's page lets them in by itself: press **Join lesson**. No app, no
    account, no meeting code.
    To show how a whole group is invited, press **Copy lesson link** in the bar at the bottom (the
-   chain button beside **Leave**) and paste it into a chat: whoever opens it signs in with Telegram
-   first, and only students of this group get in.
+   chain button beside **Leave**) and paste it into a chat: whoever opens it signs in first, and
+   only students of this group get in.
 3. On the phone raise a hand and send a reaction. On the computer open **Chat** and write a line.
    The hand shows as a number on the student's picture.
 4. Press **Show a file to everyone** and pick a PDF from the **Lesson** panel. The page appears on
@@ -202,8 +205,9 @@ Materials for 90 days, and students rate the lesson afterwards."
 
 **Show:**
 
-- How a student gets in: a personal link the teacher sends, or **Log in with Telegram** on the
-  student sign-in page. The phone number the centre already has is the account.
+- How a student gets in: a personal link the teacher sends, or the student sign-in page with
+  their phone number: a code from Telegram the first time, a password after that. The phone
+  number the centre already has is the account.
 - The top of the page: the next lesson with **Join lesson**, attendance, average grade, coins and
   badges.
 - The tabs: **Lessons** with marks and the teacher's note, **Homework** with the answer and the
@@ -217,7 +221,7 @@ Materials for 90 days, and students rate the lesson afterwards."
 **Say:** "Parents stop phoning the office to ask about attendance and debts. They see it, and
 Telegram tells them before they ask."
 
-![Students sign in with Telegram](../public/help/en/student-login.jpg)
+![The student sign-in page](../public/help/en/student-login.jpg)
 ![The student's page](../public/help/en/portal.jpg)
 ![Homework on the student's page](../public/help/en/portal-homework.jpg)
 ![Results](../public/help/en/portal-results.jpg)
@@ -306,7 +310,7 @@ payment."
 - **Roles**: CEO, branch manager, admin, cashier, teacher and more, each a list of permissions you
   can change. You can add your own role.
 - **General settings**: working hours, debt reminder days, the absence rules and switches such as
-  "Teachers can add students" and "Staff sign in with Telegram only".
+  "Teachers can add students" and "Admin actions need CEO approval".
 - Courses, rooms, days off, SMS templates and the receipt layout.
 - **Logs**: every change with who made it and when, and every sign-in.
 

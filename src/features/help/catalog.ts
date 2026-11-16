@@ -196,6 +196,7 @@ export const HELP_ARTICLES = [
       { id: "list", screenshot: "students" },
       { id: "bulk", screenshot: "students-bulk" },
       { id: "add", screenshot: "student-form" },
+      { id: "signInRequests", screenshot: "join-requests" },
       { id: "profile", screenshot: "student-profile" },
       { id: "groupsTab" },
       { id: "moreTabs" },
