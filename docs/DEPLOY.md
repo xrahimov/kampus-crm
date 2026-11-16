@@ -184,6 +184,13 @@ on everything until they press **Teacher**; teacher-only accounts get the short
 menu and the new top of Today at once. The teacher view lists the groups where the
 person is set as teacher, so check that each teacher-manager is on their own group.
 
+The update that brings **Copy lesson link** in the video lesson (A-195) has no
+migration and no setting. The link a teacher copies is
+`<site>/student/lesson/<group id>` on the address the teacher is using, and it
+works only where students can sign in with Telegram (Settings → Integrations →
+Telegram, the login Client ID and Secret), which is already the case on a server
+that runs Telegram sign-in.
+
 The `backup` service reads `docker/backup.sh` when it starts, so after an update
 that changed the script, restart it once:
 `docker compose -f docker-compose.prod.yml restart backup`. It takes a dump

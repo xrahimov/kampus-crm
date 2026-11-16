@@ -1,4 +1,4 @@
-import { MessageCircle, Send } from "lucide-react";
+import { MessageCircle, Send, Video } from "lucide-react";
 import { useTranslations } from "next-intl";
 
 import { Alert } from "@/components/ui/alert";
@@ -15,12 +15,15 @@ export function StudentLogin({
   startUrl,
   botUrl,
   error,
+  forLesson = false,
 }: {
   brand: { name: string; logoUrl: string | null } | null;
   available: boolean;
   startUrl: string;
   botUrl: string | null;
   error: string | null;
+  /** The visitor came from a teacher's lesson link (A-195) and joins the lesson after signing in. */
+  forLesson?: boolean;
 }) {
   const t = useTranslations("studentApp.login");
   const te = useTranslations("errors");
@@ -35,6 +38,12 @@ export function StudentLogin({
         <CardDescription>{t("description")}</CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
+        {forLesson && !error && (
+          <Alert className="flex items-start gap-2" data-testid="student-login-lesson">
+            <Video className="mt-0.5 size-4 shrink-0" aria-hidden />
+            <span>{available && botUrl ? t("forLessonBot") : t("forLesson")}</span>
+          </Alert>
+        )}
         {error && (
           <Alert variant="destructive" data-testid="student-login-error">
             {te(error)}

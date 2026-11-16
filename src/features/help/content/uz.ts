@@ -566,6 +566,7 @@ export const uz: HelpContent = {
                 "Tugatganingizda **Hamma uchun yakunlash** ni bosing. O‘quvchilar faqat siz yangi dars boshlaganingizdan keyin qayta qo‘shila oladi.",
               ],
             },
+            "**Dars havolasini nusxalash** (pastki paneldagi zanjir belgili tugma, **Chiqish** yonida) butun guruh uchun bitta havolani nusxalaydi: darsdan chiqmasdan uni guruhning Telegram chatiga tashlashingiz mumkin; ekran yoki fayl ko‘rsatayotganingizda ham xuddi shunday ishlaydi. Havola **Qatnashchilar** bo‘limida ham turadi: u yerdan uni o‘qib berish yoki belgilab olish mumkin. Havolani ochgan o‘quvchi avval Telegram orqali kiradi, so‘ng shu guruhdagi o‘z sahifasiga tushadi va **Darsga qo‘shilish** ni bosadi. Havola har bir darsda bir xil va unda sir yo‘q: shu guruhda o‘qimaydigan kishi kirgach, dars boshqa guruh uchun ekanini ko‘radi. Darsda yolg‘iz bo‘lganingizda yuqoridagi qator ham shu tugmani taklif qiladi.",
             "Kimdir ulana olmasa, uning tarmog‘i to‘g‘ridan-to‘g‘ri qo‘ng‘iroqlarni to‘sayotgan bo‘lishi mumkin; administrator Sozlamalar → Integratsiyalar → Video darslar bo‘limida relay server qo‘sha oladi.",
             "**Doska** (qalam tugmasi) hammaning ekraniga umumiy doskani chiqaradi: qalam yoki o‘chirg‘ich bilan chizing, kerak bo‘lganda o‘quvchilarga chizishga ruxsat bering, qaytaring va tozalang; **Materiallarga saqlash** doska rasmini dars ostida saqlaydi.",
             "**Xonalar** o‘quvchilarni guruh ishi uchun 2-6 kichik xonaga bo‘ladi, belgilangan vaqtga yoki siz yopgunizcha. Xonadagilar faqat bir-birini ko‘radi va eshitadi; istalgan xonaga kirishingiz, odamlarni o‘tkazishingiz, barcha xonalarga bir xabar yuborishingiz va bir tugma bilan hammani qaytarishingiz mumkin.",
@@ -583,6 +584,7 @@ export const uz: HelpContent = {
           title: "O‘quvchilarning shaxsiy havolalari",
           body: [
             "Har bir o‘quvchining shu guruh uchun bitta shaxsiy havolasi bor; u video dars, darslar, uy vazifasi, materiallar, baholar va to‘lovlar turadigan sahifasini ochadi. Hammasini ko‘rish, birini nusxalash, hammasini nusxalash yoki telefon raqami bor har bir o‘quvchiga SMS orqali yuborish uchun video kartochkasidagi **O‘quvchilar havolalari** ni bosing. Havola begonaga o‘tib ketsa, o‘sha o‘quvchi uchun yangisini yarating; eskisi darhol ishlamay qoladi.",
+            "Shaxsiy havola o‘quvchi sahifasini kirishsiz ochadi, shuning uchun har birini faqat o‘z o‘quvchisiga yuboring. Butun guruhga xabar uchun video dars ichidagi **Dars havolasini nusxalash** dan foydalaning: u havola avval har kimdan Telegram orqali kirishni so‘raydi.",
           ],
         },
         coins: {
@@ -1355,6 +1357,7 @@ export const uz: HelpContent = {
                 "Dars tugaganda **Chiqish** ni bosing yoki o‘qituvchi uni yakunlashini kuting.",
               ],
             },
+            "O‘qituvchi butun guruhga bitta **dars havolasi** ham yuborishi mumkin. Uni oching, Telegram orqali kiring, shunda u sizni shu sahifaning o‘ziga olib keladi va siz **Darsga qo‘shilish** ni bosasiz. Agar dars boshqa guruh uchun deb yozilsa, siz markazdagi profilingizdagi raqamdan boshqa raqamli Telegram akkaunti bilan kirgansiz.",
             "Tasvir ulanmasa, internetingizni tekshiring va **Qayta qo‘shilish** ni bosing. Ba’zi tarmoqlarda o‘qituvchingizning markazi relay yoqishi kerak; ularga ayting.",
           ],
         },

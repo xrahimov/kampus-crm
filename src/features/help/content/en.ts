@@ -563,6 +563,7 @@ export const en: HelpContent = {
                 "Press **End for everyone** when you are done. Students can join again only after you start a new lesson.",
               ],
             },
+            "**Copy lesson link** (the chain button in the bar at the bottom, beside **Leave**) copies one link for the whole group, so you can paste it into the group's Telegram chat without leaving the lesson; it works the same while you share your screen or show a file. The link also stands under **People**, where you can read it out or select it. A student who opens it signs in with Telegram first and then lands on their own page of this group, where they press **Join lesson**. The link is the same for every lesson and carries no secret: someone who is not a student of this group signs in and is told the lesson is for another group. While you are alone in the lesson, a line at the top offers the same button.",
             "If someone cannot connect, their network may block direct calls; the administrator can add a relay server under Settings → Integrations → Video lessons.",
             "**Whiteboard** (the pen button) puts a shared board on everyone's screen: draw with a pen or eraser, let students draw when you want them to, undo and clear, and **Save to materials** keeps a picture of the board under the lesson.",
             "**Rooms** splits the students into 2-6 small rooms for group work, for a set time or until you close them. People in a room see and hear only each other; you can go into any room, move people, send a line to all rooms at once and bring everyone back with one button.",
@@ -580,6 +581,7 @@ export const en: HelpContent = {
           title: "Students' personal links",
           body: [
             "Each student has one personal link for this group; it opens their page with the video lesson, lessons, homework, materials, marks and payments. Press **Students' links** on the video card to see them all, copy one, copy all, or send them by SMS to every student with a phone number. If a link leaks, make a new one for that student; the old one stops working at once.",
+            "The personal link opens a student's page without signing in, so send each one only to its student. For a message to the whole group use **Copy lesson link** inside the video lesson instead: that link asks everyone to sign in with Telegram first.",
           ],
         },
         coins: {
@@ -1351,6 +1353,7 @@ export const en: HelpContent = {
                 "Press **Leave** when the lesson ends, or wait for the teacher to end it.",
               ],
             },
+            "Your teacher may also send one **lesson link** to the whole group. Open it, sign in with Telegram, and it brings you to this same page, where you press **Join lesson**. If it says the lesson is for another group, you signed in with a Telegram account whose phone number is not the one on your profile at the centre.",
             "If the picture does not connect, check your internet and press **Join again**. On some networks the teacher's centre needs to switch on a relay; tell them.",
           ],
         },
