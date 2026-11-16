@@ -173,7 +173,13 @@ export const HELP_ARTICLES = [
       {
         id: "video",
         screenshot: "video-card",
-        more: ["video-room", "video-show-file", "video-whiteboard", "video-poll"],
+        more: [
+          "video-room",
+          "video-copy-link",
+          "video-show-file",
+          "video-whiteboard",
+          "video-poll",
+        ],
       },
       { id: "links", screenshot: "student-links" },
       { id: "coins" },

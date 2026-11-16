@@ -54,7 +54,7 @@ export const ROOM_IDLE_MS = 15 * 60_000;
 /** A call ends by itself this long after it was started. */
 export const ROOM_MAX_MS = 150 * 60_000;
 /** Memberships whose students may join the group's calls. */
-const JOINABLE = ["NEW", "TRIAL", "ACTIVE"] as const;
+export const JOINABLE = ["NEW", "TRIAL", "ACTIVE"] as const;
 
 export interface IceServerDto {
   urls: string[];

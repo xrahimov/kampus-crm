@@ -1,5 +1,7 @@
+import { Video } from "lucide-react";
 import { useTranslations } from "next-intl";
 
+import { Alert } from "@/components/ui/alert";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { SignInPanel, type SignInBot } from "@/features/auth/sign-in-panel";
 
@@ -14,6 +16,7 @@ export function StudentLogin({
   bot,
   startUrl,
   error,
+  forLesson = false,
 }: {
   brand: { name: string; logoUrl: string | null } | null;
   /** A bot can send sign-in codes on this address. */
@@ -22,6 +25,8 @@ export function StudentLogin({
   /** The older sign-in on Telegram's own page, where it is set up; null otherwise. */
   startUrl: string | null;
   error: string | null;
+  /** The visitor came from a teacher's lesson link (A-195) and joins the lesson after signing in. */
+  forLesson?: boolean;
 }) {
   const t = useTranslations("studentApp.login");
   return (
@@ -35,6 +40,13 @@ export function StudentLogin({
         <CardDescription>{t("description")}</CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
+        {forLesson && !error && (
+          // Every way in on this page (password, code, Telegram's page) goes on to the lesson.
+          <Alert className="flex items-start gap-2" data-testid="student-login-lesson">
+            <Video className="mt-0.5 size-4 shrink-0" aria-hidden />
+            <span>{t("forLesson")}</span>
+          </Alert>
+        )}
         <SignInPanel
           door="STUDENT"
           code={code}

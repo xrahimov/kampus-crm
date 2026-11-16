@@ -5707,7 +5707,13 @@
       "breakoutMain": "Breakout rooms are open ({rooms}); you are in the main room.",
       "breakoutIn": "You are in room {number}. The teacher brings everyone back when the time is up.",
       "noticeFrom": "{name}:",
-      "noShow": "The student has not joined. They were marked absent and told on Telegram; if they come now, use attendance from the call."
+      "noShow": "The student has not joined. They were marked absent and told on Telegram; if they come now, use attendance from the call.",
+      "copyLink": "Copy lesson link",
+      "lessonLink": "Lesson link",
+      "linkCopied": "Lesson link copied. Send it to your students: they sign in with Telegram and join.",
+      "linkCopyFailed": "The browser did not allow copying. Select the link and copy it:",
+      "aloneHint": "Nobody else is here yet. Send your students the lesson link.",
+      "lessonLinkHelp": "One link for the whole group, the same for every lesson. Whoever opens it signs in with Telegram first, and only students of this group get in."
     },
     "done": {
       "left": "You left the lesson.",
@@ -6003,13 +6009,21 @@
       "title": "Sign in to Kampus",
       "titleAt": "Sign in to {centre}",
       "description": "For students and parents. Use your phone number and password; the first time, get a code in Telegram.",
-      "privacy": "Only phone numbers the learning centre already has on a student or parent get in at once; others wait for the centre’s approval. Kampus never sees your Telegram password or messages."
+      "privacy": "Only phone numbers the learning centre already has on a student or parent get in at once; others wait for the centre’s approval. Kampus never sees your Telegram password or messages.",
+      "forLesson": "Sign in to join your lesson. It opens right after you sign in."
     },
     "shell": {
       "offline": "You are offline. This is the page as it was the last time you opened it; it refreshes when the connection is back.",
       "installHint": "Add My Kampus to your home screen: your lessons, homework and payments one tap away, even offline.",
       "install": "Install",
       "later": "Not now"
+    },
+    "lessonLink": {
+      "title": "Join the lesson",
+      "otherTitle": "This lesson is for another group",
+      "otherText": "You are signed in as {name}, and this account is not a student of the group the link belongs to.",
+      "otherHint": "If the link is yours, ask the learning centre to check the phone number on your student card, or sign out and sign in with the right Telegram account.",
+      "toHome": "Open my groups"
     },
     "choosePassword": "Choose a password",
     "changePassword": "Change password"

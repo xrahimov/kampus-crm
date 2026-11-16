@@ -7,6 +7,7 @@ import {
   Focus,
   Hand,
   LayoutGrid,
+  Link2,
   UserX,
   MessageSquare,
   Mic,
@@ -31,6 +32,7 @@ import { useFormatter, useTranslations } from "next-intl";
 import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 
 import { ConfirmDialog } from "@/components/data/confirm-dialog";
+import { lessonLink } from "@/lib/lesson-link";
 import { PACE_REACTIONS, REACTIONS, type Reaction } from "@/lib/validation/video";
 import { cn } from "@/lib/utils";
 import { canAnnotate } from "@/lib/video-material";
@@ -46,6 +48,34 @@ import { Whiteboard } from "./whiteboard";
 
 const SELF = "self";
 type Panel = "people" | "chat" | "poll" | "lesson" | "breakout" | null;
+
+/** How long "Lesson link copied" stays on the screen. */
+const LINK_NOTICE_MS = 8000;
+
+/** Puts a text on the clipboard; false where the browser refuses (old browsers, plain http). */
+async function copyText(value: string): Promise<boolean> {
+  try {
+    await navigator.clipboard.writeText(value);
+    return true;
+  } catch {
+    // The older way still works in a press handler where the clipboard API is refused.
+    const area = document.createElement("textarea");
+    area.value = value;
+    area.setAttribute("readonly", "");
+    area.style.position = "fixed";
+    area.style.opacity = "0";
+    document.body.appendChild(area);
+    area.select();
+    let done = false;
+    try {
+      done = document.execCommand("copy");
+    } catch {
+      done = false;
+    }
+    area.remove();
+    return done;
+  }
+}
 
 /** How each reaction looks on a picture. */
 export const REACTION_EMOJI: Record<Reaction, string> = {
@@ -89,6 +119,21 @@ export function CallRoom({
   const [saving, setSaving] = useState(false);
   const [recordNotice, setRecordNotice] = useState<"saved" | "failed" | null>(null);
   const canRecord = engine.self.role === "HOST" && recordingMimeType() !== null;
+  // The lesson link (A-195): staff copy it from here and send it to the group.
+  const [linkNotice, setLinkNotice] = useState<{ ok: boolean; at: number } | null>(null);
+  const [aloneHintClosed, setAloneHintClosed] = useState(false);
+  const canInvite = engine.self.role !== "STUDENT";
+  const lessonUrl =
+    typeof window === "undefined" ? "" : lessonLink(window.location.origin, engine.self.groupId);
+  const copyLessonLink = async () => {
+    setLinkNotice({ ok: await copyText(lessonUrl), at: Date.now() });
+  };
+  useEffect(() => {
+    // A link that could not be copied stays on the screen until it is closed.
+    if (!linkNotice?.ok) return;
+    const timer = setTimeout(() => setLinkNotice(null), LINK_NOTICE_MS);
+    return () => clearTimeout(timer);
+  }, [linkNotice]);
 
   // Leaving the page while recording would lose it.
   useEffect(() => {
@@ -503,6 +548,53 @@ export function CallRoom({
         </p>
       )}
 
+      {linkNotice ? (
+        <div
+          className={cn(
+            "mx-4 mb-2 flex items-center justify-center gap-2 rounded-md bg-sidebar-muted px-3 py-2 text-center text-sm text-white",
+            !linkNotice.ok && "flex-wrap",
+          )}
+          role="status"
+          data-testid="lesson-link-notice"
+        >
+          <Link2 className="size-4 shrink-0" aria-hidden />
+          <span className="min-w-0">{linkNotice.ok ? t("linkCopied") : t("linkCopyFailed")}</span>
+          {!linkNotice.ok && <LinkField value={lessonUrl} label={t("lessonLink")} />}
+          <button
+            type="button"
+            onClick={() => setLinkNotice(null)}
+            aria-label={t("dismiss")}
+            className="grid size-8 shrink-0 place-items-center rounded-md hover:bg-sidebar focus-visible:outline-2 focus-visible:outline-sidebar-active"
+          >
+            <X className="size-4" />
+          </button>
+        </div>
+      ) : (
+        isHost &&
+        peers.length === 0 &&
+        engine.status !== "connecting" &&
+        !aloneHintClosed && (
+          <div
+            className="mx-4 mb-2 flex flex-wrap items-center justify-center gap-2 rounded-md bg-sidebar-muted px-3 py-2 text-center text-sm text-white short:hidden"
+            role="status"
+            data-testid="lesson-link-hint"
+          >
+            <span>{t("aloneHint")}</span>
+            <NoticeAction onClick={() => void copyLessonLink()} testId="lesson-link-hint-copy">
+              {t("copyLink")}
+            </NoticeAction>
+            <button
+              type="button"
+              onClick={() => setAloneHintClosed(true)}
+              aria-label={t("dismiss")}
+              className="grid size-8 place-items-center rounded-md hover:bg-sidebar focus-visible:outline-2 focus-visible:outline-sidebar-active"
+            >
+              <X className="size-4" />
+            </button>
+          </div>
+        )
+      )}
+
       {shareHelp && (
         <div
           className="mx-4 mb-2 flex flex-wrap items-center justify-center gap-2 rounded-md bg-sidebar-muted px-3 py-2 text-center text-sm text-white"
@@ -601,6 +693,26 @@ export function CallRoom({
           <SidePanel title={t(panel)} onClose={() => setPanel(null)} testId={`${panel}-panel`}>
             {panel === "people" ? (
               <div className="space-y-4 text-sm">
+                {canInvite && (
+                  <section
+                    className="space-y-2 rounded-md bg-sidebar/60 p-2.5"
+                    data-testid="lesson-link-card"
+                  >
+                    <h3 className="flex items-center gap-1.5 text-xs font-semibold tracking-wide text-white uppercase">
+                      <Link2 className="size-3.5" /> {t("lessonLink")}
+                    </h3>
+                    <LinkField value={lessonUrl} label={t("lessonLink")} />
+                    <button
+                      type="button"
+                      onClick={() => void copyLessonLink()}
+                      data-testid="lesson-link-card-copy"
+                      className="w-full rounded-md bg-sidebar-active px-3 py-1.5 text-sm font-medium text-white hover:bg-sidebar-active/80 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sidebar-active"
+                    >
+                      {t("copyLink")}
+                    </button>
+                    <p className="text-xs opacity-80">{t("lessonLinkHelp")}</p>
+                  </section>
+                )}
                 {handQueue.length > 0 && (
                   <section data-testid="hand-queue">
                     <h3 className="mb-1.5 flex items-center gap-1.5 text-xs font-semibold tracking-wide text-amber-400 uppercase">
@@ -867,6 +979,18 @@ export function CallRoom({
             <MonitorOff />
           </ControlButton>
         )}
+        {canInvite && (
+          <button
+            type="button"
+            onClick={() => void copyLessonLink()}
+            data-testid="copy-lesson-link"
+            aria-label={t("copyLink")}
+            title={t("copyLink")}
+            className="inline-flex h-11 min-w-11 items-center justify-center gap-2 rounded-full bg-sidebar-muted px-3 text-sm font-medium text-white transition-colors hover:bg-sidebar-muted/70 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sidebar-active xl:px-4 [&_svg]:size-5"
+          >
+            <Link2 /> <span className="hidden xl:inline">{t("lessonLink")}</span>
+          </button>
+        )}
         <button
           type="button"
           onClick={() => void finishRecording().then(onLeave)}
@@ -931,6 +1055,20 @@ function HeaderButton({
     >
       {children}
     </button>
+  );
+}
+
+/** The lesson link as text that selects itself, for when copying is refused or to read it out. */
+function LinkField({ value, label }: { value: string; label: string }) {
+  return (
+    <input
+      readOnly
+      value={value}
+      aria-label={label}
+      onFocus={(e) => e.currentTarget.select()}
+      data-testid="lesson-link-value"
+      className="w-full min-w-0 rounded-md border border-sidebar-muted bg-sidebar px-2 py-1.5 text-xs text-white focus-visible:outline-2 focus-visible:outline-sidebar-active sm:max-w-80"
+    />
   );
 }
 
