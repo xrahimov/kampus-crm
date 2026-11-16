@@ -63,7 +63,7 @@
   "auth": {
     "signIn": "Sign in",
     "signInTitle": "Sign in to Kampus",
-    "signInSubtitle": "Use the phone number and password your administrator gave you.",
+    "signInSubtitle": "Use your phone number and password.",
     "phone": "Phone number",
     "phonePlaceholder": "+998 90 123 45 67",
     "password": "Password",
@@ -84,11 +84,47 @@
     "savePassword": "Save the password",
     "passwordSaved": "Password changed. Your other devices were signed out.",
     "passwordHint": "At least 8 characters; not one you use anywhere else.",
-    "signInSubtitleBoth": "Log in with Telegram, or use the phone number and password your administrator gave you.",
-    "signInSubtitleTelegram": "Staff sign in with Telegram. Your Telegram number must be the phone number on your staff card.",
-    "withTelegram": "Log in with Telegram",
-    "telegramHint": "Telegram confirms your phone number; Kampus lets you in when it is the number on your staff card.",
-    "orPassword": "or with a password"
+    "signInSubtitleCode": "Use your phone number and password. First time here? Get a code in Telegram.",
+    "orTelegram": "or",
+    "getCode": "Get a code in Telegram",
+    "gettingCode": "Sending the code…",
+    "theBot": "the Kampus bot",
+    "howTitle": "How to sign in with Telegram",
+    "howWhen": "For your first sign-in, a forgotten password, or whenever you prefer. No password is needed.",
+    "how1": "Type your phone number above and press “Get a code in Telegram”.",
+    "how2": "In Telegram, open {bot}, press Start, then “Share my number”. This is needed only the first time.",
+    "how3": "The bot sends you a six-digit code. Type it on this page.",
+    "how4": "You are in. Kampus then offers you to choose a password, so next time your phone number and password are enough.",
+    "openBot": "Open {bot} in Telegram",
+    "phoneCodeTitle": "Enter the code from Telegram",
+    "phoneCodeSubtitle": "A six-digit code for {phone} goes to your Telegram chat with {bot}. It is valid for 10 minutes.",
+    "noMessageTitle": "No message from the bot?",
+    "noMessage": "Open {bot} in Telegram, press Start, then “Share my number”. The code arrives right after. The number you share must be the one you typed here.",
+    "codeAgain": "Send a new code",
+    "codeResent": "A new code is on its way. The earlier one no longer works.",
+    "widgetLink": "Another way: sign in on Telegram’s own page",
+    "setPasswordTitle": "Choose a password",
+    "setPasswordSubtitle": "With a password, next time you sign in with just your phone number and password. A code from Telegram keeps working too.",
+    "setPasswordLater": "Not now",
+    "passwordChosen": "Password saved. From now on your phone number and this password sign you in.",
+    "changePasswordHeading": "Change your password",
+    "changePasswordHint": "Your other devices are signed out when the password changes.",
+    "join": {
+      "title": "You are not in Kampus yet",
+      "intro": "The number {phone} is not on any student, parent or staff card. Tell the centre who you are, and a teacher or manager will let you in.",
+      "name": "Your full name",
+      "centre": "Learning centre",
+      "branch": "Branch",
+      "choose": "Choose",
+      "note": "Your group or teacher (optional)",
+      "notePlaceholder": "For example: Deutsch A1, teacher Najotbek",
+      "send": "Ask to be let in",
+      "sentTitle": "Your request is sent",
+      "sent": "{centre} has your request for {phone}. When a teacher or manager approves it, the bot tells you in Telegram. Then sign in here again.",
+      "declinedTitle": "Your request was declined",
+      "declined": "{centre} declined the request for {phone}. Ask your teacher or the reception.",
+      "back": "Back to sign-in"
+    }
   },
   "account": {
     "title": "My account",
@@ -96,7 +132,10 @@
     "password": {
       "title": "Password",
       "changed": "Last changed {date}",
-      "never": "Not changed since the account was created"
+      "never": "Not changed since the account was created",
+      "none": "You have no password of your own yet. You sign in with a code from Telegram.",
+      "byTelegram": "You signed in with a code from Telegram, so your current password is not asked for.",
+      "forgot": "Forgot it? Sign out, sign in with a code from Telegram, and set a new password here."
     },
     "signInCode": {
       "title": "Sign-in code by Telegram",
@@ -551,15 +590,18 @@
     "packageUnknown": "This package does not exist.",
     "packageInactive": "This package is no longer sold.",
     "billingNotPackages": "This group charges a monthly fee, not packages.",
-    "passwordSignInOff": "Your centre signs in with Telegram only. Use Log in with Telegram.",
     "staffTelegramOff": "Sign-in with Telegram is not set up on this address yet.",
     "staffTelegramExpired": "The sign-in took too long or was started in another browser. Please try again.",
     "staffTelegramFailed": "Telegram did not confirm the sign-in. Please try again.",
     "staffTelegramNoPhone": "Telegram did not share your phone number, so Kampus cannot tell who you are. Try again and allow the phone number.",
     "staffTelegramUnknown": "No staff member has the phone number of this Telegram account. Ask your administrator to check the number on your staff card.",
-    "staffTelegramOnlyNoBot": "Telegram login is not set up for this centre, so passwords cannot be switched off. Add the login keys in Settings → Integrations → Telegram first.",
-    "staffTelegramOnlyNeedsTelegram": "Sign out and sign in with Telegram first. The switch works only from a Telegram sign-in, so you cannot lock yourself out.",
-    "viewNotAvailable": "Your account has one view only."
+    "viewNotAvailable": "Your account has one view only.",
+    "codeSignInOff": "Sign-in with a Telegram code is not set up on this address. Use your phone number and password.",
+    "codeTooMany": "Too many codes were asked for this number. Try again in {seconds} seconds.",
+    "firstSignInTelegram": "Your first sign-in is with Telegram. Press “Get a code in Telegram”; after that your password works too.",
+    "joinRequestExpired": "This request has expired. Start again from the sign-in page.",
+    "joinRequestDecided": "This request has already been answered.",
+    "passwordNeedsTelegram": "To set a password without the current one, sign in with a code from Telegram first."
   },
   "validation": {
     "phone": "Enter a number like +998 90 123 45 67.",
@@ -680,7 +722,8 @@
     "teacherBusy": "The teacher has another lesson at this time",
     "availabilityOverlap": "Hours of one day overlap",
     "outsideAvailability": "Outside the teacher's booking hours",
-    "timeZone": "Unknown time zone. Use a name like Europe/Berlin."
+    "timeZone": "Unknown time zone. Use a name like Europe/Berlin.",
+    "joinRequestMode": "This way of letting in does not fit the request."
   },
   "roles": {
     "CEO": "CEO",
@@ -885,14 +928,6 @@
         "hint": "Applies to groups with one student. The student moves or cancels a lesson from their page up to this many hours before it starts; later it stays and counts as held.",
         "hours": "Notice before the lesson",
         "unit": "hours"
-      },
-      "staffSignIn": {
-        "title": "Staff sign-in",
-        "hint": "Staff can always sign in with Telegram when the centre's bot has the login keys: Telegram confirms their phone and it must be the number on their staff card. Switch this on to refuse passwords altogether. You can switch it on only while you are signed in with Telegram yourself.",
-        "telegramOnly": "Staff sign in with Telegram only",
-        "everyCentre": "Every centre on this server signs in with Telegram only",
-        "everyCentreHint": "Only you, the site owner, see this switch. With it on, passwords are refused in every centre, new centres included, and the sign-in page shows only the Telegram button. Staff whose Telegram number differs from the phone on their staff card cannot get in until the phone is corrected in Settings → Staff.",
-        "heldByServer": "The site owner has set Telegram only for every centre on this server, so this cannot be switched off here."
       }
     },
     "switches": {
@@ -1294,7 +1329,7 @@
       "signInCodeHint": "Needs the person's Telegram chat under Settings → Bot notifications.",
       "signOutAll": "Sign out of all devices",
       "signedOutAll": "Signed out everywhere.",
-      "passwordTelegramHint": "Leave empty when your centre signs in with Telegram only."
+      "passwordTelegramHint": "Leave empty: the person’s first sign-in is with a code from Telegram, and they choose their own password then."
     },
     "temporaryPassword": "Temporary password"
   },
@@ -4689,7 +4724,8 @@
         "auth": {
           "passwordChange": "Password changed",
           "signOutAll": "Signed out everywhere",
-          "signInCode": "Sign-in code switched"
+          "signInCode": "Sign-in code switched",
+          "passwordSet": "Password chosen after a Telegram sign-in"
         },
         "announcement": {
           "create": "Announcement posted",
@@ -4710,6 +4746,10 @@
           "update": "Lesson package changed",
           "delete": "Lesson package removed",
           "sell": "Lesson package sold"
+        },
+        "joinRequest": {
+          "approve": "Sign-in request approved",
+          "decline": "Sign-in request declined"
         }
       }
     }
@@ -5154,7 +5194,8 @@
       "DEBT_PROMISE_BROKEN": "{name} promised to pay {amount} by {date} and has not",
       "ABSENCES": "{count, plural, one {# student stopped} other {# students stopped}} coming to lessons: call them",
       "LEAD_FOLLOW_UP": "{count, plural, one {# lead is} other {# leads are}} due for a call today ({overdue} overdue)",
-      "LEAD_MESSAGE": "{name} wrote in Telegram: {text}"
+      "LEAD_MESSAGE": "{name} wrote in Telegram: {text}",
+      "JOIN_REQUEST": "{name} ({phone}) signed in with Telegram and waits to be let in"
     }
   },
   "portal": {
@@ -5525,7 +5566,7 @@
     "announcement": "📢 {title}\n\n{body}\n\n— {from}",
     "waitlistOffer": "{group} is opening: {days} {time}, from {date}. Call the centre to take your seat.",
     "certificate": "{org}: your certificate “{title}” is ready. Open or share it here: {url}",
-    "loginShare": "To sign in to Kampus, tap “Share my number” below. The learning centre checks it against the phone on your profile.",
+    "loginShare": "To sign in to Kampus, tap “Share my number” below. Your sign-in code comes to this chat.",
     "loginShareButton": "Share my number",
     "loginNotYours": "Please share your own number with the button, not someone else's contact.",
     "loginUnknown": "This number is not registered at the learning centre. Ask the reception to add it to your profile.",
@@ -5548,7 +5589,12 @@
     "chatFromStudent": "💬 {group} · {student} wrote:\n{text}\n\nReply in Kampus: Groups → {group} → Chat.",
     "lessonSummary": "📘 {group}, {date} {time}\nTopic: {topic, select, none {not written down} other {{topic}}}\nAttendance: {attendance, select, PRESENT {present ✅} ABSENT {absent ❌} EXCUSED {excused} other {not marked yet}}\nHomework: {homework, select, none {none} other {{homework}}}{due, select, none {} other { (due {due})}}",
     "trialLink": "🎓 Your trial lesson: {group}, {date}{time, select, none {} other {, {time}}}.\nOn that day open this link to join the online lesson: {url}",
-    "packageLow": "{group}: {left, plural, =0 {your lesson package is used up} one {one lesson left in your package} other {# lessons left in your package}}. Please buy the next one at the learning centre."
+    "packageLow": "{group}: {left, plural, =0 {your lesson package is used up} one {one lesson left in your package} other {# lessons left in your package}}. Please buy the next one at the learning centre.",
+    "phoneCode": "Kampus: your sign-in code is {code}. It is valid for 10 minutes. Do not give it to anyone. If you did not ask for it, ignore this message.",
+    "contactKnown": "Your number {phone} is saved. On the Kampus sign-in page, type it and press “Get a code in Telegram”: the code comes here. New number? Tap the button below.",
+    "contactSaved": "Your number is saved. Now open {url}, type your number and press “Get a code in Telegram”: the code comes to this chat.",
+    "joinApproved": "{centre} let you in to Kampus. Sign in here: {url}",
+    "joinDeclined": "{centre} declined your request to join Kampus. Ask your teacher or the reception."
   },
   "video": {
     "title": "Video lesson",
@@ -5956,18 +6002,17 @@
     "login": {
       "title": "Sign in to Kampus",
       "titleAt": "Sign in to {centre}",
-      "description": "For students and parents. No password: Telegram confirms who you are and your phone number.",
-      "withTelegram": "Log in with Telegram",
-      "withBot": "Sign in from the Telegram bot",
-      "privacy": "Only phone numbers the learning centre already has on a student or parent can sign in. Kampus never sees your Telegram password or messages.",
-      "off": "Sign-in with Telegram is not set up here yet. Use the personal link the learning centre sent you."
+      "description": "For students and parents. Use your phone number and password; the first time, get a code in Telegram.",
+      "privacy": "Only phone numbers the learning centre already has on a student or parent get in at once; others wait for the centre’s approval. Kampus never sees your Telegram password or messages."
     },
     "shell": {
       "offline": "You are offline. This is the page as it was the last time you opened it; it refreshes when the connection is back.",
       "installHint": "Add My Kampus to your home screen: your lessons, homework and payments one tap away, even offline.",
       "install": "Install",
       "later": "Not now"
-    }
+    },
+    "choosePassword": "Choose a password",
+    "changePassword": "Change password"
   },
   "exercises": {
     "heading": "Self-check exercises",
@@ -6117,5 +6162,59 @@
       "save": "Update words",
       "empty": "No words on this topic yet."
     }
+  },
+  "joinRequests": {
+    "title": "Sign-in requests",
+    "description": "People who signed in with Telegram before the centre had their phone number. Let them in as a student, parent or staff member, or decline.",
+    "banner": "{count, plural, one {# person signed in with Telegram and waits} other {# people signed in with Telegram and wait}} to be let in",
+    "bannerOpen": "Review",
+    "tabs": {
+      "PENDING": "Waiting",
+      "DECLINED": "Declined"
+    },
+    "empty": {
+      "PENDING": "Nobody is waiting.",
+      "DECLINED": "No declined requests."
+    },
+    "emptyHint": "Someone whose phone is not in Kampus yet appears here after they sign in with a Telegram code.",
+    "columns": {
+      "person": "Person",
+      "kind": "Asks as",
+      "branch": "Branch",
+      "note": "Their note",
+      "asked": "Asked",
+      "actions": "Actions"
+    },
+    "kinds": {
+      "STUDENT": "Student or parent",
+      "STAFF": "Staff"
+    },
+    "approve": "Let in",
+    "decline": "Decline",
+    "declinedBy": "Declined by {name}",
+    "declineTitle": "Decline this request?",
+    "declineHint": "{name} is told in Telegram. You can still let them in later from the Declined tab.",
+    "selfClosing": "A request also closes by itself when the same phone number is added anywhere in Kampus: on a student, a parent or a staff card.",
+    "approveTitle": "Let {name} in",
+    "approveStudentHint": "The number {phone} is proven by Telegram. Add a new student, or put the number on someone the centre already has.",
+    "approveStaffHint": "The number {phone} is proven by Telegram. The person signs in with a Telegram code and chooses a password themselves.",
+    "modeLabel": "Who is this",
+    "modes": {
+      "newStudent": "New student",
+      "student": "Existing student",
+      "parent": "Parent of a student"
+    },
+    "existingStudent": "Student",
+    "studentHint": "{phone} becomes this student’s phone number.",
+    "parentHint": "{phone} is added to this student as a parent’s number.",
+    "fullName": "Full name",
+    "parentName": "Parent’s full name",
+    "gender": "Gender",
+    "group": "Group",
+    "noGroup": "No group yet",
+    "role": "Role",
+    "chooseRole": "Choose a role",
+    "theirNote": "They wrote: {note}",
+    "fillAll": "Fill in every field first."
   }
 }

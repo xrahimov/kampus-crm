@@ -28,6 +28,8 @@ export interface AccountDto {
   telegramLinked: boolean;
   mustChangePassword: boolean;
   passwordChangedAt: string | null;
+  /** This session was opened with Telegram: a new password is set without the old one (A-196). */
+  telegramSession: boolean;
   /** For teachers: their hours open for 1:1 booking (A-169); null for everyone else. */
   availability: AvailabilityWindowDto[] | null;
   userId: string;
@@ -65,6 +67,7 @@ export async function getAccount(actor: Actor, db: DbClient = prisma): Promise<A
     telegramLinked: user.botRecipient !== null,
     mustChangePassword: user.mustChangePassword,
     passwordChangedAt: user.passwordChangedAt?.toISOString() ?? null,
+    telegramSession: actor.signedInWith === "TELEGRAM",
     availability: teaches
       ? [...user.availability].sort(
           (a, b) => a.weekday - b.weekday || a.startTime.localeCompare(b.startTime),

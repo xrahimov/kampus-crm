@@ -11,7 +11,6 @@ import {
 import type { Prisma } from "@/generated/prisma/client";
 import { recordAudit } from "@/server/audit/audit";
 import { requireTelegramChat } from "@/server/services/account.service";
-import { passwordSignInAllowed } from "@/server/services/auth.service";
 import { hashPassword } from "@/server/auth/password";
 import { generateToken } from "@/server/auth/tokens";
 import { prisma, type DbClient } from "@/server/db/prisma";
@@ -32,6 +31,8 @@ import {
   mustFind,
   rethrowAsAppError,
 } from "../settings/shared";
+import { settleJoinRequestsQuietly } from "@/server/services/sign-in/join-settle";
+
 import { assertCanGrantRole, roleOrganizationFilter } from "./roles.service";
 
 /**
@@ -277,18 +278,16 @@ export async function createStaff(
   db: DbClient = prisma,
 ): Promise<StaffDto> {
   authorize(actor, perm(scope, "create"));
-  // No password is needed where nobody signs in with one (A-180): the account gets a
-  // random one nobody knows, so it stays closed if the centre goes back to passwords.
-  if (!input.password && (await passwordSignInAllowed(db, actor.organizationId))) {
-    throw AppError.validation({ password: ["validation.required"] });
-  }
+  // No password is needed (A-196): the person's first sign-in is with a Telegram code,
+  // and they choose their own password then. Until they do, the account holds a
+  // random one nobody knows.
   const [roleIds, branchIds, passwordHash] = await Promise.all([
     resolveRoles(db, actor, scope, input.roleCodes),
     resolveBranches(db, actor, input.branchIds),
     hashPassword(input.password ?? generateToken(24)),
   ]);
   try {
-    return await db.$transaction(async (tx) => {
+    const created = await db.$transaction(async (tx) => {
       const row = await tx.user.create({
         data: {
           organizationId: actor.organizationId,
@@ -317,6 +316,9 @@ export async function createStaff(
       });
       return dto;
     });
+    // Someone who waited to be let in with this phone is in now (A-196).
+    await settleJoinRequestsQuietly(db, input.phone, actor.userId);
+    return created;
   } catch (error) {
     rethrowAsAppError(error, "phone");
   }
@@ -362,7 +364,7 @@ export async function updateStaff(
       : {};
 
   try {
-    return await db.$transaction(async (tx) => {
+    const saved = await db.$transaction(async (tx) => {
       if (roleIds) {
         await tx.userRole.deleteMany({ where: { userId: id } });
         await tx.userRole.createMany({ data: roleIds.map((roleId) => ({ userId: id, roleId })) });
@@ -414,6 +416,8 @@ export async function updateStaff(
       });
       return after;
     });
+    if (input.phone) await settleJoinRequestsQuietly(db, input.phone, actor.userId);
+    return saved;
   } catch (error) {
     rethrowAsAppError(error, "phone");
   }

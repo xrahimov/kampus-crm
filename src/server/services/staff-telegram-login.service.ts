@@ -1,12 +1,8 @@
 import type { IssuedSession } from "@/server/auth/session";
 import type { DbClient } from "@/server/db/prisma";
 import { AppError } from "@/server/errors/app-error";
-import {
-  issueSession,
-  telegramOnlyEverywhere,
-  type LoginContext,
-} from "@/server/services/auth.service";
-import { organizationForHost } from "@/server/services/settings/domains.service";
+import { issueSession, type LoginContext } from "@/server/services/auth.service";
+import { botLoginUrl, resolveBotSetup } from "@/server/services/sign-in/setup";
 import {
   phoneFromTelegram,
   resolveLoginSetup,
@@ -19,41 +15,33 @@ import {
  * as the student sign-in (A-150); the difference is who is looked for: the
  * staff member whose phone equals the Telegram-verified one. Nobody is created
  * and nothing is linked: a staff phone is unique on the server, so the phone is
- * the whole match. A centre may go further and refuse passwords altogether
- * (Settings → General → Staff sign in with Telegram only).
+ * the whole match. Since A-196 the sign-in pages lead with a code from the bot;
+ * this way through Telegram's own page stays as the second way in where its
+ * login keys are set.
  */
 
-export interface StaffSignInOptions {
-  /** The sign-in page offers "Log in with Telegram". */
-  telegram: boolean;
-  /** The sign-in page offers phone and password. */
-  password: boolean;
+export interface SignInOptions {
+  /** A bot can send codes here: the page offers "Get a code in Telegram" (A-196). */
+  code: boolean;
+  /** The bot the code arrives from, for the page's instructions. */
+  bot: { username: string | null; url: string | null };
+  /** The older sign-in through Telegram's own page (A-150, A-180) is set up here too. */
+  widget: boolean;
+  brand: { name: string; logoUrl: string | null } | null;
 }
 
 /**
- * What the staff sign-in page offers on this address. The password form goes
- * away only when every centre the page serves signs in with Telegram only (one
- * by one, or all at once by the site owner's switch) and a Telegram login is
- * there to use.
+ * What a sign-in page offers on this address. Phone and password are always
+ * there; the Telegram code appears where a bot can send one.
  */
-export async function staffSignInOptions(
-  db: DbClient,
-  host: string | null,
-): Promise<StaffSignInOptions> {
-  const telegram = Boolean(await resolveLoginSetup(db, host));
-  if (!telegram || process.env.STAFF_PASSWORD_LOGIN === "on") return { telegram, password: true };
-  // The site owner's rule covers every centre, new ones included (A-181).
-  if (await telegramOnlyEverywhere(db)) return { telegram, password: false };
-  const brand = await organizationForHost(host, db);
-  const organizations = await db.organization.findMany({
-    where: brand ? { id: brand.organizationId } : { suspendedAt: null },
-    select: { id: true },
-  });
-  if (organizations.length === 0) return { telegram, password: true };
-  const telegramOnly = await db.orgSettings.count({
-    where: { staffTelegramOnly: true, organizationId: { in: organizations.map((o) => o.id) } },
-  });
-  return { telegram, password: telegramOnly < organizations.length };
+export async function signInOptions(db: DbClient, host: string | null): Promise<SignInOptions> {
+  const [bot, widget] = await Promise.all([resolveBotSetup(db, host), resolveLoginSetup(db, host)]);
+  return {
+    code: Boolean(bot),
+    bot: { username: bot?.botUsername ?? null, url: botLoginUrl(bot?.botUsername ?? null) },
+    widget: Boolean(widget),
+    brand: bot?.brand ?? widget?.brand ?? null,
+  };
 }
 
 /** Telegram came back with a code asked for on the staff page: open a staff session. */
@@ -94,6 +82,10 @@ export async function finishStaffTelegramLogin(
     throw AppError.forbidden("errors.organizationSuspended");
   }
   const activeBranchId = user.branches.length === 1 ? user.branches[0]!.branchId : null;
+  // Telegram proved the phone: from now on the person's password works too (A-196).
+  if (!user.telegramVerifiedAt) {
+    await db.user.update({ where: { id: user.id }, data: { telegramVerifiedAt: new Date() } });
+  }
   // Telegram is the proof here, so the Telegram code of A-124 is not asked for again.
   const issued = await issueSession(db, user, activeBranchId, ctx, "TELEGRAM");
   return { issued, next: back.next, locale: back.locale };

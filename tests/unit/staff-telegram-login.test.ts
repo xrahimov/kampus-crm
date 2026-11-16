@@ -1,8 +1,8 @@
 /**
- * Staff sign-in with Telegram (A-180), against the real database: the phone
- * Telegram vouches for opens the staff account that has it and no other, a
- * centre can refuse passwords only from a Telegram session, and the ways back
- * in (the environment switch, missing login keys) still take a password.
+ * Staff sign-in with Telegram (A-180, A-196), against the real database: the
+ * phone Telegram vouches for opens the staff account that has it and no other;
+ * a password opens nothing until the person has come in with Telegram once,
+ * except where no bot can reach them or the server's switch lifts the rule.
  */
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 
@@ -11,16 +11,11 @@ import { prisma } from "@/server/db/prisma";
 import { AppError } from "@/server/errors/app-error";
 import { fakeTelegramCode } from "@/server/integrations/telegram/login";
 import type { Actor } from "@/server/rbac/authorize";
-import {
-  login,
-  passwordSignInAllowed,
-  telegramOnlyEverywhere,
-} from "@/server/services/auth.service";
-import { getOrgSettings, updateOrgSettings } from "@/server/services/settings/org-settings.service";
+import { firstSignInNeedsTelegram, login } from "@/server/services/auth.service";
 import { createStaff } from "@/server/services/staff/staff.service";
 import {
   finishStaffTelegramLogin,
-  staffSignInOptions,
+  signInOptions,
 } from "@/server/services/staff-telegram-login.service";
 import {
   finishTelegramLogin,
@@ -151,6 +146,9 @@ describe("staff sign-in with Telegram (A-180)", () => {
       orderBy: { createdAt: "desc" },
     });
     expect(log).toMatchObject({ success: true, method: "TELEGRAM", phone: phone(2) });
+    // Telegram has now proven this phone (A-196).
+    const proven = await prisma.user.findUniqueOrThrow({ where: { id: teacherId } });
+    expect(proven.telegramVerifiedAt).toBeInstanceOf(Date);
   });
 
   it("refuses a phone no staff member has, an archived one and another centre's", async () => {
@@ -201,211 +199,84 @@ describe("staff sign-in with Telegram (A-180)", () => {
   });
 });
 
-describe("Telegram only (A-180)", () => {
-  const settings = async (staffTelegramOnly: boolean, actor: Actor) => {
-    const { organizationId: _o, logoUrl: _l, ...current } = await getOrgSettings(ceo);
-    return updateOrgSettings(actor, { ...current, staffTelegramOnly });
-  };
-
-  it("offers both ways while passwords are accepted", async () => {
-    expect(await staffSignInOptions(prisma, HOST)).toEqual({ telegram: true, password: true });
-    expect(await passwordSignInAllowed(prisma, orgId)).toBe(true);
+describe("the first sign-in is with Telegram (A-196)", () => {
+  it("offers the code and the older Telegram page where the bot is set up", async () => {
+    expect(await signInOptions(prisma, HOST)).toMatchObject({
+      code: true,
+      widget: true,
+      bot: { username: `${TAG}_bot`, url: `https://t.me/${TAG}_bot?start=login` },
+      brand: { name: `${TAG} centre` },
+    });
   });
 
-  it("cannot be switched on from a password session", async () => {
-    await expect(settings(true, { ...ceo, signedInWith: "PASSWORD" })).rejects.toMatchObject({
-      message: "errors.staffTelegramOnlyNeedsTelegram",
+  it("refuses the right password of someone who has never come in with Telegram", async () => {
+    // The CEO of this test has a password and has never used Telegram.
+    await expect(login({ phone: phone(1), password: PASSWORD }, ctx)).rejects.toMatchObject({
+      message: "errors.firstSignInTelegram",
     });
-    await expect(settings(true, ceo)).rejects.toMatchObject({
-      message: "errors.staffTelegramOnlyNeedsTelegram",
-    });
-    expect((await getOrgSettings(ceo)).staffTelegramOnly).toBe(false);
-  });
-
-  it("is switched on from a Telegram session and then refuses the right password", async () => {
-    const saved = await settings(true, { ...ceo, signedInWith: "TELEGRAM" });
-    expect(saved.staffTelegramOnly).toBe(true);
-    expect(await staffSignInOptions(prisma, HOST)).toEqual({ telegram: true, password: false });
-
-    await expect(login({ phone: phone(2), password: PASSWORD }, ctx)).rejects.toMatchObject({
-      message: "errors.passwordSignInOff",
-    });
-    // A wrong password still reads as a wrong password: the answer gives nothing away.
-    await expect(login({ phone: phone(2), password: "wrong-password" }, ctx)).rejects.toMatchObject(
+    expect(await prisma.session.count({ where: { userId: ceo.userId } })).toBe(0);
+    // A wrong password says nothing about it.
+    await expect(login({ phone: phone(1), password: "wrong-password" }, ctx)).rejects.toMatchObject(
       { message: "errors.invalidCredentials" },
     );
-    // Telegram still works.
-    const done = await finishStaffTelegramLogin(prisma, await telegramRoundTrip(phone(2)), ctx);
-    expect(done.issued.session.userId).toBe(teacherId);
-    // A save that leaves the switch out keeps it.
-    const {
-      organizationId: _o,
-      logoUrl: _l,
-      staffTelegramOnly: _s,
-      ...rest
-    } = await getOrgSettings(ceo);
-    expect((await updateOrgSettings(ceo, rest)).staffTelegramOnly).toBe(true);
+    await prisma.loginAttempt.deleteMany({ where: { key: { contains: phone(1) } } });
   });
 
-  it("adds staff without a password, who then come in through Telegram", async () => {
-    const created = await createStaff(ceo, "staff", {
-      fullName: `${TAG} Newcomer`,
-      phone: phone(5),
-      gender: "FEMALE",
-      roleCodes: [roleCode],
-      branchIds: [branchId],
-    });
-    const done = await finishStaffTelegramLogin(prisma, await telegramRoundTrip(phone(5)), ctx);
-    expect(done.issued.session.userId).toBe(created.id);
-  });
-
-  it("takes passwords again with the server's switch or without login keys", async () => {
-    process.env.STAFF_PASSWORD_LOGIN = "on";
-    expect(await staffSignInOptions(prisma, HOST)).toEqual({ telegram: true, password: true });
+  it("takes the password of someone Telegram has vouched for", async () => {
+    // The teacher signed in with Telegram in the tests above.
     const outcome = await login({ phone: phone(2), password: PASSWORD }, ctx);
     expect(outcome.kind).toBe("session");
-    delete process.env.STAFF_PASSWORD_LOGIN;
-    await expect(login({ phone: phone(2), password: PASSWORD }, ctx)).rejects.toMatchObject({
-      message: "errors.passwordSignInOff",
+    if (outcome.kind !== "session") return;
+    expect(outcome.issued.session.signedInWith).toBe("PASSWORD");
+  });
+
+  it("is lifted by the server's switch, and where no bot can send a code", async () => {
+    const user = await prisma.user.findUniqueOrThrow({ where: { id: ceo.userId } });
+    expect(await firstSignInNeedsTelegram(prisma, user)).toBe(true);
+
+    process.env.STAFF_PASSWORD_LOGIN = "on";
+    try {
+      expect(await firstSignInNeedsTelegram(prisma, user)).toBe(false);
+      expect((await login({ phone: phone(1), password: PASSWORD }, ctx)).kind).toBe("session");
+    } finally {
+      delete process.env.STAFF_PASSWORD_LOGIN;
+    }
+    await expect(login({ phone: phone(1), password: PASSWORD }, ctx)).rejects.toMatchObject({
+      message: "errors.firstSignInTelegram",
     });
 
-    // The bot loses its login keys: there is no Telegram to sign in with, so the password works.
+    // The bot loses its token: nobody could get a code, so the password works.
     const row = await prisma.integrationSetting.findUniqueOrThrow({
       where: { organizationId_provider: { organizationId: orgId, provider: "TELEGRAM" } },
     });
     const config = row.config as Record<string, string>;
     await prisma.integrationSetting.update({
       where: { id: row.id },
-      data: { config: { ...config, loginClientId: "", loginClientSecret: "" } },
+      data: { config: { ...config, botToken: "" } },
     });
-    expect(await staffSignInOptions(prisma, HOST)).toEqual({ telegram: false, password: true });
-    expect((await login({ phone: phone(2), password: PASSWORD }, ctx)).kind).toBe("session");
+    expect(await firstSignInNeedsTelegram(prisma, user)).toBe(false);
+    expect((await login({ phone: phone(1), password: PASSWORD }, ctx)).kind).toBe("session");
     await prisma.integrationSetting.update({ where: { id: row.id }, data: { config } });
+
+    // A centre with no bot at all is never held to it.
+    const elsewhere = await prisma.user.findUniqueOrThrow({ where: { phone: phone(4) } });
+    expect(await firstSignInNeedsTelegram(prisma, elsewhere)).toBe(false);
   });
 
-  it("can always be switched off, and then a new staff member needs a password", async () => {
-    const saved = await settings(false, { ...ceo, signedInWith: "PASSWORD" });
-    expect(saved.staffTelegramOnly).toBe(false);
-    expect((await login({ phone: phone(2), password: PASSWORD }, ctx)).kind).toBe("session");
-    await expect(
-      createStaff(ceo, "staff", {
-        fullName: `${TAG} No password`,
-        phone: phone(6),
-        gender: "MALE",
-        roleCodes: [roleCode],
-        branchIds: [branchId],
-      }),
-    ).rejects.toMatchObject({ fields: { password: ["validation.required"] } });
-  });
-
-  it("is refused where the centre has no Telegram login at all", async () => {
-    const actor: Actor = {
-      ...ceo,
-      organizationId: otherOrgId,
-      branchIds: [],
-      signedInWith: "TELEGRAM",
-    };
-    const { organizationId: _o, logoUrl: _l, ...current } = await getOrgSettings(actor);
-    await expect(
-      updateOrgSettings(actor, { ...current, staffTelegramOnly: true }),
-    ).rejects.toMatchObject({ message: "errors.staffTelegramOnlyNoBot" });
-  });
-});
-
-describe("Telegram only for every centre (A-181)", () => {
-  const save = async (actor: Actor, staffTelegramOnlyAll: boolean) => {
-    const { organizationId: _o, logoUrl: _l, ...current } = await getOrgSettings(actor);
-    return updateOrgSettings(actor, { ...current, staffTelegramOnlyAll });
-  };
-  const owner = (signedInWith: "PASSWORD" | "TELEGRAM"): Actor => ({
-    ...ceo,
-    isSiteOwner: true,
-    signedInWith,
-  });
-
-  it("is dropped when anyone but the site owner saves it", async () => {
-    const saved = await save({ ...ceo, signedInWith: "TELEGRAM" }, true);
-    expect(saved.staffTelegramOnlyAll).toBe(false);
-    expect(saved.canSetStaffTelegramOnlyAll).toBe(false);
-    expect(saved.staffTelegramOnly).toBe(false);
-  });
-
-  it("cannot be switched on by the site owner from a password session", async () => {
-    await expect(save(owner("PASSWORD"), true)).rejects.toMatchObject({
-      message: "errors.staffTelegramOnlyNeedsTelegram",
+  it("adds staff without a password, who then come in through Telegram", async () => {
+    const created = await createStaff(ceo, "staff", {
+      fullName: `${TAG} No password`,
+      phone: phone(5),
+      gender: "FEMALE",
+      roleCodes: [roleCode],
+      branchIds: [branchId],
     });
-    expect((await getOrgSettings(ceo)).staffTelegramOnlyAll).toBe(false);
-  });
-
-  it("covers every centre whose bot has login keys, and only those", async () => {
-    // Inside a transaction that is rolled back, so no other test ever sees the rule.
-    const rollback = new Error("rollback");
-    await prisma
-      .$transaction(async (tx) => {
-        expect(await telegramOnlyEverywhere(tx)).toBe(false);
-        await tx.orgSettings.update({
-          where: { organizationId: orgId },
-          data: { staffTelegramOnly: true, staffTelegramOnlyAll: true },
-        });
-        expect(await telegramOnlyEverywhere(tx)).toBe(true);
-        expect(await staffSignInOptions(tx, HOST)).toEqual({ telegram: true, password: false });
-        expect(await passwordSignInAllowed(tx, orgId)).toBe(false);
-        // A centre with no Telegram login keeps its passwords: nobody is locked out.
-        expect(await passwordSignInAllowed(tx, otherOrgId)).toBe(true);
-        // Once it has the keys, the rule holds there too, without a switch of its own.
-        await tx.integrationSetting.create({
-          data: {
-            organizationId: otherOrgId,
-            provider: "TELEGRAM",
-            isEnabled: true,
-            config: { loginClientId: `2${RUN}`, loginClientSecret: `${TAG}-other-secret` },
-          },
-        });
-        expect(await passwordSignInAllowed(tx, otherOrgId)).toBe(false);
-        // The server's switch is still the way back in.
-        process.env.STAFF_PASSWORD_LOGIN = "on";
-        expect(await passwordSignInAllowed(tx, otherOrgId)).toBe(true);
-        expect(await staffSignInOptions(tx, HOST)).toEqual({ telegram: true, password: true });
-        delete process.env.STAFF_PASSWORD_LOGIN;
-        throw rollback;
-      })
-      .catch((error: unknown) => {
-        delete process.env.STAFF_PASSWORD_LOGIN;
-        if (error !== rollback) throw error;
-      });
-    expect(await passwordSignInAllowed(prisma, orgId)).toBe(true);
-  });
-
-  it("is switched on by the site owner from a Telegram session, and off again by anyone's password session", async () => {
-    try {
-      const saved = await save(owner("TELEGRAM"), true);
-      expect(saved).toMatchObject({
-        staffTelegramOnlyAll: true,
-        staffTelegramOnly: true,
-        staffTelegramOnlyServer: true,
-        canSetStaffTelegramOnlyAll: true,
-      });
-      // Another centre's CEO sees the rule but cannot change it.
-      const elsewhere: Actor = { ...ceo, organizationId: otherOrgId, branchIds: [] };
-      const seen = await getOrgSettings(elsewhere);
-      expect(seen).toMatchObject({
-        staffTelegramOnlyServer: true,
-        staffTelegramOnlyAll: false,
-        canSetStaffTelegramOnlyAll: false,
-      });
-      await expect(login({ phone: phone(2), password: PASSWORD }, ctx)).rejects.toMatchObject({
-        message: "errors.passwordSignInOff",
-      });
-    } finally {
-      // Off straight away: the rule is visible to every test that runs beside this one.
-      const off = await save(owner("PASSWORD"), false);
-      expect(off.staffTelegramOnlyAll).toBe(false);
-      expect(off.staffTelegramOnlyServer).toBe(false);
-    }
-    // The centre's own switch stays as the rule left it until it is switched off too.
-    const { organizationId: _o, logoUrl: _l, ...current } = await getOrgSettings(ceo);
-    expect(current.staffTelegramOnly).toBe(true);
-    await updateOrgSettings(ceo, { ...current, staffTelegramOnly: false });
-    expect((await login({ phone: phone(2), password: PASSWORD }, ctx)).kind).toBe("session");
+    const row = await prisma.user.findUniqueOrThrow({ where: { id: created.id } });
+    // Nobody knows the password the account holds, and it is marked as not their own.
+    expect(row.mustChangePassword).toBe(true);
+    expect(row.telegramVerifiedAt).toBeNull();
+    const back = await telegramRoundTrip(phone(5));
+    const done = await finishStaffTelegramLogin(prisma, back, ctx);
+    expect(done.issued.session.userId).toBe(created.id);
   });
 });

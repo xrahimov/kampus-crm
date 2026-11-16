@@ -1494,64 +1494,18 @@ async function viewShots(base: Base, ceo: Page, failures: string[]) {
   }
 }
 
-/* ----- the sign-in page, the way a centre that signs in with Telegram only has it ------------ */
-
-/** A staff session opened through the server's stand-in for Telegram (TELEGRAM_LOGIN_FAKE=1). */
-async function telegramSession(
-  browser: Browser,
-  locale: string,
-): Promise<[BrowserContext, Page] | null> {
-  const [context, page] = await newPage(browser);
-  try {
-    await go(page, locale, "/login");
-    const href = await page.getByTestId("login-telegram").getAttribute("href", { timeout: 5000 });
-    const res = await page.request.get(new URL(href!, BASE).toString(), { maxRedirects: 0 });
-    const auth = new URL(res.headers()["location"]!);
-    const back = new URL(auth.searchParams.get("redirect_uri")!);
-    back.searchParams.set("state", auth.searchParams.get("state")!);
-    const claims = { id: "700000001", name: "Demo CEO", phone_number: CEO.replace("+", "") };
-    back.searchParams.set(
-      "code",
-      `fake.${Buffer.from(JSON.stringify(claims)).toString("base64url")}`,
-    );
-    await page.goto(back.toString());
-    await page.waitForURL(/\/(dashboard|today|groups)/, { timeout: 15_000 });
-    return [context, page];
-  } catch {
-    await context.close();
-    return null;
-  }
-}
-
-async function setTelegramOnly(page: Page, on: boolean) {
-  const settings = await getJson<Record<string, unknown>>(page, "/settings/org");
-  await mutate(page, "put", "/settings/org", { ...settings, staffTelegramOnly: on });
-}
+/* ----- the sign-in page, as someone who is not signed in sees it (A-196) ------------------- */
 
 async function loginShot(browser: Browser, locale: string, failures: string[]) {
   if (only && !only.includes("login")) return;
-  // Only a Telegram session may switch passwords off, and the same one switches them back on.
-  const session = await telegramSession(browser, locale);
-  if (!session) {
-    process.stdout.write(
-      "  (no stand-in for Telegram on the server: the sign-in page keeps its password form)\n",
-    );
-  }
   const [anon, anonPage] = await newPage(browser);
   try {
-    if (session) await setTelegramOnly(session[1], true);
     await go(anonPage, locale, "/login");
     await shotPage(anonPage, locale, "login");
     process.stdout.write(`  ${locale}/login\n`);
   } catch (error) {
     failures.push(`${locale}/login: ${(error as Error).message.split("\n")[0]}`);
   } finally {
-    if (session) {
-      await setTelegramOnly(session[1], false).catch((error: Error) =>
-        failures.push(`${locale}/login: passwords were not switched back on: ${error.message}`),
-      );
-      await session[0].close();
-    }
     await anon.close();
   }
 }

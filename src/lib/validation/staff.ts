@@ -51,8 +51,8 @@ const staffBase = z.object({
 });
 
 /**
- * Create: a password is required, except in a centre that signs in with
- * Telegram only (A-180), where it may be left empty; the service decides.
+ * Create: the password may be left empty (A-196). The person's first sign-in
+ * is with a code from Telegram, and they choose their own password then.
  */
 export const staffCreateSchema = staffBase.extend({
   password: passwordSchema.optional().or(z.literal("").transform(() => undefined)),
