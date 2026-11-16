@@ -275,7 +275,10 @@ export async function finishTelegramLogin(
 export function phoneFromTelegram(digits: string | null): string | null {
   if (!digits) return null;
   const normalized = normalizePhone(digits);
-  return normalized && /^\+\d{10,15}$/.test(normalized) ? normalized : null;
+  if (normalized && /^\+\d{10,15}$/.test(normalized)) return normalized;
+  // A number from another country arrives as bare digits; it is kept with its plus.
+  const bare = digits.replace(/\D/g, "");
+  return /^\d{10,15}$/.test(bare) ? `+${bare}` : null;
 }
 
 /**
@@ -339,7 +342,8 @@ export async function accountForIdentity(
   const data = {
     name: identity.name,
     username: identity.username,
-    photoUrl: identity.photoUrl,
+    // The bot knows no photo: one that Telegram's login gave earlier stays.
+    ...(identity.photoUrl ? { photoUrl: identity.photoUrl } : {}),
     ...(phone ? { phone } : {}),
     lastSeenAt: new Date(),
   };
@@ -427,11 +431,13 @@ export async function createStudentSession(
   accountId: string,
   ctx: LoginContext,
   now = new Date(),
+  signedInWith: "PASSWORD" | "TELEGRAM" = "TELEGRAM",
 ): Promise<string> {
   const token = generateToken();
   await db.studentSession.create({
     data: {
       accountId,
+      signedInWith,
       tokenHash: sha256(token),
       ip: ctx.ip ?? null,
       userAgent: ctx.userAgent?.slice(0, 512) ?? null,
@@ -451,7 +457,11 @@ export interface StudentPrincipal {
     username: string | null;
     photoUrl: string | null;
     phone: string | null;
+    /** The person has chosen a password, so phone and password sign them in (A-196). */
+    hasPassword: boolean;
   };
+  /** How this session was opened: a Telegram one may choose a password without the old one. */
+  signedInWith: "PASSWORD" | "TELEGRAM";
   /** Students this person is, and students whose parent this person is. */
   studentIds: string[];
   childIds: string[];
@@ -521,7 +531,9 @@ export async function resolveStudentSession(
       username: a.username,
       photoUrl: a.photoUrl,
       phone: a.phone,
+      hasPassword: a.passwordHash !== null,
     },
+    signedInWith: session.signedInWith,
     studentIds,
     childIds: [...new Set(childIds)],
   };

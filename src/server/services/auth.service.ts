@@ -15,11 +15,8 @@ import { prisma, type DbClient } from "@/server/db/prisma";
 import { AppError } from "@/server/errors/app-error";
 import type { Actor } from "@/server/rbac/authorize";
 import { authorizeBranch, canAccessAllBranches } from "@/server/rbac/authorize";
-import {
-  getTelegramNotifier,
-  loadIntegrationConfig,
-  telegramConfigFor,
-} from "@/server/services/integrations/integrations.service";
+import { getTelegramNotifier } from "@/server/services/integrations/integrations.service";
+import { telegramCodesLive } from "@/server/services/sign-in/setup";
 import { botText } from "@/server/services/telegram/student-telegram.service";
 
 import { noteSignIn } from "./account.service";
@@ -38,46 +35,6 @@ export type LoginOutcome =
   /** The password was right; the session is issued once the Telegram code is entered. */
   | { kind: "challenge"; challengeId: string; expiresAt: string };
 
-/**
- * Whether a password may open a session in this centre (A-180). A centre that
- * switched to Telegram only refuses it; STAFF_PASSWORD_LOGIN=on in the server's
- * environment is the way back in when Telegram cannot be used at all.
- */
-export async function passwordSignInAllowed(
-  db: DbClient,
-  organizationId: string,
-): Promise<boolean> {
-  if (process.env.STAFF_PASSWORD_LOGIN === "on") return true;
-  const settings = await db.orgSettings.findUnique({
-    where: { organizationId },
-    select: { staffTelegramOnly: true },
-  });
-  if (!settings?.staffTelegramOnly && !(await telegramOnlyEverywhere(db))) return true;
-  // The switch holds only while the centre has a Telegram login to use instead.
-  return !(await telegramSignInReady(db, organizationId));
-}
-
-/**
- * The site owner switched every centre on the server to Telegram only (A-181).
- * Only the site owner can save the flag, so one row holding it is the whole rule.
- */
-export async function telegramOnlyEverywhere(db: DbClient): Promise<boolean> {
-  return (await db.orgSettings.count({ where: { staffTelegramOnlyAll: true } })) > 0;
-}
-
-/** Whether the bot this centre uses (its own or the shared one) has Telegram login keys. */
-export async function telegramSignInReady(db: DbClient, organizationId: string): Promise<boolean> {
-  // Login keys alone are enough on the server's address, with or without a bot token (A-150).
-  const own = await loadIntegrationConfig(db, "TELEGRAM", organizationId);
-  if (own?.isEnabled && own.loginClientId && own.loginClientSecret) return true;
-  const effective = await telegramConfigFor(db, organizationId);
-  return Boolean(
-    effective?.config.isEnabled &&
-    effective.config.loginClientId &&
-    effective.config.loginClientSecret,
-  );
-}
-
 export interface SignedInUser {
   id: string;
   phone: string;
@@ -85,12 +42,86 @@ export interface SignedInUser {
   fullName: string;
 }
 
+type StaffForSignIn = NonNullable<Awaited<ReturnType<typeof findStaffForSignIn>>>;
+
+function findStaffForSignIn(db: DbClient, phone: string) {
+  return db.user.findUnique({
+    where: { phone },
+    include: {
+      branches: { select: { branchId: true } },
+      botRecipient: { select: { chatId: true } },
+      organization: { select: { suspendedAt: true } },
+    },
+  });
+}
+
+/** The staff member this phone and password belong to, or null. Says nothing about why not. */
+export async function staffByPassword(
+  db: DbClient,
+  input: LoginInput,
+): Promise<{ user: StaffForSignIn | null; seenUserId: string | null }> {
+  const user = await findStaffForSignIn(db, input.phone);
+  const ok = user && !user.isArchived && (await verifyPassword(user.passwordHash, input.password));
+  return { user: ok ? user : null, seenUserId: user?.id ?? null };
+}
+
+/**
+ * The first sign-in is with Telegram (A-196): until the person has come in with
+ * a Telegram code once, their phone is not proven and a password opens nothing,
+ * even the right one. It holds only where a bot can really send them a code, and
+ * STAFF_PASSWORD_LOGIN=on in the server's environment lifts it when Telegram
+ * cannot be used at all.
+ */
+export async function firstSignInNeedsTelegram(
+  db: DbClient,
+  user: { telegramVerifiedAt: Date | null; organizationId: string },
+): Promise<boolean> {
+  if (user.telegramVerifiedAt) return false;
+  if (process.env.STAFF_PASSWORD_LOGIN === "on") return false;
+  return telegramCodesLive(db, user.organizationId);
+}
+
+/** What follows a right staff password: the checks that may still refuse, then the session. */
+export async function finishStaffPassword(
+  db: DbClient,
+  user: StaffForSignIn,
+  ctx: LoginContext,
+): Promise<LoginOutcome> {
+  // A suspended centre (A-144) keeps everyone but the site owner out, with a clear message.
+  if (user.organization.suspendedAt && !user.isSiteOwner) {
+    throw AppError.forbidden("errors.organizationSuspended");
+  }
+
+  // Checked only after the right password, so the answer says nothing about other people's phones.
+  if (await firstSignInNeedsTelegram(db, user)) {
+    await db.loginLog.create({
+      data: {
+        userId: user.id,
+        phone: user.phone,
+        success: false,
+        ip: ctx.ip,
+        userAgent: ctx.userAgent,
+      },
+    });
+    throw AppError.forbidden("errors.firstSignInTelegram");
+  }
+
+  // Default to the user's only branch; users with several pick one in the header.
+  const activeBranchId = user.branches.length === 1 ? user.branches[0]!.branchId : null;
+
+  // Without a known chat the switch has nothing to send to, so the password alone signs in.
+  if (user.signInCode === "TELEGRAM" && user.botRecipient) {
+    return startChallenge(db, user, user.botRecipient.chatId, activeBranchId, ctx);
+  }
+  return { kind: "session", issued: await issueSession(db, user, activeBranchId, ctx) };
+}
+
 /**
  * Phone + password login with per-phone and per-IP lockout.
  * Wrong phone and wrong password produce the same error, so the response does
  * not reveal which phones exist. A person with the Telegram code switched on
- * gets a challenge instead of a session (A-124). A centre that signs in with
- * Telegram only refuses the password, right or wrong (A-180).
+ * gets a challenge instead of a session (A-124). Someone who has never signed
+ * in with Telegram is refused, right password or wrong (A-196).
  */
 export async function login(
   input: LoginInput,
@@ -102,22 +133,12 @@ export async function login(
   const lock = await checkLoginLock(db, keys);
   if (lock.locked) throw AppError.rateLimited(lock.retryAfterSeconds);
 
-  const user = await db.user.findUnique({
-    where: { phone: input.phone },
-    include: {
-      branches: { select: { branchId: true } },
-      botRecipient: { select: { chatId: true } },
-      organization: { select: { suspendedAt: true } },
-    },
-  });
-
-  const ok = user && !user.isArchived && (await verifyPassword(user.passwordHash, input.password));
-
-  if (!ok) {
+  const { user, seenUserId } = await staffByPassword(db, input);
+  if (!user) {
     await recordLoginFailure(db, keys);
     await db.loginLog.create({
       data: {
-        userId: user?.id ?? null,
+        userId: seenUserId,
         phone: input.phone,
         success: false,
         ip: ctx.ip,
@@ -128,34 +149,7 @@ export async function login(
   }
 
   await clearLoginFailures(db, keys);
-
-  // A suspended centre (A-144) keeps everyone but the site owner out, with a clear message.
-  if (user.organization.suspendedAt && !user.isSiteOwner) {
-    throw AppError.forbidden("errors.organizationSuspended");
-  }
-
-  // Checked only after the right password, so the answer says nothing about other people's phones.
-  if (!(await passwordSignInAllowed(db, user.organizationId))) {
-    await db.loginLog.create({
-      data: {
-        userId: user.id,
-        phone: input.phone,
-        success: false,
-        ip: ctx.ip,
-        userAgent: ctx.userAgent,
-      },
-    });
-    throw AppError.forbidden("errors.passwordSignInOff");
-  }
-
-  // Default to the user's only branch; users with several pick one in the header.
-  const activeBranchId = user.branches.length === 1 ? user.branches[0]!.branchId : null;
-
-  // Without a known chat the switch has nothing to send to, so the password alone signs in.
-  if (user.signInCode === "TELEGRAM" && user.botRecipient) {
-    return startChallenge(db, user, user.botRecipient.chatId, activeBranchId, ctx);
-  }
-  return { kind: "session", issued: await issueSession(db, user, activeBranchId, ctx) };
+  return finishStaffPassword(db, user, ctx);
 }
 
 export async function issueSession(

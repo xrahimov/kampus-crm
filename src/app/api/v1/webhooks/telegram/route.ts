@@ -61,21 +61,27 @@ export const POST = route<z.output<typeof update>>(
     const shared = await isSharedTelegramBot(prisma, organizationId);
     const fromId = message.from?.id === undefined ? null : String(message.from.id);
     // Students and parents signing in from the bot (A-150).
-    const login = await handleBotLogin(prisma, shared ? null : organizationId, {
-      chatId,
-      text: message.text ?? null,
-      fromId,
-      firstName: message.from?.first_name ?? null,
-      lastName: message.from?.last_name ?? null,
-      username: message.from?.username ?? null,
-      languageCode: message.from?.language_code ?? null,
-      contact: message.contact
-        ? {
-            phoneNumber: message.contact.phone_number,
-            userId: message.contact.user_id === undefined ? null : String(message.contact.user_id),
-          }
-        : null,
-    });
+    const login = await handleBotLogin(
+      prisma,
+      shared ? null : organizationId,
+      {
+        chatId,
+        text: message.text ?? null,
+        fromId,
+        firstName: message.from?.first_name ?? null,
+        lastName: message.from?.last_name ?? null,
+        username: message.from?.username ?? null,
+        languageCode: message.from?.language_code ?? null,
+        contact: message.contact
+          ? {
+              phoneNumber: message.contact.phone_number,
+              userId:
+                message.contact.user_id === undefined ? null : String(message.contact.user_id),
+            }
+          : null,
+      },
+      organizationId,
+    );
     if (login) {
       const notifier = await getTelegramNotifier(prisma, organizationId);
       await notifier.sendMessage(chatId, login.text, { replyMarkup: login.replyMarkup });

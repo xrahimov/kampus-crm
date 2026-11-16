@@ -130,10 +130,6 @@ export const orgSettingsSchema = z
       .min(1, "validation.min")
       .max(168, "validation.max")
       .default(12),
-    /** Staff sign in with Telegram only (A-180); left out keeps the centre's choice. */
-    staffTelegramOnly: z.boolean().optional(),
-    /** The same for every centre on the server (A-181); kept only from the site owner. */
-    staffTelegramOnlyAll: z.boolean().optional(),
     /** Public page per centre (A-121). */
     publicPage: z.boolean().default(false),
     publicSlug,

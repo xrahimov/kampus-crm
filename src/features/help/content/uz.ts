@@ -54,18 +54,19 @@ export const uz: HelpContent = {
         signIn: {
           title: "Tizimga kirish",
           body: [
-            "Administratoringiz telefon raqamingiz bilan sizga hisob yaratadi. Kampusni kompyuter, planshet yoki telefondagi brauzerda oching; hech narsa o‘rnatish kerak emas. Tizimga Telegram orqali kirasiz.",
+            "Administrator sizni Kampusga telefon raqamingiz bilan qo‘shadi. Kampusni kompyuter, planshet yoki telefondagi brauzerda oching; hech narsa o‘rnatish kerak emas. **Birinchi marta Telegramdan kelgan kod bilan kirasiz.** Shundan so‘ng parol tanlaysiz va keyin telefon raqami bilan parol yetarli bo‘ladi.",
             {
               steps: [
-                "**Telegram orqali kirish** tugmasini bosing.",
-                "Telegram tasdiqlashni so‘raydi; telefon raqamingizni ulashishga rozilik bering.",
-                "Bu raqam xodim kartangizdagi telefon raqam bo‘lsa, Kampus hisobingizni ochadi. Kampus bunday raqamli xodim yo‘q desa, administratordan kartangizdagi telefonni to‘g‘rilashni so‘rang.",
+                "Kirish sahifasida telefon raqamingizni +998 90 123 45 67 ko‘rinishida yozing va **Telegramdan kod olish** ni bosing.",
+                "Telegramda sahifada ko‘rsatilgan botni oching, **Start** ni, keyin **Raqamimni yuborish** ni bosing. Bu faqat birinchi marta kerak va raqam xodim kartangizdagi raqam bilan bir xil bo‘lishi lozim.",
+                "Bot shu chatga olti xonali kod yuboradi. Uni kirish sahifasiga yozing va **Tasdiqlash** ni bosing.",
+                "Kampus parol tanlashni taklif qiladi. Parolni saqlang yoki **Hozir emas** ni bosib, uni keyinroq ismingiz → Mening hisobim bo‘limida tanlang.",
               ],
             },
-            "**Telefon raqam va parol.** Faqat Telegram orqali kirishga o‘tmagan markazda sahifada shakl ham bo‘ladi: telefon raqamingizni +998 90 123 45 67 ko‘rinishida va parolingizni kiriting, so‘ng **Kirish** tugmasini bosing. Parol noto‘g‘ri bo‘lsa, sahifa buni aytadi; ketma-ket bir necha noto‘g‘ri urinishdan so‘ng kirish qisqa vaqtga to‘xtatiladi. Markaz faqat Telegram orqali kiradigan bo‘lsa, sahifada faqat Telegram tugmasi turadi va parollar qabul qilinmaydi.",
+            "**Telefon raqam va parol.** Parolingiz bo‘lgach, telefon raqamingiz va parolingizni yozib, **Kirish** tugmasini bosing. Parol noto‘g‘ri bo‘lsa, sahifa buni aytadi; ketma-ket bir necha noto‘g‘ri urinishdan so‘ng kirish qisqa vaqtga to‘xtatiladi. Telegram orqali birinchi marta kirmaguningizcha parol hech narsani ochmaydi: sahifa kod olishni so‘raydi. Telegram kodi keyin ham, xohlagan paytingizda ishlayveradi.",
             "Tizimdan chiqish uchun yuqori o‘ng burchakdagi ismingizni oching va **Chiqish** ni tanlang. Umumiy kompyuterlarda buni albatta qiling.",
             {
-              note: "Parolni unutdingizmi? Yangi parolni faqat administrator Sozlamalar → Xodimlar bo‘limida o‘rnata oladi.",
+              note: "Parolni unutdingizmi? Telegram kodi bilan kiring, ismingiz → Mening hisobim bo‘limini oching va yangi parol qo‘ying; eski parol so‘ralmaydi. Kampus raqamingizni hali bilmasa, koddan keyin sahifa kimligingizni so‘raydi va markazingizga so‘rov yuboradi; menejer sizni kiritgach kirasiz.",
             },
           ],
         },
@@ -566,7 +567,7 @@ export const uz: HelpContent = {
                 "Tugatganingizda **Hamma uchun yakunlash** ni bosing. O‘quvchilar faqat siz yangi dars boshlaganingizdan keyin qayta qo‘shila oladi.",
               ],
             },
-            "**Dars havolasini nusxalash** (pastki paneldagi zanjir belgili tugma, **Chiqish** yonida) butun guruh uchun bitta havolani nusxalaydi: darsdan chiqmasdan uni guruhning Telegram chatiga tashlashingiz mumkin; ekran yoki fayl ko‘rsatayotganingizda ham xuddi shunday ishlaydi. Havola **Qatnashchilar** bo‘limida ham turadi: u yerdan uni o‘qib berish yoki belgilab olish mumkin. Havolani ochgan o‘quvchi avval Telegram orqali kiradi, so‘ng shu guruhdagi o‘z sahifasiga tushadi va **Darsga qo‘shilish** ni bosadi. Havola har bir darsda bir xil va unda sir yo‘q: shu guruhda o‘qimaydigan kishi kirgach, dars boshqa guruh uchun ekanini ko‘radi. Darsda yolg‘iz bo‘lganingizda yuqoridagi qator ham shu tugmani taklif qiladi.",
+            "**Dars havolasini nusxalash** (pastki paneldagi zanjir belgili tugma, **Chiqish** yonida) butun guruh uchun bitta havolani nusxalaydi: darsdan chiqmasdan uni guruhning Telegram chatiga tashlashingiz mumkin; ekran yoki fayl ko‘rsatayotganingizda ham xuddi shunday ishlaydi. Havola **Qatnashchilar** bo‘limida ham turadi: u yerdan uni o‘qib berish yoki belgilab olish mumkin. Havolani ochgan o‘quvchi avval tizimga kiradi, so‘ng shu guruhdagi o‘z sahifasiga tushadi va **Darsga qo‘shilish** ni bosadi. Havola har bir darsda bir xil va unda sir yo‘q: shu guruhda o‘qimaydigan kishi kirgach, dars boshqa guruh uchun ekanini ko‘radi. Darsda yolg‘iz bo‘lganingizda yuqoridagi qator ham shu tugmani taklif qiladi.",
             "Kimdir ulana olmasa, uning tarmog‘i to‘g‘ridan-to‘g‘ri qo‘ng‘iroqlarni to‘sayotgan bo‘lishi mumkin; administrator Sozlamalar → Integratsiyalar → Video darslar bo‘limida relay server qo‘sha oladi.",
             "**Doska** (qalam tugmasi) hammaning ekraniga umumiy doskani chiqaradi: qalam yoki o‘chirg‘ich bilan chizing, kerak bo‘lganda o‘quvchilarga chizishga ruxsat bering, qaytaring va tozalang; **Materiallarga saqlash** doska rasmini dars ostida saqlaydi.",
             "**Xonalar** o‘quvchilarni guruh ishi uchun 2-6 kichik xonaga bo‘ladi, belgilangan vaqtga yoki siz yopgunizcha. Xonadagilar faqat bir-birini ko‘radi va eshitadi; istalgan xonaga kirishingiz, odamlarni o‘tkazishingiz, barcha xonalarga bir xabar yuborishingiz va bir tugma bilan hammani qaytarishingiz mumkin.",
@@ -584,7 +585,7 @@ export const uz: HelpContent = {
           title: "O‘quvchilarning shaxsiy havolalari",
           body: [
             "Har bir o‘quvchining shu guruh uchun bitta shaxsiy havolasi bor; u video dars, darslar, uy vazifasi, materiallar, baholar va to‘lovlar turadigan sahifasini ochadi. Hammasini ko‘rish, birini nusxalash, hammasini nusxalash yoki telefon raqami bor har bir o‘quvchiga SMS orqali yuborish uchun video kartochkasidagi **O‘quvchilar havolalari** ni bosing. Havola begonaga o‘tib ketsa, o‘sha o‘quvchi uchun yangisini yarating; eskisi darhol ishlamay qoladi.",
-            "Shaxsiy havola o‘quvchi sahifasini kirishsiz ochadi, shuning uchun har birini faqat o‘z o‘quvchisiga yuboring. Butun guruhga xabar uchun video dars ichidagi **Dars havolasini nusxalash** dan foydalaning: u havola avval har kimdan Telegram orqali kirishni so‘raydi.",
+            "Shaxsiy havola o‘quvchi sahifasini kirishsiz ochadi, shuning uchun har birini faqat o‘z o‘quvchisiga yuboring. Butun guruhga xabar uchun video dars ichidagi **Dars havolasini nusxalash** dan foydalaning: u havola avval har kimdan tizimga kirishni so‘raydi.",
           ],
         },
         coins: {
@@ -633,6 +634,21 @@ export const uz: HelpContent = {
               ],
             },
             "Qo‘shilishga rozi bo‘lgan lidlarni lidlar doskasidan aylantirgan ma’qul, bu o‘quvchini yaratadi va manbani saqlab qoladi; “Lidlar” ga qarang.",
+          ],
+        },
+        signInRequests: {
+          title: "Kirish so‘rovlari",
+          body: [
+            "Telefon raqami hali Kampusda bo‘lmagan odam ham uni kirish sahifasida Telegram kodi bilan tasdiqlashi mumkin. U ichkariga kiritilmaydi: ismini yozadi, filialni tanlaydi, guruhini ko‘rsatishi mumkin va kutadi. O‘quvchi qo‘sha oladigan xodimlarga bildirishnoma keladi, O‘quvchilar sahifasining tepasida esa qator chiqadi: **kishi Telegram orqali kirdi va ruxsat kutmoqda**. Xodimlarning kirish sahifasida qoldirilgan so‘rovlar Sozlamalar → Xodimlar sahifasida, xodim qo‘sha oladiganlarga ko‘rinadi.",
+            {
+              steps: [
+                "O‘sha qatordagi **Ko‘rish** ni bosing yoki bildirishnomani oching.",
+                "Ism, telefon va izohni tekshiring. Telefonni Telegram tasdiqlagan; bu odam kimligini esa o‘zingiz hal qilasiz.",
+                "**Kiritish** ni bosing va bu kimligini tanlang: **Yangi o‘quvchi** (filial va, xohlasangiz, guruh bilan), **Mavjud o‘quvchi** (telefon o‘sha o‘quvchining kartasiga yoziladi) yoki **O‘quvchining ota-onasi** (telefon ota-ona raqami sifatida qo‘shiladi). Xodimlar sahifasidan kelgan so‘rov siz tanlagan lavozimli yangi xodimga aylanadi.",
+                "Yana **Kiritish** ni bosing. Bot odamga xabar beradi va u shu telefon bilan kiradi.",
+              ],
+            },
+            "**Rad etish** ham odamga xabar beradi va so‘rovni **Rad etilganlar** bo‘limiga o‘tkazadi; u yerdan keyinroq baribir kiritish mumkin. Shu telefon Kampusning istalgan joyida qo‘shilsa, so‘rov o‘zi yopiladi. Sozlamalar → Umumiy sozlamalar bo‘limida **O‘qituvchi o‘quvchi qo‘sha oladi** yoqilgan bo‘lsa, so‘rovlarni o‘qituvchilar ham ko‘radi: ular yangi o‘quvchi qo‘sha oladi, telefonni mavjud kartaga yozish uchun esa o‘quvchilarni tahrirlash huquqi kerak.",
           ],
         },
         profile: {
@@ -1065,7 +1081,7 @@ export const uz: HelpContent = {
               steps: [
                 "O‘qituvchilar sahifasida **Yangi o‘qituvchi** ni yoki Sozlamalar → Xodimlar da **Yangi xodim** ni bosing.",
                 "Rasm, ism familiya, telefon raqam, jinsi, tug‘ilgan sana va ishga olingan sanani qo‘shing.",
-                "Odam tizimga kiradigan parolni belgilang yoki **Yaratish** ni bosing. Telefon va parolni unga ayting; ularni keyin shu yerda o‘zgartirish mumkin.",
+                "Parolni bo‘sh qoldiring: odam birinchi marta Telegram kodi bilan kiradi va parolini o‘zi tanlaydi. Unga kirish sahifasini ochib, telefon raqamini yozishni va **Telegramdan kod olish** ni bosishni ayting. Shu yerda siz qo‘ygan yoki **Yaratish** bilan olingan parol vaqtinchalik bo‘lib, faqat o‘sha birinchi Telegram kirishidan keyin ishlaydi.",
                 "Odam ishlaydigan filiallarni va rollarini tanlang. Bir odamda bir nechta rol bo‘lishi mumkin; huquqlari qo‘shiladi.",
                 "Maosh hisoblash usuli va stavkani tanlang (quyida qarang), so‘ng **Saqlash** ni bosing.",
               ],
@@ -1195,20 +1211,21 @@ export const uz: HelpContent = {
           ],
         },
         telegramLogin: {
-          title: "O‘quvchilar Telegram orqali kiradi",
+          title: "Telegram orqali kirish",
           body: [
-            "O‘quvchilar va ota-onalar shaxsiy havola o‘rniga **/student** sahifasida **Telegram orqali kirish** bilan kira oladi. Telegram shaxsni va telefonni tasdiqlaydi; Kampus faqat shu telefon markazingizdagi o‘quvchi yoki ota-ona kartasida bo‘lsa kiritadi, shuning uchun hech kim soxta hisob ocha olmaydi.",
+            "Kampusga hamma bir xil kiradi: telefon raqami va parol bilan, birinchi marta esa Telegram botidan kelgan kod bilan. Buning uchun markazga faqat Telegram kartasida yoqilgan boti (yoki serverning umumiy boti) kerak; qo‘shimcha kalitlar yo‘q. Odam kirish sahifasida telefonini yozadi, botga **Raqamimni yuborish** tugmasi bilan raqamini bir marta yuboradi va bot uning chatiga olti xonali kod jo‘natadi. Kampus shu telefonga ega xodim, o‘quvchi yoki ota-onaning hisobini ochadi; qolganlar kutish ro‘yxatiga tushadi (O‘quvchilar → Kirish so‘rovlari bo‘limiga qarang).",
+            "**Eski usul, Telegramning o‘z kirish sahifasi,** kalitlari saqlangan joyda ishlayveradi: u shakl ostidagi kichik havola. Unga quyidagi qadamlar kerak; undan foydalanmaydigan markaz ularni o‘tkazib yuborishi mumkin.",
             {
               steps: [
                 "Telegramda **@BotFather**ni oching, ilovasini ishga tushirish uchun **Open** tugmasini bosing, botingizni tanlang va **Login Widget**ni oching.",
                 "Botni **OpenID Connect** orqali kirishga o‘tkazing. Telegram tasdiqlashni so‘raydi, chunki bu o‘zgarishni ortga qaytarib bo‘lmaydi va botning eski kirish vidjeti ishlamay qoladi. Kampus eskisidan foydalanmaydi.",
                 "**Redirect URI** qo‘shing: saytingiz manzili va **/api/v1/student-auth/telegram/callback**. **Trusted Origin** sifatida saytingiz manzilini qo‘shing.",
                 "**Client ID** va **Client Secret**ni shu yerdagi Telegram kartasiga ko‘chirib, saqlang.",
-                "**/student** sahifasini ochib, **Telegram orqali kirish**ni bosing. Telegram botingiz nomi yozilgan kirish sahifasini ko‘rsatishi kerak.",
+                "**/student** sahifasini ochib, shakl ostidagi **Boshqa yo‘l: Telegramning o‘z sahifasi orqali kirish** havolasini bosing. Telegram botingiz nomi yozilgan kirish sahifasini ko‘rsatishi kerak.",
               ],
             },
             "Server egasi o‘z botini barcha markazlarga ulashgan bo‘lsa, uning kirish kalitlari o‘sha markazlarga ham xizmat qiladi, shuning uchun o‘z boti yo‘q markazga bu qadamlar kerak emas. Sayt boshqa manzilga ko‘chsa, BotFather’dagi ikkala manzilni ham o‘zgartiring.",
-            "**Xodimlar ham shu kalitlardan foydalanadi.** Kalitlar saqlangach, xodimlarning kirish sahifasida ham **Telegram orqali kirish** tugmasi chiqadi: Telegramdagi raqami xodim kartasidagi telefon bilan bir xil bo‘lgan xodim kiradi. Parollardan butunlay voz kechish uchun Sozlamalar → Umumiy sozlamalar bo‘limida **Xodimlar faqat Telegram orqali kiradi** tugmasini yoqing. Kampus uni faqat o‘zingiz Telegram orqali kirgan paytda yoqishga ruxsat beradi, shunda o‘zingizni tashqarida qoldirmaysiz; yangi xodimlarga parol kerak bo‘lmaydi. Telegram orqali kirish ishlamay qolsa, server egasi serverda STAFF_PASSWORD_LOGIN=on ni o‘rnatib, parollarni qayta yoqishi mumkin. Sayt egasida shu yerda yana bir tugma bor: **Bu serverdagi barcha markazlar faqat Telegram orqali kiradi**. U parollarni barcha markazlarda, yangi markazlarda ham, birdaniga rad etadi; boshqa markazlar o‘z tugmasini yoqilgan va o‘zgartirib bo‘lmaydigan holda ko‘radi.",
+            "**Xodimlar.** Xodim birinchi marta Telegram orqali kiradi: kod bilan yoki Telegram sahifasida; ungacha uning paroli hech narsani ochmaydi. Shundan so‘ng u parolini o‘zi tanlaydi va keyin ikkala usul ham ishlaydi. Telegramdan umuman foydalanib bo‘lmasa, server egasi serverda STAFF_PASSWORD_LOGIN=on ni o‘rnatib, parollarga yo‘l ochishi mumkin. Sozlamalar → Umumiy sozlamalar bo‘limidagi **Xodimlar faqat Telegram orqali kiradi** tugmalari olib tashlandi: endi hech kim bitta usul bilan cheklanmaydi.",
             "Har bir o‘quvchi kartasida **Kampus ilovasiga kirish** bo‘limi bor: kim o‘quvchi yoki ota-ona sifatida kiradi, qanday ulangan, hamma joydan chiqarish va kirishni olib tashlash tugmalari.",
           ],
         },
@@ -1328,12 +1345,12 @@ export const uz: HelpContent = {
           ],
         },
         signIn: {
-          title: "Telegram orqali kirish",
+          title: "Tizimga kirish",
           body: [
-            "Havola o‘rniga markazingiz manzilidagi **/student** sahifasida **Telegram orqali kirish** bilan kirishingiz mumkin. Parol kerak emas: Telegram kimligingizni tasdiqlaydi va roziligingiz bilan telefon raqamingizni yuboradi. Bu raqam markazdagi profilingizda (ota-onalar uchun ota-ona kartasida) bo‘lsa, Kampus **Mening Kampusim** sahifasini ochadi: barcha guruhlaringiz, dars ketayotganda **Qo‘shilish** tugmasi bilan keyingi dars, balans va bajarilmagan uy vazifalari. Ota-onalar har bir farzandini ko‘radi.",
-            "Telefonda markaz botini ochib, **Raqamimni yuborish** tugmasini bosib, bot qaytargan kirish havolasini ham bosishingiz mumkin; havola bir marta, o‘n daqiqa ishlaydi.",
+            "Havola o‘rniga markazingiz manzilidagi **/student** sahifasida kirishingiz mumkin. Birinchi marta telefon raqamingizni yozing va **Telegramdan kod olish** ni bosing: sahifada ko‘rsatilgan botni oching, **Start** ni, keyin **Raqamimni yuborish** ni bosing va bot yuborgan olti xonali kodni yozing. Bu raqam markazdagi profilingizda (ota-onalar uchun ota-ona kartasida) bo‘lsa, Kampus **Mening Kampusim** sahifasini ochadi: barcha guruhlaringiz, keyingi dars va u ketayotganda **Qo‘shilish** tugmasi, balansingiz va bajarilmagan uy vazifalari. Ota-onalar har bir farzandini ko‘radi.",
+            "Birinchi kirishdan so‘ng Kampus **parol tanlashni** taklif qiladi. Parol bo‘lsa, keyingi safar telefon raqami va parol yetarli. Telegram kodi ham ishlayveradi va parolni unutsangiz, qaytib kirish yo‘li shu. Parolni keyinroq **Mening Kampusim** sahifasidan tanlash yoki o‘zgartirish mumkin.",
             {
-              note: "Hech kim o‘zi ro‘yxatdan o‘ta olmaydi. Kampus raqamingiz ro‘yxatda yo‘q desa, qabulxonadan Telegram telefoningizni profilingizga yozishni so‘rang. Boshqaning telefonidamisiz? Ish tugagach pastdagi **Chiqish** tugmasini bosing.",
+              note: "Raqamingiz markazda hali bo‘lmasa, Kampus ismingiz va guruhingizni so‘raydi hamda markazga so‘rov yuboradi. O‘qituvchi yoki menejer sizni kiritgach, bot xabar beradi; shunda qayta kiring. Birovning telefonidan foydalanyapsizmi? Tugatgach, pastdagi **Chiqish** ni bosing.",
             },
           ],
         },
@@ -1357,7 +1374,7 @@ export const uz: HelpContent = {
                 "Dars tugaganda **Chiqish** ni bosing yoki o‘qituvchi uni yakunlashini kuting.",
               ],
             },
-            "O‘qituvchi butun guruhga bitta **dars havolasi** ham yuborishi mumkin. Uni oching, Telegram orqali kiring, shunda u sizni shu sahifaning o‘ziga olib keladi va siz **Darsga qo‘shilish** ni bosasiz. Agar dars boshqa guruh uchun deb yozilsa, siz markazdagi profilingizdagi raqamdan boshqa raqamli Telegram akkaunti bilan kirgansiz.",
+            "O‘qituvchi butun guruhga bitta **dars havolasi** ham yuborishi mumkin. Uni oching, tizimga kiring, shunda u sizni shu sahifaning o‘ziga olib keladi va siz **Darsga qo‘shilish** ni bosasiz. Agar dars boshqa guruh uchun deb yozilsa, siz markazdagi profilingizdagi raqamdan boshqa telefon raqami bilan kirgansiz.",
             "Tasvir ulanmasa, internetingizni tekshiring va **Qayta qo‘shilish** ni bosing. Ba’zi tarmoqlarda o‘qituvchingizning markazi relay yoqishi kerak; ularga ayting.",
           ],
         },

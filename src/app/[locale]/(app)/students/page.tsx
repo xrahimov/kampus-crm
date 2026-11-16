@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 
+import { JoinRequestsBanner } from "@/features/join-requests/join-requests-banner";
 import { Forbidden } from "@/features/settings/forbidden";
 import { listFromSearchParams, type SearchParams } from "@/features/settings/list-params";
 import { StudentsPage } from "@/features/students/students-page";
@@ -53,24 +54,27 @@ export default async function Page({
   ]);
 
   return (
-    <StudentsPage
-      page={page}
-      filters={filters}
-      options={options}
-      branches={current.branches}
-      actorBranchIds={current.actor.branchIds}
-      activeBranchId={current.actor.activeBranchId}
-      allBranches={canAccessAllBranches(current.actor)}
-      can={{
-        create: await canCreateStudents(current.actor),
-        update: can(current.actor, "students.update"),
-        delete: can(current.actor, "students.delete"),
-        blacklist: can(current.actor, "students.blacklist"),
-        activate: can(current.actor, "groups.update"),
-        sms: can(current.actor, "sms.send"),
-        pay: can(current.actor, "payments.create"),
-        discount: can(current.actor, "discounts.give"),
-      }}
-    />
+    <div className="space-y-4">
+      <JoinRequestsBanner actor={current.actor} />
+      <StudentsPage
+        page={page}
+        filters={filters}
+        options={options}
+        branches={current.branches}
+        actorBranchIds={current.actor.branchIds}
+        activeBranchId={current.actor.activeBranchId}
+        allBranches={canAccessAllBranches(current.actor)}
+        can={{
+          create: await canCreateStudents(current.actor),
+          update: can(current.actor, "students.update"),
+          delete: can(current.actor, "students.delete"),
+          blacklist: can(current.actor, "students.blacklist"),
+          activate: can(current.actor, "groups.update"),
+          sms: can(current.actor, "sms.send"),
+          pay: can(current.actor, "payments.create"),
+          discount: can(current.actor, "discounts.give"),
+        }}
+      />
+    </div>
   );
 }

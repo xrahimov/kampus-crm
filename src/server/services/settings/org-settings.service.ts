@@ -3,16 +3,11 @@ import { recordAudit } from "@/server/audit/audit";
 import { prisma, type DbClient } from "@/server/db/prisma";
 import { authorize, type Actor } from "@/server/rbac/authorize";
 import { AppError } from "@/server/errors/app-error";
-import { telegramOnlyEverywhere, telegramSignInReady } from "@/server/services/auth.service";
 import { rethrowAsAppError } from "@/server/services/settings/shared";
 
 export interface OrgSettingsDto extends OrgSettingsInput {
   organizationId: string;
   logoUrl: string | null;
-  /** The site owner switched every centre on the server to Telegram only (A-181). */
-  staffTelegramOnlyServer: boolean;
-  /** This person may set that rule: the site owner. */
-  canSetStaffTelegramOnlyAll: boolean;
 }
 
 /** Ensures the settings row exists (older databases may predate it). */
@@ -27,7 +22,6 @@ async function loadSettings(db: DbClient, organizationId: string) {
 function toDto(
   org: { id: string; name: string; logoUrl: string | null },
   settings: Awaited<ReturnType<typeof loadSettings>>,
-  server: { telegramOnly: boolean; siteOwner: boolean },
 ): OrgSettingsDto {
   const switches = Object.fromEntries(ORG_SWITCHES.map((k) => [k, settings[k]])) as Record<
     (typeof ORG_SWITCHES)[number],
@@ -48,10 +42,6 @@ function toDto(
     absenceSilentDays: settings.absenceSilentDays,
     referralBonus: settings.referralBonus,
     studentRescheduleHours: settings.studentRescheduleHours,
-    staffTelegramOnly: settings.staffTelegramOnly,
-    staffTelegramOnlyAll: settings.staffTelegramOnlyAll,
-    staffTelegramOnlyServer: server.telegramOnly,
-    canSetStaffTelegramOnlyAll: server.siteOwner,
     publicPage: settings.publicPage,
     publicSlug: settings.publicSlug,
     publicIntro: settings.publicIntro,
@@ -69,10 +59,7 @@ export async function getOrgSettings(actor: Actor, db: DbClient = prisma): Promi
   const organizationId = actor.organizationId;
   const org = await db.organization.findUniqueOrThrow({ where: { id: organizationId } });
   const settings = await loadSettings(db, organizationId);
-  return toDto(org, settings, {
-    telegramOnly: await telegramOnlyEverywhere(db),
-    siteOwner: actor.isSiteOwner === true,
-  });
+  return toDto(org, settings);
 }
 
 export async function updateOrgSettings(
@@ -87,9 +74,6 @@ export async function updateOrgSettings(
     (typeof ORG_SWITCHES)[number],
     boolean
   >;
-  const siteOwner = actor.isSiteOwner === true;
-  // Every centre at once (A-181) is the site owner's to decide; from anyone else it is dropped.
-  const forAll = siteOwner ? input.staffTelegramOnlyAll : undefined;
   const data = {
     ...switches,
     workStart: input.workStart,
@@ -106,10 +90,6 @@ export async function updateOrgSettings(
     referralBonus: input.referralBonus,
     // Self-service rescheduling for 1:1 students (A-166).
     studentRescheduleHours: input.studentRescheduleHours,
-    // Staff sign-in (A-180): left out keeps the centre's choice. The rule for
-    // every centre includes this one.
-    staffTelegramOnly: forAll === true ? true : input.staffTelegramOnly,
-    staffTelegramOnlyAll: forAll,
     // Public page (A-121); a field left out keeps its value, "" clears it.
     publicPage: input.publicPage,
     publicSlug: input.publicSlug,
@@ -120,22 +100,6 @@ export async function updateOrgSettings(
     publicTelegram: input.publicTelegram,
     publicFormId: input.publicFormId,
   };
-  // Telegram only (A-180) is a one-way door for whoever cannot use Telegram, so
-  // it opens only for someone who came in through Telegram themselves, in a
-  // centre whose bot has the login keys. Switching it off is always allowed.
-  // The same holds for the site owner's switch for every centre (A-181).
-  const before = await loadSettings(db, organizationId);
-  const turningOn =
-    (data.staffTelegramOnly === true && !before.staffTelegramOnly) ||
-    (forAll === true && !before.staffTelegramOnlyAll);
-  if (turningOn) {
-    if (!(await telegramSignInReady(db, organizationId))) {
-      throw AppError.conflict("errors.staffTelegramOnlyNoBot");
-    }
-    if (actor.signedInWith !== "TELEGRAM") {
-      throw AppError.conflict("errors.staffTelegramOnlyNeedsTelegram");
-    }
-  }
   if (input.publicFormId) {
     const form = await db.leadForm.findFirst({
       where: { id: input.publicFormId, organizationId },
@@ -147,10 +111,7 @@ export async function updateOrgSettings(
   return db.$transaction(async (tx) => {
     const beforeOrg = await tx.organization.findUniqueOrThrow({ where: { id: organizationId } });
     const beforeSettings = await loadSettings(tx, organizationId);
-    const before = toDto(beforeOrg, beforeSettings, {
-      telegramOnly: await telegramOnlyEverywhere(tx),
-      siteOwner,
-    });
+    const before = toDto(beforeOrg, beforeSettings);
 
     const org = await tx.organization.update({
       where: { id: organizationId },
@@ -160,10 +121,7 @@ export async function updateOrgSettings(
       .update({ where: { organizationId }, data })
       // Another centre already uses that page address.
       .catch((error: unknown) => rethrowAsAppError(error, "publicSlug"));
-    const after = toDto(org, settings, {
-      telegramOnly: await telegramOnlyEverywhere(tx),
-      siteOwner,
-    });
+    const after = toDto(org, settings);
 
     await recordAudit(tx, actor, {
       action: "settings.org.update",

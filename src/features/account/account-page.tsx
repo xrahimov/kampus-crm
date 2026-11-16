@@ -24,6 +24,8 @@ import type { AccountDto, SessionDto } from "@/server/services/account.service";
 
 import { AvailabilityEditor } from "@/features/staff/availability-editor";
 
+import { SetPasswordForm } from "@/features/auth/set-password-form";
+
 import { PasswordForm } from "./password-form";
 
 /** "My account" (A-124): password, the Telegram sign-in code and the signed-in devices. */
@@ -84,15 +86,33 @@ export function AccountPage({
           <CardHeader>
             <CardTitle>{t("account.password.title")}</CardTitle>
             <CardDescription>
-              {account.passwordChangedAt
-                ? t("account.password.changed", {
-                    date: fmt(new Date(account.passwordChangedAt), { dateStyle: "medium" }),
-                  })
-                : t("account.password.never")}
+              {account.mustChangePassword
+                ? t("account.password.none")
+                : account.passwordChangedAt
+                  ? t("account.password.changed", {
+                      date: fmt(new Date(account.passwordChangedAt), { dateStyle: "medium" }),
+                    })
+                  : t("account.password.never")}
             </CardDescription>
           </CardHeader>
-          <CardContent>
-            <PasswordForm />
+          <CardContent className="space-y-3">
+            {account.telegramSession ? (
+              <>
+                {/* Telegram has just proven who this is: the old password is not asked for (A-196). */}
+                <p className="text-sm text-muted-foreground" data-testid="password-by-telegram">
+                  {t("account.password.byTelegram")}
+                </p>
+                <SetPasswordForm
+                  endpoint="/auth/set-password"
+                  hadPassword={!account.mustChangePassword}
+                />
+              </>
+            ) : (
+              <>
+                <PasswordForm />
+                <p className="text-xs text-muted-foreground">{t("account.password.forgot")}</p>
+              </>
+            )}
           </CardContent>
         </Card>
 

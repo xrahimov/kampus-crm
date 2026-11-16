@@ -63,7 +63,7 @@
   "auth": {
     "signIn": "Kirish",
     "signInTitle": "Kampus tizimiga kirish",
-    "signInSubtitle": "Administrator bergan telefon raqam va paroldan foydalaning.",
+    "signInSubtitle": "Telefon raqamingiz va parolingiz bilan kiring.",
     "phone": "Telefon raqam",
     "phonePlaceholder": "+998 90 123 45 67",
     "password": "Parol",
@@ -84,11 +84,47 @@
     "savePassword": "Parolni saqlash",
     "passwordSaved": "Parol o‘zgartirildi. Boshqa qurilmalaringiz tizimdan chiqarildi.",
     "passwordHint": "Kamida 8 belgi; boshqa joyda ishlatmaydigan parol bo‘lsin.",
-    "signInSubtitleBoth": "Telegram orqali kiring yoki administrator bergan telefon raqam va parolni kiriting.",
-    "signInSubtitleTelegram": "Xodimlar Telegram orqali kiradi. Telegramdagi raqamingiz xodim kartangizdagi telefon raqam bilan bir xil bo‘lishi kerak.",
-    "withTelegram": "Telegram orqali kirish",
-    "telegramHint": "Telegram telefon raqamingizni tasdiqlaydi; u xodim kartangizdagi raqam bo‘lsa, Kampus sizni kiritadi.",
-    "orPassword": "yoki parol bilan"
+    "signInSubtitleCode": "Telefon raqamingiz va parolingiz bilan kiring. Birinchi marta kiryapsizmi? Telegramdan kod oling.",
+    "orTelegram": "yoki",
+    "getCode": "Telegramdan kod olish",
+    "gettingCode": "Kod yuborilmoqda…",
+    "theBot": "Kampus boti",
+    "howTitle": "Telegram orqali qanday kiriladi",
+    "howWhen": "Birinchi marta kirishda, parolni unutganda yoki o‘zingizga qulay bo‘lganda. Parol kerak emas.",
+    "how1": "Yuqoriga telefon raqamingizni yozing va “Telegramdan kod olish” tugmasini bosing.",
+    "how2": "Telegramda {bot} ni oching, Start ni, keyin “Raqamimni yuborish” tugmasini bosing. Bu faqat birinchi marta kerak.",
+    "how3": "Bot sizga olti xonali kod yuboradi. Uni shu sahifaga yozing.",
+    "how4": "Kirdingiz. Shundan so‘ng Kampus parol tanlashni taklif qiladi, keyingi safar telefon raqami va parol yetarli bo‘ladi.",
+    "openBot": "Telegramda {bot} ni ochish",
+    "phoneCodeTitle": "Telegramdan kelgan kodni kiriting",
+    "phoneCodeSubtitle": "{phone} raqami uchun olti xonali kod {bot} bilan Telegram chatingizga yuboriladi. U 10 daqiqa amal qiladi.",
+    "noMessageTitle": "Botdan xabar kelmadimi?",
+    "noMessage": "Telegramda {bot} ni oching, Start ni, keyin “Raqamimni yuborish” tugmasini bosing. Kod shu zahoti keladi. Yuborgan raqamingiz bu yerga yozgan raqamingiz bilan bir xil bo‘lishi kerak.",
+    "codeAgain": "Yangi kod yuborish",
+    "codeResent": "Yangi kod yuborildi. Avvalgisi endi ishlamaydi.",
+    "widgetLink": "Boshqa yo‘l: Telegramning o‘z sahifasi orqali kirish",
+    "setPasswordTitle": "Parol tanlang",
+    "setPasswordSubtitle": "Parol bo‘lsa, keyingi safar faqat telefon raqami va parol bilan kirasiz. Telegram kodi ham ishlayveradi.",
+    "setPasswordLater": "Hozir emas",
+    "passwordChosen": "Parol saqlandi. Endi telefon raqamingiz va shu parol bilan kirasiz.",
+    "changePasswordHeading": "Parolni o‘zgartirish",
+    "changePasswordHint": "Parol o‘zgarganda boshqa qurilmalaringizdan chiqiladi.",
+    "join": {
+      "title": "Siz hali Kampusda yo‘qsiz",
+      "intro": "{phone} raqami hech bir o‘quvchi, ota-ona yoki xodim kartasida yo‘q. Markazga kimligingizni ayting, o‘qituvchi yoki menejer sizni kiritadi.",
+      "name": "To‘liq ismingiz",
+      "centre": "O‘quv markazi",
+      "branch": "Filial",
+      "choose": "Tanlang",
+      "note": "Guruhingiz yoki o‘qituvchingiz (ixtiyoriy)",
+      "notePlaceholder": "Masalan: Deutsch A1, o‘qituvchi Najotbek",
+      "send": "Kirishga ruxsat so‘rash",
+      "sentTitle": "So‘rovingiz yuborildi",
+      "sent": "{phone} raqami bo‘yicha so‘rovingiz {centre} markaziga yetib bordi. O‘qituvchi yoki menejer tasdiqlagach, bot Telegramda xabar beradi. Keyin shu yerdan qayta kiring.",
+      "declinedTitle": "So‘rovingiz rad etildi",
+      "declined": "{centre} {phone} raqami bo‘yicha so‘rovni rad etdi. O‘qituvchingiz yoki qabulxonaga murojaat qiling.",
+      "back": "Kirish sahifasiga qaytish"
+    }
   },
   "account": {
     "title": "Mening hisobim",
@@ -96,7 +132,10 @@
     "password": {
       "title": "Parol",
       "changed": "Oxirgi o‘zgartirish: {date}",
-      "never": "Hisob yaratilganidan beri o‘zgartirilmagan"
+      "never": "Hisob yaratilganidan beri o‘zgartirilmagan",
+      "none": "Hali o‘z parolingiz yo‘q. Telegram kodi bilan kirasiz.",
+      "byTelegram": "Siz Telegram kodi bilan kirdingiz, shuning uchun joriy parol so‘ralmaydi.",
+      "forgot": "Unutdingizmi? Chiqing, Telegram kodi bilan kiring va shu yerda yangi parol qo‘ying."
     },
     "signInCode": {
       "title": "Telegram orqali kirish kodi",
@@ -551,15 +590,18 @@
     "packageUnknown": "Bunday paket yo‘q.",
     "packageInactive": "Bu paket endi sotilmaydi.",
     "billingNotPackages": "Bu guruh paket emas, oylik to‘lov bilan ishlaydi.",
-    "passwordSignInOff": "Markazingizga faqat Telegram orqali kiriladi. “Telegram orqali kirish” tugmasidan foydalaning.",
     "staffTelegramOff": "Bu manzilda Telegram orqali kirish hali sozlanmagan.",
     "staffTelegramExpired": "Kirish juda uzoq davom etdi yoki boshqa brauzerda boshlangan. Qaytadan urinib ko‘ring.",
     "staffTelegramFailed": "Telegram kirishni tasdiqlamadi. Qaytadan urinib ko‘ring.",
     "staffTelegramNoPhone": "Telegram telefon raqamingizni bermadi, shuning uchun Kampus sizni taniy olmaydi. Qaytadan urinib, telefon raqamga ruxsat bering.",
     "staffTelegramUnknown": "Bu Telegram hisobining telefon raqami hech bir xodimda yo‘q. Administratordan xodim kartangizdagi raqamni tekshirishni so‘rang.",
-    "staffTelegramOnlyNoBot": "Bu markaz uchun Telegram orqali kirish sozlanmagan, shuning uchun parollarni o‘chirib bo‘lmaydi. Avval Sozlamalar → Integratsiyalar → Telegram bo‘limida kirish kalitlarini kiriting.",
-    "staffTelegramOnlyNeedsTelegram": "Avval tizimdan chiqib, Telegram orqali kiring. Bu tugma faqat Telegram orqali kirganingizda ishlaydi, shunda o‘zingizni tashqarida qoldirmaysiz.",
-    "viewNotAvailable": "Hisobingizda faqat bitta ko‘rinish bor."
+    "viewNotAvailable": "Hisobingizda faqat bitta ko‘rinish bor.",
+    "codeSignInOff": "Bu manzilda Telegram kodi bilan kirish sozlanmagan. Telefon raqami va parol bilan kiring.",
+    "codeTooMany": "Bu raqam uchun juda ko‘p kod so‘raldi. {seconds} soniyadan keyin urinib ko‘ring.",
+    "firstSignInTelegram": "Birinchi marta Telegram orqali kiriladi. “Telegramdan kod olish” tugmasini bosing; shundan keyin parolingiz ham ishlaydi.",
+    "joinRequestExpired": "Bu so‘rovning muddati tugagan. Kirish sahifasidan qayta boshlang.",
+    "joinRequestDecided": "Bu so‘rovga allaqachon javob berilgan.",
+    "passwordNeedsTelegram": "Joriy parolsiz yangi parol qo‘yish uchun avval Telegram kodi bilan kiring."
   },
   "validation": {
     "phone": "+998 90 123 45 67 ko‘rinishida raqam kiriting.",
@@ -680,7 +722,8 @@
     "teacherBusy": "Bu vaqtda o'qituvchining boshqa darsi bor",
     "availabilityOverlap": "Bir kunning soatlari bir-birini qoplaydi",
     "outsideAvailability": "O'qituvchining band qilish soatlaridan tashqarida",
-    "timeZone": "Noma’lum vaqt mintaqasi. Europe/Berlin kabi nom kiriting."
+    "timeZone": "Noma’lum vaqt mintaqasi. Europe/Berlin kabi nom kiriting.",
+    "joinRequestMode": "Bu kiritish usuli so‘rovga mos emas."
   },
   "roles": {
     "CEO": "CEO",
@@ -885,14 +928,6 @@
         "hint": "Bitta o'quvchili guruhlarga tegishli. O'quvchi darsni boshlanishidan shuncha soat oldin o'z sahifasidan ko'chirishi yoki bekor qilishi mumkin; keyinroq dars o'tilgan hisoblanadi.",
         "hours": "Darsgacha xabar berish muddati",
         "unit": "soat"
-      },
-      "staffSignIn": {
-        "title": "Xodimlarning kirishi",
-        "hint": "Markaz botida kirish kalitlari bo‘lsa, xodimlar har doim Telegram orqali kira oladi: Telegram telefonni tasdiqlaydi va u xodim kartasidagi raqam bo‘lishi kerak. Parollarni butunlay rad etish uchun buni yoqing. Uni faqat o‘zingiz Telegram orqali kirgan paytda yoqa olasiz.",
-        "telegramOnly": "Xodimlar faqat Telegram orqali kiradi",
-        "everyCentre": "Bu serverdagi barcha markazlar faqat Telegram orqali kiradi",
-        "everyCentreHint": "Bu tugmani faqat siz, sayt egasi ko‘rasiz. Yoqilganda parollar barcha markazlarda, yangi markazlarda ham, qabul qilinmaydi va kirish sahifasida faqat Telegram tugmasi qoladi. Telegram raqami xodim kartasidagi telefondan farq qiladigan xodimlar telefon Sozlamalar → Xodimlar bo‘limida to‘g‘rilanmaguncha kira olmaydi.",
-        "heldByServer": "Sayt egasi bu serverdagi barcha markazlar uchun faqat Telegram orqali kirishni yoqqan, shuning uchun uni bu yerda o‘chirib bo‘lmaydi."
       }
     },
     "switches": {
@@ -1294,7 +1329,7 @@
       "signInCodeHint": "Xodimning Telegrami Sozlamalar → Bot xabarnomalarida bo‘lishi kerak.",
       "signOutAll": "Barcha qurilmalardan chiqarish",
       "signedOutAll": "Hamma joydan chiqarildi.",
-      "passwordTelegramHint": "Markazingizga faqat Telegram orqali kirilsa, bo‘sh qoldiring."
+      "passwordTelegramHint": "Bo‘sh qoldiring: xodim birinchi marta Telegram kodi bilan kiradi va parolini o‘zi tanlaydi."
     },
     "temporaryPassword": "Vaqtinchalik parol"
   },
@@ -4689,7 +4724,8 @@
         "auth": {
           "passwordChange": "Parol o‘zgartirildi",
           "signOutAll": "Barcha qurilmalardan chiqildi",
-          "signInCode": "Kirish kodi o‘zgartirildi"
+          "signInCode": "Kirish kodi o‘zgartirildi",
+          "passwordSet": "Telegram orqali kirgach parol tanlandi"
         },
         "announcement": {
           "create": "E‘lon joylandi",
@@ -4710,6 +4746,10 @@
           "update": "Dars paketi o‘zgartirildi",
           "delete": "Dars paketi o‘chirildi",
           "sell": "Dars paketi sotildi"
+        },
+        "joinRequest": {
+          "approve": "Kirish so‘rovi tasdiqlandi",
+          "decline": "Kirish so‘rovi rad etildi"
         }
       }
     }
@@ -5154,7 +5194,8 @@
       "DEBT_PROMISE_BROKEN": "{name} {date} gacha {amount} to‘lashga va’da bergan edi, to‘lamadi",
       "ABSENCES": "{count} o‘quvchi darsga kelmay qo‘ydi: qo‘ng‘iroq qiling",
       "LEAD_FOLLOW_UP": "Bugun {count} lidga qo‘ng‘iroq qilish kerak ({overdue} tasi kechikkan)",
-      "LEAD_MESSAGE": "{name} Telegramda yozdi: {text}"
+      "LEAD_MESSAGE": "{name} Telegramda yozdi: {text}",
+      "JOIN_REQUEST": "{name} ({phone}) Telegram orqali kirdi va ruxsat kutmoqda"
     }
   },
   "portal": {
@@ -5525,7 +5566,7 @@
     "announcement": "📢 {title}\n\n{body}\n\n— {from}",
     "waitlistOffer": "{group} guruhi ochilmoqda: {days} {time}, {date} dan. Joyni band qilish uchun markazga qo‘ng‘iroq qiling.",
     "certificate": "{org}: “{title}” sertifikatingiz tayyor. Ochish yoki ulashish: {url}",
-    "loginShare": "Kampusga kirish uchun pastdagi “Raqamimni yuborish” tugmasini bosing. O‘quv markazi uni profilingizdagi telefon bilan solishtiradi.",
+    "loginShare": "Kampusga kirish uchun pastdagi “Raqamimni yuborish” tugmasini bosing. Kirish kodi shu chatga keladi.",
     "loginShareButton": "Raqamimni yuborish",
     "loginNotYours": "Iltimos, boshqa kontaktni emas, tugma orqali o‘z raqamingizni yuboring.",
     "loginUnknown": "Bu raqam o‘quv markazida ro‘yxatda yo‘q. Qabulxonadan uni profilingizga qo‘shishni so‘rang.",
@@ -5548,7 +5589,12 @@
     "chatFromStudent": "💬 {group} · {student} yozdi:\n{text}\n\nJavob: Kampus → Guruhlar → {group} → Chat.",
     "lessonSummary": "📘 {group}, {date} {time}\nMavzu: {topic, select, none {yozilmagan} other {{topic}}}\nDavomat: {attendance, select, PRESENT {keldi ✅} ABSENT {kelmadi ❌} EXCUSED {sababli} other {hali belgilanmagan}}\nUyga vazifa: {homework, select, none {yo‘q} other {{homework}}}{due, select, none {} other { (muddat {due})}}",
     "trialLink": "🎓 Sinov darsingiz: {group}, {date}{time, select, none {} other {, {time}}}.\nO‘sha kuni onlayn darsga qo‘shilish uchun shu havolani oching: {url}",
-    "packageLow": "{group}: {left, plural, =0 {dars paketingiz tugadi} other {paketingizda # ta dars qoldi}}. Iltimos, keyingi paketni o‘quv markazida sotib oling."
+    "packageLow": "{group}: {left, plural, =0 {dars paketingiz tugadi} other {paketingizda # ta dars qoldi}}. Iltimos, keyingi paketni o‘quv markazida sotib oling.",
+    "phoneCode": "Kampus: kirish kodingiz — {code}. U 10 daqiqa amal qiladi. Uni hech kimga bermang. Agar kod so‘ramagan bo‘lsangiz, bu xabarga e’tibor bermang.",
+    "contactKnown": "{phone} raqamingiz saqlangan. Kampus kirish sahifasida uni yozing va “Telegramdan kod olish” tugmasini bosing: kod shu yerga keladi. Raqam o‘zgarganmi? Pastdagi tugmani bosing.",
+    "contactSaved": "Raqamingiz saqlandi. Endi {url} sahifasini oching, raqamingizni yozing va “Telegramdan kod olish” tugmasini bosing: kod shu chatga keladi.",
+    "joinApproved": "{centre} sizni Kampusga kiritdi. Shu yerdan kiring: {url}",
+    "joinDeclined": "{centre} Kampusga kirish so‘rovingizni rad etdi. O‘qituvchingiz yoki qabulxonaga murojaat qiling."
   },
   "video": {
     "title": "Video dars",
@@ -5962,13 +6008,9 @@
     "login": {
       "title": "Kampusga kirish",
       "titleAt": "{centre} — kirish",
-      "description": "O‘quvchilar va ota-onalar uchun. Parol kerak emas: Telegram kimligingizni va telefon raqamingizni tasdiqlaydi.",
-      "withTelegram": "Telegram orqali kirish",
-      "withBot": "Telegram bot orqali kirish",
-      "privacy": "Faqat o‘quv markazida o‘quvchi yoki ota-onada yozilgan raqamlar kira oladi. Kampus Telegram parolingiz va xabarlaringizni ko‘rmaydi.",
-      "off": "Bu yerda Telegram orqali kirish hali sozlanmagan. O‘quv markazi yuborgan shaxsiy havoladan foydalaning.",
-      "forLesson": "Darsga qo‘shilish uchun kiring. Kirganingizdan so‘ng dars darhol ochiladi.",
-      "forLessonBot": "Darsga qo‘shilish uchun kiring. «Telegram orqali kirish» bilan dars darhol ochiladi; bot orqali kirsangiz, sahifangizdagi guruhda «Qo‘shilish» tugmasini bosing."
+      "description": "O‘quvchilar va ota-onalar uchun. Telefon raqami va parol bilan kiring; birinchi marta Telegramdan kod oling.",
+      "privacy": "Faqat o‘quv markazida o‘quvchi yoki ota-ona sifatida yozilgan raqamlar darhol kiradi; qolganlar markaz tasdig‘ini kutadi. Kampus Telegram parolingiz va xabarlaringizni ko‘rmaydi.",
+      "forLesson": "Darsga qo‘shilish uchun kiring. Kirganingizdan so‘ng dars darhol ochiladi."
     },
     "shell": {
       "offline": "Internet yo‘q. Bu sahifa oxirgi ochganingizdagi holatda; aloqa qaytgach yangilanadi.",
@@ -5982,7 +6024,9 @@
       "otherText": "Siz {name} sifatida kirgansiz, bu akkaunt esa havola tegishli guruhning o‘quvchisi emas.",
       "otherHint": "Agar havola sizniki bo‘lsa, o‘quv markazidan o‘quvchi kartangizdagi telefon raqamini tekshirishni so‘rang yoki chiqib, kerakli Telegram akkaunti bilan kiring.",
       "toHome": "Guruhlarimni ochish"
-    }
+    },
+    "choosePassword": "Parol tanlash",
+    "changePassword": "Parolni o‘zgartirish"
   },
   "exercises": {
     "heading": "O‘z-o‘zini tekshirish mashqlari",
@@ -6132,5 +6176,59 @@
       "save": "So‘zlarni yangilash",
       "empty": "Bu mavzuda hali so‘zlar yo‘q."
     }
+  },
+  "joinRequests": {
+    "title": "Kirish so‘rovlari",
+    "description": "Markazda raqami hali yo‘q bo‘lgan, lekin Telegram orqali kirgan odamlar. Ularni o‘quvchi, ota-ona yoki xodim sifatida kiriting yoki rad eting.",
+    "banner": "{count, plural, one {# kishi Telegram orqali kirdi va ruxsat kutmoqda} other {# kishi Telegram orqali kirdi va ruxsat kutmoqda}}",
+    "bannerOpen": "Ko‘rish",
+    "tabs": {
+      "PENDING": "Kutayotganlar",
+      "DECLINED": "Rad etilganlar"
+    },
+    "empty": {
+      "PENDING": "Hech kim kutmayapti.",
+      "DECLINED": "Rad etilgan so‘rovlar yo‘q."
+    },
+    "emptyHint": "Raqami hali Kampusda yo‘q odam Telegram kodi bilan kirgach shu yerda paydo bo‘ladi.",
+    "columns": {
+      "person": "Kim",
+      "kind": "Kim sifatida",
+      "branch": "Filial",
+      "note": "Izohi",
+      "asked": "So‘ralgan vaqt",
+      "actions": "Amallar"
+    },
+    "kinds": {
+      "STUDENT": "O‘quvchi yoki ota-ona",
+      "STAFF": "Xodim"
+    },
+    "approve": "Kiritish",
+    "decline": "Rad etish",
+    "declinedBy": "Rad etdi: {name}",
+    "declineTitle": "So‘rov rad etilsinmi?",
+    "declineHint": "{name} ga Telegramda xabar boradi. Keyinroq “Rad etilganlar” bo‘limidan baribir kiritishingiz mumkin.",
+    "selfClosing": "Shu telefon raqami Kampusning istalgan joyida (o‘quvchi, ota-ona yoki xodim kartasida) qo‘shilsa, so‘rov o‘zi yopiladi.",
+    "approveTitle": "{name} ni kiritish",
+    "approveStudentHint": "{phone} raqami Telegram tomonidan tasdiqlangan. Yangi o‘quvchi qo‘shing yoki raqamni markazda bor odamga biriktiring.",
+    "approveStaffHint": "{phone} raqami Telegram tomonidan tasdiqlangan. Xodim Telegram kodi bilan kiradi va parolini o‘zi tanlaydi.",
+    "modeLabel": "Bu kim",
+    "modes": {
+      "newStudent": "Yangi o‘quvchi",
+      "student": "Mavjud o‘quvchi",
+      "parent": "O‘quvchining ota-onasi"
+    },
+    "existingStudent": "O‘quvchi",
+    "studentHint": "{phone} shu o‘quvchining telefon raqami bo‘ladi.",
+    "parentHint": "{phone} shu o‘quvchiga ota-ona raqami sifatida qo‘shiladi.",
+    "fullName": "To‘liq ismi",
+    "parentName": "Ota-onaning to‘liq ismi",
+    "gender": "Jinsi",
+    "group": "Guruh",
+    "noGroup": "Hozircha guruhsiz",
+    "role": "Lavozim",
+    "chooseRole": "Lavozimni tanlang",
+    "theirNote": "Yozgani: {note}",
+    "fillAll": "Avval barcha maydonlarni to‘ldiring."
   }
 }

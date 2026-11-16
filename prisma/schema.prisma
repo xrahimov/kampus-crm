@@ -56,6 +56,7 @@ model Organization {
   integrations      IntegrationSetting[]
   leaveReasons      LeaveReason[]
   cashCloses        CashClose[]
+  joinRequests      JoinRequest[]
   families          Family[]
   announcements     Announcement[]
   certificates      Certificate[]
@@ -148,7 +149,8 @@ model Branch {
   cashCloses     CashClose[]
   announcements  Announcement[]
 
-  waitlist WaitlistEntry[]
+  waitlist     WaitlistEntry[]
+  joinRequests JoinRequest[]
 
   @@index([organizationId])
 }
@@ -210,6 +212,10 @@ model User {
   signInCode         SignInCode    @default(OFF)
   /// The view last chosen with the switch in the header; null until the person chooses (A-194).
   staffView          StaffView?
+  /// The first sign-in with Telegram: from then on the phone is proven and a password may sign in (A-196).
+  telegramVerifiedAt DateTime?
+  /// When "choose a password" was offered after a Telegram sign-in; offered once (A-196).
+  passwordOfferedAt  DateTime?
   createdAt          DateTime      @default(now())
   updatedAt          DateTime      @updatedAt
 
@@ -219,6 +225,7 @@ model User {
   sessions        Session[]
   loginLogs       LoginLog[]
   loginChallenges LoginChallenge[]
+  joinDecisions   JoinRequest[]
   auditLogs       AuditLog[]
 
   groupsTaught    GroupTeacher[]
@@ -401,6 +408,91 @@ model LoginChallenge {
 
   @@index([userId])
   @@index([expiresAt])
+}
+
+/// A person who shared their own number with the bot (A-196): Telegram vouches
+/// that the phone is theirs, and the chat is where their sign-in codes go.
+/// One row per Telegram user and bot; a phone that moves to another Telegram
+/// account leaves the older row.
+model TelegramContact {
+  id                String   @id @default(cuid())
+  /// The centre whose bot the chat is with (the shared bot's centre for the shared bot).
+  botOrganizationId String
+  telegramUserId    String
+  chatId            String
+  phone             String
+  name              String
+  username          String?
+  locale            String   @default("uz")
+  verifiedAt        DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  @@unique([botOrganizationId, telegramUserId])
+  @@index([phone])
+}
+
+/// Which sign-in page a code or a request came from.
+enum SignInDoor {
+  STAFF
+  STUDENT
+}
+
+/// A code asked for on a sign-in page (A-196). The code itself is made when it
+/// is sent: at once when the bot knows the phone's chat, else when the person
+/// shares their number with the bot. Kept a day for the rate limit, then swept.
+model PhoneSignInCode {
+  id                String     @id
+  phone             String
+  door              SignInDoor
+  botOrganizationId String
+  codeHash          String?
+  attempts          Int        @default(0)
+  ip                String?
+  userAgent         String?
+  expiresAt         DateTime
+  usedAt            DateTime?
+  createdAt         DateTime   @default(now())
+
+  @@index([phone, createdAt])
+  @@index([ip, createdAt])
+}
+
+enum JoinRequestStatus {
+  PENDING
+  APPROVED
+  DECLINED
+}
+
+/// Someone proved a phone with Telegram that no staff member, student or parent
+/// has (A-196): they wait here until a teacher or manager adds them. Without a
+/// centre the request is unfinished (the person has not said where they study
+/// yet) and nobody sees it.
+model JoinRequest {
+  id                String            @id @default(cuid())
+  organizationId    String?
+  branchId          String?
+  door              SignInDoor
+  phone             String
+  fullName          String
+  note              String?
+  telegramUserId    String?
+  chatId            String?
+  botOrganizationId String?
+  locale            String            @default("uz")
+  status            JoinRequestStatus @default(PENDING)
+  /// Lets the browser that proved the phone finish the request; cleared when it is sent.
+  tokenHash         String?           @unique
+  decidedById       String?
+  decidedAt         DateTime?
+  createdAt         DateTime          @default(now())
+  updatedAt         DateTime          @updatedAt
+
+  organization Organization? @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  branch       Branch?       @relation(fields: [branchId], references: [id], onDelete: SetNull)
+  decidedBy    User?         @relation(fields: [decidedById], references: [id], onDelete: SetNull)
+
+  @@index([organizationId, status])
+  @@index([phone])
 }
 
 // ---------------------------------------------------------------------------
@@ -1040,21 +1132,28 @@ model Student {
 /// only when a Telegram login matches a student or parent the centre already has.
 /// No password exists; Telegram proves the person and their phone number.
 model StudentAccount {
-  id             String    @id @default(cuid())
+  id                String    @id @default(cuid())
   /// Telegram's numeric user id, the same in the login token and in bot updates.
-  telegramUserId String    @unique
+  telegramUserId    String    @unique
   /// The Telegram-verified phone, +998… when Uzbek; null when only a link code matched.
-  phone          String?
-  name           String
-  username       String?
-  photoUrl       String?
-  locale         String    @default("uz")
-  createdAt      DateTime  @default(now())
-  lastSeenAt     DateTime?
+  phone             String?
+  name              String
+  username          String?
+  photoUrl          String?
+  locale            String    @default("uz")
+  createdAt         DateTime  @default(now())
+  lastSeenAt        DateTime?
+  /// The person's own password, chosen after a Telegram sign-in (A-196); null until then.
+  passwordHash      String?
+  passwordSetAt     DateTime?
+  /// When "choose a password" was offered; offered once.
+  passwordOfferedAt DateTime?
 
   links    StudentAccountLink[]
   sessions StudentSession[]
   tickets  StudentLoginTicket[]
+
+  @@index([phone])
 }
 
 enum StudentLinkVia {
@@ -1097,6 +1196,9 @@ model StudentSession {
   expiresAt  DateTime
   lastSeenAt DateTime @default(now())
   createdAt  DateTime @default(now())
+
+  /// How the session was opened (A-196): a Telegram one may set a password without the old one.
+  signedInWith SignInMethod @default(TELEGRAM)
 
   account StudentAccount @relation(fields: [accountId], references: [id], onDelete: Cascade)
 
@@ -3065,6 +3167,7 @@ enum NotificationKind {
   ABSENCES
   LEAD_FOLLOW_UP
   LEAD_MESSAGE
+  JOIN_REQUEST
 }
 
 model Notification {

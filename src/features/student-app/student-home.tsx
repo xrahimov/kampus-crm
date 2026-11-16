@@ -1,6 +1,6 @@
 "use client";
 
-import { ArrowRight, BookOpen, LogOut, Video } from "lucide-react";
+import { ArrowRight, BookOpen, KeyRound, LogOut, Video } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 
 import { Avatar } from "@/components/ui/avatar";
@@ -98,6 +98,12 @@ export function StudentHome({ data }: { data: StudentHomeDto }) {
         <CardContent className="flex flex-wrap items-center justify-between gap-3 pt-6">
           <p className="text-sm text-muted-foreground">{t("signOutHint")}</p>
           <div className="flex flex-wrap gap-2">
+            {/* Phone and password sign in once a password is chosen (A-196). */}
+            <Button asChild variant="outline" size="sm">
+              <Link href="/student/set-password" data-testid="student-password-link">
+                <KeyRound /> {t(data.account.hasPassword ? "changePassword" : "choosePassword")}
+              </Link>
+            </Button>
             <form method="post" action="/api/v1/student-auth/logout">
               <input type="hidden" name="locale" value={locale} />
               <Button type="submit" variant="outline" size="sm" data-testid="student-sign-out">

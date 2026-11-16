@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 
+import { JoinRequestsBanner } from "@/features/join-requests/join-requests-banner";
 import { Forbidden } from "@/features/settings/forbidden";
 import { listFromSearchParams, type SearchParams } from "@/features/settings/list-params";
 import { StaffPage } from "@/features/settings/staff/staff-page";
@@ -41,19 +42,22 @@ export default async function Page({
   ]);
 
   return (
-    <StaffPage
-      page={page}
-      roleCounts={roleCounts}
-      roleCode={roleCode}
-      archived={archived}
-      roles={roles}
-      branches={current.branches}
-      actorBranchIds={current.actor.branchIds}
-      activeBranchId={current.actor.activeBranchId}
-      allBranches={canAccessAllBranches(current.actor)}
-      selfId={current.user.id}
-      canUpdate={can(current.actor, "staff.update")}
-      canDelete={can(current.actor, "staff.delete")}
-    />
+    <div className="space-y-4">
+      <JoinRequestsBanner actor={current.actor} />
+      <StaffPage
+        page={page}
+        roleCounts={roleCounts}
+        roleCode={roleCode}
+        archived={archived}
+        roles={roles}
+        branches={current.branches}
+        actorBranchIds={current.actor.branchIds}
+        activeBranchId={current.actor.activeBranchId}
+        allBranches={canAccessAllBranches(current.actor)}
+        selfId={current.user.id}
+        canUpdate={can(current.actor, "staff.update")}
+        canDelete={can(current.actor, "staff.delete")}
+      />
+    </div>
   );
 }

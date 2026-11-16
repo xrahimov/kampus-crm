@@ -29,6 +29,7 @@ import {
   today,
 } from "@/server/services/groups/shared";
 import { timeRanges } from "@/server/services/groups/schedule";
+import { settleJoinRequestsQuietly } from "@/server/services/sign-in/join-settle";
 import { canCreateStudents } from "@/server/services/students/create-access";
 import {
   dateToIso,
@@ -678,6 +679,8 @@ export async function createStudent(
       await applyFamilyDiscount(tx, row.id);
       return row.id;
     });
+    // Someone who waited to be let in with this phone is in now (A-196).
+    await settleJoinRequestsQuietly(db, input.phone, actor.userId);
     return loadDetail(db, id);
   } catch (error) {
     rethrowAsAppError(error, "phone");
@@ -712,6 +715,7 @@ export async function updateStudent(
   } catch (error) {
     rethrowAsAppError(error, "phone");
   }
+  if (input.phone) await settleJoinRequestsQuietly(db, input.phone, actor.userId);
   return getStudent(actor, id, db);
 }
 
@@ -819,7 +823,7 @@ export async function addParent(
 ): Promise<ParentDto> {
   authorize(actor, "students.update");
   const row = await findStudentInScope(db, actor, studentId, {});
-  return db.$transaction(async (tx) => {
+  const added = await db.$transaction(async (tx) => {
     const parent = await tx.parent.create({ data: { studentId, ...input } });
     await recordAudit(tx, actor, {
       action: "student.parentAdd",
@@ -830,6 +834,8 @@ export async function addParent(
     });
     return { id: parent.id, fullName: parent.fullName, phone: parent.phone };
   });
+  await settleJoinRequestsQuietly(db, added.phone, actor.userId);
+  return added;
 }
 
 export async function deleteParent(

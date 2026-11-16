@@ -8,7 +8,7 @@ import { lessonLinkGroupId } from "@/lib/lesson-link";
 import { prisma } from "@/server/db/prisma";
 import { normalizeHost } from "@/server/services/settings/domains.service";
 import { getCurrentStudent } from "@/server/services/student-auth/current-student";
-import { resolveLoginSetup } from "@/server/services/student-auth/student-auth.service";
+import { signInOptions } from "@/server/services/staff-telegram-login.service";
 
 type Props = {
   params: Promise<{ locale: string }>;
@@ -30,14 +30,17 @@ const ERRORS = new Set([
   "studentLoginOff",
 ]);
 
-/** `/student/login`: "Log in with Telegram" for students and parents (A-150). No passwords. */
+/**
+ * `/student/login`: students and parents sign in with their phone and password,
+ * or with a code from the Telegram bot the first time (A-150, A-196).
+ */
 export default async function Page({ params, searchParams }: Props) {
   const { locale } = await params;
   setRequestLocale(locale);
   if (await getCurrentStudent()) redirect({ href: "/student", locale });
   const { error, next } = await searchParams;
   const h = await headers();
-  const setup = await resolveLoginSetup(
+  const options = await signInOptions(
     prisma,
     normalizeHost(h.get("x-forwarded-host") ?? h.get("host")),
   );
@@ -46,10 +49,10 @@ export default async function Page({ params, searchParams }: Props) {
   return (
     <div className="mx-auto w-full max-w-md">
       <StudentLogin
-        brand={setup?.brand ?? null}
-        available={Boolean(setup)}
-        startUrl={`/api/v1/student-auth/telegram/start?${query.toString()}`}
-        botUrl={setup?.botUsername ? `https://t.me/${setup.botUsername}?start=login` : null}
+        brand={options.brand}
+        code={options.code}
+        bot={options.bot}
+        startUrl={options.widget ? `/api/v1/student-auth/telegram/start?${query.toString()}` : null}
         error={error && ERRORS.has(error) ? error : null}
         forLesson={lessonLinkGroupId(next) !== null}
       />

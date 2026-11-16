@@ -14,9 +14,11 @@
  * Before the first shot the script adds the demo rows the newer pages need (a
  * PDF under a group's materials, a homework with an answer, a post, a chat
  * line, a group that sells lesson packages, two siblings) and gives the demo
- * centre made-up Telegram login keys; re-runs find them and move on. With
- * TELEGRAM_LOGIN_FAKE=1 on the server the sign-in page is pictured the way a
- * live centre has it, with Telegram only; without it the password form shows.
+ * centre a made-up bot with Telegram login keys; re-runs find them and move
+ * on. With TELEGRAM_LOGIN_FAKE=1 on the server the sign-in pages are pictured
+ * the way a live centre has them, with "Get a code in Telegram" and its
+ * instructions, and one newcomer waits under Sign-in requests; without it the
+ * pages show the password form alone.
  * The video-lesson shots run a real call between two browsers on this machine
  * with a drawn picture in place of each camera.
  */
@@ -71,6 +73,11 @@ type Ctx = Base & { page: Page };
 
 /** The words of the demo rows the script adds. One language: the demo centre teaches English. */
 const DEMO = {
+  // Fake data: the demo bot's webhook secret and someone waiting to be let in (A-196).
+  botSecret: "demo-help-secret",
+  newcomer: "Dilnoza Karimova",
+  newcomerPhone: "+998901234567",
+  newcomerNote: "GE-Morning A1",
   material: "Unit 3 slides",
   homework:
     "Workbook p. 24, exercises 1-4. Then write five sentences about your day in the Present Simple and send them here.",
@@ -153,7 +160,7 @@ async function signIn(page: Page, locale: string, phone: string) {
   await page.getByLabel(LABELS.phone![locale]!).fill(phone);
   await page.getByLabel(LABELS.password![locale]!).fill(PASSWORD);
   await page.getByRole("button", { name: LABELS.signIn![locale]!, exact: true }).click();
-  await page.waitForURL(/\/(dashboard|groups)/);
+  await page.waitForURL(/\/(dashboard|today|groups)/);
 }
 
 async function go(page: Page, locale: string, pathname: string) {
@@ -262,6 +269,52 @@ async function upload(page: Page, name: string, mimeType: string, buffer: Buffer
 }
 
 /**
+ * A newcomer's whole way to the waiting list, played by the script: the phone
+ * typed on the student sign-in page, the number shared with the bot, the code
+ * (the stand-in for Telegram makes it the phone's last six digits), and the
+ * short form that follows.
+ */
+async function askToJoin(browser: Browser): Promise<void> {
+  const [context, page] = await newPage(browser);
+  try {
+    const post = async <T>(apiPath: string, data: unknown): Promise<T> => {
+      const res = await page.request.post(`${BASE}/api/v1${apiPath}`, { data });
+      if (!res.ok()) throw new Error(`POST ${apiPath} failed: ${res.status()}`);
+      return (await res.json()) as T;
+    };
+    const phone = DEMO.newcomerPhone;
+    const ticket = await post<{ id: string }>("/auth/code", { phone, door: "STUDENT" });
+    await post(`/webhooks/telegram?secret=${DEMO.botSecret}`, {
+      message: {
+        chat: { id: 700700700 },
+        from: { id: 700700700, first_name: DEMO.newcomer, language_code: "uz" },
+        contact: { phone_number: phone.slice(1), user_id: 700700700 },
+      },
+    });
+    const verified = await post<{
+      ok: boolean;
+      join?: {
+        state: string;
+        token?: string;
+        centres?: Array<{ id: string; branches: Array<{ id: string }> }>;
+      };
+    }>("/auth/code/verify", { id: ticket.id, code: phone.slice(-6), door: "STUDENT" });
+    const join = verified.join;
+    if (!join || join.state !== "draft" || !join.token) return;
+    const centre = join.centres![0]!;
+    await post("/auth/join", {
+      token: join.token,
+      fullName: DEMO.newcomer,
+      organizationId: centre.id,
+      branchId: centre.branches[0]!.id,
+      note: DEMO.newcomerNote,
+    });
+  } finally {
+    await context.close();
+  }
+}
+
+/**
  * The demo rows the newer pages need, made once. `teacher` teaches the group
  * the shots use; `ceo` may do the rest. Each step looks before it writes, so a
  * re-run adds nothing.
@@ -270,22 +323,35 @@ async function prepare(ceo: Page, teacher: Page, base: Base): Promise<void> {
   const g = base.teacherGroupId;
   const today = tashkentToday();
 
-  // Made-up Telegram login keys: the sign-in pages then offer "Log in with Telegram".
+  // A made-up bot with a webhook secret and login keys: with TELEGRAM_LOGIN_FAKE=1 the
+  // sign-in pages then offer "Get a code in Telegram" and show their instructions (A-196).
   const telegram = await getJson<{ isEnabled: boolean; config: Record<string, unknown> }>(
     ceo,
     "/integrations/telegram",
   );
-  if (!telegram.isEnabled || !telegram.config.loginClientId) {
+  if (
+    !telegram.isEnabled ||
+    !telegram.config.loginClientId ||
+    telegram.config.botUsername !== "kampus_demo_bot"
+  ) {
     await mutate(ceo, "put", "/integrations/telegram", {
       isEnabled: true,
       botToken: "",
       botUsername: "kampus_demo_bot",
-      webhookSecret: "",
+      webhookSecret: DEMO.botSecret,
       weeklyReport: true,
       lessonSummary: false,
       loginClientId: "123456",
       loginClientSecret: "demo-secret",
     });
+  }
+
+  // Someone whose phone the centre does not have, waiting to be let in (A-196).
+  const waiting = await getJson<{ items: Array<{ phone: string }> }>(ceo, "/join-requests");
+  if (!waiting.items.some((r) => r.phone === DEMO.newcomerPhone)) {
+    await askToJoin(base.browser).catch((error: Error) =>
+      process.stdout.write(`  (no waiting sign-in request was made: ${error.message})\n`),
+    );
   }
 
   // A PDF under the group's materials: the file the teacher shows in the video lesson.
@@ -428,6 +494,14 @@ async function nextLessonDay(page: Page, locale: string): Promise<string> {
 
 /** Shots taken as the CEO. */
 const CEO_SHOTS: Shot[] = [
+  {
+    name: "join-requests",
+    take: async ({ page, locale }) => {
+      await go(page, locale, "/join-requests");
+      await page.getByTestId("join-requests-title").waitFor();
+      await shotPage(page, locale, "join-requests");
+    },
+  },
   {
     name: "dashboard",
     take: async ({ page, locale }) => {
@@ -1507,64 +1581,18 @@ async function viewShots(base: Base, ceo: Page, failures: string[]) {
   }
 }
 
-/* ----- the sign-in page, the way a centre that signs in with Telegram only has it ------------ */
-
-/** A staff session opened through the server's stand-in for Telegram (TELEGRAM_LOGIN_FAKE=1). */
-async function telegramSession(
-  browser: Browser,
-  locale: string,
-): Promise<[BrowserContext, Page] | null> {
-  const [context, page] = await newPage(browser);
-  try {
-    await go(page, locale, "/login");
-    const href = await page.getByTestId("login-telegram").getAttribute("href", { timeout: 5000 });
-    const res = await page.request.get(new URL(href!, BASE).toString(), { maxRedirects: 0 });
-    const auth = new URL(res.headers()["location"]!);
-    const back = new URL(auth.searchParams.get("redirect_uri")!);
-    back.searchParams.set("state", auth.searchParams.get("state")!);
-    const claims = { id: "700000001", name: "Demo CEO", phone_number: CEO.replace("+", "") };
-    back.searchParams.set(
-      "code",
-      `fake.${Buffer.from(JSON.stringify(claims)).toString("base64url")}`,
-    );
-    await page.goto(back.toString());
-    await page.waitForURL(/\/(dashboard|today|groups)/, { timeout: 15_000 });
-    return [context, page];
-  } catch {
-    await context.close();
-    return null;
-  }
-}
-
-async function setTelegramOnly(page: Page, on: boolean) {
-  const settings = await getJson<Record<string, unknown>>(page, "/settings/org");
-  await mutate(page, "put", "/settings/org", { ...settings, staffTelegramOnly: on });
-}
+/* ----- the sign-in page, as someone who is not signed in sees it (A-196) ------------------- */
 
 async function loginShot(browser: Browser, locale: string, failures: string[]) {
   if (only && !only.includes("login")) return;
-  // Only a Telegram session may switch passwords off, and the same one switches them back on.
-  const session = await telegramSession(browser, locale);
-  if (!session) {
-    process.stdout.write(
-      "  (no stand-in for Telegram on the server: the sign-in page keeps its password form)\n",
-    );
-  }
   const [anon, anonPage] = await newPage(browser);
   try {
-    if (session) await setTelegramOnly(session[1], true);
     await go(anonPage, locale, "/login");
     await shotPage(anonPage, locale, "login");
     process.stdout.write(`  ${locale}/login\n`);
   } catch (error) {
     failures.push(`${locale}/login: ${(error as Error).message.split("\n")[0]}`);
   } finally {
-    if (session) {
-      await setTelegramOnly(session[1], false).catch((error: Error) =>
-        failures.push(`${locale}/login: passwords were not switched back on: ${error.message}`),
-      );
-      await session[0].close();
-    }
     await anon.close();
   }
 }

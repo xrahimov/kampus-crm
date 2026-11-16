@@ -5,7 +5,7 @@ import { getTranslations, setRequestLocale } from "next-intl/server";
 import { AuthFrame, brandForRequest } from "@/features/auth/auth-frame";
 import { prisma } from "@/server/db/prisma";
 import { normalizeHost } from "@/server/services/settings/domains.service";
-import { staffSignInOptions } from "@/server/services/staff-telegram-login.service";
+import { signInOptions } from "@/server/services/staff-telegram-login.service";
 
 import { LoginForm } from "./login-form";
 
@@ -20,23 +20,17 @@ export default async function LoginPage({ params }: { params: Promise<{ locale: 
   setRequestLocale(locale);
   const t = await getTranslations("auth");
   const h = await headers();
-  // What this address offers: Telegram, the password, or both (A-180).
-  const options = await staffSignInOptions(
+  // What this address offers besides the password: a code from the bot (A-196).
+  const options = await signInOptions(
     prisma,
     normalizeHost(h.get("x-forwarded-host") ?? h.get("host")),
   );
   return (
     <AuthFrame
       title={t("signInTitle")}
-      subtitle={
-        options.password
-          ? options.telegram
-            ? t("signInSubtitleBoth")
-            : t("signInSubtitle")
-          : t("signInSubtitleTelegram")
-      }
+      subtitle={options.code ? t("signInSubtitleCode") : t("signInSubtitle")}
     >
-      <LoginForm telegram={options.telegram} password={options.password} />
+      <LoginForm code={options.code} bot={options.bot} widget={options.widget} />
     </AuthFrame>
   );
 }

@@ -1,32 +1,34 @@
-import { MessageCircle, Send, Video } from "lucide-react";
+import { Video } from "lucide-react";
 import { useTranslations } from "next-intl";
 
 import { Alert } from "@/components/ui/alert";
-import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { SignInPanel, type SignInBot } from "@/features/auth/sign-in-panel";
 
 /**
- * Sign-in for students and parents (A-150): Telegram proves who they are and
- * their phone; the centre must already have that phone on a student or parent.
+ * Sign-in for students and parents (A-150, A-196): phone and password, or a
+ * code from the Telegram bot the first time. The centre must already have the
+ * phone on a student or parent; anyone else lands on the waiting list.
  */
 export function StudentLogin({
   brand,
-  available,
+  code,
+  bot,
   startUrl,
-  botUrl,
   error,
   forLesson = false,
 }: {
   brand: { name: string; logoUrl: string | null } | null;
-  available: boolean;
-  startUrl: string;
-  botUrl: string | null;
+  /** A bot can send sign-in codes on this address. */
+  code: boolean;
+  bot: SignInBot;
+  /** The older sign-in on Telegram's own page, where it is set up; null otherwise. */
+  startUrl: string | null;
   error: string | null;
   /** The visitor came from a teacher's lesson link (A-195) and joins the lesson after signing in. */
   forLesson?: boolean;
 }) {
   const t = useTranslations("studentApp.login");
-  const te = useTranslations("errors");
   return (
     <Card data-testid="student-login">
       <CardHeader className="space-y-2 text-center">
@@ -39,37 +41,22 @@ export function StudentLogin({
       </CardHeader>
       <CardContent className="space-y-4">
         {forLesson && !error && (
+          // Every way in on this page (password, code, Telegram's page) goes on to the lesson.
           <Alert className="flex items-start gap-2" data-testid="student-login-lesson">
             <Video className="mt-0.5 size-4 shrink-0" aria-hidden />
-            <span>{available && botUrl ? t("forLessonBot") : t("forLesson")}</span>
+            <span>{t("forLesson")}</span>
           </Alert>
         )}
-        {error && (
-          <Alert variant="destructive" data-testid="student-login-error">
-            {te(error)}
-          </Alert>
-        )}
-        {available ? (
-          <>
-            <Button asChild className="w-full" size="lg">
-              <a href={startUrl} data-testid="student-login-telegram">
-                <Send /> {t("withTelegram")}
-              </a>
-            </Button>
-            {botUrl && (
-              <Button asChild variant="outline" className="w-full">
-                <a href={botUrl} target="_blank" rel="noreferrer" data-testid="student-login-bot">
-                  <MessageCircle /> {t("withBot")}
-                </a>
-              </Button>
-            )}
-            <p className="text-xs text-muted-foreground">{t("privacy")}</p>
-          </>
-        ) : (
-          <p className="text-sm text-muted-foreground" data-testid="student-login-off">
-            {t("off")}
-          </p>
-        )}
+        <SignInPanel
+          door="STUDENT"
+          code={code}
+          bot={bot}
+          widgetUrl={startUrl}
+          widgetTestId="student-login-telegram"
+          returnedError={error}
+          returnedErrorTestId="student-login-error"
+        />
+        <p className="text-xs text-muted-foreground">{t("privacy")}</p>
       </CardContent>
     </Card>
   );
