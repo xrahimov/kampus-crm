@@ -204,6 +204,8 @@ PARENT and OTHER get no default permissions. A parent portal was not observed (A
 
 **Views (A-194).** Someone who holds a teaching role and another role looks at Kampus from either side. The choice (`User.staffView`) decides which of their roles the session carries: in the teaching view `resolveCurrentUser` builds the actor from the teaching roles alone, so every page and API call treats them as a teacher (own groups only); in the full view from all of them. A view never adds a permission. `src/lib/rbac/views.ts` holds the rule, `components/layout/view-switch.tsx` the switch.
 
+**Lesson link (A-195).** Inside a video lesson staff copy one address for the whole group, `/student/lesson/<groupId>` (`src/lib/lesson-link.ts`). It is not a credential: the page (`(public)/student/lesson/[groupId]`) sends a visitor without a student session to `/student/login?next=…`, redirects a signed-in student or parent of the group to that membership's personal page `/class/<token>` (`lessonLinkTokenFor`), sends staff who may see the group to the running call or the group page (`lessonLinkStaffPath`), and tells everyone else only that the lesson is for another group.
+
 ## 5. API list (`/api/v1`)
 
 Every list endpoint takes the common query contract (§2). Every mutation is audited. `:id` values are cuid strings.

@@ -169,6 +169,9 @@ up so people see both sides.
    lesson**.
 2. On the phone the student's page lets them in by itself: press **Join lesson**. No app, no
    account, no meeting code.
+   To show how a whole group is invited, press **Copy lesson link** in the bar at the bottom (the
+   chain button beside **Leave**) and paste it into a chat: whoever opens it signs in with Telegram
+   first, and only students of this group get in.
 3. On the phone raise a hand and send a reaction. On the computer open **Chat** and write a line.
    The hand shows as a number on the student's picture.
 4. Press **Show a file to everyone** and pick a PDF from the **Lesson** panel. The page appears on

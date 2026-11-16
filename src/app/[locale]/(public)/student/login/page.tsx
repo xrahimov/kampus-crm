@@ -4,6 +4,7 @@ import { getTranslations, setRequestLocale } from "next-intl/server";
 
 import { StudentLogin } from "@/features/student-app/student-login";
 import { redirect } from "@/i18n/navigation";
+import { lessonLinkGroupId } from "@/lib/lesson-link";
 import { prisma } from "@/server/db/prisma";
 import { normalizeHost } from "@/server/services/settings/domains.service";
 import { getCurrentStudent } from "@/server/services/student-auth/current-student";
@@ -50,6 +51,7 @@ export default async function Page({ params, searchParams }: Props) {
         startUrl={`/api/v1/student-auth/telegram/start?${query.toString()}`}
         botUrl={setup?.botUsername ? `https://t.me/${setup.botUsername}?start=login` : null}
         error={error && ERRORS.has(error) ? error : null}
+        forLesson={lessonLinkGroupId(next) !== null}
       />
     </div>
   );

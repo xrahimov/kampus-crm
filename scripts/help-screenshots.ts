@@ -1183,6 +1183,7 @@ const STUDENT_SHOTS: Shot[] = [
 
 const CALL_SHOTS = [
   "video-room",
+  "video-copy-link",
   "video-show-file",
   "portal-video-phone",
   "video-whiteboard",
@@ -1245,7 +1246,7 @@ async function stroke(page: Page, el: Locator, points: Array<[number, number]>) 
 
 /**
  * The teacher starts the group's video lesson, a student joins from a phone,
- * and the room is pictured as the lesson goes: chat and a raised hand, a file
+ * and the room is pictured as the lesson goes: chat and a raised hand, the lesson link, a file
  * shown to everyone, the whiteboard, a poll. The call is ended afterwards.
  */
 async function callShots(base: Base, failures: string[]) {
@@ -1265,7 +1266,10 @@ async function callShots(base: Base, failures: string[]) {
   const wanted = (name: (typeof CALL_SHOTS)[number]) => !only || only.includes(name);
   try {
     const media = { permissions: ["camera", "microphone"] };
-    const [, teacher] = await newPage(teacherBrowser, media);
+    // The teacher's browser may also write the clipboard, for "Copy lesson link".
+    const [, teacher] = await newPage(teacherBrowser, {
+      permissions: [...media.permissions, "clipboard-write"],
+    });
     teacher.setDefaultTimeout(30_000);
     await signIn(teacher, locale, TEACHER);
     await go(teacher, locale, `/groups/${base.teacherGroupId}`);
@@ -1306,6 +1310,15 @@ async function callShots(base: Base, failures: string[]) {
       if (wanted("video-room")) await shotPage(teacher, locale, "video-room");
       await teacher.getByTestId("toggle-chat").click();
       await student.getByTestId("toggle-hand").click();
+    });
+
+    await step("video-copy-link", async () => {
+      await teacher.getByTestId("copy-lesson-link").click();
+      await teacher.getByTestId("lesson-link-notice").waitFor();
+      await teacher.getByTestId("toggle-people").click();
+      await teacher.getByTestId("lesson-link-card").waitFor();
+      if (wanted("video-copy-link")) await shotPage(teacher, locale, "video-copy-link");
+      await teacher.getByTestId("toggle-people").click();
     });
 
     await step("video-show-file", async () => {

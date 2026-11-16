@@ -5661,7 +5661,13 @@
       "breakoutMain": "Kichik xonalar ochiq ({rooms}); siz asosiy xonadasiz.",
       "breakoutIn": "Siz {number}-xonadasiz. Vaqt tugaganda o‘qituvchi hammani qaytaradi.",
       "noticeFrom": "{name}:",
-      "noShow": "O'quvchi qo'shilmadi. \"Kelmadi\" qo'yildi va Telegram orqali xabar berildi; hozir kelsa, dars davomatidan foydalaning."
+      "noShow": "O'quvchi qo'shilmadi. \"Kelmadi\" qo'yildi va Telegram orqali xabar berildi; hozir kelsa, dars davomatidan foydalaning.",
+      "copyLink": "Dars havolasini nusxalash",
+      "lessonLink": "Dars havolasi",
+      "linkCopied": "Dars havolasi nusxalandi. Uni o‘quvchilarga yuboring: ular Telegram orqali kirib, darsga qo‘shiladi.",
+      "linkCopyFailed": "Brauzer nusxalashga ruxsat bermadi. Havolani belgilab, nusxalang:",
+      "aloneHint": "Hozircha bu yerda boshqa hech kim yo‘q. O‘quvchilarga dars havolasini yuboring.",
+      "lessonLinkHelp": "Butun guruh uchun bitta havola, har bir darsda bir xil. Uni ochgan kishi avval Telegram orqali kiradi va darsga faqat shu guruh o‘quvchilari qo‘shila oladi."
     },
     "done": {
       "left": "Siz darsdan chiqdingiz.",
@@ -5960,13 +5966,22 @@
       "withTelegram": "Telegram orqali kirish",
       "withBot": "Telegram bot orqali kirish",
       "privacy": "Faqat o‘quv markazida o‘quvchi yoki ota-onada yozilgan raqamlar kira oladi. Kampus Telegram parolingiz va xabarlaringizni ko‘rmaydi.",
-      "off": "Bu yerda Telegram orqali kirish hali sozlanmagan. O‘quv markazi yuborgan shaxsiy havoladan foydalaning."
+      "off": "Bu yerda Telegram orqali kirish hali sozlanmagan. O‘quv markazi yuborgan shaxsiy havoladan foydalaning.",
+      "forLesson": "Darsga qo‘shilish uchun kiring. Kirganingizdan so‘ng dars darhol ochiladi.",
+      "forLessonBot": "Darsga qo‘shilish uchun kiring. «Telegram orqali kirish» bilan dars darhol ochiladi; bot orqali kirsangiz, sahifangizdagi guruhda «Qo‘shilish» tugmasini bosing."
     },
     "shell": {
       "offline": "Internet yo‘q. Bu sahifa oxirgi ochganingizdagi holatda; aloqa qaytgach yangilanadi.",
       "installHint": "My Kampus ni bosh ekranga qo‘shing: darslaringiz, uyga vazifa va to‘lovlar bir bosishda, internetsiz ham.",
       "install": "O‘rnatish",
       "later": "Hozir emas"
+    },
+    "lessonLink": {
+      "title": "Darsga qo‘shilish",
+      "otherTitle": "Bu dars boshqa guruh uchun",
+      "otherText": "Siz {name} sifatida kirgansiz, bu akkaunt esa havola tegishli guruhning o‘quvchisi emas.",
+      "otherHint": "Agar havola sizniki bo‘lsa, o‘quv markazidan o‘quvchi kartangizdagi telefon raqamini tekshirishni so‘rang yoki chiqib, kerakli Telegram akkaunti bilan kiring.",
+      "toHome": "Guruhlarimni ochish"
     }
   },
   "exercises": {
