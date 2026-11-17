@@ -143,6 +143,7 @@ export function CloseDayDialog({
       error={error}
       submitLabel={t("dialog.save")}
       testId="close-day-dialog"
+      className="sm:max-w-3xl"
     >
       <div className="grid gap-4 sm:grid-cols-2">
         <div className="space-y-2">

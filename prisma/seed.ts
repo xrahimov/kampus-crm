@@ -533,7 +533,11 @@ async function seedFinance(organizationId: string, branches: Map<string, string>
     },
   ];
   for (const data of rows) {
-    await prisma.financeEntry.create({ data: { ...data, branchId: central, createdById: ceo.id } });
+    // Entered on its own day, not on the day of seeding: the cash desk counts a day by when a row was entered.
+    const entered = data.date instanceof Date && data.date < now ? data.date : now;
+    await prisma.financeEntry.create({
+      data: { ...data, branchId: central, createdById: ceo.id, createdAt: entered },
+    });
   }
   console.log("Seeded demo finance rows.");
 }

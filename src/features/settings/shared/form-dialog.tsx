@@ -26,6 +26,7 @@ export function FormDialog({
   side,
   testId,
   submitLabel,
+  className,
 }: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -39,12 +40,15 @@ export function FormDialog({
   testId?: string;
   /** Replaces the default "Save" on the submit button. */
   submitLabel?: string;
+  /** For a form that needs more room than the usual window, such as one with a table. */
+  className?: string;
 }) {
   const t = useTranslations();
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent side={side} data-testid={testId}>
-        <form onSubmit={onSubmit} className="space-y-4" noValidate>
+      <DialogContent side={side} data-testid={testId} className={className}>
+        {/* min-w-0: a wide table scrolls inside the form instead of pushing the window's edge out. */}
+        <form onSubmit={onSubmit} className="min-w-0 space-y-4" noValidate>
           <DialogHeader>
             <DialogTitle>{title}</DialogTitle>
             {description && <DialogDescription>{description}</DialogDescription>}

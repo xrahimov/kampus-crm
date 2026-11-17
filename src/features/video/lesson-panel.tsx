@@ -12,10 +12,12 @@ import {
   Video,
   X,
 } from "lucide-react";
-import { useFormatter, useTranslations } from "next-intl";
+import { useTranslations } from "next-intl";
 import { useEffect, useRef, useState } from "react";
 
 import { api, ApiError, uploadFile } from "@/lib/api-client";
+import { parseDateOnly } from "@/lib/dates";
+import { useDateFormat } from "@/lib/use-date-format";
 import { cn } from "@/lib/utils";
 import { materialView } from "@/lib/video-material";
 import type { CallLessonDto } from "@/server/services/video/call-lesson.service";
@@ -43,7 +45,8 @@ export function LessonPanel({
   onShown?: () => void;
 }) {
   const t = useTranslations("video.lesson");
-  const format = useFormatter();
+  // Uzbek dates are spelled by the app: a browser without "uz" data prints "M11 17".
+  const fmt = useDateFormat();
   const [data, setData] = useState<CallLessonDto | null>(null);
   const [error, setError] = useState(false);
   const [editing, setEditing] = useState(false);
@@ -188,7 +191,7 @@ export function LessonPanel({
           <h3 className="text-xs font-semibold tracking-wide uppercase opacity-70">
             {data.lesson
               ? t("lessonOf", {
-                  date: format.dateTime(new Date(`${data.lesson.date}T00:00:00`), {
+                  date: fmt(parseDateOnly(data.lesson.date), {
                     day: "numeric",
                     month: "short",
                   }),
@@ -501,7 +504,7 @@ export function LessonPanel({
               {data.homework.dueDate && (
                 <span className="opacity-70">
                   {t("due", {
-                    date: format.dateTime(new Date(`${data.homework.dueDate}T00:00:00`), {
+                    date: fmt(parseDateOnly(data.homework.dueDate), {
                       day: "numeric",
                       month: "short",
                     }),

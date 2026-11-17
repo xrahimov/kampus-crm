@@ -182,7 +182,7 @@ export function AttendanceGrid({
           <table className="w-full text-sm" data-testid="attendance-grid">
             <thead>
               <tr className="border-b bg-muted/40">
-                <th className="sticky left-0 bg-muted/40 px-3 py-2 text-left font-medium">
+                <th className="sticky left-0 z-10 bg-[color-mix(in_oklch,var(--muted)_40%,var(--card))] px-3 py-2 text-left font-medium">
                   {t("groups.members.student")}
                 </th>
                 {grid.lessons.map((l) => (
@@ -225,7 +225,7 @@ export function AttendanceGrid({
                 ))}
               </tr>
               <tr className="border-b text-xs text-muted-foreground">
-                <th className="sticky left-0 bg-card px-3 py-1 text-left font-normal">
+                <th className="sticky left-0 z-10 bg-card px-3 py-1 text-left font-normal">
                   {t("groups.attendance.topics")}
                 </th>
                 {grid.lessons.map((l) => (
@@ -246,7 +246,7 @@ export function AttendanceGrid({
                   className="border-b last:border-0"
                   data-testid="attendance-row"
                 >
-                  <td className="sticky left-0 bg-card px-3 py-1.5 whitespace-nowrap">
+                  <td className="sticky left-0 z-10 bg-card px-3 py-1.5 whitespace-nowrap">
                     {m.fullName}
                   </td>
                   {grid.lessons.map((l) => {

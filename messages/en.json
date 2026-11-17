@@ -3543,7 +3543,7 @@
   "coins": {
     "settings": {
       "title": "Coin settings",
-      "description": "Automatic coin rules and the reasons staff may give coins for (reference: Sozlamalar → Coin sozlamalari).",
+      "description": "Automatic coin rules and the reasons staff may give coins for.",
       "autoCoins": "Automatic coin system",
       "autoCoinsHint": "When off no automatic coins are given; manual coins still work.",
       "rulesTitle": "Automatic coin rules",
@@ -3844,7 +3844,7 @@
   },
   "reports": {
     "title": "Reports",
-    "description": "Reports from the reference's Hisobotlar menu.",
+    "description": "Payments, students, leads and the centre's figures, each with its own filters.",
     "phase": "Phase {phase}",
     "items": {
       "payments": "Payments",

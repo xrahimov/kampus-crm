@@ -3844,7 +3844,7 @@
   },
   "reports": {
     "title": "Hisobotlar",
-    "description": "Namunaning Hisobotlar menyusidagi hisobotlar.",
+    "description": "To‘lovlar, o‘quvchilar, lidlar va markaz ko‘rsatkichlari, har biri o‘z filtrlari bilan.",
     "phase": "{phase}-bosqich",
     "items": {
       "payments": "To‘lovlar",
