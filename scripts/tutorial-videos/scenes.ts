@@ -977,12 +977,14 @@ const videoLesson: Scene = {
       await s.go(`/groups/${s.base.teacherGroupId}`, teacher);
       const card = teacher.getByTestId("group-video");
 
+      const start = card.getByTestId("video-start");
+      const begin = (await start.isVisible()) ? start : card.getByTestId("video-join");
       await s.say("card", async () => {
-        await film.show(card, 2.4);
+        // The pointer waits on the button, not on the lesson's hours.
+        await film.show(card, 2.4, begin);
       });
       await s.say("start", async () => {
-        const start = card.getByTestId("video-start");
-        await film.click((await start.isVisible()) ? start : card.getByTestId("video-join"));
+        await film.click(begin);
         await teacher.getByTestId("join-call").waitFor();
         await film.wait(1.2);
         await film.click(teacher.getByTestId("join-call"));
@@ -1523,6 +1525,9 @@ const finance: Scene = {
     );
     await s.go("/finance");
     await s.say("charts", async () => {
+      // The totals first: they have moved by the expense just entered.
+      const expenses = page.locator('[data-testid^="kpi-"]').nth(1);
+      await film.show(expenses, 2, expenses.locator(".text-muted-foreground").first());
       await film.bring(page.getByTestId("donut"));
       await film.show(page.getByTestId("donut"), 2);
     });

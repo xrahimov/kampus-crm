@@ -64,6 +64,17 @@ export async function open(
 ): Promise<[BrowserContext, Page]> {
   const context = await browser.newContext({ viewport: null, ...options });
   await context.addInitScript(POINTER_SCRIPT);
+  // No red spell-check line under what is typed: the system's checker (macOS) knows no Uzbek.
+  // It is switched off on each field as it takes the cursor; the page's own root loses the attribute.
+  await context.addInitScript(() => {
+    document.addEventListener(
+      "focusin",
+      (event) => {
+        if (event.target instanceof HTMLElement) event.target.spellcheck = false;
+      },
+      true,
+    );
+  });
   const shown = process.env.VIDEO_SITE_URL?.replace(/\/+$/, "");
   if (shown) await context.addInitScript(addressScript(shown));
   const page = await context.newPage();
@@ -418,9 +429,12 @@ export class Film {
     await this.glide(x, y);
   }
 
-  /** Moves onto `target` and draws a ring around it for a moment. */
-  async show(target: Locator, seconds = 1.6) {
-    await this.hover(target);
+  /**
+   * Moves onto `target` and draws a ring around it for a moment. With `rest` the pointer
+   * waits there instead, where it covers nothing the caption speaks of.
+   */
+  async show(target: Locator, seconds = 1.6, rest: Locator = target) {
+    await this.hover(rest);
     const box = await target.first().boundingBox();
     if (!box) return;
     await this.need().evaluate(
