@@ -75,7 +75,7 @@ test.describe("dashboard, search and notifications", () => {
     await page.getByTestId("show-numbers").click();
     await expect(values.first()).not.toHaveText("***");
     await expect(page.getByTestId("dash-groups")).toContainText("Groups");
-    await expect(page.getByTestId("dash-newAdmissions")).toContainText("NEW");
+    await expect(page.getByTestId("dash-newAdmissions")).toContainText("New group admissions");
     await expect(page.getByTestId("utilisation-badge")).toContainText("%");
 
     // The schedule: weekday tabs, time step and a block for the seeded morning group.
