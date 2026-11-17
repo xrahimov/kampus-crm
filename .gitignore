@@ -49,6 +49,9 @@ next-env.d.ts
 /test-results/
 /playwright-report/
 
+# how-to videos recorded by `npm run help:videos`
+/tutorial-videos/
+
 # uploaded files (local storage adapter)
 /uploads/
 backups/

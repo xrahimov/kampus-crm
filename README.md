@@ -98,21 +98,22 @@ app and its tests run without any external account. Webhooks: `POST /api/v1/webh
 
 ## Scripts
 
-| Script                     | What it does                                                                                                                       |
-| -------------------------- | ---------------------------------------------------------------------------------------------------------------------------------- |
-| `npm run dev`              | Dev server                                                                                                                         |
-| `npm run build`            | Production build (standalone output)                                                                                               |
-| `npm run lint`             | ESLint                                                                                                                             |
-| `npm run format:check`     | Prettier check (`npm run format` to fix)                                                                                           |
-| `npm run typecheck`        | `tsc --noEmit`                                                                                                                     |
-| `npm test`                 | Vitest unit + DB integration tests                                                                                                 |
-| `npm run test:e2e`         | Playwright end-to-end tests (needs a database)                                                                                     |
-| `npm run db:migrate`       | Create/apply a migration in development                                                                                            |
-| `npm run db:deploy`        | Apply committed migrations                                                                                                         |
-| `npm run db:seed`          | Load fake demo data                                                                                                                |
-| `npm run db:bootstrap`     | First-start setup from `BOOTSTRAP_*` variables                                                                                     |
-| `npm run worker`           | Background job worker                                                                                                              |
-| `npm run help:screenshots` | Re-takes the manual's screenshots from a seeded local run (`public/help/<locale>/`); start the server with `TELEGRAM_LOGIN_FAKE=1` |
+| Script                     | What it does                                                                                                                                                                                                                                 |
+| -------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `npm run dev`              | Dev server                                                                                                                                                                                                                                   |
+| `npm run build`            | Production build (standalone output)                                                                                                                                                                                                         |
+| `npm run lint`             | ESLint                                                                                                                                                                                                                                       |
+| `npm run format:check`     | Prettier check (`npm run format` to fix)                                                                                                                                                                                                     |
+| `npm run typecheck`        | `tsc --noEmit`                                                                                                                                                                                                                               |
+| `npm test`                 | Vitest unit + DB integration tests                                                                                                                                                                                                           |
+| `npm run test:e2e`         | Playwright end-to-end tests (needs a database)                                                                                                                                                                                               |
+| `npm run db:migrate`       | Create/apply a migration in development                                                                                                                                                                                                      |
+| `npm run db:deploy`        | Apply committed migrations                                                                                                                                                                                                                   |
+| `npm run db:seed`          | Load fake demo data                                                                                                                                                                                                                          |
+| `npm run db:bootstrap`     | First-start setup from `BOOTSTRAP_*` variables                                                                                                                                                                                               |
+| `npm run worker`           | Background job worker                                                                                                                                                                                                                        |
+| `npm run help:screenshots` | Re-takes the manual's screenshots from a seeded local run (`public/help/<locale>/`); start the server with `TELEGRAM_LOGIN_FAKE=1`                                                                                                           |
+| `npm run help:videos`      | Records the how-to videos (one per feature, en/ru/uz, captions under the picture) from a seeded local run into `tutorial-videos/`; needs ffmpeg. `scripts/tutorial-videos/record-all.sh` records all three languages on fresh demo databases |
 
 ## Testing and CI
 

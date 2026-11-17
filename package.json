@@ -20,7 +20,8 @@
     "db:bootstrap": "tsx scripts/bootstrap.ts",
     "db:reset": "prisma migrate reset --force",
     "worker": "tsx scripts/worker.ts",
-    "help:screenshots": "tsx scripts/help-screenshots.ts"
+    "help:screenshots": "tsx scripts/help-screenshots.ts",
+    "help:videos": "tsx scripts/tutorial-videos/index.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.133.0",

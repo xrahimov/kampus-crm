@@ -60,7 +60,7 @@ const LABELS: Record<string, Record<string, string>> = {
 };
 
 type Shot = { name: string; take: (ctx: Ctx) => Promise<void> };
-type Base = {
+export type Base = {
   locale: string;
   browser: Browser;
   teacherGroupId: string;
@@ -72,7 +72,7 @@ type Base = {
 type Ctx = Base & { page: Page };
 
 /** The words of the demo rows the script adds. One language: the demo centre teaches English. */
-const DEMO = {
+export const DEMO = {
   // Fake data: the demo bot's webhook secret and someone waiting to be let in (A-196).
   botSecret: "demo-help-secret",
   newcomer: "Dilnoza Karimova",
@@ -152,7 +152,7 @@ async function scrollTo(el: Locator) {
   await el.page().waitForTimeout(250);
 }
 
-async function signIn(page: Page, locale: string, phone: string) {
+export async function signIn(page: Page, locale: string, phone: string) {
   await page.goto(`${BASE}/${locale}/login`);
   // The dev server hydrates a freshly compiled page a moment after it loads.
   await page.waitForLoadState("networkidle").catch(() => undefined);
@@ -163,12 +163,12 @@ async function signIn(page: Page, locale: string, phone: string) {
   await page.waitForURL(/\/(dashboard|today|groups)/);
 }
 
-async function go(page: Page, locale: string, pathname: string) {
+export async function go(page: Page, locale: string, pathname: string) {
   await page.goto(`${BASE}/${locale}${pathname}`);
   await page.waitForLoadState("networkidle").catch(() => undefined);
 }
 
-async function firstId(page: Page, apiPath: string): Promise<string | null> {
+export async function firstId(page: Page, apiPath: string): Promise<string | null> {
   const res = await page.request.get(`${BASE}/api/v1${apiPath}`);
   if (!res.ok()) return null;
   const body = (await res.json()) as { items?: Array<{ id: string }> } | Array<{ id: string }>;
@@ -177,7 +177,7 @@ async function firstId(page: Page, apiPath: string): Promise<string | null> {
 }
 
 /** Posts once: creates the row when the list is empty, so re-runs do not pile up demo rows. */
-async function ensureRow(page: Page, listPath: string, createPath: string, body: unknown) {
+export async function ensureRow(page: Page, listPath: string, createPath: string, body: unknown) {
   const res = await page.request.get(`${BASE}/api/v1${listPath}`);
   if (res.ok()) {
     const data = (await res.json()) as { items?: unknown[] } | unknown[];
@@ -193,7 +193,7 @@ async function csrfHeaders(page: Page): Promise<Record<string, string>> {
 }
 
 /** A write with the double-submit CSRF token the app's own fetches send; returns the answer's JSON. */
-async function mutate<T = unknown>(
+export async function mutate<T = unknown>(
   page: Page,
   method: "post" | "patch" | "put",
   apiPath: string,
@@ -207,20 +207,20 @@ async function mutate<T = unknown>(
   return (await res.json().catch(() => null)) as T;
 }
 
-async function getJson<T>(page: Page, apiPath: string): Promise<T> {
+export async function getJson<T>(page: Page, apiPath: string): Promise<T> {
   const res = await page.request.get(`${BASE}/api/v1${apiPath}`);
   if (!res.ok()) throw new Error(`GET ${apiPath} failed: ${res.status()}`);
   return (await res.json()) as T;
 }
 
 /** Rows of a list answer, whether it is an array or `{ items }`. */
-async function rows<T>(page: Page, apiPath: string): Promise<T[]> {
+export async function rows<T>(page: Page, apiPath: string): Promise<T[]> {
   const body = await getJson<{ items?: T[] } | T[]>(page, apiPath);
   return Array.isArray(body) ? body : (body.items ?? []);
 }
 
 /** What a student's page sends: no session, the link in the path and the page's own origin. */
-async function asStudent(
+export async function asStudent(
   page: Page,
   token: string,
   apiPath: string,
@@ -234,7 +234,7 @@ async function asStudent(
 }
 
 /** Three slides as a PDF, printed by the browser: the file a teacher shows in a lesson. */
-async function slidesPdf(browser: Browser): Promise<Buffer> {
+export async function slidesPdf(browser: Browser): Promise<Buffer> {
   const slide = (title: string, body: string) =>
     `<section><p class="unit">General English · A1 · Unit 3</p><h1>${title}</h1>${body}</section>`;
   const html = `<!doctype html><meta charset="utf-8"><style>
@@ -259,7 +259,12 @@ async function slidesPdf(browser: Browser): Promise<Buffer> {
 }
 
 /** Uploads a document the way the materials and homework forms do; returns its stored URL. */
-async function upload(page: Page, name: string, mimeType: string, buffer: Buffer): Promise<string> {
+export async function upload(
+  page: Page,
+  name: string,
+  mimeType: string,
+  buffer: Buffer,
+): Promise<string> {
   const res = await page.request.post(`${BASE}/api/v1/uploads/documents`, {
     multipart: { file: { name, mimeType, buffer } },
     headers: await csrfHeaders(page),
@@ -319,7 +324,7 @@ async function askToJoin(browser: Browser): Promise<void> {
  * the shots use; `ceo` may do the rest. Each step looks before it writes, so a
  * re-run adds nothing.
  */
-async function prepare(ceo: Page, teacher: Page, base: Base): Promise<void> {
+export async function prepare(ceo: Page, teacher: Page, base: Base): Promise<void> {
   const g = base.teacherGroupId;
   const today = tashkentToday();
 
@@ -475,7 +480,7 @@ async function prepare(ceo: Page, teacher: Page, base: Base): Promise<void> {
 }
 
 /** Today's date in Tashkent (UTC+5), as the app counts days. */
-function tashkentToday(): string {
+export function tashkentToday(): string {
   return new Date(Date.now() + 5 * 60 * 60 * 1000).toISOString().slice(0, 10);
 }
 
@@ -1265,7 +1270,7 @@ const CALL_SHOTS = [
 ] as const;
 
 /** A drawn portrait as a one-frame MJPEG file: what Chromium's fake camera plays instead of its test pattern. */
-async function cameraFile(browser: Browser, dir: string, who: "teacher" | "student") {
+export async function cameraFile(browser: Browser, dir: string, who: "teacher" | "student") {
   const [back, wall, figure] =
     who === "teacher" ? ["#24336b", "#31427f", "#e4e9fa"] : ["#0f8a83", "#17a39a", "#e6f7f4"];
   const page = await browser.newPage({ viewport: { width: 640, height: 480 } });
@@ -1299,12 +1304,12 @@ function launchForCall(camera: string): Promise<Browser> {
 }
 
 /** On a phone a side panel fills the screen; its own close button brings the room back. */
-async function closePhonePanel(page: Page) {
+export async function closePhonePanel(page: Page) {
   await page.locator("aside button").first().click();
 }
 
 /** One pen stroke through `points`, given as fractions of the box. */
-async function stroke(page: Page, el: Locator, points: Array<[number, number]>) {
+export async function stroke(page: Page, el: Locator, points: Array<[number, number]>) {
   const box = await el.boundingBox();
   if (!box) throw new Error("nothing to draw on");
   const at = ([x, y]: [number, number]) => [box.x + box.width * x, box.y + box.height * y] as const;
@@ -1705,4 +1710,5 @@ async function main() {
   }
 }
 
-void main();
+// The tutorial videos borrow the demo rows above; only a direct run takes pictures.
+if (require.main === module) void main();
