@@ -1,6 +1,6 @@
 import { getFormatter, getTranslations } from "next-intl/server";
 
-import { formatDateUz, formatMoneyUz, parseDateOnly } from "@/lib/dates";
+import { dateOnlyUtc, formatDateUz, formatMoneyUz } from "@/lib/dates";
 import type { ReceiptField } from "@/lib/validation/students";
 import type { ReceiptDto } from "@/server/services/students/payments.service";
 
@@ -26,10 +26,16 @@ export async function Receipt({
     locale === "uz"
       ? formatMoneyUz(v)
       : format.number(v, { style: "currency", currency: "UZS", maximumFractionDigits: 0 });
+  // Calendar days: read and shown in UTC, so the server's own time zone cannot move them.
   const date = (iso: string) =>
     locale === "uz"
-      ? formatDateUz(parseDateOnly(iso), { dateStyle: "medium" })
-      : format.dateTime(parseDateOnly(iso), { dateStyle: "medium", timeZone: "UTC" });
+      ? formatDateUz(dateOnlyUtc(iso), { dateStyle: "medium" }, "UTC")
+      : format.dateTime(dateOnlyUtc(iso), { dateStyle: "medium", timeZone: "UTC" });
+  /** The month a payment is for is kept as its first day: shown as "Nov 2026", not as a date. */
+  const month = (iso: string) =>
+    locale === "uz"
+      ? formatDateUz(dateOnlyUtc(iso), { month: "short", year: "numeric" }, "UTC")
+      : format.dateTime(dateOnlyUtc(iso), { month: "short", year: "numeric", timeZone: "UTC" });
   const dateTime = (d: Date) =>
     locale === "uz"
       ? formatDateUz(d, { dateStyle: "medium", timeStyle: "short" })
@@ -49,7 +55,7 @@ export async function Receipt({
     ["coursePrice", t("coursePrice"), money(receipt.coursePrice)],
     ["method", t("method"), receipt.methodName ?? "—"],
     ["paidAt", t("paidAt"), date(receipt.paidAt)],
-    ["paidAt", t("effectiveMonth"), date(receipt.effectiveMonth)],
+    ["paidAt", t("effectiveMonth"), month(receipt.effectiveMonth)],
     ["cashier", t("cashier"), receipt.receivedByName ?? "—"],
   ];
 

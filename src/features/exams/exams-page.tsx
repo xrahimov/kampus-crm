@@ -185,11 +185,11 @@ export function ExamsPage({
           <EmptyState title={t("common.nothingFound")} />
         ) : (
           <div className="overflow-x-auto">
+            {/* No "type" column: the tab above already says which kind these are. */}
             <Table>
               <TableHeader>
                 <TableRow>
                   <TableHead>{t("exams.columns.name")}</TableHead>
-                  <TableHead>{t("exams.columns.type")}</TableHead>
                   <TableHead>
                     {mock ? t("exams.columns.groups") : t("exams.columns.group")}
                   </TableHead>
@@ -205,7 +205,6 @@ export function ExamsPage({
                     <TableHead className="text-right">{t("exams.columns.capacity")}</TableHead>
                   )}
                   <TableHead className="text-right">{t("exams.columns.passScore")}</TableHead>
-                  <TableHead className="text-right">{t("exams.columns.maxScore")}</TableHead>
                   <TableHead>{t("common.status")}</TableHead>
                   <TableHead className="w-12" />
                 </TableRow>
@@ -223,7 +222,6 @@ export function ExamsPage({
                         </Badge>
                       )}
                     </TableCell>
-                    <TableCell>{t(`exams.types.${x.type}`)}</TableCell>
                     <TableCell>
                       {x.type === "GROUP" ? x.groupName : x.groups.map((g) => g.name).join(", ")}
                     </TableCell>
@@ -240,8 +238,10 @@ export function ExamsPage({
                     {mock && (
                       <TableCell className="text-right tabular-nums">{x.capacity ?? "—"}</TableCell>
                     )}
-                    <TableCell className="text-right tabular-nums">{x.passScore}</TableCell>
-                    <TableCell className="text-right tabular-nums">{x.maxScore}</TableCell>
+                    {/* "60 / 100": the pass mark out of the maximum, as on the exam's own page. */}
+                    <TableCell className="text-right tabular-nums whitespace-nowrap">
+                      {x.passScore} / {x.maxScore}
+                    </TableCell>
                     <TableCell>
                       <ExamStatusBadge status={x.status} />
                     </TableCell>

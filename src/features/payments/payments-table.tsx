@@ -45,6 +45,10 @@ export function PaymentsTable({
   const fiscalOf = (p: PaymentDto) => fiscalOverrides[p.id] ?? p.fiscal;
   // The column appears only where the centre fiscalises, so other cash desks stay as they were.
   const showFiscal = payments.some((p) => fiscalOf(p) !== null);
+  // Refunds and bonuses are rare: their columns appear only when a payment in the list has one,
+  // so the table fits the student card without scrolling sideways.
+  const showRefunded = payments.some((p) => p.refunded > 0);
+  const showBonus = payments.some((p) => p.bonus > 0);
 
   async function retryFiscal(paymentId: string) {
     setRetrying(paymentId);
@@ -76,8 +80,8 @@ export function PaymentsTable({
             <TableHead>{t("date")}</TableHead>
             <TableHead>{t("month")}</TableHead>
             <TableHead className="text-right">{t("amount")}</TableHead>
-            <TableHead className="text-right">{t("refunded")}</TableHead>
-            <TableHead className="text-right">{t("bonus")}</TableHead>
+            {showRefunded && <TableHead className="text-right">{t("refunded")}</TableHead>}
+            {showBonus && <TableHead className="text-right">{t("bonus")}</TableHead>}
             <TableHead>{t("group")}</TableHead>
             <TableHead>{t("comment")}</TableHead>
             <TableHead>{t("method")}</TableHead>
@@ -104,13 +108,17 @@ export function PaymentsTable({
               <TableCell className="text-right tabular-nums whitespace-nowrap">
                 {money(p.amount)}
               </TableCell>
-              <TableCell className="text-right tabular-nums whitespace-nowrap">
-                {p.refunded > 0 ? money(p.refunded) : "—"}
-              </TableCell>
-              <TableCell className="text-right tabular-nums whitespace-nowrap">
-                {p.bonus > 0 ? money(p.bonus) : "—"}
-              </TableCell>
-              <TableCell>
+              {showRefunded && (
+                <TableCell className="text-right tabular-nums whitespace-nowrap">
+                  {p.refunded > 0 ? money(p.refunded) : "—"}
+                </TableCell>
+              )}
+              {showBonus && (
+                <TableCell className="text-right tabular-nums whitespace-nowrap">
+                  {p.bonus > 0 ? money(p.bonus) : "—"}
+                </TableCell>
+              )}
+              <TableCell className="whitespace-nowrap">
                 <Link href={`/groups/${p.groupId}`} className="hover:underline">
                   {p.groupName}
                 </Link>

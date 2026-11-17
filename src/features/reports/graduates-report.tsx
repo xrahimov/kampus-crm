@@ -30,6 +30,7 @@ import { FormDialog } from "@/features/settings/shared/form-dialog";
 import { ExcelLink } from "@/features/shared/excel-link";
 import { Link, useRouter } from "@/i18n/navigation";
 import { api, ApiError } from "@/lib/api-client";
+import { todayIso } from "@/features/staff/password";
 import { parseDateOnly } from "@/lib/dates";
 import { useDateFormat } from "@/lib/use-date-format";
 import { CEFR_LEVELS, type GraduatesFilters } from "@/lib/validation/reports";
@@ -347,12 +348,7 @@ function CertificateDialog({
         </div>
         <div className="space-y-2">
           <Label htmlFor="cert-date">{t("issuedAt")}</Label>
-          <Input
-            id="cert-date"
-            name="issuedAt"
-            type="date"
-            defaultValue={new Date().toISOString().slice(0, 10)}
-          />
+          <Input id="cert-date" name="issuedAt" type="date" defaultValue={todayIso()} />
         </div>
       </div>
     </FormDialog>

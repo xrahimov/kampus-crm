@@ -1018,7 +1018,7 @@ export const uz: HelpContent = {
               steps: [
                 "**Kunni yopish** tugmasini bosing, filial va kunni tekshiring.",
                 "Raqamlarni cheklar bilan solishtiring, naqd pulni sanab **Sanalgan naqd** maydoniga kiriting. Raqamlar farq qilsa, izoh yozing.",
-                "Oynadagi **Kunni yopish** tugmasini bosing. Yopilish farqi bilan ro‘yxatda paydo bo‘ladi; **Chop etish** raqamlar va topshirish uchun ikki imzo qatori bo‘lgan varaqni ochadi.",
+                "Oynadagi **Kunni yopish** tugmasini bosing. Yopilish farqi bilan ro‘yxatda paydo bo‘ladi; qatoridagi printer tugmasi (**Chop etish**) raqamlar va topshirish uchun ikki imzo qatori bo‘lgan varaqni ochadi.",
                 "Rahbar pulni olganda **Qabul qilish** tugmasini bosadi. Qabul qilingan kunni qayta yopib bo‘lmaydi; hali qabul qilinmaganini — mumkin, yangi raqamlar eskisini almashtiradi.",
               ],
             },

@@ -1,6 +1,6 @@
 import { getFormatter, getTranslations } from "next-intl/server";
 
-import { formatDateUz, formatMoneyUz, parseDateOnly } from "@/lib/dates";
+import { dateOnlyUtc, formatDateUz, formatMoneyUz } from "@/lib/dates";
 import type { CashCloseDto } from "@/server/services/finance/cash-close.service";
 
 /** Server-rendered hand-over sheet: the day's figures by payment type and two signature lines. */
@@ -25,8 +25,8 @@ export async function CashCloseSheet({
       : format.number(v, { style: "currency", currency: "UZS", maximumFractionDigits: 0 });
   const date = (iso: string) =>
     locale === "uz"
-      ? formatDateUz(parseDateOnly(iso), { dateStyle: "medium" })
-      : format.dateTime(parseDateOnly(iso), { dateStyle: "medium", timeZone: "UTC" });
+      ? formatDateUz(dateOnlyUtc(iso), { dateStyle: "medium" }, "UTC")
+      : format.dateTime(dateOnlyUtc(iso), { dateStyle: "medium", timeZone: "UTC" });
   const dateTime = (d: Date) =>
     locale === "uz"
       ? formatDateUz(d, { dateStyle: "medium", timeStyle: "short" })

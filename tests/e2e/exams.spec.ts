@@ -84,7 +84,8 @@ test.describe("exams", () => {
     await page.goto("/en/exams?type=MOCK");
     const mock = page.getByTestId("exam-row").filter({ hasText: "IELTS Mock (October)" });
     await expect(mock).toBeVisible();
-    await expect(mock).toContainText("Mock exam");
+    // The tab says which kind these are; the row has no "type" column.
+    await expect(page.getByTestId("exam-tab-MOCK")).toContainText("Mock exams");
     await expect(mock).toContainText("20"); // capacity
     await mock.getByRole("link", { name: "IELTS Mock (October)" }).click();
     await expect(page.getByTestId("register-search")).toBeVisible();

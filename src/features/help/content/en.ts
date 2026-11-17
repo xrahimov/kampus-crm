@@ -1014,7 +1014,7 @@ export const en: HelpContent = {
               steps: [
                 "Press **Close the day**, check the branch and the day.",
                 "Compare the figures with your receipts, count the cash and enter it under **Counted cash**. Add a note if the figures differ.",
-                "Press **Close the day** in the dialog. The close appears in the list with its difference; **Print** opens a sheet with the figures and two signature lines for the hand-over.",
+                "Press **Close the day** in the dialog. The close appears in the list with its difference; the printer button in its row (**Print**) opens a sheet with the figures and two signature lines for the hand-over.",
                 "The manager presses **Accept** when they take the money. An accepted day cannot be closed again; a day not yet accepted can, and the new figures replace the old.",
               ],
             },

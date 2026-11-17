@@ -24,6 +24,7 @@ import type { BranchOption } from "@/features/settings/shared/branch-select";
 import { FormDialog } from "@/features/settings/shared/form-dialog";
 import { api } from "@/lib/api-client";
 import { applyApiError } from "@/lib/api-errors";
+import { todayIso } from "@/features/staff/password";
 import { parseDateOnly } from "@/lib/dates";
 import { examSchema, type ExamInput, type ExamType } from "@/lib/validation/exams";
 import type { ExamDto, ExamOptions } from "@/server/services/exams/exams.service";
@@ -33,7 +34,8 @@ type Input = z.input<typeof examSchema>;
 const NONE = "__none";
 const ALL = "__all";
 
-const today = () => new Date().toISOString().slice(0, 10);
+/** Today on the user's own clock: the UTC day is still yesterday until 05:00 in Tashkent. */
+const today = todayIso;
 
 /** Months between a group's start date and today, rounded down. */
 function monthsStudied(startDate: string): number {
