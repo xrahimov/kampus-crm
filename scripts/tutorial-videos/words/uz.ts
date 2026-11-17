@@ -323,7 +323,7 @@ export const uz: Words = {
         expense:
           "O‘quvchilar to‘lovlari bu yerga o‘zi tushadi. Qolganini qo‘lda kiritasiz: toifa, summa va izoh.",
         saveExpense:
-          "“{common.save}” tugmasini bosing. Jami summalar va grafiklar darhol o‘zgaradi.",
+          "“{common.save}” tugmasini bosing. Yozuv ro‘yxatda paydo bo‘ladi, jami summalar va grafiklar darhol o‘zgaradi.",
         charts: "Grafiklar pul qayerdan kelib, qayerga ketayotganini ko‘rsatadi.",
         payroll:
           "Maosh har bir xodimning usuli bo‘yicha hisoblanadi: oylik, dars uchun, o‘quvchi uchun yoki to‘lovlardan ulush.",

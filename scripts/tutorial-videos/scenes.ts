@@ -45,6 +45,7 @@ const TYPED = {
     expense: "Markers and paper",
     earlierTitle: "New timetable from Monday",
     earlier: "From Monday the evening groups start at 18:30. Check your timetable on your page.",
+    returned: "Check the verbs after he and she, then send it again.",
   },
   ru: {
     dayOff: "Учитель на конференции",
@@ -57,6 +58,7 @@ const TYPED = {
     earlierTitle: "Новое расписание с понедельника",
     earlier:
       "С понедельника вечерние группы начинаются в 18:30. Проверьте расписание на своей странице.",
+    returned: "Проверьте глаголы после he и she и отправьте ещё раз.",
   },
   uz: {
     dayOff: "O‘qituvchi konferensiyada",
@@ -70,6 +72,7 @@ const TYPED = {
     earlierTitle: "Dushanbadan yangi jadval",
     earlier:
       "Dushanbadan kechki guruhlar 18:30 da boshlanadi. Jadvalni o‘z sahifangizda tekshiring.",
+    returned: "He va she dan keyingi fe’llarni tekshirib, qayta yuboring.",
   },
 } as const;
 
@@ -863,6 +866,28 @@ const payments: Scene = {
   },
 };
 
+/**
+ * Backstage: the demo teacher's group has a lesson today, whatever day the video is
+ * recorded on, at the hour its timetable gives. Without it the Today page would open on
+ * an earlier day and a video lesson would belong to no lesson.
+ */
+async function lessonToday(s: Shoot): Promise<void> {
+  const group = `/groups/${s.base.teacherGroupId}`;
+  const { lessons, today } = await getJson<{ lessons: Array<{ date: string }>; today: string }>(
+    s.ceo,
+    `${group}/homework`,
+  );
+  if (lessons.some((l) => l.date.slice(0, 10) === today)) return;
+  const { slots } = await getJson<{ slots: Array<{ startTime: string; endTime: string }> }>(
+    s.ceo,
+    group,
+  );
+  const { startTime = "09:00", endTime = "10:30" } = slots[0] ?? {};
+  await mutate(s.ceo, "post", `${group}/lessons/extra`, { date: today, startTime, endTime }).catch(
+    (error: Error) => process.stdout.write(`  (no lesson today was added: ${error.message})\n`),
+  );
+}
+
 /** The last date up to today on which the demo teacher's group had a lesson. */
 async function lastLesson(s: Shoot): Promise<string> {
   const homework = await getJson<{ lessons: Array<{ date: string }>; today: string }>(
@@ -878,6 +903,7 @@ const attendance: Scene = {
   async run(s) {
     const { film, page } = s;
     await s.signIn(TEACHER);
+    await film.offCamera(() => lessonToday(s));
     const date = await lastLesson(s);
     await s.go(date === tashkentToday() ? "/today" : `/today?date=${date}`);
     const lesson = page.getByTestId("today-lesson").first();
@@ -945,24 +971,8 @@ const videoLesson: Scene = {
       const [, student] = await open(studentBrowser, PHONE, { permissions: media });
       await teacher.addInitScript(() => localStorage.setItem("kampus.summary.auto", "off"));
       await film.watch(teacher);
-      // Backstage: the group has a lesson today whatever day the video is recorded on, so
-      // the call belongs to a lesson and attendance is filled in from it.
-      await film.offCamera(async () => {
-        const group = `/groups/${s.base.teacherGroupId}`;
-        const { lessons, today } = await getJson<{
-          lessons: Array<{ date: string }>;
-          today: string;
-        }>(s.ceo, `${group}/homework`);
-        if (!lessons.some((l) => l.date.slice(0, 10) === today)) {
-          await mutate(s.ceo, "post", `${group}/lessons/extra`, {
-            date: today,
-            startTime: "09:00",
-            endTime: "10:30",
-          }).catch((error: Error) =>
-            process.stdout.write(`  (no lesson today was added: ${error.message})\n`),
-          );
-        }
-      });
+      // Backstage: the call belongs to today's lesson, and attendance is filled in from it.
+      await film.offCamera(() => lessonToday(s));
       await s.signIn(TEACHER, teacher);
       await s.go(`/groups/${s.base.teacherGroupId}`, teacher);
       const card = teacher.getByTestId("group-video");
@@ -1210,10 +1220,7 @@ const homework: Scene = {
       const next = page.getByTestId("checking-item").first();
       if ((await next.count()) === 0) return;
       await film.click(next.getByTestId("checking-return"));
-      await film.type(
-        next.getByTestId("checking-comment"),
-        "Check the verbs after he and she, then send it again.",
-      );
+      await film.type(next.getByTestId("checking-comment"), typed(s).returned);
       // Sent when the caption is over, so the comment is what the picture shows.
       return () => film.click(next.getByTestId("checking-return-send"));
     });

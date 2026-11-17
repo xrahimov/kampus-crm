@@ -321,7 +321,8 @@ export const en = {
           "{nav.finance} shows income, expenses and profit for the month or year you choose.",
         expense:
           "Student payments arrive here by themselves. Other money you enter: choose a category, the amount and a note.",
-        saveExpense: "Press “{common.save}”. The totals and the charts change at once.",
+        saveExpense:
+          "Press “{common.save}”. The entry joins the list, and the totals and the charts change at once.",
         charts: "The charts show where the money comes from and where it goes.",
         payroll:
           "Salaries are counted by each person’s method: a fixed sum, per lesson, per student or a share of payments.",

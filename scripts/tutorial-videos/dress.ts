@@ -133,6 +133,8 @@ const NOTES = {
   },
   "Late twice": { en: "Late twice", ru: "Два опоздания", uz: "Ikki marta kechikdi" },
   "Seed capital": { en: "Seed capital", ru: "Стартовый капитал", uz: "Boshlang‘ich kapital" },
+  "Website form": { en: "Website form", ru: "Форма на сайте", uz: "Saytdagi forma" },
+  "Demo course": { en: "Demo course", ru: "Демо-курс", uz: "Demo kurs" },
   "Darsda faol qatnashdi": {
     en: "Active in class",
     ru: "Активно работал на уроке",
@@ -149,6 +151,10 @@ const STORED: Array<[table: string, column: string, words: Record<string, Names>
   ["Payment", "comment", NOTES],
   ["FinanceEntry", "comment", NOTES],
   ["CoinTransaction", "comment", NOTES],
+  ["LeadForm", "name", NOTES],
+  ["Course", "description", NOTES],
+  // The seed's board is named after the source its leads come from.
+  ["LeadBoard", "name", { Website: LEAD_SOURCES.Website }],
   ["Notification", "params.column", LEAD_COLUMNS],
   ["Notification", "params.source", LEAD_SOURCES],
   ["GroupMembership", "leaveReason", LEAVE_REASONS],
