@@ -24,8 +24,15 @@ export interface Shoot {
   base: Base;
   /** A label of the app in this language, by its key in `messages/<locale>.json`. */
   label(key: string, values?: Record<string, string>): string;
-  /** One step: its caption under the picture while `work` is done on screen. */
-  say(step: string, work?: () => Promise<void>, extra?: number): Promise<void>;
+  /**
+   * One step: its caption under the picture while `work` is done on screen.
+   * `work` may hand back how to put away what it opened; that runs when the caption is over.
+   */
+  say(
+    step: string,
+    work?: () => Promise<void | (() => Promise<void>)>,
+    extra?: number,
+  ): Promise<void>;
   /** Opens a page of the app off camera; the video goes on with it loaded. */
   go(pathname: string, page?: Page): Promise<void>;
   /** Signs in off camera with the demo password. */

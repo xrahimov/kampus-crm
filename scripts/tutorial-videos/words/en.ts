@@ -195,7 +195,7 @@ export const en = {
         amount:
           "Choose how the student pays. This button fills in exactly what is owed; you can also type another amount.",
         save: "Press “{common.save}”. The receipt opens, ready to print or to send to the parent.",
-        history: "The payment is on the card at once, with the date, the method and who took it.",
+        history: "The payment is on the card at once, with the date, the amount and the method.",
         anywhere:
           "The “{payments.pay}” button on top works from any page: type the student’s name and take the payment.",
         debtors:
@@ -309,7 +309,7 @@ export const en = {
         new: "Press “{announcements.new}” and choose who it is for: the whole centre, a branch or one group.",
         write: "Write a short title and the message.",
         sms: "Switch this on to send it as an SMS as well. Without it, people see it on their page and in Telegram.",
-        send: "Press “{common.save}”. The announcement is out.",
+        send: "Press “{announcements.dialog.submit}”. The announcement is out.",
         reads: "The list shows how many people have read each announcement.",
       },
     },
@@ -344,7 +344,8 @@ export const en = {
         students: "The students report covers attendance and results, group by group.",
         leads:
           "The leads report shows how many leads came, from where, and how many became students.",
-        statistics: "The statistics page compares months: students, groups, income.",
+        statistics:
+          "The statistics page shows how full your rooms are: free hours, free seats, and what full rooms would bring in.",
         excel: "Every report can be downloaded as an Excel file with the same filters.",
       },
     },

@@ -64,6 +64,8 @@ export async function open(
 ): Promise<[BrowserContext, Page]> {
   const context = await browser.newContext({ viewport: null, ...options });
   await context.addInitScript(POINTER_SCRIPT);
+  const shown = process.env.VIDEO_SITE_URL?.replace(/\/+$/, "");
+  if (shown) await context.addInitScript(addressScript(shown));
   const page = await context.newPage();
   page.setDefaultTimeout(30_000);
   await fit(page, view);
@@ -176,6 +178,40 @@ const POINTER_SCRIPT = String.raw`(() => {
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", mount);
   else mount();
 })();`;
+
+/**
+ * A page that prints its own address (a webhook to paste into another service,
+ * a link to copy) would say `http://localhost:3101` in a video. With
+ * `VIDEO_SITE_URL` set, that text is shown as the public address instead. Only
+ * what is read on screen changes: links and requests still go to the local server.
+ */
+function addressScript(shown: string): string {
+  return String.raw`(() => {
+  const shown = ${JSON.stringify(shown)};
+  const own = location.origin;
+  if (own === shown || window.top !== window) return;
+  const fix = (node) => {
+    if (node.nodeType === 3) {
+      if (node.nodeValue.includes(own)) node.nodeValue = node.nodeValue.split(own).join(shown);
+    } else if (node.nodeType === 1) {
+      for (const child of node.childNodes) fix(child);
+    }
+  };
+  const start = () => {
+    fix(document.body);
+    new MutationObserver((changes) => {
+      for (const change of changes) {
+        if (change.type === "characterData") fix(change.target);
+        for (const added of change.addedNodes) fix(added);
+      }
+    }).observe(document.body, { subtree: true, childList: true, characterData: true });
+  };
+  // After the page has come to life: text changed earlier would not match what the app expects to find.
+  const later = () => setTimeout(start, 400);
+  if (document.readyState === "complete") later();
+  else window.addEventListener("load", later);
+})();`;
+}
 
 type Frame = { file: string; at: number };
 type Segment = { frames: Frame[]; from: number; to: number };
@@ -298,11 +334,13 @@ export class Film {
   /**
    * One step of the lesson: `text` appears under the picture, `work` is done
    * on screen, and the step lasts at least as long as the text takes to read,
-   * or to say when `voice` is its recording.
+   * or to say when `voice` is its recording. What `work` opened to show (a
+   * menu, a window) stays open for that whole time: `work` hands back how to
+   * put it away, and that is done once the sentence is over.
    */
   async step(
     text: string,
-    work?: () => Promise<void>,
+    work?: () => Promise<void | (() => Promise<void>)>,
     extra = 0,
     voice?: { file: string; seconds: number },
   ) {
@@ -312,12 +350,13 @@ export class Film {
     try {
       // A beat to start reading before anything moves.
       await this.wait(0.7);
-      if (work) await work();
+      const tidy = work ? await work() : undefined;
       // A spoken sentence ends with a breath before the next one starts.
       const length = Math.max(this.readTime(text), voice ? voice.seconds + 0.6 : 0);
       const left = length + extra - (this.now() - from);
       // Work that ran long still leaves its result on screen for a moment.
       await this.wait(Math.max(left, 1.1));
+      if (tidy) await tidy();
     } finally {
       caption.to = this.now();
     }

@@ -279,7 +279,14 @@ export async function upload(
  * (the stand-in for Telegram makes it the phone's last six digits), and the
  * short form that follows.
  */
-async function askToJoin(browser: Browser): Promise<void> {
+export async function askToJoin(
+  browser: Browser,
+  who: { name: string; phone: string; note: string } = {
+    name: DEMO.newcomer,
+    phone: DEMO.newcomerPhone,
+    note: DEMO.newcomerNote,
+  },
+): Promise<void> {
   const [context, page] = await newPage(browser);
   try {
     const post = async <T>(apiPath: string, data: unknown): Promise<T> => {
@@ -287,13 +294,15 @@ async function askToJoin(browser: Browser): Promise<void> {
       if (!res.ok()) throw new Error(`POST ${apiPath} failed: ${res.status()}`);
       return (await res.json()) as T;
     };
-    const phone = DEMO.newcomerPhone;
+    const { phone } = who;
+    // The bot knows a person by their Telegram chat: a made-up one per phone number.
+    const chat = phone === DEMO.newcomerPhone ? 700700700 : Number(phone.slice(-9));
     const ticket = await post<{ id: string }>("/auth/code", { phone, door: "STUDENT" });
     await post(`/webhooks/telegram?secret=${DEMO.botSecret}`, {
       message: {
-        chat: { id: 700700700 },
-        from: { id: 700700700, first_name: DEMO.newcomer, language_code: "uz" },
-        contact: { phone_number: phone.slice(1), user_id: 700700700 },
+        chat: { id: chat },
+        from: { id: chat, first_name: who.name, language_code: "uz" },
+        contact: { phone_number: phone.slice(1), user_id: chat },
       },
     });
     const verified = await post<{
@@ -309,10 +318,10 @@ async function askToJoin(browser: Browser): Promise<void> {
     const centre = join.centres![0]!;
     await post("/auth/join", {
       token: join.token,
-      fullName: DEMO.newcomer,
+      fullName: who.name,
       organizationId: centre.id,
       branchId: centre.branches[0]!.id,
-      note: DEMO.newcomerNote,
+      note: who.note,
     });
   } finally {
     await context.close();

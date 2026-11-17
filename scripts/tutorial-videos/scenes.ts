@@ -10,6 +10,7 @@ import path from "node:path";
 import type { Locator, Page } from "@playwright/test";
 
 import {
+  askToJoin,
   cameraFile,
   asStudent,
   closePhonePanel,
@@ -21,6 +22,7 @@ import {
   tashkentToday,
 } from "../help-screenshots";
 
+import { named } from "./dress";
 import { DESKTOP, fit, launch, open, PHONE } from "./film";
 import { BASE, CEO, TEACHER, type Scene, type Shoot } from "./shoot";
 
@@ -41,6 +43,8 @@ const TYPED = {
     notice: "There are no lessons this Friday. Missed lessons move to Saturday at the usual time.",
     question: "Who has not paid for November?",
     expense: "Markers and paper",
+    earlierTitle: "New timetable from Monday",
+    earlier: "From Monday the evening groups start at 18:30. Check your timetable on your page.",
   },
   ru: {
     dayOff: "Учитель на конференции",
@@ -50,6 +54,9 @@ const TYPED = {
     notice: "В эту пятницу уроков нет. Пропущенные уроки переносятся на субботу в обычное время.",
     question: "Кто не оплатил за ноябрь?",
     expense: "Маркеры и бумага",
+    earlierTitle: "Новое расписание с понедельника",
+    earlier:
+      "С понедельника вечерние группы начинаются в 18:30. Проверьте расписание на своей странице.",
   },
   uz: {
     dayOff: "O‘qituvchi konferensiyada",
@@ -60,6 +67,9 @@ const TYPED = {
       "Shu juma kuni darslar bo‘lmaydi. Qoldirilgan darslar shanbaga, odatdagi vaqtga ko‘chadi.",
     question: "Noyabr uchun kim to‘lamagan?",
     expense: "Marker va qog‘oz",
+    earlierTitle: "Dushanbadan yangi jadval",
+    earlier:
+      "Dushanbadan kechki guruhlar 18:30 da boshlanadi. Jadvalni o‘z sahifangizda tekshiring.",
   },
 } as const;
 
@@ -136,13 +146,30 @@ const signIn: Scene = {
     // Backstage: the manager has added Madina with her phone number and no password.
     await film.offCamera(async () => {
       const me = await getJson<{ branches: Array<{ id: string }> }>(s.ceo, "/auth/me");
-      await mutate(s.ceo, "post", "/staff", {
+      const added = await mutate<{ id: string }>(s.ceo, "post", "/staff", {
         fullName: who.name,
         phone: who.phone,
         gender: "FEMALE",
         roleCodes: ["TEACHER"],
         branchIds: [me.branches[0]!.id],
-      }).catch(() => undefined);
+      }).catch(() => null);
+      // She teaches a group together with the demo teacher, so her first page has lessons on it.
+      if (added?.id) {
+        const group = await getJson<{
+          teachers: Array<{ userId: string; role: string; shareType: string; shareValue: number }>;
+        }>(s.ceo, `/groups/${s.base.teacherGroupId}`);
+        await mutate(s.ceo, "patch", `/groups/${s.base.teacherGroupId}`, {
+          teachers: [
+            ...group.teachers.map(({ userId, role, shareType, shareValue }) => ({
+              userId,
+              role,
+              shareType,
+              shareValue,
+            })),
+            { userId: added.id, role: "CO_TEACHER", shareType: "PER_LESSON", shareValue: 40000 },
+          ],
+        }).catch(() => undefined);
+      }
     });
     await s.go("/login");
     const phone = page.getByLabel(s.label("auth.phone"));
@@ -218,24 +245,23 @@ const gettingAround: Scene = {
       await film.type(page.getByTestId("global-search"), "Demo");
       await page.getByTestId("search-hit").first().waitFor();
       await film.show(page.getByTestId("global-search-results"), 2);
-      await escape(s);
-      await page.getByTestId("global-search").fill("");
+      return async () => {
+        await escape(s);
+        await page.getByTestId("global-search").fill("");
+      };
     });
     await s.say("branch", async () => {
       await film.click(page.getByRole("button", { name: s.label("branch.select") }));
-      await film.wait(1.6);
-      await escape(s);
+      return () => escape(s);
     });
     await s.say("language", async () => {
       await film.click(page.getByRole("button", { name: s.label("common.language") }));
-      await film.wait(1.6);
-      await escape(s);
+      return () => escape(s);
     });
     await s.say("bell", async () => {
       await film.click(page.getByTestId("notification-bell"));
       await page.getByTestId("notification-panel").waitFor();
-      await film.wait(2);
-      await escape(s);
+      return () => escape(s);
     });
     await s.say("account", async () => {
       await film.click(page.getByTestId("user-menu"));
@@ -280,6 +306,8 @@ const dashboard: Scene = {
     await s.say("back", async () => {
       await film.click(nav(s, "nav.dashboard"));
       await page.getByTestId("dashboard-kpis").waitFor();
+      // The figures hide again whenever the page is left.
+      await film.click(page.getByTestId("show-numbers"));
       await film.bring(page.getByTestId("dashboard-finance"));
       await film.show(page.getByTestId("dashboard-finance"), 2);
     });
@@ -347,11 +375,27 @@ const staff: Scene = {
   },
 };
 
+/** Two more people at the door of the centre. The second is declined before the video starts. */
+const WAITING = [
+  { name: "Bekzod Tursunov", phone: "+998935550101", note: "IELTS Evening" },
+  { name: "Kamola Ismoilova", phone: "+998935550102", note: "" },
+] as const;
+
 const signInRequests: Scene = {
   id: "sign-in-requests",
   async run(s) {
     const { film, page } = s;
     await s.signIn(CEO);
+    // Backstage: two more people asked to be let in, and one of them was declined.
+    await film.offCamera(async () => {
+      for (const who of WAITING) await askToJoin(s.base.browser, who).catch(() => undefined);
+      const { items } = await getJson<{ items: Array<{ id: string; phone: string }> }>(
+        s.ceo,
+        "/join-requests",
+      );
+      const declined = items.find((r) => r.phone === WAITING[1].phone);
+      if (declined) await mutate(s.ceo, "post", `/join-requests/${declined.id}/decline`, {});
+    });
     await s.go("/student/login");
 
     await s.say("unknown", async () => {
@@ -390,7 +434,8 @@ const signInRequests: Scene = {
       1,
     );
     await s.say("declined", async () => {
-      await film.show(page.getByTestId("join-tab-declined"), 1.6);
+      await film.click(page.getByTestId("join-tab-declined"));
+      await film.show(page.getByTestId("join-request-row").first(), 1.6);
     });
     await s.say("teachers");
   },
@@ -533,8 +578,7 @@ const timetable: Scene = {
     });
     await s.say("pick", async () => {
       await film.click(page.getByTestId("timetable-pick"));
-      await film.wait(1.4);
-      await escape(s);
+      return () => escape(s);
     });
     await s.say("group", async () => {
       await film.click(page.getByTestId("timetable-block").first());
@@ -637,9 +681,9 @@ const students: Scene = {
     });
     await s.say("tabs", async () => {
       await film.show(page.getByRole("tablist").first(), 1.6);
+      await film.click(page.getByTestId("tab-comments"));
+      await film.wait(1.4);
       await film.click(page.getByTestId("tab-parents"));
-      await film.wait(1.2);
-      await film.click(page.getByTestId("tab-history"));
     });
     await s.go("/students");
     await s.say("many", async () => {
@@ -649,8 +693,7 @@ const students: Scene = {
     });
     await s.say("import", async () => {
       await film.click(page.getByTestId("students-import-menu"));
-      await film.wait(2);
-      await escape(s);
+      return () => escape(s);
     });
   },
 };
@@ -662,6 +705,16 @@ const leads: Scene = {
   async run(s) {
     const { film, page } = s;
     await s.signIn(CEO);
+    // Backstage: two leads were promised a call today.
+    await film.offCamera(async () => {
+      const board = await getJson<{ columns: Array<{ leads: Array<{ id: string }> }> }>(
+        s.ceo,
+        "/leads",
+      );
+      for (const lead of board.columns.flatMap((c) => c.leads).slice(0, 2)) {
+        await mutate(s.ceo, "patch", `/leads/${lead.id}`, { nextContactAt: tashkentToday() });
+      }
+    });
     await s.go("/leads");
 
     await s.say("board", async () => {
@@ -683,7 +736,7 @@ const leads: Scene = {
     });
     await s.say("move", async () => {
       await film.click(card.locator('button[aria-haspopup="menu"]'));
-      await film.click(page.getByRole("menuitem", { name: "Contacted" }));
+      await film.click(page.getByRole("menuitem", { name: named(s.locale, "Contacted") }));
       await film.wait(1);
     });
     const trial = page.getByTestId("trial-dialog");
@@ -700,8 +753,12 @@ const leads: Scene = {
     });
     await s.say("toGroup", async () => {
       await film.click(card.getByRole("checkbox"));
-      await film.show(page.getByTestId("leads-to-group"), 2);
-      await film.click(card.getByRole("checkbox"));
+      await film.click(page.getByTestId("leads-to-group"));
+      await page.getByRole("dialog").waitFor();
+      return async () => {
+        await escape(s);
+        if (await card.getByRole("checkbox").isChecked()) await card.getByRole("checkbox").click();
+      };
     });
     await s.say(
       "calls",
@@ -744,7 +801,7 @@ const payments: Scene = {
       await film.show(page.getByTestId("payment-info"), 2.2);
     });
     await s.say("amount", async () => {
-      await film.click(pay.getByRole("button", { name: "Cash" }));
+      await film.click(pay.getByRole("button", { name: named(s.locale, "Cash") }));
       await film.click(page.getByTestId("pay-autofill"));
     });
     await s.say("save", async () => {
@@ -758,8 +815,10 @@ const payments: Scene = {
       });
       await film.watch(receipt);
       await film.show(receipt.getByTestId("receipt"), 3);
-      await film.watch(page);
-      await receipt.close();
+      return async () => {
+        await film.watch(page);
+        await receipt.close();
+      };
     });
     await s.say("history", async () => {
       await film.bring(page.getByTestId("payment-row").first());
@@ -772,9 +831,10 @@ const payments: Scene = {
       const search = page.getByTestId("pay-search");
       await film.set(search.locator("input").first(), "Demo Student T");
       await search.locator("li button").first().waitFor();
-      await film.wait(2);
-      await escape(s);
-      await escape(s);
+      return async () => {
+        await escape(s);
+        await escape(s);
+      };
     });
     await s.go("/debts");
     await s.say("debtors", async () => {
@@ -784,8 +844,7 @@ const payments: Scene = {
       await film.click(
         page.getByTestId("debt-row").first().locator('button[aria-haspopup="menu"]').last(),
       );
-      await film.wait(1.8);
-      await escape(s);
+      return () => escape(s);
     });
     await s.go("/settings/payments");
     await s.say("log", async () => {
@@ -925,9 +984,10 @@ const videoLesson: Scene = {
         await student.getByTestId("chat-input").press("Enter");
         await closePhonePanel(student);
         await teacher.getByTestId("chat-message").nth(1).waitFor();
-        await film.wait(1.2);
-        await film.click(teacher.getByTestId("toggle-chat"));
-        await student.getByTestId("toggle-hand").click();
+        return async () => {
+          await film.click(teacher.getByTestId("toggle-chat"));
+          await student.getByTestId("toggle-hand").click();
+        };
       });
       const stage = teacher.getByTestId("material-stage");
       await s.say("file", async () => {
@@ -994,8 +1054,7 @@ const videoLesson: Scene = {
           ]);
           await film.wait(0.3);
         }
-        await film.wait(1);
-        await film.click(teacher.getByTestId("toggle-board"));
+        return () => film.click(teacher.getByTestId("toggle-board"));
       });
       await s.say("poll", async () => {
         await film.click(teacher.getByTestId("toggle-poll"));
@@ -1039,6 +1098,26 @@ const homework: Scene = {
     const { film, page } = s;
     const g = s.base.teacherGroupId;
     await s.signIn(TEACHER);
+    // Backstage: two more students have answered the homework already given, so several answers wait.
+    await film.offCamera(async () => {
+      const links = await getJson<Array<{ token: string }>>(s.ceo, `/groups/${g}/video/links`);
+      const answers = [
+        "I get up at six. I go to work by bus. My brother plays football on Sunday.",
+        "She get up at seven. She have breakfast. She go to school.",
+      ];
+      for (const [i, link] of links.slice(1, 3).entries()) {
+        const theirs = await getJson<Array<{ id: string; text?: string }>>(
+          page,
+          `/public/class/${link.token}/homework`,
+        ).catch(() => []);
+        const given = theirs.find((h) => h.text === DEMO.homework);
+        if (given) {
+          await asStudent(page, link.token, `/homework/${given.id}`, {
+            multipart: { note: answers[i]! },
+          }).catch(() => undefined);
+        }
+      }
+    });
     await s.go(`/groups/${g}?tab=homework`);
     const text = "Read the text on p. 30 and answer questions 1-5 in full sentences.";
 
@@ -1092,10 +1171,17 @@ const homework: Scene = {
     });
     await s.say("return", async () => {
       const next = page.getByTestId("checking-item").first();
-      if ((await next.count()) > 0) await film.show(next.getByTestId("checking-return"), 2);
-      else await film.show(page.getByTestId("checking-summary"), 2);
+      if ((await next.count()) === 0) return;
+      await film.click(next.getByTestId("checking-return"));
+      await film.type(
+        next.getByTestId("checking-comment"),
+        "Check the verbs after he and she, then send it again.",
+      );
+      await film.click(next.getByTestId("checking-return-send"));
     });
-    await s.say("coins");
+    await s.say("coins", async () => {
+      await film.show(page.getByTestId("checking-summary"), 2);
+    });
   },
 };
 
@@ -1226,10 +1312,17 @@ const testsCoins: Scene = {
     await s.say("question", async () => {
       await film.click(page.getByTestId("add-button"));
       await page.getByTestId("question-dialog").waitFor();
-      await film.wait(2.2);
-      await escape(s);
+      return () => escape(s);
     });
-    await s.say("portal");
+    await s.go("/settings/tests");
+    await s.say("portal", async () => {
+      // The test that has been taken: its page lists the groups and every attempt.
+      const taken = page.getByTestId("test-row").last();
+      await film.click(taken.getByRole("link").first());
+      await page.getByTestId("test-title").waitFor();
+      const attempt = page.getByTestId("attempt-row").first();
+      if ((await attempt.count()) > 0) await film.show(attempt, 2);
+    });
     await s.go("/settings/coins");
     await s.say("rules", async () => {
       await film.show(page.getByTestId("coin-rule").first(), 2.2);
@@ -1253,9 +1346,23 @@ const announcements: Scene = {
   async run(s) {
     const { film, page } = s;
     await s.signIn(CEO);
+    // Backstage: an announcement from last week, so the list is not empty.
+    await film.offCamera(async () => {
+      const posted = await getJson<{ total: number }>(s.ceo, "/announcements");
+      if (posted.total === 0) {
+        await mutate(s.ceo, "post", "/announcements", {
+          audience: "CENTRE",
+          title: typed(s).earlierTitle,
+          body: typed(s).earlier,
+          sendSms: false,
+        });
+      }
+    });
     await s.go("/announcements");
 
-    await s.say("list");
+    await s.say("list", async () => {
+      await film.show(page.getByTestId("announcement-row").first(), 2);
+    });
     const dialog = page.getByTestId("announcement-dialog");
     await s.say("new", async () => {
       await film.click(page.getByTestId("announcements-new"));
@@ -1286,11 +1393,45 @@ const announcements: Scene = {
   },
 };
 
+/** What the demo CEO's cash desk holds today in the first branch, as "Close the day" counts it. */
+async function cashToday(s: Shoot) {
+  const me = await getJson<{ branches: Array<{ id: string }> }>(s.ceo, "/auth/me");
+  return getJson<{
+    expectedCash: number;
+    methods: Array<{ methodId: string | null; isCash: boolean }>;
+  }>(s.ceo, `/cashdesk/preview?branchId=${me.branches[0]!.id}&date=${tashkentToday()}`);
+}
+
 const finance: Scene = {
   id: "finance",
   async run(s) {
     const { film, page } = s;
     await s.signIn(CEO);
+    // Backstage: last month's salaries are counted and saved, and the cash desk took a payment today.
+    await film.offCamera(async () => {
+      const [y, m] = tashkentToday().split("-").map(Number);
+      const last = m === 1 ? `${y! - 1}-12-01` : `${y}-${String(m! - 1).padStart(2, "0")}-01`;
+      await getJson(s.ceo, `/payroll/${last}`);
+      await mutate(s.ceo, "put", `/payroll/${last}`, { status: "SAVED" }).catch(() => undefined);
+      const cash = await cashToday(s);
+      if (cash.expectedCash < 300000) {
+        const debts = await rows<{ groups: Array<{ membershipId: string; balance: number }> }>(
+          s.ceo,
+          "/debts?pageSize=20",
+        );
+        const owed = debts.flatMap((d) => d.groups).find((g) => g.balance <= -650000);
+        const method = cash.methods.find((x) => x.isCash);
+        if (owed && method) {
+          await mutate(s.ceo, "post", "/payments", {
+            membershipId: owed.membershipId,
+            paymentMethodId: method.methodId,
+            amount: 650000,
+            effectiveMonth: tashkentToday().slice(0, 7),
+            paidAt: tashkentToday(),
+          }).catch(() => undefined);
+        }
+      }
+    });
     await s.go("/finance");
 
     await s.say("overview", async () => {
@@ -1299,13 +1440,17 @@ const finance: Scene = {
     const dialog = page.getByTestId("entry-dialog");
     await s.say("expense", async () => {
       // An expense category of the seed: its page lists the entries and adds new ones.
-      const card = page.locator('#chiqimlar [data-testid="category-card"]').first();
+      const card = page
+        .locator('#chiqimlar [data-testid="category-card"]')
+        .filter({ hasText: named(s.locale, "Boshqalar") })
+        .first();
       await film.bring(card);
       await film.click(card);
       await page.waitForURL(/finance\/costs\//);
       await film.click(page.getByTestId("add-button"));
       await dialog.waitFor();
-      await choose(s, dialog.locator("#entry-paymentMethodId"), 1);
+      // Paid by card, so it does not come out of the cash desk counted below.
+      await choose(s, dialog.locator("#entry-paymentMethodId"), named(s.locale, "Card"));
       await film.type(dialog.locator("#entry-amount"), "350000");
       await film.type(dialog.locator("#entry-comment"), typed(s).expense);
     });
@@ -1340,9 +1485,13 @@ const finance: Scene = {
       await film.show(close.getByTestId("close-preview"), 2.2);
     });
     await s.say("count", async () => {
-      await film.type(close.locator("#close-counted"), "450000");
+      // Twenty thousand short, the way a real count sometimes comes out.
+      const { expectedCash } = await cashToday(s);
+      await film.type(close.locator("#close-counted"), String(Math.max(expectedCash - 20000, 0)));
       await film.show(close.getByTestId("close-difference"), 2);
-      await escape(s);
+      await film.click(save(close));
+      await close.waitFor({ state: "hidden" });
+      await film.show(page.getByTestId("cash-close-row").first(), 2);
     });
   },
 };
@@ -1402,7 +1551,10 @@ const reports: Scene = {
       },
       1.5,
     );
-    await s.say("excel");
+    await s.go("/reports/payments");
+    await s.say("excel", async () => {
+      await film.show(page.getByTestId("report-excel"), 2);
+    });
   },
 };
 
@@ -1449,7 +1601,8 @@ const studentPortal: Scene = {
       await s.say(
         "lesson",
         async () => {
-          await film.scroll(300);
+          await film.show(page.getByTestId("class-title"), 1.4);
+          await film.click(page.getByTestId("portal-tab-schedule"));
         },
         1.5,
       );
@@ -1482,15 +1635,16 @@ const studentPortal: Scene = {
         1,
       );
       await s.say("money", async () => {
+        const money = page.getByTestId("portal-tab-money");
+        if ((await money.count()) > 0) await film.click(money);
         const pay = page.getByTestId("portal-pay").first();
-        if ((await pay.count()) > 0) {
-          await film.bring(pay);
-          await film.show(pay, 2);
-        } else {
-          await film.scroll(400);
-        }
+        if ((await pay.count()) > 0) await film.show(pay, 2);
       });
-      await s.say("parents");
+      if (s.base.familyToken) await s.go(`/family/${s.base.familyToken}`, page);
+      await s.say("parents", async () => {
+        const child = page.getByTestId("family-child").first();
+        if ((await child.count()) > 0) await film.show(child, 2);
+      });
     } finally {
       await phone.close();
     }
@@ -1524,7 +1678,10 @@ const integrations: Scene = {
     await s.say(
       "others",
       async () => {
-        await film.scroll(700);
+        for (const card of ["integration-fiscal", "integration-ai"]) {
+          await film.bring(page.getByTestId(card));
+          await film.show(page.getByTestId(card), 1.6);
+        }
       },
       1,
     );

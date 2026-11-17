@@ -60,6 +60,8 @@ drop() {
 }
 
 LOCALES=(en ru uz)
+# The address the videos show wherever a page prints its own: a made-up one, never a live centre's.
+SITE="${VIDEO_SITE_URL:-https://kampus.example}"
 if [ -n "$VOICE" ]; then
   echo "Fetching the voice of every caption (kept in $OUT/voice)"
   npx tsx scripts/tutorial-videos/index.ts "${LOCALES[@]}" "--out=$OUT" --voice-only ${ONLY:+"$ONLY"}
@@ -82,11 +84,12 @@ for locale in "${LOCALES[@]}"; do
   DATABASE_URL="$url" npx prisma migrate deploy > "$OUT/$locale-setup.log" 2>&1
   DATABASE_URL="$url" npx tsx prisma/seed.ts >> "$OUT/$locale-setup.log" 2>&1
   # The stand-in for Telegram (the code is the last six digits of the phone) exists for demo runs only.
-  DATABASE_URL="$url" APP_URL="$app" PORT="$port" TELEGRAM_LOGIN_FAKE=1 \
+  # The server is told a made-up public address, so the links its pages show do not say "localhost".
+  DATABASE_URL="$url" APP_URL="$SITE" PORT="$port" TELEGRAM_LOGIN_FAKE=1 \
     node node_modules/next/dist/bin/next start > "$OUT/$locale-server.log" 2>&1 &
   SERVERS+=("$!")
   until curl -s -o /dev/null "$app/api/v1/health"; do sleep 1; done
-  DATABASE_URL="$url" APP_URL="$app" \
+  DATABASE_URL="$url" APP_URL="$app" VIDEO_SITE_URL="$SITE" \
     npx tsx scripts/tutorial-videos/index.ts "$locale" "--out=$OUT" ${ONLY:+"$ONLY"} ${VOICE:+"$VOICE"} \
     > "$OUT/$locale.log" 2>&1 &
   RECORDERS+=("$!")

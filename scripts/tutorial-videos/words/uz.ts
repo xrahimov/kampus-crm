@@ -194,7 +194,7 @@ export const uz: Words = {
         amount:
           "To‘lov usulini tanlang. Bu tugma aynan qarz summasini qo‘yadi; boshqa summani ham yozsa bo‘ladi.",
         save: "“{common.save}” tugmasini bosing. Chek ochiladi: uni chop etish yoki ota-onaga yuborish mumkin.",
-        history: "To‘lov darhol kartada ko‘rinadi: sanasi, usuli va kim qabul qilgani.",
+        history: "To‘lov darhol kartada ko‘rinadi: sanasi, summasi va to‘lov turi.",
         anywhere:
           "Yuqoridagi “{payments.pay}” tugmasi istalgan sahifadan ishlaydi: o‘quvchi ismini yozing va to‘lovni qabul qiling.",
         debtors:
@@ -310,7 +310,7 @@ export const uz: Words = {
         new: "“{announcements.new}” tugmasini bosing va kim uchun ekanini tanlang: butun markaz, filial yoki bitta guruh.",
         write: "Qisqa sarlavha va xabar matnini yozing.",
         sms: "SMS orqali ham yuborish uchun buni yoqing. Busiz odamlar e’lonni o‘z sahifasida va Telegramda ko‘radi.",
-        send: "“{common.save}” tugmasini bosing. E’lon yuborildi.",
+        send: "“{announcements.dialog.submit}” tugmasini bosing. E’lon yuborildi.",
         reads: "Ro‘yxatda har bir e’lonni necha kishi o‘qigani ko‘rinadi.",
       },
     },
@@ -346,7 +346,8 @@ export const uz: Words = {
           "Bu hisobot kim, qachon va nima uchun ketganini ko‘rsatadi, o‘quvchilar nega ketayotganini tushunish uchun.",
         students: "O‘quvchilar hisoboti — har bir guruh bo‘yicha davomat va natijalar.",
         leads: "Lidlar hisoboti: nechta lid keldi, qayerdan va nechtasi o‘quvchi bo‘ldi.",
-        statistics: "Statistika sahifasi oylarni solishtiradi: o‘quvchilar, guruhlar, daromad.",
+        statistics:
+          "Statistika sahifasi xonalar bandligini ko‘rsatadi: bo‘sh soatlar, bo‘sh o‘rinlar va xonalar to‘lganda keladigan daromad.",
         excel: "Har bir hisobotni o‘sha filtrlar bilan Excel faylida yuklab olish mumkin.",
       },
     },

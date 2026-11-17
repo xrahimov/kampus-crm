@@ -27,6 +27,7 @@ import type { Page } from "@playwright/test";
 
 import { prepare, type Base } from "../help-screenshots";
 
+import { dress } from "./dress";
 import { Film, launch, open } from "./film";
 import { SCENES } from "./scenes";
 import { BASE, CEO, PASSWORD, TEACHER, type Shoot } from "./shoot";
@@ -132,6 +133,7 @@ async function main() {
       familyToken: null,
     };
     await prepare(ceo, teacher, base);
+    await dress(ceo, locale);
     await teacherContext.close();
 
     for (const scene of scenes) {
