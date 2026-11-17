@@ -22,7 +22,6 @@ import { useTranslations } from "next-intl";
 import { useSearchParams } from "next/navigation";
 import { useState, useTransition } from "react";
 
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
@@ -124,7 +123,7 @@ export function DashboardPage({
 
   const mask = (v: string) => (shown ? v : "***");
   const num = (v: number) => mask(String(v));
-  const cards: Array<{ key: string; value: string; href: string; badge?: string }> = [
+  const cards: Array<{ key: string; value: string; href: string }> = [
     { key: "activeLeads", value: num(kpis.activeLeads), href: "/leads" },
     { key: "groups", value: num(kpis.groups), href: "/groups" },
     {
@@ -152,7 +151,6 @@ export function DashboardPage({
       key: "newAdmissions",
       value: num(kpis.newAdmissions),
       href: "/students?groupStatus=NEW",
-      badge: "NEW",
     },
   ];
 
@@ -229,10 +227,7 @@ export function DashboardPage({
               <Card className="card-link h-full">
                 <CardContent className="pt-5">
                   <div className="flex items-center justify-between gap-2 text-xs text-muted-foreground">
-                    <span className="flex items-center gap-2">
-                      {t(`kpis.${c.key}`)}
-                      {c.badge && <Badge variant="success">{c.badge}</Badge>}
-                    </span>
+                    <span className="flex items-center gap-2">{t(`kpis.${c.key}`)}</span>
                     {Icon && (
                       <Icon
                         aria-hidden="true"

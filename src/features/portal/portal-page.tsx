@@ -285,11 +285,17 @@ export function PortalPage({
                   </span>
                 )}
               </TabsTrigger>
-              {showMoney && <TabsTrigger value="money">{t("tabs.money")}</TabsTrigger>}
+              {showMoney && (
+                <TabsTrigger value="money" data-testid="portal-tab-money">
+                  {t("tabs.money")}
+                </TabsTrigger>
+              )}
               <TabsTrigger value="results" data-testid="portal-tab-results">
                 {t("tabs.results")}
               </TabsTrigger>
-              <TabsTrigger value="schedule">{t("tabs.schedule")}</TabsTrigger>
+              <TabsTrigger value="schedule" data-testid="portal-tab-schedule">
+                {t("tabs.schedule")}
+              </TabsTrigger>
             </TabsList>
 
             <TabsContent value="lessons">

@@ -181,6 +181,21 @@ afterAll(async () => {
 });
 
 describe("invite codes", () => {
+  it("is one code when a card asks for it several times at once", async () => {
+    const fresh = await prisma.student.create({
+      data: { branchId, fullName: `${TAG} Race`, phone: phone(99) },
+    });
+    try {
+      const codes = await Promise.all(
+        Array.from({ length: 4 }, () => ensureReferralCode(prisma, fresh.id)),
+      );
+      const kept = await prisma.student.findUniqueOrThrow({ where: { id: fresh.id } });
+      expect(new Set(codes)).toEqual(new Set([kept.referralCode]));
+    } finally {
+      await prisma.student.delete({ where: { id: fresh.id } });
+    }
+  });
+
   it("are six readable characters, stable, and resolve within the centre only", async () => {
     expect(aliceCode).toMatch(/^[A-HJ-NP-Z2-9]{6}$/);
     expect(await ensureReferralCode(prisma, aliceId)).toBe(aliceCode);

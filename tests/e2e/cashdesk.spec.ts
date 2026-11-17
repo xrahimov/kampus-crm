@@ -56,9 +56,9 @@ test.describe("cash desk", () => {
     await expect(dialog).toBeVisible();
     const cashRow = dialog.getByTestId("close-method").filter({ hasText: "Cash" });
     await expect(cashRow).toContainText("(cash)");
-    // The expected cash is whatever the CEO moved today (a fresh seed books its
-    // expenses by the CEO on seed day, so it may be negative); the cashier counts
-    // 5,000 less than that, or nothing when nothing is expected.
+    // The expected cash is whatever the CEO took or spent today (other specs may
+    // have booked an expense, so it may be negative); the cashier counts 5,000
+    // less than that, or nothing when nothing is expected.
     const expectedText = await dialog.getByTestId("close-expected").textContent();
     const expected = parseMoney(expectedText ?? "");
     expect(Number.isFinite(expected)).toBe(true);

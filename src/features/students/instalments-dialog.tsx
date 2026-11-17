@@ -19,7 +19,7 @@ import {
 import { FormDialog } from "@/features/settings/shared/form-dialog";
 import { todayIso } from "@/features/staff/password";
 import { api, ApiError } from "@/lib/api-client";
-import { parseDateOnly } from "@/lib/dates";
+import { dateOnlyUtc, parseDateOnly } from "@/lib/dates";
 import { useDateFormat } from "@/lib/use-date-format";
 import { useMoneyFormat } from "@/lib/use-money-format";
 import type { InstalmentPlanDto } from "@/server/services/students/instalments.service";
@@ -32,7 +32,8 @@ interface PartDraft {
 type Loaded = { key: string; plan: InstalmentPlanDto | null; error: string | null };
 
 const addDays = (iso: string, days: number) => {
-  const d = parseDateOnly(iso);
+  // Counted in UTC from start to end: the user's own midnight is the day before in UTC east of Greenwich.
+  const d = dateOnlyUtc(iso);
   d.setUTCDate(d.getUTCDate() + days);
   return d.toISOString().slice(0, 10);
 };

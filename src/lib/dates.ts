@@ -4,6 +4,16 @@ export function parseDateOnly(value: string): Date {
   return new Date(y ?? 1970, (m ?? 1) - 1, d ?? 1);
 }
 
+/**
+ * A calendar day ("YYYY-MM-DD") as midnight UTC, to be formatted with `timeZone: "UTC"`.
+ * Pages rendered on the server use this one: `parseDateOnly` gives the server's own
+ * midnight, which is the day before in UTC on a machine east of Greenwich.
+ */
+export function dateOnlyUtc(value: string): Date {
+  const [y, m, d] = value.split("-").map(Number);
+  return new Date(Date.UTC(y ?? 1970, (m ?? 1) - 1, d ?? 1));
+}
+
 /** The subset of Intl date options the UI uses. */
 export type DateOptions =
   | { dateStyle: "medium"; timeStyle?: "short" }

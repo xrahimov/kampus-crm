@@ -197,8 +197,9 @@ export function CashDeskPage({
                     {can.seeAll && <TableCell>{c.cashierName}</TableCell>}
                     <TableCell className="text-right tabular-nums whitespace-nowrap">
                       {money(c.received)}
-                      <span className="ml-1 text-xs text-muted-foreground">
-                        · {t("paymentsCount", { count: c.paymentsCount })}
+                      {/* On a line of its own: beside the sum it pushed the buttons off the page. */}
+                      <span className="block text-xs text-muted-foreground">
+                        {t("paymentsCount", { count: c.paymentsCount })}
                       </span>
                     </TableCell>
                     <TableCell className="text-right tabular-nums">
@@ -223,9 +224,16 @@ export function CashDeskPage({
                     </TableCell>
                     <TableCell>
                       <div className="flex items-center justify-end gap-1 whitespace-nowrap">
-                        <Button asChild variant="ghost" size="sm" data-testid="print-close">
+                        <Button
+                          asChild
+                          variant="ghost"
+                          size="icon"
+                          aria-label={t("print")}
+                          title={t("print")}
+                          data-testid="print-close"
+                        >
                           <Link href={`/cashdesk/${c.id}`} target="_blank" rel="noreferrer">
-                            <Printer /> {t("print")}
+                            <Printer />
                           </Link>
                         </Button>
                         {can.accept && !c.acceptedAt && (

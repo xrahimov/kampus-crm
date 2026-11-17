@@ -90,8 +90,18 @@ export async function ensureReferralCode(db: DbClient, studentId: string): Promi
   for (let attempt = 0; attempt < 5; attempt += 1) {
     const code = newReferralCode();
     try {
-      await db.student.update({ where: { id: studentId }, data: { referralCode: code } });
-      return code;
+      // Only where there is still none: a card opens with several requests at once, and each
+      // used to write a code of its own, so the code first shown was not the one kept.
+      const made = await db.student.updateMany({
+        where: { id: studentId, referralCode: null },
+        data: { referralCode: code },
+      });
+      if (made.count > 0) return code;
+      const kept = await db.student.findUniqueOrThrow({
+        where: { id: studentId },
+        select: { referralCode: true },
+      });
+      if (kept.referralCode) return kept.referralCode;
     } catch (error) {
       if (prismaCode(error) !== "P2002") throw error;
     }

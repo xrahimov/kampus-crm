@@ -455,6 +455,9 @@
     position: relative;
     display: inline-block;
     overflow: hidden;
+    /* A clipped inline-block sits on its bottom edge, not on its text's baseline, which
+       lifted the digits above the minus, the commas and the currency beside them. */
+    vertical-align: bottom;
   }
   .odo-digit > span {
     opacity: 0;

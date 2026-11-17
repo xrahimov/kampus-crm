@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { formatDateUz, formatMoneyUz, parseDateOnly } from "@/lib/dates";
+import { dateOnlyUtc, formatDateUz, formatMoneyUz, parseDateOnly } from "@/lib/dates";
 
 describe("Uzbek date formatting", () => {
   const d = parseDateOnly("2026-09-01"); // a Tuesday
@@ -17,6 +17,22 @@ describe("Uzbek date formatting", () => {
     expect(formatDateUz(at, { dateStyle: "medium", timeStyle: "short" })).toBe(
       "3-okt, 2026, 19:05",
     );
+  });
+});
+
+describe("calendar days on a printed page", () => {
+  it("keep their day whatever time zone the server runs in", () => {
+    // Midnight UTC, shown in UTC: a server in Tashkent used to print the day before.
+    const day = dateOnlyUtc("2026-11-18");
+    expect(day.toISOString()).toBe("2026-11-18T00:00:00.000Z");
+    expect(formatDateUz(day, { dateStyle: "medium" }, "UTC")).toBe("18-noy, 2026");
+    expect(
+      new Intl.DateTimeFormat("en", { dateStyle: "medium", timeZone: "UTC" }).format(day),
+    ).toBe("Nov 18, 2026");
+    // The month a payment is for is its first day: printed as the month.
+    expect(
+      formatDateUz(dateOnlyUtc("2026-11-01"), { month: "short", year: "numeric" }, "UTC"),
+    ).toBe("Noy 2026");
   });
 });
 

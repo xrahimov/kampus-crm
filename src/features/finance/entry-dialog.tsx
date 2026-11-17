@@ -18,6 +18,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
+import { todayIso } from "@/features/staff/password";
 import { FormDialog } from "@/features/settings/shared/form-dialog";
 import { api } from "@/lib/api-client";
 import { applyApiError } from "@/lib/api-errors";
@@ -34,7 +35,8 @@ type Input = z.input<typeof financeEntrySchema>;
 type Student = { id: string; fullName: string; phone: string | null; branchId: string };
 
 const NONE = "__none";
-const today = () => new Date().toISOString().slice(0, 10);
+/** Today on the user's own clock: the UTC day is still yesterday until 05:00 in Tashkent. */
+const today = todayIso;
 
 /**
  * One dialog for every EXP §9 money row: "Avans berish", "Marketing yaratish",

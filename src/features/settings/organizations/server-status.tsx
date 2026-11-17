@@ -11,6 +11,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { api, ApiError } from "@/lib/api-client";
+import { useDateFormat } from "@/lib/use-date-format";
 import type {
   CheckResult,
   StatusLevel,
@@ -46,6 +47,7 @@ function formatDuration(seconds: number): string {
 export function ServerStatus({ initial }: { initial: SystemStatusDto }) {
   const t = useTranslations("settings.system");
   const format = useFormatter();
+  const fmt = useDateFormat();
   const [status, setStatus] = useState(initial);
   const [chatId, setChatId] = useState(initial.alerts.chatId ?? "");
   const [busy, setBusy] = useState<"check" | "save" | "test" | null>(null);
@@ -54,8 +56,7 @@ export function ServerStatus({ initial }: { initial: SystemStatusDto }) {
 
   const now = new Date(status.checkedAt);
   const ago = (iso: string) => format.relativeTime(new Date(iso), now);
-  const time = (iso: string) =>
-    format.dateTime(new Date(iso), { dateStyle: "medium", timeStyle: "short" });
+  const time = (iso: string) => fmt(new Date(iso), { dateStyle: "medium", timeStyle: "short" });
 
   const run = async (kind: "check" | "save" | "test", action: () => Promise<void>) => {
     setBusy(kind);

@@ -26,6 +26,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { ExcelLink } from "@/features/shared/excel-link";
+import { roleNameLabel } from "@/features/staff/role-label";
 import { Link, useRouter } from "@/i18n/navigation";
 import { api, ApiError } from "@/lib/api-client";
 import { parseDateOnly } from "@/lib/dates";
@@ -43,6 +44,7 @@ export function PayrollPage({
 }) {
   const t = useTranslations("finance.payroll");
   const tc = useTranslations("common");
+  const tr = useTranslations();
   const fmt = useDateFormat();
   const money = useMoneyFormat();
   const router = useRouter();
@@ -159,7 +161,7 @@ export function PayrollPage({
                         <span className="sr-only">{i + 1}</span>
                       </TableCell>
                       <TableCell className="font-medium">{l.fullName}</TableCell>
-                      <TableCell>{l.roleName || "—"}</TableCell>
+                      <TableCell>{l.roleName ? roleNameLabel(tr, l.roleName) : "—"}</TableCell>
                       <TableCell className="text-right tabular-nums">{l.penaltyCount}</TableCell>
                       {cols.map((c) => (
                         <TableCell key={c} className="text-right tabular-nums">

@@ -86,7 +86,7 @@ export function GradesGrid({
           <table className="w-full text-sm" data-testid="grades-grid">
             <thead>
               <tr className="border-b bg-muted/40">
-                <th className="sticky left-0 bg-muted/40 px-3 py-2 text-left font-medium">
+                <th className="sticky left-0 z-10 bg-[color-mix(in_oklch,var(--muted)_40%,var(--card))] px-3 py-2 text-left font-medium">
                   {t("student")}
                 </th>
                 {grid.lessons.map((l) => (
@@ -100,7 +100,7 @@ export function GradesGrid({
             <tbody>
               {grid.members.map((m) => (
                 <tr key={m.membershipId} className="border-b last:border-0">
-                  <td className="sticky left-0 bg-card px-3 py-1.5 whitespace-nowrap">
+                  <td className="sticky left-0 z-10 bg-card px-3 py-1.5 whitespace-nowrap">
                     {m.fullName}
                   </td>
                   {grid.lessons.map((l) => {

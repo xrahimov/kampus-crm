@@ -17,7 +17,7 @@ import { useDateFormat } from "@/lib/use-date-format";
 import type { LeadsReportFilters } from "@/lib/validation/reports";
 import type { LeadsReportDto } from "@/server/services/reports/leads-report.service";
 
-import { Bars, HBars, MultiBars } from "./charts";
+import { HBars, MultiBars } from "./charts";
 import { KpiCards } from "./kpi-cards";
 import { OptionSelect, PeriodFilters, useReportParams } from "./report-filters";
 
@@ -88,8 +88,9 @@ export function LeadsReport({
             <CardTitle className="text-base">{t("funnelTitle")}</CardTitle>
           </CardHeader>
           <CardContent>
-            <Bars
-              items={report.funnel.map((f) => ({ label: t(`funnel.${f.stage}`), value: f.count }))}
+            {/* Stage names are whole words: beside the bar they stay readable in every language. */}
+            <HBars
+              items={report.funnel.map((f) => ({ name: t(`funnel.${f.stage}`), count: f.count }))}
               emptyLabel={t("noData")}
             />
           </CardContent>
