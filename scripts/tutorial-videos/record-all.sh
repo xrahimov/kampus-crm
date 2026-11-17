@@ -8,7 +8,13 @@
 # when the recording is over.
 #
 #   npm run build                      # once, if .next is missing or stale
-#   scripts/tutorial-videos/record-all.sh [out-dir] [--only=sign-in,groups]
+#   scripts/tutorial-videos/record-all.sh [out-dir] [--only=sign-in,groups] [--voice]
+#
+# With --voice the captions are also read aloud by Azure voices: the key is
+# read from AZURE_SPEECH_KEY and AZURE_SPEECH_REGION, or from the file named
+# in AZURE_SPEECH_FILE (see voice.ts). All sentences are fetched first, one
+# language after the other, which takes about half an hour the first time on
+# the free tier and nothing after that.
 #
 # Needs: the database server of DATABASE_URL running (its role may create
 # databases), Playwright's Chromium, and ffmpeg with libx264 (on the PATH, or
@@ -18,9 +24,11 @@ cd "$(dirname "$0")/../.."
 
 OUT="tutorial-videos"
 ONLY=""
+VOICE=""
 for arg in "$@"; do
   case "$arg" in
     --only=*) ONLY="$arg" ;;
+    --voice) VOICE="--voice" ;;
     *) OUT="$arg" ;;
   esac
 done
@@ -52,6 +60,10 @@ drop() {
 }
 
 LOCALES=(en ru uz)
+if [ -n "$VOICE" ]; then
+  echo "Fetching the voice of every caption (kept in $OUT/voice)"
+  npx tsx scripts/tutorial-videos/index.ts "${LOCALES[@]}" "--out=$OUT" --voice-only ${ONLY:+"$ONLY"}
+fi
 SERVERS=()
 stop_servers() {
   for pid in "${SERVERS[@]:-}"; do
@@ -75,7 +87,7 @@ for locale in "${LOCALES[@]}"; do
   SERVERS+=("$!")
   until curl -s -o /dev/null "$app/api/v1/health"; do sleep 1; done
   DATABASE_URL="$url" APP_URL="$app" \
-    npx tsx scripts/tutorial-videos/index.ts "$locale" "--out=$OUT" ${ONLY:+"$ONLY"} \
+    npx tsx scripts/tutorial-videos/index.ts "$locale" "--out=$OUT" ${ONLY:+"$ONLY"} ${VOICE:+"$VOICE"} \
     > "$OUT/$locale.log" 2>&1 &
   RECORDERS+=("$!")
   port=$((port + 1))

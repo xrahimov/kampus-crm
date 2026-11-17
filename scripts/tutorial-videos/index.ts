@@ -5,13 +5,18 @@
  * against a live centre.
  *
  *   TELEGRAM_LOGIN_FAKE=1 npm start
- *   npx tsx scripts/tutorial-videos/index.ts [en ru uz] [--only=sign-in,groups] [--out=dir]
+ *   npx tsx scripts/tutorial-videos/index.ts [en ru uz] [--only=sign-in,groups] [--out=dir] [--voice]
  *
  * Every video is 1920×1080: the page on top, the step's caption on a band
  * under it, and a `.srt` file with the same captions next to it. The scenes
  * (what is done on screen) are in `scenes.ts`, the captions of each language
  * in `words/`. A video that fails is reported and skipped; the rest are still
- * written. Needs ffmpeg with libx264 and libass on the PATH.
+ * written. Needs ffmpeg with libx264 (on the PATH, or named in FFMPEG_PATH).
+ *
+ * With `--voice` every caption is also read aloud by an Azure voice (see
+ * `voice.ts` for the key), and a step lasts as long as its sentence takes to
+ * say. The recordings are kept in `<out>/voice/`; `--voice-only` fetches them
+ * and records nothing.
  */
 import "dotenv/config";
 import { mkdirSync, mkdtempSync, readFileSync } from "node:fs";
@@ -25,12 +30,15 @@ import { prepare, type Base } from "../help-screenshots";
 import { Film, launch, open } from "./film";
 import { SCENES } from "./scenes";
 import { BASE, CEO, PASSWORD, TEACHER, type Shoot } from "./shoot";
+import { Voice } from "./voice";
 import { WORDS, type Locale } from "./words";
 
 const argv = process.argv.slice(2);
 const flag = (name: string) => argv.find((a) => a.startsWith(`--${name}=`))?.slice(name.length + 3);
 const only = flag("only")?.split(",") ?? null;
 const OUT = path.resolve(flag("out") ?? "tutorial-videos");
+const VOICE_ONLY = argv.includes("--voice-only");
+const VOICED = VOICE_ONLY || argv.includes("--voice");
 const chosen = argv.filter((a): a is Locale => ["en", "ru", "uz"].includes(a));
 const LOCALES: Locale[] = chosen.length > 0 ? chosen : ["en", "ru", "uz"];
 
@@ -81,6 +89,23 @@ async function main() {
   for (const locale of LOCALES) {
     const label = labels(locale);
     const words = WORDS[locale];
+    /** The caption of a step with the app's own labels put in. */
+    const caption = (id: (typeof scenes)[number]["id"], step: string): string => {
+      const text = (words.videos[id].steps as Record<string, string>)[step];
+      if (!text) throw new Error(`no caption "${step}" for ${id} in ${locale}`);
+      return text.replace(/\{([\w.]+)\}/g, (_, key: string) => label(key));
+    };
+    const voice = VOICED ? new Voice(locale, path.join(OUT, "voice", locale)) : null;
+    if (voice) {
+      // Every sentence is fetched before the camera runs, so no video waits for the network.
+      const made = await voice.ensure(
+        scenes.flatMap((scene) =>
+          Object.keys(words.videos[scene.id].steps).map((step) => caption(scene.id, step)),
+        ),
+      );
+      process.stdout.write(`  ${locale}: voice ready (${made} new sentences)\n`);
+    }
+    if (VOICE_ONLY) continue;
 
     // Backstage: the CEO's session for the API, and the demo rows the pages need.
     const backstage = await launch();
@@ -131,13 +156,8 @@ async function main() {
           url: (pathname) => `${BASE}/${locale}${pathname}`,
           say: (step, work, extra) => {
             at = step;
-            const caption = (text.steps as Record<string, string>)[step];
-            if (!caption) throw new Error(`no caption "${step}" for ${scene.id} in ${locale}`);
-            return film.step(
-              caption.replace(/\{([\w.]+)\}/g, (_, key: string) => label(key)),
-              work,
-              extra,
-            );
+            const sentence = caption(scene.id, step);
+            return film.step(sentence, work, extra, voice?.get(sentence));
           },
           go: (pathname, target = page) =>
             film.offCamera(async () => {

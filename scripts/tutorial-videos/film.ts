@@ -179,7 +179,8 @@ const POINTER_SCRIPT = String.raw`(() => {
 
 type Frame = { file: string; at: number };
 type Segment = { frames: Frame[]; from: number; to: number };
-type Caption = { from: number; to: number; text: string };
+/** A step of the video: its sentence, when it shows, and the recording that says it (if any). */
+type Caption = { from: number; to: number; text: string; voice?: string };
 
 export class Film {
   private page: Page | null = null;
@@ -296,17 +297,25 @@ export class Film {
 
   /**
    * One step of the lesson: `text` appears under the picture, `work` is done
-   * on screen, and the step lasts at least as long as the text takes to read.
+   * on screen, and the step lasts at least as long as the text takes to read,
+   * or to say when `voice` is its recording.
    */
-  async step(text: string, work?: () => Promise<void>, extra = 0) {
+  async step(
+    text: string,
+    work?: () => Promise<void>,
+    extra = 0,
+    voice?: { file: string; seconds: number },
+  ) {
     const from = this.now();
-    const caption: Caption = { from, to: from, text };
+    const caption: Caption = { from, to: from, text, voice: voice?.file };
     this.captions.push(caption);
     try {
       // A beat to start reading before anything moves.
       await this.wait(0.7);
       if (work) await work();
-      const left = this.readTime(text) + extra - (this.now() - from);
+      // A spoken sentence ends with a breath before the next one starts.
+      const length = Math.max(this.readTime(text), voice ? voice.seconds + 0.6 : 0);
+      const left = length + extra - (this.now() - from);
       // Work that ran long still leaves its result on screen for a moment.
       await this.wait(Math.max(left, 1.1));
     } finally {
@@ -532,6 +541,20 @@ export class Film {
     writeFileSync(joined, parts.map((p) => `file '${p}'`).join("\n"));
     const band = await captionBand(this.captions, total, this.dir);
     mkdirSync(path.dirname(out), { recursive: true });
+    // The sound: silence all the way, and over it each sentence at the moment its caption appears.
+    const spoken = this.captions.filter((c) => c.voice && c.to > c.from);
+    const sound = spoken
+      .map(
+        (c, i) =>
+          `[${i + 3}:a]aresample=44100,aformat=channel_layouts=stereo,` +
+          `adelay=${Math.round(c.from * 1000)}:all=1[say${i}];`,
+      )
+      .join("");
+    const mix =
+      spoken.length > 0
+        ? `${sound}[1:a]${spoken.map((_, i) => `[say${i}]`).join("")}` +
+          `amix=inputs=${spoken.length + 1}:normalize=0:duration=first[a]`
+        : "[1:a]anull[a]";
     ffmpeg([
       "-f",
       "concat",
@@ -549,12 +572,13 @@ export class Film {
       "0",
       "-i",
       band,
+      ...spoken.flatMap((c) => ["-i", c.voice!]),
       "-filter_complex",
-      `[2:v]fps=${FPS},format=yuv420p[band];[0:v][band]vstack=inputs=2:shortest=1[v]`,
+      `[2:v]fps=${FPS},format=yuv420p[band];[0:v][band]vstack=inputs=2:shortest=1[v];${mix}`,
       "-map",
       "[v]",
       "-map",
-      "1:a",
+      "[a]",
       "-t",
       total.toFixed(3),
       "-c:v",
@@ -568,7 +592,7 @@ export class Film {
       "-c:a",
       "aac",
       "-b:a",
-      "48k",
+      spoken.length > 0 ? "96k" : "48k",
       "-movflags",
       "+faststart",
       `${out}.mp4`,
