@@ -337,7 +337,7 @@ export const en = {
       steps: {
         index: "{nav.reports} gathers the numbers a director asks about most.",
         payments:
-          "The payments report: choose the period and the branch, and see the total by method and by day.",
+          "The payments report: choose the month and the branch, and see the total, what was paid on time and late, discounts and refunds.",
         staff: "The same report shows how much each teacher’s groups brought in.",
         churn:
           "This report shows who left, when and why, so you can see what makes students leave.",

@@ -339,7 +339,7 @@ export const uz: Words = {
       steps: {
         index: "“{nav.reports}” bo‘limida direktor eng ko‘p so‘raydigan raqamlar jamlangan.",
         payments:
-          "To‘lovlar hisoboti: davr va filialni tanlang, to‘lov usullari va kunlar bo‘yicha jami summani ko‘ring.",
+          "To‘lovlar hisoboti: oy va filialni tanlang, jami summa, o‘z vaqtida va kechikib to‘langanlar, chegirmalar va qaytarilgan to‘lovlarni ko‘ring.",
         staff:
           "Shu hisobot har bir o‘qituvchining guruhlari qancha tushum keltirganini ham ko‘rsatadi.",
         churn:

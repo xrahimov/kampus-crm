@@ -89,7 +89,8 @@ for locale in "${LOCALES[@]}"; do
     node node_modules/next/dist/bin/next start > "$OUT/$locale-server.log" 2>&1 &
   SERVERS+=("$!")
   until curl -s -o /dev/null "$app/api/v1/health"; do sleep 1; done
-  DATABASE_URL="$url" APP_URL="$app" VIDEO_SITE_URL="$SITE" \
+  # VIDEO_DATABASE_URL names the throwaway database: only there are stored notes rewritten (dress.ts).
+  DATABASE_URL="$url" VIDEO_DATABASE_URL="$url" APP_URL="$app" VIDEO_SITE_URL="$SITE" \
     npx tsx scripts/tutorial-videos/index.ts "$locale" "--out=$OUT" ${ONLY:+"$ONLY"} ${VOICE:+"$VOICE"} \
     > "$OUT/$locale.log" 2>&1 &
   RECORDERS+=("$!")

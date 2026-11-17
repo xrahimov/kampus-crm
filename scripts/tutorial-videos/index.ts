@@ -27,7 +27,7 @@ import type { Page } from "@playwright/test";
 
 import { prepare, type Base } from "../help-screenshots";
 
-import { dress } from "./dress";
+import { dress, SPOKEN } from "./dress";
 import { Film, launch, open } from "./film";
 import { SCENES } from "./scenes";
 import { BASE, CEO, PASSWORD, TEACHER, type Shoot } from "./shoot";
@@ -132,7 +132,8 @@ async function main() {
       packageGroupId: null,
       familyToken: null,
     };
-    await prepare(ceo, teacher, base);
+    const { post, comment, chatTeacher, chatStudent, packages } = SPOKEN[locale];
+    await prepare(ceo, teacher, base, { post, comment, chatTeacher, chatStudent, packages });
     await dress(ceo, locale);
     await teacherContext.close();
 

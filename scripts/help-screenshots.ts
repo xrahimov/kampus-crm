@@ -88,6 +88,7 @@ export const DEMO = {
   chatTeacher: "Hello everyone! Thursday's homework is open. Write here if something is unclear.",
   chatStudent: "Thank you! Is exercise 4 for Thursday too?",
   packageGroup: "Speaking Club",
+  packages: ["8 lessons", "12 lessons"],
   callChat: "Open page 12, please",
   callReply: "Done!",
   poll: { question: "Ready for the test?", options: ["Yes", "Not yet"] },
@@ -333,7 +334,14 @@ export async function askToJoin(
  * the shots use; `ceo` may do the rest. Each step looks before it writes, so a
  * re-run adds nothing.
  */
-export async function prepare(ceo: Page, teacher: Page, base: Base): Promise<void> {
+export async function prepare(
+  ceo: Page,
+  teacher: Page,
+  base: Base,
+  /** Other words for the rows this adds: the how-to videos write them in the video's language. */
+  words: Partial<typeof DEMO> = {},
+): Promise<void> {
+  const demo = { ...DEMO, ...words };
   const g = base.teacherGroupId;
   const today = tashkentToday();
 
@@ -413,17 +421,17 @@ export async function prepare(ceo: Page, teacher: Page, base: Base): Promise<voi
   const posts = await rows<{ id: string }>(teacher, `/groups/${g}/stream`);
   if (posts.length === 0) {
     const post = await mutate<{ id: string }>(teacher, "post", `/groups/${g}/stream`, {
-      body: DEMO.post,
+      body: demo.post,
       pinned: true,
     });
     await asStudent(teacher, base.studentToken, `/stream/${post.id}/comments`, {
-      data: { body: DEMO.comment },
+      data: { body: demo.comment },
     });
   }
   const chat = await getJson<{ messages: unknown[] }>(teacher, `/groups/${g}/chat`);
   if (chat.messages.length === 0) {
-    await mutate(teacher, "post", `/groups/${g}/chat`, { text: DEMO.chatTeacher });
-    await asStudent(teacher, base.studentToken, "/chat", { data: { text: DEMO.chatStudent } });
+    await mutate(teacher, "post", `/groups/${g}/chat`, { text: demo.chatTeacher });
+    await asStudent(teacher, base.studentToken, "/chat", { data: { text: demo.chatStudent } });
   }
 
   // A group that sells lesson packages, with one package sold.
@@ -450,12 +458,12 @@ export async function prepare(ceo: Page, teacher: Page, base: Base): Promise<voi
       });
     }
     const eight = await mutate<{ id: string }>(ceo, "post", `/groups/${packageGroupId}/packages`, {
-      name: "8 lessons",
+      name: demo.packages[0]!,
       lessons: 8,
       price: 480000,
     });
     await mutate(ceo, "post", `/groups/${packageGroupId}/packages`, {
-      name: "12 lessons",
+      name: demo.packages[1]!,
       lessons: 12,
       price: 660000,
       sortOrder: 1,

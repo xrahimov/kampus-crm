@@ -22,7 +22,7 @@ import {
   tashkentToday,
 } from "../help-screenshots";
 
-import { named } from "./dress";
+import { named, SPOKEN } from "./dress";
 import { DESKTOP, fit, launch, open, PHONE } from "./film";
 import { BASE, CEO, TEACHER, type Scene, type Shoot } from "./shoot";
 
@@ -74,6 +74,7 @@ const TYPED = {
 } as const;
 
 const typed = (s: Shoot) => TYPED[s.locale];
+const spoken = (s: Shoot) => SPOKEN[s.locale];
 
 function nav(s: Shoot, key: string): Locator {
   // A menu line may carry a counter after its name ("Checking 1").
@@ -186,17 +187,22 @@ const signIn: Scene = {
       await film.show(page.getByTestId("code-no-message"), 3);
       await shareNumber(page, who.phone, who.name);
     });
+    // The button that leads on is pressed when the caption is over: the picture stays with what is said.
     await s.say("code", async () => {
       await film.type(page.getByLabel(s.label("auth.code")), who.phone.slice(-6));
-      await film.click(page.getByRole("button", { name: s.label("auth.confirmCode") }));
-      await page.waitForURL(/set-password/);
+      return async () => {
+        await film.click(page.getByRole("button", { name: s.label("auth.confirmCode") }));
+        await page.waitForURL(/set-password/);
+      };
     });
     await s.say("password", async () => {
       const form = page.getByTestId("set-password-form");
       await film.type(form.getByLabel(s.label("auth.newPassword"), { exact: true }), who.password);
       await film.type(form.getByLabel(s.label("auth.confirmPassword")), who.password);
-      await film.click(form.getByRole("button", { name: s.label("auth.savePassword") }));
-      await page.waitForURL(/\/(dashboard|today)/);
+      return async () => {
+        await film.click(form.getByRole("button", { name: s.label("auth.savePassword") }));
+        await page.waitForURL(/\/(dashboard|today)/);
+      };
     });
     await s.say(
       "inside",
@@ -707,12 +713,16 @@ const leads: Scene = {
     await s.signIn(CEO);
     // Backstage: two leads were promised a call today.
     await film.offCamera(async () => {
-      const board = await getJson<{ columns: Array<{ leads: Array<{ id: string }> }> }>(
-        s.ceo,
-        "/leads",
-      );
-      for (const lead of board.columns.flatMap((c) => c.leads).slice(0, 2)) {
-        await mutate(s.ceo, "patch", `/leads/${lead.id}`, { nextContactAt: tashkentToday() });
+      const board = await getJson<{
+        columns: Array<{ leads: Array<{ id: string; phones: string[]; status: string }> }>;
+      }>(s.ceo, "/leads");
+      // The lead's phones and status go back as they are: left out, the route fills in its defaults.
+      for (const { id, phones, status } of board.columns.flatMap((c) => c.leads).slice(0, 2)) {
+        await mutate(s.ceo, "patch", `/leads/${id}`, {
+          phones,
+          status,
+          nextContactAt: tashkentToday(),
+        });
       }
     });
     await s.go("/leads");
@@ -935,6 +945,24 @@ const videoLesson: Scene = {
       const [, student] = await open(studentBrowser, PHONE, { permissions: media });
       await teacher.addInitScript(() => localStorage.setItem("kampus.summary.auto", "off"));
       await film.watch(teacher);
+      // Backstage: the group has a lesson today whatever day the video is recorded on, so
+      // the call belongs to a lesson and attendance is filled in from it.
+      await film.offCamera(async () => {
+        const group = `/groups/${s.base.teacherGroupId}`;
+        const { lessons, today } = await getJson<{
+          lessons: Array<{ date: string }>;
+          today: string;
+        }>(s.ceo, `${group}/homework`);
+        if (!lessons.some((l) => l.date.slice(0, 10) === today)) {
+          await mutate(s.ceo, "post", `${group}/lessons/extra`, {
+            date: today,
+            startTime: "09:00",
+            endTime: "10:30",
+          }).catch((error: Error) =>
+            process.stdout.write(`  (no lesson today was added: ${error.message})\n`),
+          );
+        }
+      });
       await s.signIn(TEACHER, teacher);
       await s.go(`/groups/${s.base.teacherGroupId}`, teacher);
       const card = teacher.getByTestId("group-video");
@@ -977,10 +1005,10 @@ const videoLesson: Scene = {
       });
       await s.say("chat", async () => {
         await film.click(teacher.getByTestId("toggle-chat"));
-        await film.type(teacher.getByTestId("chat-input"), DEMO.callChat);
+        await film.type(teacher.getByTestId("chat-input"), spoken(s).callChat);
         await film.click(teacher.getByTestId("chat-send"));
         await student.getByTestId("toggle-chat").click();
-        await student.getByTestId("chat-input").fill(DEMO.callReply);
+        await student.getByTestId("chat-input").fill(spoken(s).callReply);
         await student.getByTestId("chat-input").press("Enter");
         await closePhonePanel(student);
         await teacher.getByTestId("chat-message").nth(1).waitFor();
@@ -1061,10 +1089,11 @@ const videoLesson: Scene = {
         if (await teacher.getByTestId("poll-new").isVisible()) {
           await film.click(teacher.getByTestId("poll-new"));
         }
-        await film.type(teacher.getByTestId("poll-question-input"), DEMO.poll.question);
+        const { question, options } = spoken(s).poll;
+        await film.type(teacher.getByTestId("poll-question-input"), question);
         const inputs = teacher.getByTestId("poll-option-input");
-        await film.type(inputs.nth(0), DEMO.poll.options[0]!);
-        await film.type(inputs.nth(1), DEMO.poll.options[1]!);
+        await film.type(inputs.nth(0), options[0]!);
+        await film.type(inputs.nth(1), options[1]!);
         await film.click(teacher.getByTestId("poll-open"));
         await student.getByTestId("poll-notice").click();
         await student.getByTestId("poll-option").first().click();
@@ -1141,22 +1170,30 @@ const homework: Scene = {
       await film.click(save(dialog));
       await page.getByTestId("homework-card").filter({ hasText: text }).waitFor();
     });
-    await s.say("student", async () => {
-      // Backstage a student sends an answer, the way they would from their page.
-      const mine = await getJson<Array<{ id: string; text?: string }>>(
-        page,
-        `/public/class/${s.base.studentToken}/homework`,
-      );
-      const fresh = mine.find((h) => h.text === text) ?? mine[0];
-      if (fresh) {
-        await asStudent(page, s.base.studentToken, `/homework/${fresh.id}`, {
-          multipart: {
-            note: "1. He lives in Samarkand. 2. He gets up at six. 3. He works at a school.",
-          },
-        }).catch(() => undefined);
-      }
-      await film.show(page.getByTestId("homework-card").first(), 1.6);
-    });
+    // The student's side, on a phone: the task on their page, and the answer sent from there.
+    const phone = await launch(PHONE);
+    try {
+      const [, student] = await open(phone, PHONE);
+      await film.offCamera(async () => {
+        await s.go(`/class/${s.base.studentToken}`, student);
+        await student.getByTestId("portal-tab-homework").click();
+      });
+      await film.watch(student);
+      await s.say("student", async () => {
+        const task = student.getByTestId("portal-homework-item").filter({ hasText: text }).first();
+        await film.bring(task);
+        await film.click(task.getByTestId("hw-answer"));
+        await film.type(
+          task.getByTestId("hw-note"),
+          "1. He lives in Samarkand. 2. He gets up at six. 3. He works at a school.",
+        );
+        await film.click(task.getByTestId("hw-send"));
+        await film.wait(1);
+      });
+      await film.watch(page);
+    } finally {
+      await phone.close();
+    }
     await s.say("checking", async () => {
       await film.click(nav(s, "nav.checking"));
       await page.getByTestId("checking-item").first().waitFor();
@@ -1177,7 +1214,8 @@ const homework: Scene = {
         next.getByTestId("checking-comment"),
         "Check the verbs after he and she, then send it again.",
       );
-      await film.click(next.getByTestId("checking-return-send"));
+      // Sent when the caption is over, so the comment is what the picture shows.
+      return () => film.click(next.getByTestId("checking-return-send"));
     });
     await s.say("coins", async () => {
       await film.show(page.getByTestId("checking-summary"), 2);
@@ -1322,6 +1360,19 @@ const testsCoins: Scene = {
       await page.getByTestId("test-title").waitFor();
       const attempt = page.getByTestId("attempt-row").first();
       if ((await attempt.count()) > 0) await film.show(attempt, 2);
+    });
+    // Backstage: the centre gives coins by itself, so the switch the caption speaks of is on.
+    await film.offCamera(async () => {
+      const coins = await getJson<{
+        autoCoins: boolean;
+        rules: Array<{ event: string; amount: number; isActive: boolean }>;
+      }>(s.ceo, "/settings/coins");
+      if (!coins.autoCoins) {
+        await mutate(s.ceo, "put", "/settings/coins", {
+          autoCoins: true,
+          rules: coins.rules.map(({ event, amount, isActive }) => ({ event, amount, isActive })),
+        });
+      }
     });
     await s.go("/settings/coins");
     await s.say("rules", async () => {
@@ -1510,12 +1561,15 @@ const reports: Scene = {
       await film.click(page.getByTestId("report-payments"));
       await page.waitForURL(/reports\/payments/);
       await page.getByTestId("report-filters").waitFor();
-      await film.show(page.getByTestId("report-filters"), 2);
+      await film.show(page.getByTestId("report-filters"), 1.6);
+      await film.show(page.getByTestId("kpi-total"), 2);
     });
     await s.say(
       "staff",
       async () => {
-        await film.scroll(320);
+        const row = page.getByTestId("teacher-payment-row").first();
+        await film.bring(row);
+        await film.show(row, 2);
       },
       1,
     );
@@ -1581,17 +1635,20 @@ const studentPortal: Scene = {
       });
       await s.say("code", async () => {
         await film.type(page.getByLabel(s.label("auth.code")), STUDENT.slice(-6));
-        await film.click(page.getByRole("button", { name: s.label("auth.confirmCode") }));
-        await page.waitForURL(/\/student(\/set-password)?/);
-        await page.waitForLoadState("networkidle").catch(() => undefined);
+        return async () => {
+          await film.click(page.getByRole("button", { name: s.label("auth.confirmCode") }));
+          await page.waitForURL(/\/student(\/set-password)?/);
+          await page.waitForLoadState("networkidle").catch(() => undefined);
+        };
       });
       await s.say("password", async () => {
         const later = page.getByTestId("set-password-later");
-        if ((await later.count()) > 0) {
-          await film.show(page.getByTestId("set-password-form"), 2);
+        if ((await later.count()) === 0) return;
+        await film.show(page.getByTestId("set-password-form"), 2);
+        return async () => {
           await film.click(later);
-        }
-        await page.getByTestId("student-home").waitFor();
+          await page.getByTestId("student-home").waitFor();
+        };
       });
       await s.say("home", async () => {
         await film.show(page.getByTestId("student-group").first(), 2);
