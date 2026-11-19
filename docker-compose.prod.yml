@@ -58,6 +58,8 @@ services:
       # "on" lets staff passwords in again where a centre signs in with Telegram only (docs/DEPLOY.md).
       STAFF_PASSWORD_LOGIN: ${STAFF_PASSWORD_LOGIN:-}
       UPLOAD_DIR: /data/uploads
+      # The how-to videos the manual plays (docs/DEPLOY.md "How-to videos"); an empty folder shows none.
+      HELP_VIDEOS_DIR: /data/help-videos
       # Object storage instead of the uploads volume (docs/DEPLOY.md "Object storage").
       STORAGE_DRIVER: ${STORAGE_DRIVER:-local}
       S3_ENDPOINT: ${S3_ENDPOINT:-}
@@ -71,6 +73,7 @@ services:
       TURN_SECRET: ${TURN_SECRET:-}
     volumes:
       - uploads:/data/uploads
+      - ./help-videos:/data/help-videos:ro
     depends_on:
       db:
         condition: service_healthy

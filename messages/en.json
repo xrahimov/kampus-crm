@@ -5917,7 +5917,13 @@
     "previous": "Previous",
     "next": "Next",
     "nav": "Help",
-    "portalLink": "How to use this page"
+    "portalLink": "How to use this page",
+    "video": "Video",
+    "videos": "How-to videos",
+    "videosIntro": "Short videos that show each part of Kampus being used, step by step.",
+    "videosCount": "{count, plural, one {# short video} other {# short videos}}, one for each part of Kampus",
+    "noVideos": "There are no videos in this language on this server yet.",
+    "readSteps": "Read the steps: {article}"
   },
   "publicPage": {
     "signIn": "Staff sign-in",

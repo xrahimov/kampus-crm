@@ -5,6 +5,7 @@ import { getTranslations, setRequestLocale } from "next-intl/server";
 import { HELP_ARTICLE_BY_SLUG } from "@/features/help/catalog";
 import { getHelpContent } from "@/features/help/content";
 import { HelpArticle } from "@/features/help/help-article";
+import { availableHelpVideos } from "@/server/help-videos";
 import { getClassPage } from "@/server/services/video/video.service";
 
 type Props = { params: Promise<{ locale: string; token: string }> };
@@ -32,6 +33,7 @@ export default async function Page({ params }: Props) {
         spec={spec}
         content={getHelpContent(locale)}
         homeHref={`/class/${token}`}
+        videos={await availableHelpVideos(locale)}
       />
     </div>
   );

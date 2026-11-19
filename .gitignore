@@ -51,6 +51,8 @@ next-env.d.ts
 
 # how-to videos recorded by `npm run help:videos`
 /tutorial-videos/
+# ... and the copy the manual plays (HELP_VIDEOS_DIR, docs/DEPLOY.md "How-to videos")
+/help-videos/
 
 # uploaded files (local storage adapter)
 /uploads/

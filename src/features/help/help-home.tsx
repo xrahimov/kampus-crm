@@ -12,6 +12,7 @@ import {
   House,
   Building2,
   Landmark,
+  Play,
   Plug,
   Search,
   Settings2,
@@ -75,9 +76,12 @@ export function HelpHome({
   content,
   defaultAudience,
   siteOwner = false,
+  videoCount = 0,
 }: {
   content: HelpContent;
   defaultAudience: HelpAudience;
+  /** How many how-to videos this server has in the reader's language (A-199). */
+  videoCount?: number;
   /** The site owner also sees the article about Settings → Organisations. */
   siteOwner?: boolean;
 }) {
@@ -172,6 +176,24 @@ export function HelpHome({
               </p>
             )}
           </section>
+
+          {videoCount > 0 && (
+            <Link
+              href="/help/videos"
+              className="group flex max-w-3xl items-center gap-3 rounded-lg border bg-card p-4 transition-colors hover:border-primary"
+              data-testid="help-videos-link"
+            >
+              <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-sidebar text-sidebar-active">
+                <Play className="size-4 fill-current" aria-hidden />
+              </span>
+              <span className="min-w-0">
+                <span className="block font-medium group-hover:text-primary">{t("videos")}</span>
+                <span className="block text-sm text-muted-foreground">
+                  {t("videosCount", { count: videoCount })}
+                </span>
+              </span>
+            </Link>
+          )}
 
           <section className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
             {articles.map((spec) => {

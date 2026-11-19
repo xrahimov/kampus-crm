@@ -108,7 +108,10 @@ export async function runDueJobs(
       } finally {
         clearInterval(renew);
       }
-      await db.job.update({
+      // `updateMany`, here and below: a row deleted while its job ran (an account being
+      // removed, a test tidying up) must not throw and strand the rest of the claimed batch
+      // in RUNNING for ten minutes.
+      await db.job.updateMany({
         where: { id },
         data: { status: "DONE", doneAt: new Date(), lastError: null },
       });
@@ -116,7 +119,7 @@ export async function runDueJobs(
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
       const giveUp = job.attempts >= MAX_ATTEMPTS;
-      await db.job.update({
+      await db.job.updateMany({
         where: { id },
         data: {
           status: giveUp ? "FAILED" : "PENDING",

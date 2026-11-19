@@ -6,6 +6,7 @@ import { HELP_ARTICLE_BY_SLUG, readableHelpArticles } from "@/features/help/cata
 import { getHelpContent } from "@/features/help/content";
 import { HelpArticle } from "@/features/help/help-article";
 import { requireCurrentUser } from "@/server/auth/current-user";
+import { availableHelpVideos } from "@/server/help-videos";
 
 type Props = { params: Promise<{ locale: string; slug: string }> };
 
@@ -38,6 +39,7 @@ export default async function Page({ params }: Props) {
       homeHref="/help"
       previous={neighbour(index - 1)}
       next={neighbour(index + 1)}
+      videos={await availableHelpVideos(locale)}
     />
   );
 }

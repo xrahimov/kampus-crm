@@ -8,6 +8,8 @@ import type { HelpArticleSpec, HelpSectionSpec } from "./catalog";
 import type { HelpArticleText, HelpBlock, HelpContent, HelpSectionText } from "./content";
 import { HelpMarkup } from "./help-markup";
 import { HelpScreenshot } from "./help-screenshot";
+import { HelpVideo } from "./help-video";
+import { helpVideoSrc, helpVideoText, type HelpVideoId } from "./videos";
 
 type AnyArticleText = HelpArticleText<HelpArticleSpec["id"]>;
 
@@ -57,10 +59,13 @@ export async function HelpArticle({
   homeHref,
   previous,
   next,
+  videos,
 }: {
   locale: string;
   spec: HelpArticleSpec;
   content: HelpContent;
+  /** The how-to videos that exist in this language on this server (A-199). */
+  videos?: ReadonlySet<HelpVideoId>;
   /** Where "All manuals" goes. */
   homeHref: string;
   previous?: { href: string; title: string };
@@ -69,7 +74,10 @@ export async function HelpArticle({
   const t = await getTranslations("help");
   const text = content.articles[spec.id] as AnyArticleText;
   const texts = text.sections as Record<string, HelpSectionText>;
-  const sections = spec.sections.map((s) => ({ ...s, text: texts[s.id]! }));
+  const sections = (spec.sections as readonly HelpSectionSpec[]).map((s) => ({
+    ...s,
+    text: texts[s.id]!,
+  }));
   const audiences = spec.audiences.map((a) => content.audiences[a].title).join(", ");
 
   return (
@@ -107,6 +115,14 @@ export async function HelpArticle({
                 data-testid="help-section"
               >
                 <h2 className="text-xl font-semibold tracking-tight">{section.text.title}</h2>
+                {section.video && videos?.has(section.video) && (
+                  <HelpVideo
+                    src={helpVideoSrc(locale, section.video)}
+                    title={helpVideoText(locale, section.video).title}
+                    note={helpVideoText(locale, section.video).note}
+                    label={t("video")}
+                  />
+                )}
                 {section.screenshot && (
                   <HelpScreenshot
                     locale={locale}
@@ -117,7 +133,7 @@ export async function HelpArticle({
                 {section.text.body.map((block, i) => (
                   <Block key={i} block={block} />
                 ))}
-                {(section as HelpSectionSpec).more?.map((name) => (
+                {section.more?.map((name) => (
                   <HelpScreenshot
                     key={name}
                     locale={locale}

@@ -177,6 +177,7 @@ export const uz: HelpContent = {
           title: "Bu yordamdan foydalanish",
           body: [
             "Yon panelning pastidagi **Yordam** ni istalgan vaqtda oching. Siz uchun yozilgan maqolalarni ko‘rish uchun rolingizni tanlang yoki qidiring: nima qilmoqchi ekaningizni yozing, masalan “pul qaytarish” yoki “dam olish kuni”, shunda mos bo‘limlar ro‘yxati chiqadi. Har bir maqolada u tasvirlagan sahifaga havola bor.",
+            "Ko‘p mavzular qisqa video bilan boshlanadi, unda o‘sha qadamlar ekranda ko‘rsatiladi: to‘q rangli kartadagi ijro tugmasini bosing, video shu sahifaning o‘zida ochiladi, ovoz va rasm ostidagi matn bilan. Hamma videolar yordamning bosh sahifasidagi **Video qo‘llanmalar** bo‘limida. Kirish sahifasida kirish haqida video bor. Videolar faqat markazingiz serverida mavjud bo‘lsa ko‘rinadi.",
           ],
         },
       },

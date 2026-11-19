@@ -2,10 +2,13 @@ import type { Metadata } from "next";
 import { headers } from "next/headers";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 
+import { HelpVideo } from "@/features/help/help-video";
+import { helpVideoSrc, helpVideoText } from "@/features/help/videos";
 import { StudentLogin } from "@/features/student-app/student-login";
 import { redirect } from "@/i18n/navigation";
 import { lessonLinkGroupId } from "@/lib/lesson-link";
 import { prisma } from "@/server/db/prisma";
+import { availableHelpVideos } from "@/server/help-videos";
 import { normalizeHost } from "@/server/services/settings/domains.service";
 import { getCurrentStudent } from "@/server/services/student-auth/current-student";
 import { signInOptions } from "@/server/services/staff-telegram-login.service";
@@ -56,6 +59,16 @@ export default async function Page({ params, searchParams }: Props) {
         error={error && ERRORS.has(error) ? error : null}
         forLesson={lessonLinkGroupId(next) !== null}
       />
+      {/* The how-to video about the student's side, where this server has it (A-199). */}
+      {(await availableHelpVideos(locale)).has("student-portal") && (
+        <HelpVideo
+          compact
+          className="mt-4"
+          src={helpVideoSrc(locale, "student-portal")}
+          title={helpVideoText(locale, "student-portal").title}
+          label={(await getTranslations({ locale, namespace: "help" }))("video")}
+        />
+      )}
     </div>
   );
 }

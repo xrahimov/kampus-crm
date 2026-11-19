@@ -174,6 +174,7 @@ export const en: HelpContent = {
           title: "Using this help",
           body: [
             "Open **Help** at the bottom of the sidebar at any time. Pick your role to see the articles written for you, or search: type what you want to do, for example “refund” or “day off”, and the matching sections are listed. Each article has a link to the page it describes.",
+            "Many topics also open with a short video that shows the same steps being done on screen: press the play button on the dark card and it plays in place, with the words spoken and written under the picture. **How-to videos** on the Help home lists them all. The sign-in page has one about signing in. Videos appear only where your centre's server has them.",
           ],
         },
       },

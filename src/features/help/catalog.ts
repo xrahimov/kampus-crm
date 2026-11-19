@@ -1,5 +1,7 @@
 import type { Permission } from "@/lib/rbac/permissions";
 
+import type { HelpVideoId } from "./videos";
+
 /**
  * The manual's structure, shared by every language: which articles exist, in
  * what order, who they are for and which screenshot each section shows. The
@@ -44,6 +46,8 @@ export type HelpArticleId = (typeof HELP_ARTICLE_IDS)[number];
 
 export interface HelpSectionSpec {
   id: string;
+  /** The how-to video about this section, played above its picture where the file exists (A-199). */
+  video?: HelpVideoId;
   /** File under /help/<locale>/, without extension. */
   screenshot?: string;
   /** Further pictures of the same section, shown after its text. */
@@ -77,13 +81,13 @@ export const HELP_ARTICLES = [
     permission: null,
     path: "/dashboard",
     sections: [
-      { id: "signIn", screenshot: "login" },
-      { id: "layout", screenshot: "dashboard" },
+      { id: "signIn", video: "sign-in", screenshot: "login" },
+      { id: "layout", video: "getting-around", screenshot: "dashboard" },
       { id: "search", screenshot: "search" },
       { id: "branchAndLanguage" },
       { id: "notifications", screenshot: "notifications" },
       { id: "summary", screenshot: "assistant-summary" },
-      { id: "assistantButton", screenshot: "assistant-ask" },
+      { id: "assistantButton", video: "assistant", screenshot: "assistant-ask" },
       { id: "roles" },
       { id: "views", screenshot: "view-switch", more: ["view-teacher"] },
       { id: "account", screenshot: "account" },
@@ -99,7 +103,7 @@ export const HELP_ARTICLES = [
     path: "/dashboard",
     sections: [
       { id: "setup", screenshot: "setup-checklist" },
-      { id: "kpis", screenshot: "dashboard-numbers" },
+      { id: "kpis", video: "dashboard", screenshot: "dashboard-numbers" },
       { id: "schedule", screenshot: "dashboard-schedule" },
       { id: "forecast", screenshot: "forecast" },
       { id: "finance" },
@@ -112,7 +116,7 @@ export const HELP_ARTICLES = [
     permission: "leads.view",
     path: "/leads",
     sections: [
-      { id: "board", screenshot: "leads" },
+      { id: "board", video: "leads", screenshot: "leads" },
       { id: "addLead", screenshot: "lead-form" },
       { id: "workLeads" },
       { id: "followUp", screenshot: "calls-today" },
@@ -132,12 +136,12 @@ export const HELP_ARTICLES = [
     path: "/groups",
     sections: [
       { id: "list", screenshot: "groups" },
-      { id: "create", screenshot: "group-form" },
+      { id: "create", video: "groups", screenshot: "group-form" },
       { id: "detail", screenshot: "group-detail" },
       { id: "members", screenshot: "group-members" },
       { id: "tabs", screenshot: "group-packages" },
       { id: "changes" },
-      { id: "timetable", screenshot: "timetable" },
+      { id: "timetable", video: "timetable", screenshot: "timetable" },
     ],
   },
   {
@@ -147,7 +151,7 @@ export const HELP_ARTICLES = [
     permission: "groups.view",
     path: "/today",
     sections: [
-      { id: "day", screenshot: "today" },
+      { id: "day", video: "attendance", screenshot: "today" },
       { id: "desk", screenshot: "teacher-desk", more: ["teacher-desk-phone"] },
       { id: "attendance" },
       { id: "homework" },
@@ -165,13 +169,14 @@ export const HELP_ARTICLES = [
       { id: "day", screenshot: "teacher-groups" },
       { id: "attendance", screenshot: "attendance" },
       { id: "grades", screenshot: "grades" },
-      { id: "homework", screenshot: "homework" },
+      { id: "homework", video: "homework", screenshot: "homework" },
       { id: "checking", screenshot: "checking" },
-      { id: "stream", screenshot: "stream" },
+      { id: "stream", video: "materials-chat", screenshot: "stream" },
       { id: "chat", screenshot: "group-chat" },
       { id: "materials", screenshot: "materials" },
       {
         id: "video",
+        video: "video-lesson",
         screenshot: "video-card",
         more: [
           "video-room",
@@ -195,8 +200,8 @@ export const HELP_ARTICLES = [
     sections: [
       { id: "list", screenshot: "students" },
       { id: "bulk", screenshot: "students-bulk" },
-      { id: "add", screenshot: "student-form" },
-      { id: "signInRequests", screenshot: "join-requests" },
+      { id: "add", video: "students", screenshot: "student-form" },
+      { id: "signInRequests", video: "sign-in-requests", screenshot: "join-requests" },
       { id: "profile", screenshot: "student-profile" },
       { id: "groupsTab" },
       { id: "moreTabs" },
@@ -213,7 +218,7 @@ export const HELP_ARTICLES = [
     path: "/settings/payments",
     sections: [
       { id: "balance" },
-      { id: "record", screenshot: "payment-dialog" },
+      { id: "record", video: "payments", screenshot: "payment-dialog" },
       { id: "receipt", screenshot: "receipt" },
       { id: "refund" },
       { id: "openingBalances" },
@@ -245,7 +250,7 @@ export const HELP_ARTICLES = [
     permission: "announcements.view",
     path: "/announcements",
     sections: [
-      { id: "post", screenshot: "announcement-form" },
+      { id: "post", video: "announcements", screenshot: "announcement-form" },
       { id: "reach", screenshot: "announcements" },
     ],
   },
@@ -256,7 +261,7 @@ export const HELP_ARTICLES = [
     permission: "exams.view",
     path: "/exams",
     sections: [
-      { id: "list", screenshot: "exams" },
+      { id: "list", video: "exams", screenshot: "exams" },
       { id: "groupExam", screenshot: "exam-form" },
       { id: "mockExam" },
       { id: "grading", screenshot: "exam-results" },
@@ -269,7 +274,7 @@ export const HELP_ARTICLES = [
     permission: "tests.view",
     path: "/settings/tests",
     sections: [
-      { id: "bank", screenshot: "question-bank" },
+      { id: "bank", video: "tests-coins", screenshot: "question-bank" },
       { id: "tests", screenshot: "tests" },
       { id: "attempts" },
       { id: "coinRules", screenshot: "coin-settings" },
@@ -284,7 +289,7 @@ export const HELP_ARTICLES = [
     permission: "finance.view",
     path: "/finance",
     sections: [
-      { id: "overview", screenshot: "finance" },
+      { id: "overview", video: "finance", screenshot: "finance" },
       { id: "plan" },
       { id: "categories", screenshot: "finance-category" },
       { id: "staffMoney" },
@@ -299,7 +304,7 @@ export const HELP_ARTICLES = [
     permission: "reports.view",
     path: "/reports",
     sections: [
-      { id: "index", screenshot: "reports" },
+      { id: "index", video: "reports", screenshot: "reports" },
       { id: "money", screenshot: "report-payments" },
       { id: "students", screenshot: "report-churn" },
       { id: "center" },
@@ -314,7 +319,7 @@ export const HELP_ARTICLES = [
     path: "/settings/staff",
     sections: [
       { id: "teachers", screenshot: "teachers" },
-      { id: "add", screenshot: "staff-form" },
+      { id: "add", video: "staff", screenshot: "staff-form" },
       { id: "salary" },
       { id: "roles", screenshot: "roles" },
       { id: "archive" },
@@ -329,7 +334,7 @@ export const HELP_ARTICLES = [
     sections: [
       { id: "general", screenshot: "settings-general" },
       { id: "switches" },
-      { id: "catalog", screenshot: "settings-courses" },
+      { id: "catalog", video: "courses-rooms", screenshot: "settings-courses" },
       { id: "sms", screenshot: "settings-sms" },
       { id: "receipt" },
       { id: "forms" },
@@ -344,7 +349,7 @@ export const HELP_ARTICLES = [
     permission: "settings.integrations",
     path: "/settings/integrations",
     sections: [
-      { id: "overview", screenshot: "integrations" },
+      { id: "overview", video: "integrations", screenshot: "integrations" },
       { id: "sms" },
       { id: "telegram", screenshot: "bot-recipients" },
       { id: "telegramLogin", screenshot: "student-login" },
@@ -383,7 +388,7 @@ export const HELP_ARTICLES = [
     path: null,
     isPublic: true,
     sections: [
-      { id: "link", screenshot: "portal" },
+      { id: "link", video: "student-portal", screenshot: "portal" },
       { id: "signIn", screenshot: "student-login" },
       { id: "family", screenshot: "family-page" },
       { id: "lesson", screenshot: "portal-lesson", more: ["portal-video-phone"] },

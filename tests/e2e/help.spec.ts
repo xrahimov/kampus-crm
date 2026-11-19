@@ -40,6 +40,52 @@ test.describe("help", () => {
     await expect(page.locator("section#record img")).toHaveAttribute("src", /\/help\/uz\//);
   });
 
+  // The test server reads tests/fixtures/help-videos (playwright.config.ts): one English video.
+  test("a how-to video plays inside its Help section and on the sign-in page", async ({ page }) => {
+    // Signed out: the sign-in page offers the video about signing in.
+    await page.goto("/en/login");
+    const offer = page.getByTestId("help-video");
+    await expect(offer).toContainText("Signing in");
+    await offer.getByTestId("help-video-play").click();
+    const loginPlayer = page.getByTestId("help-video-player");
+    await expect
+      .poll(() => loginPlayer.evaluate((el) => (el as HTMLVideoElement).videoWidth))
+      .toBe(320);
+    // No video in Russian on this server, so the Russian page offers none.
+    await page.goto("/ru/login");
+    await expect(page.getByRole("button", { name: "Войти" })).toBeVisible();
+    await expect(page.getByTestId("help-video")).toHaveCount(0);
+
+    await signIn(page, CEO_PHONE);
+    await page.goto("/en/help");
+    await expect(page.getByTestId("help-videos-link")).toContainText("1 short video");
+    await page.getByTestId("help-videos-link").click();
+    await expect(page).toHaveURL(/\/en\/help\/videos$/);
+    await expect(page.getByTestId("help-videos-item")).toHaveCount(1);
+    await page.getByRole("link", { name: "Read the steps: Getting started" }).click();
+    await expect(page).toHaveURL(/\/en\/help\/getting-started#signIn$/);
+
+    // The video sits in the section it is about, and only there.
+    await expect(page.getByTestId("help-video")).toHaveCount(1);
+    const section = page.locator("section#signIn");
+    await section.getByTestId("help-video-play").click();
+    const player = section.getByTestId("help-video-player");
+    await expect.poll(() => player.evaluate((el) => (el as HTMLVideoElement).videoWidth)).toBe(320);
+
+    // A browser that seeks gets the part it asked for; unknown names get nothing.
+    const part = await page.request.get("/api/v1/help-videos/en/sign-in", {
+      headers: { range: "bytes=0-9" },
+    });
+    expect(part.status()).toBe(206);
+    expect(part.headers()["content-range"]).toMatch(/^bytes 0-9\/\d+$/);
+    expect((await page.request.get("/api/v1/help-videos/en/groups")).status()).toBe(404);
+    expect((await page.request.get("/api/v1/help-videos/en/nothing")).status()).toBe(404);
+
+    await page.goto("/ru/help");
+    await expect(page.getByTestId("help-article-card").first()).toBeVisible();
+    await expect(page.getByTestId("help-videos-link")).toHaveCount(0);
+  });
+
   test("a teacher opens the teaching manual first", async ({ page }) => {
     await signIn(page, TEACHER_PHONE);
     await page.goto("/en/help");
