@@ -11,3 +11,5 @@ src/generated
 *.md
 !README.md
 uploads
+help-videos
+tutorial-videos

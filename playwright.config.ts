@@ -42,5 +42,7 @@ export default defineConfig({
     url: baseURL,
     reuseExistingServer: !isCI,
     timeout: 180_000,
+    // One tiny how-to video in English, so the Help pages have something to play (A-199).
+    env: { HELP_VIDEOS_DIR: "tests/fixtures/help-videos" },
   },
 });

@@ -384,6 +384,51 @@ manager, cashier), never CEO, and no usable password: they sign in with a code
 from Telegram and choose their own password then (A-196). Staff who are archived in the old system are created
 archived.
 
+## 12. How-to videos
+
+The Help pages can play a short video in each topic, and the sign-in pages one
+about signing in (A-199). The videos are not part of the code: they are recorded
+from demo data with `npm run help:videos` (A-197) and copied to the server once,
+into the folder `help-videos` beside `docker-compose.prod.yml`. The app reads
+that folder (`HELP_VIDEOS_DIR`, mounted read-only into the app container) and
+offers exactly the videos it finds there; without the folder, or for a language
+that has no files, the manual looks as it did before.
+
+The folder holds one folder per language with the files as the recorder names
+them:
+
+```
+/opt/kampus/help-videos/en/01-sign-in.mp4 ... 23-assistant.mp4
+/opt/kampus/help-videos/ru/01-sign-in.mp4 ...
+/opt/kampus/help-videos/uz/01-sign-in.mp4 ...
+```
+
+Copy them from the computer that holds the recorded set (the voiced set is about
+250 MB for the three languages), then make them readable for the app:
+
+```bash
+scp -r ~/Desktop/Projects/kampus-tutorial-videos/voiced/en \
+       ~/Desktop/Projects/kampus-tutorial-videos/voiced/ru \
+       ~/Desktop/Projects/kampus-tutorial-videos/voiced/uz \
+       root@YOUR_SERVER:/opt/kampus/help-videos/
+ssh root@YOUR_SERVER 'chmod -R a+rX /opt/kampus/help-videos && ls /opt/kampus/help-videos/*/ | grep -c mp4'
+```
+
+The last command prints how many videos are on the server (69 for a full set).
+New files show up in the app within a minute; nothing has to be restarted. To
+replace a video, copy the new file over the old one. To take the videos away,
+remove the files. The `.srt` files the recorder writes beside each video are not
+used and may be copied or left out.
+
+The videos are open to anyone who has the address
+(`/api/v1/help-videos/<language>/<name>`), because the sign-in pages show one to
+people who are not signed in. Record them from demo data only, as the recorder
+does; never put a recording of a real centre's pages there.
+
+The first time, the folder has to exist before the app starts with this
+version, or Docker creates it empty by itself (owned by root, which is fine).
+The folder is ignored by git and left out of the Docker build.
+
 ## Troubleshooting
 
 - **No certificate / browser warning:** the DNS record does not point at the

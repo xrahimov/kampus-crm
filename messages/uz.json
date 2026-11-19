@@ -5917,7 +5917,13 @@
     "previous": "Oldingi",
     "next": "Keyingi",
     "nav": "Yordam",
-    "portalLink": "Bu sahifadan qanday foydalanish"
+    "portalLink": "Bu sahifadan qanday foydalanish",
+    "video": "Video",
+    "videos": "Video qo‘llanmalar",
+    "videosIntro": "Kampusning har bir bo‘limi bilan ishlashni qadam-baqadam ko‘rsatadigan qisqa videolar.",
+    "videosCount": "{count} ta qisqa video, Kampusning har bir bo‘limi uchun bittadan",
+    "noVideos": "Bu serverda bu tilda hozircha video yo‘q.",
+    "readSteps": "Qadamlarni o‘qish: {article}"
   },
   "publicPage": {
     "signIn": "Xodimlar uchun kirish",

@@ -5,7 +5,7 @@ import type { Storage } from "./storage";
  * inside a lesson recording instead of downloading it whole.
  */
 export async function fileResponse(
-  storage: Storage,
+  storage: Pick<Storage, "getRange">,
   key: string,
   request: Request,
   cacheControl: string,
