@@ -404,6 +404,35 @@ describe("auto-SMS and the job queue", () => {
     expect(job.status).toBe("FAILED");
     await prisma.job.delete({ where: { id } });
   });
+
+  it("finishes the rest of a batch when a job's row is deleted while it runs", async () => {
+    const goneKey = `${TAG}:gone`;
+    registerJobHandler(`${TAG}.gone`, async (_payload, db) => {
+      await db.job.deleteMany({ where: { uniqueKey: goneKey } });
+    });
+    registerJobHandler(`${TAG}.goneBoom`, async (_payload, db) => {
+      await db.job.deleteMany({ where: { uniqueKey: `${goneKey}:boom` } });
+      throw new Error("boom");
+    });
+    registerJobHandler(`${TAG}.after`, async () => undefined);
+    const at = (secondsAgo: number) => new Date(Date.now() - secondsAgo * 1000);
+    await enqueue(prisma, { type: `${TAG}.gone`, payload: {}, uniqueKey: goneKey, runAt: at(30) });
+    await enqueue(prisma, {
+      type: `${TAG}.goneBoom`,
+      payload: {},
+      uniqueKey: `${goneKey}:boom`,
+      runAt: at(20),
+    });
+    const afterId = (await enqueue(prisma, { type: `${TAG}.after`, payload: {}, runAt: at(10) }))!;
+    try {
+      await runDueJobs(100);
+      expect(await prisma.job.count({ where: { uniqueKey: { startsWith: goneKey } } })).toBe(0);
+      expect((await prisma.job.findUniqueOrThrow({ where: { id: afterId } })).status).toBe("DONE");
+    } finally {
+      await prisma.job.deleteMany({ where: { id: afterId } });
+      await prisma.job.deleteMany({ where: { uniqueKey: { startsWith: goneKey } } });
+    }
+  });
 });
 
 describe("bot recipients and Telegram", () => {
