@@ -50,6 +50,7 @@ export function VideoTile({
   stream,
   name,
   isSelf = false,
+  silent = false,
   audioOn,
   videoOn,
   screen = false,
@@ -66,6 +67,8 @@ export function VideoTile({
   stream: MediaStream | null;
   name: string;
   isSelf?: boolean;
+  /** No sound from this tile: the same person is already heard from another one (A-201). */
+  silent?: boolean;
   audioOn: boolean;
   videoOn: boolean;
   screen?: boolean;
@@ -87,11 +90,15 @@ export function VideoTile({
   const ref = useRef<HTMLVideoElement>(null);
   const speaking = useSpeaking(stream, audioOn);
   const videoTrackId = stream?.getVideoTracks()[0]?.id ?? null;
+  const shownTrackId = useRef<string | null>(null);
 
   useEffect(() => {
     const el = ref.current;
     if (!el) return;
-    if (el.srcObject !== stream) el.srcObject = stream;
+    // Safari keeps showing the old picture when a stream's track is swapped under it
+    // (camera to screen and back), so a new track sets the stream again (A-200).
+    if (el.srcObject !== stream || shownTrackId.current !== videoTrackId) el.srcObject = stream;
+    shownTrackId.current = videoTrackId;
     void el.play().catch(() => undefined);
   }, [stream, videoTrackId]);
 
@@ -116,7 +123,7 @@ export function VideoTile({
         ref={ref}
         autoPlay
         playsInline
-        muted={isSelf}
+        muted={isSelf || silent}
         className={cn(
           "size-full object-cover",
           screen && "object-contain",

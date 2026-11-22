@@ -79,6 +79,17 @@ export const videoSyncSchema = z.object({
       hand: z.boolean().default(false),
     })
     .optional(),
+  /**
+   * A problem this browser met, such as a screen share that did not start (A-200).
+   * It is written to the server log, where "sometimes it does not work" becomes a reason.
+   */
+  issue: z
+    .object({
+      kind: z.enum(["share"]),
+      reason: z.string().max(40),
+      detail: z.string().max(200).default(""),
+    })
+    .optional(),
   /** Poll actions (A-153): the teacher opens or closes one; a student answers. */
   poll: z
     .discriminatedUnion("action", [

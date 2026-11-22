@@ -805,6 +805,7 @@ export async function syncVideoPeer(
   participantId: string,
   input: VideoSyncInput,
   db: DbClient = prisma,
+  context: { userAgent?: string | null } = {},
 ): Promise<SyncDto> {
   const me = await db.videoParticipant.findUnique({
     where: { id: participantId },
@@ -840,6 +841,13 @@ export async function syncVideoPeer(
     noShow: null,
     now: new Date().toISOString(),
   });
+  if (input.issue) {
+    // A-200: one line per problem a browser met, to read with `docker compose logs app`.
+    console.warn(
+      `[video] ${input.issue.kind} ${input.issue.reason}: ${input.issue.detail} ` +
+        `(room ${me.roomId}, ${me.role}, ${context.userAgent?.slice(0, 200) ?? "unknown browser"})`,
+    );
+  }
   if (await closeIfOverTime(db, me.room)) return gone("ENDED");
   // Left already, or replaced by the same person's newer tab.
   if (me.leftAt) return gone("GONE");

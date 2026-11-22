@@ -5,7 +5,7 @@
  */
 import { createHmac } from "node:crypto";
 
-import { afterAll, beforeAll, describe, expect, it } from "vitest";
+import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 import type { z } from "zod";
 
 import { videoBitrate } from "@/features/video/call-engine";
@@ -328,6 +328,22 @@ describe("video lessons", () => {
     expect(first.peers.map((p) => p.id).sort()).toEqual(
       [host.participantId, guest.participantId].sort(),
     );
+
+    // A browser's problem report lands in the server log with the room, role and browser (A-200).
+    const warned = vi.spyOn(console, "warn").mockImplementation(() => undefined);
+    await syncVideoPeer(
+      student.participantId,
+      videoSyncSchema.parse({
+        secret: student.secret,
+        issue: { kind: "share", reason: "blocked", detail: "NotAllowedError: denied by system" },
+      }),
+      undefined,
+      { userAgent: "TestBrowser/1.0" },
+    );
+    expect(warned).toHaveBeenCalledTimes(1);
+    expect(warned.mock.calls[0]?.[0]).toContain("[video] share blocked: NotAllowedError");
+    expect(warned.mock.calls[0]?.[0]).toContain("STUDENT, TestBrowser/1.0");
+    warned.mockRestore();
 
     const got = await sync(host.participantId, host.secret);
     expect(got.signals).toHaveLength(1);

@@ -76,6 +76,13 @@ export interface RemotePeer {
 
 export type CallStatus = "connecting" | "live" | "ended" | "gone" | "error";
 
+/**
+ * Why a screen share did not start (A-200): the browser or the computer refused
+ * ("blocked"), the chosen window or screen could not be captured ("unreadable"),
+ * or anything else ("failed").
+ */
+export type ShareFailure = "blocked" | "unreadable" | "failed";
+
 interface PeerLink {
   info: PeerDto;
   pc: RTCPeerConnection;
@@ -100,6 +107,52 @@ export function videoBitrate(role: PeerDto["role"], receivers: number): number {
   return Math.max(120_000, Math.min(400_000, Math.floor(1_500_000 / Math.max(1, receivers))));
 }
 
+/** A shared screen is captured no larger than this; bigger screens are scaled down by the browser. */
+export const SCREEN_MAX_WIDTH = 1920;
+export const SCREEN_MAX_HEIGHT = 1080;
+/** A shared screen changes less often than a face: ten pictures a second is plenty. */
+export const SCREEN_MAX_FRAMERATE = 15;
+
+/**
+ * How a shared screen is sent to each receiver (A-200). Whoever shares leads the
+ * lesson, so the budget does not depend on the role: a student's screen used to
+ * get a camera's 120-400 kbit/s, too little for text. Every receiver costs the
+ * sharer one more encoder and one more upload, so the picture gets smaller as
+ * the room grows: `scale` divides the captured height down to the target.
+ */
+export function screenSending(
+  receivers: number,
+  capturedHeight: number,
+): { maxBitrate: number; scale: number } {
+  const [height, maxBitrate] =
+    receivers <= 3 ? [1080, 1_500_000] : receivers <= 6 ? [900, 1_000_000] : [720, 700_000];
+  const scale = capturedHeight > height ? capturedHeight / height : 1;
+  return { maxBitrate, scale: Number(scale.toFixed(3)) };
+}
+
+/** A picker closed sooner than this was never shown: the browser or the computer refused. */
+const PICKER_MIN_MS = 800;
+
+/**
+ * Sorts a failed `getDisplayMedia` call (A-200). null means the person closed
+ * the browser's picker themselves, which is not an error. Browsers report both
+ * that and a refusal by the computer as NotAllowedError, so the wording Chrome
+ * uses ("denied by system") and the time it took tell them apart.
+ */
+export function shareFailure(error: unknown, elapsedMs: number): ShareFailure | null {
+  const name =
+    typeof error === "object" && error !== null && "name" in error ? String(error.name) : "";
+  const message =
+    typeof error === "object" && error !== null && "message" in error ? String(error.message) : "";
+  if (name === "NotAllowedError" || name === "SecurityError") {
+    return /denied by system/i.test(message) || elapsedMs < PICKER_MIN_MS ? "blocked" : null;
+  }
+  if (name === "NotReadableError" || name === "AbortError" || name === "NotFoundError") {
+    return "unreadable";
+  }
+  return "failed";
+}
+
 export class CallEngine {
   readonly self: JoinDto;
   status: CallStatus = "connecting";
@@ -112,6 +165,12 @@ export class CallEngine {
   private local: MediaStream;
   private camera: MediaStreamTrack | null;
   private screen: MediaStreamTrack | null = null;
+  /** True from the click on Share screen until the browser's picker closes. */
+  private choosingScreen = false;
+  /** Why the last screen share did not start; the room shows a notice until it is closed. */
+  shareError: { reason: ShareFailure; at: number } | null = null;
+  /** A problem this browser met, told to the server once so it lands in the server log. */
+  private issue: NonNullable<VideoSyncInput["issue"]> | null = null;
   /** Video inputs the browser lists; more than one lets the camera switch (A-182). */
   private cameraIds: string[] = [];
   media: MediaState;
@@ -619,32 +678,79 @@ export class CallEngine {
   /**
    * Sends the screen instead of the camera until sharing stops. Where the browser
    * can capture a tab's or the computer's sound (Chrome, Edge), that sound is sent
-   * too, mixed with the microphone (A-184). Closing the browser's picker is not an error.
+   * too, mixed with the microphone (A-184). Closing the browser's picker is not an
+   * error; every other reason the share does not start is kept in `shareError`
+   * for the room to show (A-200).
    */
   async shareScreen(): Promise<void> {
-    if (this.screen || !navigator.mediaDevices?.getDisplayMedia) return;
+    if (this.screen || this.choosingScreen || !navigator.mediaDevices?.getDisplayMedia) return;
+    this.choosingScreen = true;
+    this.shareError = null;
+    const asked = Date.now();
     let display: MediaStream;
     try {
-      display = await navigator.mediaDevices.getDisplayMedia({
-        video: { frameRate: { ideal: 10, max: 15 } },
-        audio: screenAudioSupported(),
-      });
-    } catch {
+      display = await openDisplay();
+    } catch (error) {
+      this.choosingScreen = false;
+      const reason = shareFailure(error, Date.now() - asked);
+      if (reason) this.failShare(reason, error);
+      else this.onChange();
       return;
     }
+    this.choosingScreen = false;
     const track = display.getVideoTracks()[0];
-    if (!track) {
+    if (!track || this.stopped) {
       for (const t of display.getTracks()) t.stop();
+      if (!this.stopped) this.failShare("failed", new Error("no video track"));
       return;
     }
     track.contentHint = "detail";
     track.addEventListener("ended", () => void this.stopScreen());
     this.screen = track;
-    await this.replaceVideo(track);
+    const sent = await this.replaceVideo(track);
+    if (sent.links > 0 && sent.failed === sent.links) {
+      // Nobody would see it: give the camera back and say so.
+      for (const t of display.getAudioTracks()) t.stop();
+      await this.stopScreen();
+      this.failShare("failed", new Error("no connection took the screen"));
+      return;
+    }
+    if (sent.failed > 0) {
+      this.report("share", "partial", `${sent.failed} of ${sent.links} connections`);
+    }
     const sound = display.getAudioTracks()[0];
     if (sound) await this.startScreenAudio(sound);
     this.media = { ...this.media, screen: true };
+    this.tuneBitrates();
+    // A whiteboard or a shown file would cover the screen on everyone's stage: the
+    // teacher's newest choice wins, so both step aside.
+    if (this.self.role === "HOST" && (this.currentStage.board || this.currentStage.material)) {
+      this.setStage({ board: false, material: null });
+    }
     this.changed(true);
+  }
+
+  private failShare(reason: ShareFailure, error: unknown): void {
+    this.shareError = { reason, at: Date.now() };
+    const name =
+      typeof error === "object" && error !== null && "name" in error ? String(error.name) : "";
+    const message =
+      typeof error === "object" && error !== null && "message" in error
+        ? String(error.message)
+        : String(error);
+    this.report("share", reason, `${name}: ${message}`);
+    this.changed(true);
+  }
+
+  dismissShareError(): void {
+    if (!this.shareError) return;
+    this.shareError = null;
+    this.onChange();
+  }
+
+  /** Queues one line for the server log; a newer problem replaces an unsent older one. */
+  private report(kind: "share", reason: string, detail: string): void {
+    this.issue = { kind, reason: reason.slice(0, 40), detail: detail.slice(0, 200) };
   }
 
   async stopScreen(): Promise<void> {
@@ -654,6 +760,7 @@ export class CallEngine {
     await this.stopScreenAudio();
     await this.replaceVideo(this.camera);
     this.media = { ...this.media, screen: false };
+    this.tuneBitrates();
     this.changed(true);
   }
 
@@ -679,7 +786,8 @@ export class CallEngine {
       const microphone = this.local.getAudioTracks()[0];
       if (microphone) context.createMediaStreamSource(new MediaStream([microphone])).connect(mix);
       context.createMediaStreamSource(new MediaStream([source])).connect(mix);
-      if (context.state === "suspended") await context.resume().catch(() => undefined);
+      // Not awaited: a browser that holds the context back never settles this promise.
+      if (context.state === "suspended") void context.resume().catch(() => undefined);
       const mixed = mix.stream.getAudioTracks()[0];
       if (!mixed) {
         void context.close().catch(() => undefined);
@@ -720,18 +828,35 @@ export class CallEngine {
     return this.screen;
   }
 
-  private async replaceVideo(track: MediaStreamTrack | null): Promise<void> {
+  /**
+   * Swaps the outgoing picture on every connection. Returns how many connections
+   * had a video sender and how many of those refused the new track.
+   */
+  private async replaceVideo(
+    track: MediaStreamTrack | null,
+  ): Promise<{ links: number; failed: number }> {
     const current = this.local.getVideoTracks()[0];
     if (current && current !== track) this.local.removeTrack(current);
     if (track && !this.local.getVideoTracks().includes(track)) this.local.addTrack(track);
-    await Promise.all(
-      [...this.links.values()].map((l) => {
+    const results = await Promise.all(
+      [...this.links.values()].map(async (l) => {
         const sender = l.pc
           .getTransceivers()
           .find((t) => t.receiver.track.kind === "video" && t.sender)?.sender;
-        return sender?.replaceTrack(track).catch(() => undefined);
+        // No sender yet: the connection is still being set up and takes the track from `local`.
+        if (!sender) return null;
+        try {
+          await sender.replaceTrack(track);
+          return true;
+        } catch {
+          return false;
+        }
       }),
     );
+    return {
+      links: results.filter((r) => r !== null).length,
+      failed: results.filter((r) => r === false).length,
+    };
   }
 
   /** Leaves the call: tells the server at once (survives the page closing) and closes links. */
@@ -778,6 +903,7 @@ export class CallEngine {
     if (this.stopped) return;
     this.timer = null;
     const signals = this.outbox.splice(0, 100);
+    const sentIssue = this.issue;
     const sentStage = this.stageDraft;
     const sentPoll = this.pollAction;
     const sentBreakout = this.breakoutDraft;
@@ -792,6 +918,7 @@ export class CallEngine {
           signals,
           state: this.media,
           ...(sentStage ? { room: sentStage } : {}),
+          ...(sentIssue ? { issue: sentIssue } : {}),
           ...(sentPoll ? { poll: sentPoll } : {}),
           ...(sentBreakout ? { breakout: sentBreakout } : {}),
         }),
@@ -820,6 +947,7 @@ export class CallEngine {
       return;
     }
     if (this.status === "connecting") this.status = "live";
+    if (sentIssue && this.issue === sentIssue) this.issue = null;
     const serverNow = Date.parse(result.now);
     if (Number.isFinite(serverNow)) this.clockOffset = Date.now() - serverNow;
     this.stage = result.stage;
@@ -1041,17 +1169,35 @@ export class CallEngine {
     for (const c of pending) await link.pc.addIceCandidate(c).catch(() => undefined);
   }
 
-  /** Every browser uploads one copy per receiver, so the budget shrinks as the room grows. */
+  /**
+   * Every browser uploads one copy per receiver, so the budget shrinks as the room grows.
+   * A shared screen gets its own budget and is scaled down for bigger rooms (A-200).
+   */
   private tuneBitrates(): void {
     const receivers = this.links.size;
-    const maxBitrate = videoBitrate(this.self.role, receivers);
+    const screen = this.screen
+      ? screenSending(receivers, this.screen.getSettings().height ?? SCREEN_MAX_HEIGHT)
+      : null;
+    const maxBitrate = screen?.maxBitrate ?? videoBitrate(this.self.role, receivers);
+    const scale = screen?.scale ?? 1;
+    const maxFramerate = screen ? SCREEN_MAX_FRAMERATE : undefined;
     for (const link of this.links.values()) {
       for (const t of link.pc.getTransceivers()) {
         if (t.receiver.track.kind !== "video" || !t.sender) continue;
         const params = t.sender.getParameters();
-        if (!params.encodings || params.encodings.length === 0) continue;
-        if (params.encodings[0]!.maxBitrate === maxBitrate) continue;
-        params.encodings[0]!.maxBitrate = maxBitrate;
+        const encoding = params.encodings?.[0];
+        if (!encoding) continue;
+        if (
+          encoding.maxBitrate === maxBitrate &&
+          Math.abs((encoding.scaleResolutionDownBy ?? 1) - scale) < 0.01 &&
+          encoding.maxFramerate === maxFramerate
+        ) {
+          continue;
+        }
+        encoding.maxBitrate = maxBitrate;
+        encoding.scaleResolutionDownBy = scale;
+        if (maxFramerate === undefined) delete encoding.maxFramerate;
+        else encoding.maxFramerate = maxFramerate;
         void t.sender.setParameters(params).catch(() => undefined);
       }
     }
@@ -1097,6 +1243,58 @@ export function nextCameraId(ids: readonly string[], currentId: string | null): 
   if (ids.length < 2) return null;
   const at = currentId ? ids.indexOf(currentId) : -1;
   return ids[(at + 1) % ids.length] ?? null;
+}
+
+/**
+ * What the browser's screen picker is asked for (A-200):
+ * - no larger than 1920x1080: a Retina screen (2880x1800 and more) used to go out at
+ *   full size, five times the pixels for every receiver's encoder;
+ * - never this tab itself, whose picture and sound are the lesson (a mirror in a
+ *   mirror, and everyone's voice sent back to them);
+ * - the computer's whole sound only where the browser can leave this tab's own sound
+ *   out of it (`restrictOwnAudio`), else only a shared tab's sound: without that
+ *   everyone would hear themselves a moment later.
+ * Browsers ignore the members they do not know.
+ */
+export function displayOptions(): DisplayMediaStreamOptions {
+  const sound = screenAudioSupported();
+  const supported = (navigator.mediaDevices.getSupportedConstraints?.() ?? {}) as Record<
+    string,
+    boolean | undefined
+  >;
+  const ownSoundLeftOut = Boolean(supported.restrictOwnAudio);
+  return {
+    video: {
+      width: { max: SCREEN_MAX_WIDTH },
+      height: { max: SCREEN_MAX_HEIGHT },
+      frameRate: { ideal: 10, max: SCREEN_MAX_FRAMERATE },
+    },
+    audio: sound ? ({ restrictOwnAudio: true } as MediaTrackConstraints) : false,
+    selfBrowserSurface: "exclude",
+    surfaceSwitching: "include",
+    systemAudio: sound && ownSoundLeftOut ? "include" : "exclude",
+  } as DisplayMediaStreamOptions;
+}
+
+/** Opens the browser's screen picker; a browser that rejects the options gets the plainest request. */
+async function openDisplay(): Promise<MediaStream> {
+  try {
+    return await navigator.mediaDevices.getDisplayMedia(displayOptions());
+  } catch (error) {
+    const name =
+      typeof error === "object" && error !== null && "name" in error ? String(error.name) : "";
+    if (name !== "TypeError" && name !== "OverconstrainedError") throw error;
+    return navigator.mediaDevices.getDisplayMedia({ video: true });
+  }
+}
+
+/**
+ * Whether this is a browser on Android. None of them offers screen capture to a
+ * web page, whichever version (checked 2026-11: Chrome 157, Samsung Internet 31,
+ * Firefox 160), so the room words its notice for them (A-200).
+ */
+export function isAndroidBrowser(userAgent: string): boolean {
+  return /Android/i.test(userAgent);
 }
 
 /**

@@ -17,6 +17,7 @@ import {
   MonitorX,
   PenLine,
   PhoneOff,
+  PictureInPicture2,
   Presentation,
   SendHorizontal,
   SmilePlus,
@@ -37,10 +38,12 @@ import { PACE_REACTIONS, REACTIONS, type Reaction } from "@/lib/validation/video
 import { cn } from "@/lib/utils";
 import { canAnnotate } from "@/lib/video-material";
 
-import { CHAT_MAX_LENGTH, type CallEngine, type RemotePeer } from "./call-engine";
+import { CHAT_MAX_LENGTH, isAndroidBrowser, type CallEngine, type RemotePeer } from "./call-engine";
 import { BreakoutPanel, breakoutCountdown } from "./breakout-panel";
 import { LessonPanel } from "./lesson-panel";
 import { MaterialStage } from "./material-stage";
+import { PipVideo, PipView, usePip, type PipTile } from "./pip";
+import { PIP_STRIP, pipOrder } from "./pip-order";
 import { PollPanel } from "./poll-panel";
 import { CallRecorder, recordingMimeType, uploadBoard, uploadRecording } from "./recorder";
 import { VideoTile } from "./video-tile";
@@ -105,6 +108,10 @@ export function CallRoom({
   const t = useTranslations("video.room");
   useSyncExternalStore(engine.subscribe, engine.getVersion, engine.getVersion);
   const [pinned, setPinned] = useState<string | null>(null);
+  // Whoever shared a screen when this last rendered; a new share takes the stage (A-200).
+  const [sharerSeen, setSharerSeen] = useState<string | null>(null);
+  // The mini window for when the person is in another tab (A-201).
+  const pip = usePip(engine.self.groupName);
   const [confirmEnd, setConfirmEnd] = useState(false);
   const [panel, setPanel] = useState<Panel>(null);
   // The teacher's "mute" shows a notice for a few seconds (keyed by when it came).
@@ -235,6 +242,12 @@ export function CallRoom({
   const hasCamera = engine.localStream.getVideoTracks().length > 0 || media.screen;
 
   const sharer = peers.find((p) => p.media?.screen)?.id ?? (media.screen ? SELF : null);
+  if (sharer !== sharerSeen) {
+    // A screen share that starts wins over the person this viewer pinned earlier;
+    // pinning someone after that still works.
+    setSharerSeen(sharer);
+    if (sharer && pinned && pinned !== sharer) setPinned(null);
+  }
   const host = peers.find((p) => p.role === "HOST")?.id ?? null;
   // The teacher's spotlight, as a tile id here (the teacher may spotlight themselves).
   const spotlightId =
@@ -252,7 +265,8 @@ export function CallRoom({
       ? pinned
       : null;
   // Students watch the teacher; teachers and guests see everyone unless someone leads.
-  const stageId = pinnedId ?? spotlightId ?? sharer ?? (isStudent ? host : null) ?? null;
+  // A shared screen goes before the teacher's spotlight: it is what the lesson is about.
+  const stageId = pinnedId ?? sharer ?? spotlightId ?? (isStudent ? host : null) ?? null;
   // The whiteboard takes the stage from everyone (A-155), and so does a material the teacher
   // shows (A-183). With both on, the pen draws over the material's page; where a material
   // cannot be drawn on (a video, a link), the whiteboard covers it until it is closed.
@@ -262,6 +276,9 @@ export function CallRoom({
   const penOverMaterial = shown !== null && canAnnotate(shown.view);
   const stageKey =
     shown && (!stage.board || penOverMaterial) ? MATERIAL : stage.board ? BOARD : stageId;
+  // This person's shared screen is behind the whiteboard or a shown file (A-200).
+  const shareCovered = media.screen && (stageKey === MATERIAL || stageKey === BOARD);
+  const shareError = engine.shareError;
 
   // Raised hands in the order they went up; this browser's own hand takes its place too.
   const handQueue = [
@@ -332,6 +349,45 @@ export function CallRoom({
   };
 
   const everyone = [SELF, ...peers.filter((p) => !hidden.has(p.id)).map((p) => p.id)];
+
+  // The mini window (A-201): the others, most important first; this person only when alone.
+  const selfTile: PipTile = {
+    id: SELF,
+    stream: engine.localStream,
+    name: self.displayName,
+    isSelf: true,
+    audioOn: media.audio,
+    videoOn: media.video || media.screen,
+    screen: media.screen,
+    hand: media.hand,
+  };
+  const shownPeers = peers.filter((p) => !hidden.has(p.id));
+  const pipPeers = pipOrder(
+    shownPeers.map((p) => ({ id: p.id, role: p.role, screen: Boolean(p.media?.screen) })),
+    { pinned: pinnedId, spotlight: spotlightId },
+  )
+    .slice(0, PIP_STRIP + 1)
+    .flatMap((id): PipTile[] => {
+      const p = shownPeers.find((x) => x.id === id);
+      if (!p) return [];
+      return [
+        {
+          id: p.id,
+          stream: p.stream,
+          name: p.displayName,
+          isSelf: false,
+          audioOn: p.media?.audio ?? true,
+          videoOn: (p.media?.video ?? true) || Boolean(p.media?.screen),
+          screen: Boolean(p.media?.screen),
+          hand: Boolean(p.media?.hand),
+        },
+      ];
+    });
+  const pipTiles = pipPeers.length > 0 ? pipPeers : [selfTile];
+  const leaveCall = () => {
+    pip.close();
+    void finishRecording().then(onLeave);
+  };
   const others = everyone.filter((id) => id !== stageKey);
   const gridCols =
     everyone.length <= 1
@@ -595,13 +651,73 @@ export function CallRoom({
         )
       )}
 
+      {shareError && (
+        <div
+          className="mx-4 mb-2 flex flex-wrap items-center justify-center gap-2 rounded-md bg-amber-600/90 px-3 py-2 text-center text-sm text-white"
+          role="alert"
+          data-testid="share-failed"
+          data-reason={shareError.reason}
+        >
+          <span className="min-w-0">{t(`shareError.${shareError.reason}`)}</span>
+          <NoticeAction onClick={() => void engine.shareScreen()} testId="share-retry">
+            {t("shareRetry")}
+          </NoticeAction>
+          <button
+            type="button"
+            onClick={() => engine.dismissShareError()}
+            aria-label={t("dismiss")}
+            className="grid size-8 shrink-0 place-items-center rounded-md hover:bg-black/20 focus-visible:outline-2 focus-visible:outline-sidebar-active"
+          >
+            <X className="size-4" />
+          </button>
+        </div>
+      )}
+      {shareCovered && (
+        <div
+          className="mx-4 mb-2 flex flex-wrap items-center justify-center gap-2 rounded-md bg-sidebar-muted px-3 py-2 text-center text-sm text-white"
+          role="status"
+          data-testid="share-covered"
+        >
+          <span className="min-w-0">{t("shareCovered")}</span>
+          {isHost && (
+            <NoticeAction
+              onClick={() => engine.setStage({ board: false, material: null })}
+              testId="share-uncover"
+            >
+              {t("shareUncover")}
+            </NoticeAction>
+          )}
+        </div>
+      )}
+      {pip.failed && (
+        <div
+          className="mx-4 mb-2 flex items-center justify-center gap-2 rounded-md bg-sidebar-muted px-3 py-2 text-center text-sm text-white"
+          role="status"
+          data-testid="pip-failed"
+        >
+          <span className="min-w-0">{t("pipFailed")}</span>
+          <button
+            type="button"
+            onClick={pip.dismissFailed}
+            aria-label={t("dismiss")}
+            className="grid size-8 shrink-0 place-items-center rounded-md hover:bg-sidebar focus-visible:outline-2 focus-visible:outline-sidebar-active"
+          >
+            <X className="size-4" />
+          </button>
+        </div>
+      )}
+
       {shareHelp && (
         <div
           className="mx-4 mb-2 flex flex-wrap items-center justify-center gap-2 rounded-md bg-sidebar-muted px-3 py-2 text-center text-sm text-white"
           role="status"
           data-testid="share-unavailable"
         >
-          <span>{t("shareUnavailable")}</span>
+          <span>
+            {isAndroidBrowser(navigator.userAgent)
+              ? t("shareUnavailableAndroid")
+              : t("shareUnavailable")}
+          </span>
           {isHost && (
             <NoticeAction
               onClick={() => {
@@ -979,6 +1095,16 @@ export function CallRoom({
             <MonitorOff />
           </ControlButton>
         )}
+        {pip.support && (
+          <ControlButton
+            active={!pip.open}
+            onClick={pip.toggle}
+            label={pip.open ? t("pipClose") : t("pipOpen")}
+            testId="toggle-pip"
+          >
+            <PictureInPicture2 />
+          </ControlButton>
+        )}
         {canInvite && (
           <button
             type="button"
@@ -993,7 +1119,7 @@ export function CallRoom({
         )}
         <button
           type="button"
-          onClick={() => void finishRecording().then(onLeave)}
+          onClick={leaveCall}
           disabled={saving}
           data-testid="leave-call"
           className="inline-flex h-11 items-center gap-2 rounded-full bg-destructive px-5 text-sm font-medium text-destructive-foreground hover:bg-destructive/90 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sidebar-active [&_svg]:size-4"
@@ -1013,6 +1139,28 @@ export function CallRoom({
           </button>
         )}
       </footer>
+
+      {pip.support === "video" && (
+        <PipVideo videoRef={pip.videoRef} stream={pipTiles[0]?.stream ?? null} />
+      )}
+      {pip.window && (
+        <PipView
+          win={pip.window}
+          tiles={pipTiles}
+          note={stageKey === MATERIAL || stageKey === BOARD ? t("pipStage") : null}
+          audioOn={media.audio}
+          videoOn={media.video}
+          hasAudio={hasAudio}
+          hasCamera={hasCamera && !media.screen}
+          onAudio={() => engine.setAudio(!media.audio)}
+          onVideo={() => engine.setVideo(!media.video)}
+          onBack={() => {
+            window.focus();
+            pip.close();
+          }}
+          onLeave={leaveCall}
+        />
+      )}
 
       {onEndForAll && (
         <ConfirmDialog

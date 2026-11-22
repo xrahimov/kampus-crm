@@ -1,4 +1,4 @@
-import { expect, test, type Page } from "@playwright/test";
+import { expect, test, type Browser, type Page } from "@playwright/test";
 
 const TEACHER_PHONE = "+998900000004";
 const PASSWORD = process.env.SEED_ADMIN_PASSWORD ?? "Kampus!2026";
@@ -74,6 +74,58 @@ function wavTone(seconds = 2): Buffer {
     out.writeInt16LE(Math.round(Math.sin((i / rate) * 2 * Math.PI * 440) * 3000), 44 + i * 2);
   }
   return out;
+}
+
+/**
+ * A teacher in the demo group's call and one student joined from their link, connected.
+ * `teacherInit` runs in the teacher's pages before anything else (to stand in for the
+ * screen picker a headless browser does not have).
+ */
+async function startLesson(browser: Browser, teacherInit?: () => void) {
+  const teacherContext = await browser.newContext();
+  if (teacherInit) await teacherContext.addInitScript(teacherInit);
+  const teacher = await teacherContext.newPage();
+  await signIn(teacher, TEACHER_PHONE);
+  await teacher.goto("/en/groups");
+  await teacher.getByRole("link", { name: "GE-Morning A1" }).first().click();
+  await expect(teacher.getByTestId("group-title")).toHaveText("GE-Morning A1");
+  const groupId = teacher.url().match(/groups\/([a-z0-9]+)/)![1]!;
+  const card = teacher.getByTestId("group-video");
+  const start = card.getByTestId("video-start");
+  await expect(start.or(card.getByTestId("video-join"))).toBeVisible();
+  if (await start.isVisible()) {
+    await start.click();
+  } else {
+    await card.getByTestId("video-join").click();
+  }
+  await expect(teacher.getByTestId("join-call")).toBeEnabled({ timeout: 20_000 });
+  await teacher.getByTestId("join-call").click();
+  await expect(teacher.getByTestId("call-room")).toBeVisible();
+
+  const links = await teacher.request.get(`/api/v1/groups/${groupId}/video/links`);
+  const [first] = (await links.json()) as Array<{ token: string; fullName: string }>;
+  const studentContext = await browser.newContext();
+  const student = await studentContext.newPage();
+  await student.goto(`/en/class/${first!.token}`);
+  await expect(student.getByTestId("join-call")).toBeEnabled({ timeout: 20_000 });
+  await student.getByTestId("join-call").click();
+  await expect(student.getByTestId("call-room")).toBeVisible();
+  for (const page of [teacher, student]) {
+    const peer = page.getByTestId("tile-peer");
+    await expect(peer).toHaveCount(1, { timeout: 20_000 });
+    await expect(peer).not.toContainText("Connecting", { timeout: 30_000 });
+  }
+  const end = async () => {
+    await teacher.getByTestId("end-call").click();
+    await teacher
+      .getByRole("alertdialog")
+      .getByRole("button", { name: "End for everyone" })
+      .click();
+    await expect(teacher.getByTestId("call-done")).toContainText("The video lesson has ended.");
+    await studentContext.close();
+    await teacherContext.close();
+  };
+  return { teacher, student, teacherContext, studentName: first!.fullName, end };
 }
 
 test.describe("video lessons", () => {
@@ -399,10 +451,13 @@ test.describe("video lessons", () => {
   }) => {
     test.setTimeout(150_000);
     const stamp = Date.now();
-    // The teacher on a tablet without screen capture, the student on a phone (A-183).
+    // The teacher on an unfolded Android phone, which has no screen capture whatever its
+    // Chrome version; the student on a phone (A-183).
     const teacherContext = await browser.newContext({
       viewport: { width: 1180, height: 820 },
       hasTouch: true,
+      userAgent:
+        "Mozilla/5.0 (Linux; Android 16; SM-F966B) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/157.0.0.0 Mobile Safari/537.36",
     });
     await teacherContext.addInitScript(() => {
       Object.defineProperty(MediaDevices.prototype, "getDisplayMedia", { value: undefined });
@@ -443,6 +498,10 @@ test.describe("video lessons", () => {
 
     // The share notice now leads to "show a file": the lesson panel with the upload button.
     await teacher.getByTestId("share-unavailable-button").click();
+    // On Android the notice says it is the browser, not its version (A-200).
+    await expect(teacher.getByTestId("share-unavailable")).toContainText(
+      "Browsers on Android phones and tablets cannot share the screen from a web page, whichever version",
+    );
     await teacher.getByTestId("share-unavailable").getByTestId("share-use-lesson").click();
     const panel = teacher.getByTestId("lesson-panel");
     await expect(panel.getByTestId("lesson-show-file")).toBeVisible({ timeout: 10_000 });
@@ -575,7 +634,7 @@ test.describe("video lessons", () => {
     await teacherContext.addInitScript(() => {
       Object.defineProperty(MediaDevices.prototype, "getDisplayMedia", {
         value: async (options?: DisplayMediaStreamOptions) => {
-          (window as unknown as { shareAsked?: unknown }).shareAsked = options?.audio;
+          (window as unknown as { shareAsked?: unknown }).shareAsked = Boolean(options?.audio);
           const canvas = document.createElement("canvas");
           canvas.width = 640;
           canvas.height = 360;
@@ -663,6 +722,187 @@ test.describe("video lessons", () => {
     await expect(teacher.getByTestId("call-done")).toContainText("The video lesson has ended.");
     await studentContext.close();
     await teacherContext.close();
+  });
+
+  test("a screen share that fails says why, and a share takes the stage at a size everyone can take (A-200)", async ({
+    browser,
+  }) => {
+    test.setTimeout(150_000);
+    // The picker stand-in: the computer refuses the first time ("could not start video
+    // source"), then hands over a screen larger than Full HD, as a Retina display would be
+    // if the browser ignored the size limit.
+    const { teacher, student, end } = await startLesson(browser, () => {
+      let asked = 0;
+      Object.defineProperty(MediaDevices.prototype, "getDisplayMedia", {
+        value: async (options?: DisplayMediaStreamOptions) => {
+          (window as unknown as { shareOptions?: unknown }).shareOptions = options;
+          asked += 1;
+          if (asked === 1)
+            throw new DOMException("Could not start video source", "NotReadableError");
+          const canvas = document.createElement("canvas");
+          canvas.width = 2400;
+          canvas.height = 1350;
+          const context = canvas.getContext("2d")!;
+          setInterval(() => {
+            context.fillStyle = `hsl(${Date.now() % 360} 80% 50%)`;
+            context.fillRect(0, 0, 2400, 1350);
+          }, 100);
+          return canvas.captureStream(10);
+        },
+      });
+    });
+    const peer = student.getByTestId("tile-peer");
+
+    // The whiteboard is open when the teacher decides to share a screen.
+    await teacher.getByTestId("toggle-board").click();
+    await expect(student.getByTestId("whiteboard")).toBeVisible({ timeout: 10_000 });
+
+    // First try: the reason is on the screen instead of a button that does nothing.
+    await teacher.getByTestId("toggle-share").click();
+    const failed = teacher.getByTestId("share-failed");
+    await expect(failed).toHaveAttribute("data-reason", "unreadable");
+    await expect(failed).toContainText("The computer could not capture that window or screen");
+    await expect(teacher.getByTestId("toggle-share")).toHaveAttribute("aria-label", "Share screen");
+    await expect(student.getByTestId("whiteboard")).toBeVisible();
+
+    // The picker is asked for at most Full HD and never for this tab itself.
+    const asked = await teacher.evaluate(
+      () =>
+        (
+          window as unknown as {
+            shareOptions: Record<string, unknown> & { video: { width: unknown; height: unknown } };
+          }
+        ).shareOptions,
+    );
+    expect(asked.video.width).toEqual({ max: 1920 });
+    expect(asked.video.height).toEqual({ max: 1080 });
+    expect(asked.selfBrowserSurface).toBe("exclude");
+
+    // Second try works: the notice goes, the whiteboard steps aside, the screen is on the
+    // student's stage.
+    await failed.getByTestId("share-retry").click();
+    await expect(teacher.getByTestId("toggle-share")).toHaveAttribute("aria-label", "Stop sharing");
+    await expect(failed).toHaveCount(0);
+    await expect(student.getByTestId("whiteboard")).toHaveCount(0, { timeout: 10_000 });
+    await expect(peer.getByLabel("Sharing screen")).toBeVisible({ timeout: 10_000 });
+
+    // The picture really arrives, scaled from 2400x1350 down to Full HD for a small room.
+    const received = () =>
+      student.evaluate(() => {
+        const video = document.querySelector<HTMLVideoElement>("[data-testid=tile-peer] video");
+        return video ? `${video.videoWidth}x${video.videoHeight}` : "none";
+      });
+    await expect.poll(received, { timeout: 30_000 }).toBe("1920x1080");
+
+    // The whiteboard opened over a shared screen: the teacher is told, and one press brings
+    // the screen back.
+    await teacher.getByTestId("toggle-board").click();
+    await expect(student.getByTestId("whiteboard")).toBeVisible({ timeout: 10_000 });
+    const covered = teacher.getByTestId("share-covered");
+    await expect(covered).toContainText("not your screen");
+    await covered.getByTestId("share-uncover").click();
+    await expect(covered).toHaveCount(0);
+    await expect(student.getByTestId("whiteboard")).toHaveCount(0, { timeout: 10_000 });
+    await expect(peer.getByLabel("Sharing screen")).toBeVisible();
+
+    // Stopping gives the camera back at its own size.
+    await teacher.getByTestId("toggle-share").click();
+    await expect(peer.getByLabel("Sharing screen")).toHaveCount(0, { timeout: 10_000 });
+    await expect.poll(received, { timeout: 30_000 }).not.toBe("1920x1080");
+    await end();
+  });
+
+  test("the mini window shows the lesson while the teacher is in another tab (A-201)", async ({
+    browser,
+  }) => {
+    test.setTimeout(150_000);
+    // Chrome calls the page's "enterpictureinpicture" handler when the person leaves the tab.
+    // A test cannot leave a tab, so the handler is kept and called from a key press.
+    const { teacher, student, teacherContext, studentName, end } = await startLesson(
+      browser,
+      () => {
+        const session = navigator.mediaSession;
+        const set = session.setActionHandler.bind(session);
+        session.setActionHandler = (action, handler) => {
+          if ((action as string) === "enterpictureinpicture") {
+            (window as unknown as { leftTab?: () => void }).leftTab = handler
+              ? () => handler({ action })
+              : undefined;
+          }
+          set(action, handler);
+        };
+        document.addEventListener("keydown", (e) => {
+          if (e.key === "F9") (window as unknown as { leftTab?: () => void }).leftTab?.();
+        });
+      },
+    );
+
+    // The button opens a small window with the student in it and the call's buttons.
+    const opened = teacherContext.waitForEvent("page");
+    await teacher.getByTestId("toggle-pip").click();
+    let mini = await opened;
+    await expect(mini.getByTestId("pip-view")).toBeVisible();
+    await expect(mini.getByTestId("pip-lead")).toContainText(studentName);
+    await expect(teacher.getByTestId("toggle-pip")).toHaveAttribute(
+      "aria-label",
+      "Close the mini window",
+    );
+    // The student's picture plays there, without a second copy of their sound.
+    await expect
+      .poll(
+        () =>
+          mini.evaluate(() => {
+            const video = document.querySelector<HTMLVideoElement>("[data-testid=pip-lead] video");
+            return Boolean(video && video.videoWidth > 0 && !video.paused && video.muted);
+          }),
+        { timeout: 20_000 },
+      )
+      .toBe(true);
+    // It carries the page's styles: the buttons are round and 36 pixels wide.
+    expect(await mini.getByTestId("pip-mic").evaluate((el) => getComputedStyle(el).width)).toBe(
+      "36px",
+    );
+
+    // The microphone button there is the lesson's own.
+    await mini.getByTestId("pip-mic").click();
+    await expect(teacher.getByTestId("toggle-mic")).toHaveAttribute(
+      "aria-label",
+      "Turn microphone on",
+    );
+    await expect(student.getByTestId("tile-peer").getByLabel("Microphone off")).toBeVisible({
+      timeout: 10_000,
+    });
+    await mini.getByTestId("pip-mic").click();
+
+    // "Back to the lesson" closes it.
+    let closed = mini.waitForEvent("close");
+    await mini.getByTestId("pip-back").click();
+    await closed;
+    await expect(teacher.getByTestId("toggle-pip")).toHaveAttribute(
+      "aria-label",
+      "Open the mini window",
+    );
+
+    // Leaving the tab opens it without a press; coming back closes it again.
+    const reopened = teacherContext.waitForEvent("page");
+    await teacher.keyboard.press("F9");
+    mini = await reopened;
+    await expect(mini.getByTestId("pip-lead")).toContainText(studentName);
+    closed = mini.waitForEvent("close");
+    await teacher.evaluate(() => document.dispatchEvent(new Event("visibilitychange")));
+    await closed;
+    await expect(teacher.getByTestId("toggle-pip")).toHaveAttribute(
+      "aria-label",
+      "Open the mini window",
+    );
+
+    // Ending the lesson takes an open mini window along.
+    const last = teacherContext.waitForEvent("page");
+    await teacher.getByTestId("toggle-pip").click();
+    mini = await last;
+    closed = mini.waitForEvent("close");
+    await end();
+    await closed;
   });
 
   test("a wrong class link shows the not-found page", async ({ page }) => {
