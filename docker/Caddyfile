@@ -16,6 +16,19 @@
 	reverse_proxy app:3000
 }
 
+# The address this server had before (FORMER_DOMAIN, docs/DEPLOY.md section 13).
+# Pages opened under the old name are sent to the same page under the new one, so
+# links people saved or were sent keep working. /api keeps answering under the
+# old name, because Telegram, Payme and Click call the address they were given
+# and do not follow a redirect. Without FORMER_DOMAIN the block is a plain-http
+# site for a name nobody can reach, so no certificate is asked for.
+{$FORMER_DOMAIN:http://former-address.invalid} {
+	encode gzip
+	@pages not path /api/*
+	redir @pages https://{$DOMAIN}{uri}
+	reverse_proxy app:3000
+}
+
 https:// {
 	tls {
 		on_demand

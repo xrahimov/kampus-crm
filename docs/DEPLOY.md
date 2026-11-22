@@ -61,14 +61,15 @@ nano .env
 
 Fill in:
 
-| Variable                                      | Value                                                            |
-| --------------------------------------------- | ---------------------------------------------------------------- |
-| `POSTGRES_PASSWORD`                           | the random string (letters and digits only)                      |
-| `DOMAIN`                                      | `crm.yourcenter.uz` (or the sslip.io name); `:80` for plain http |
-| `APP_URL`                                     | `https://crm.yourcenter.uz` (must match `DOMAIN`)                |
-| `BOOTSTRAP_ORG_NAME`, `BOOTSTRAP_BRANCH_NAME` | the learning centre and its first branch                         |
-| `BOOTSTRAP_CEO_NAME`, `BOOTSTRAP_CEO_PHONE`   | the first login, phone in international form (`+998…`)           |
-| `BOOTSTRAP_CEO_PASSWORD`                      | the first password (change it after the first login)             |
+| Variable                                      | Value                                                             |
+| --------------------------------------------- | ----------------------------------------------------------------- |
+| `POSTGRES_PASSWORD`                           | the random string (letters and digits only)                       |
+| `DOMAIN`                                      | `crm.yourcenter.uz` (or the sslip.io name); `:80` for plain http  |
+| `APP_URL`                                     | `https://crm.yourcenter.uz` (must match `DOMAIN`)                 |
+| `FORMER_DOMAIN`                               | only after a move: the address the server had before (section 13) |
+| `BOOTSTRAP_ORG_NAME`, `BOOTSTRAP_BRANCH_NAME` | the learning centre and its first branch                          |
+| `BOOTSTRAP_CEO_NAME`, `BOOTSTRAP_CEO_PHONE`   | the first login, phone in international form (`+998…`)            |
+| `BOOTSTRAP_CEO_PASSWORD`                      | the first password (change it after the first login)              |
 
 The `BOOTSTRAP_*` lines are used only when the database is empty; delete them
 from `.env` after the first start.
@@ -202,6 +203,11 @@ A-201) has no migration and no setting. Two things to know after it:
 - The mini window opens by itself only in Chrome and Edge on a computer, and only
   on an `https` address (the live site is one). Nothing on the server switches it
   on or off; a person can switch it off for the site in the browser.
+
+The update that lets the server move to a new address (A-202) has no migration.
+It adds one optional line to `.env`, `FORMER_DOMAIN`, and a block in
+`docker/Caddyfile` that does nothing until that line is set. Section 13 has the
+move itself.
 
 The update that brings sign-in with a Telegram code (A-196) has one migration,
 `20261116200000_sign_in_codes`. It only adds: three tables (`TelegramContact`,
@@ -438,6 +444,75 @@ does; never put a recording of a real centre's pages there.
 The first time, the folder has to exist before the app starts with this
 version, or Docker creates it empty by itself (owned by root, which is fine).
 The folder is ignored by git and left out of the Docker build.
+
+## 13. Move the server to a new address
+
+The server can change its main address, for example from the sslip.io name to a
+domain of its own (A-202), without breaking what people already have: pages
+opened under the old name lead to the same page under the new one, and `/api`
+keeps answering under the old name, so webhooks registered there still arrive.
+
+1. At the registrar of the new domain, add an `A` record for the name that
+   points at the server's IP. With Cloudflare, set the record to **DNS only**
+   (grey cloud): Caddy fetches the certificate itself and the video relay needs
+   a direct line to the server. A second record for `www` is optional.
+2. Wait until `dig +short <new name>` shows the server's IP. Caddy cannot fetch
+   a certificate before that.
+3. In `/opt/kampus/.env` set the new address and name the old one:
+
+   ```bash
+   DOMAIN=kampus.example
+   APP_URL=https://kampus.example
+   FORMER_DOMAIN=203-0-113-10.sslip.io, www.kampus.example
+   ```
+
+   `FORMER_DOMAIN` takes one name, or several separated by a comma and a space.
+   Every name in it must point at this server, because Caddy fetches a
+   certificate for each. A `www` name belongs here too, so it leads to the
+   address without `www`.
+
+4. Check the configuration, then restart with it (no rebuild is needed when only
+   `.env` changed):
+
+   ```bash
+   cd /opt/kampus
+   C='docker compose -f docker-compose.prod.yml'
+   $C run --rm --no-deps caddy caddy validate --config /etc/caddy/Caddyfile
+   $C up -d
+   curl -s -o /dev/null -w '%{http_code}\n' https://kampus.example/api/v1/health          # 200
+   curl -s -o /dev/null -w '%{http_code}\n' https://203-0-113-10.sslip.io/api/v1/health   # 200
+   curl -s -o /dev/null -w '%{http_code} %{redirect_url}\n' https://203-0-113-10.sslip.io/en/login
+   # 302 https://kampus.example/en/login
+   ```
+
+   The first request to the new name takes a few seconds while the certificate
+   is fetched.
+
+What changes for people:
+
+- Everyone signs in once more, on the new address: a browser keeps the sign-in
+  per address. Phone and password work as before.
+- Links Kampus sends from now on (Telegram, lesson links, receipts) carry the
+  new address. Links sent earlier still open, through the old name.
+- Someone who added Kampus to their phone's home screen, or allowed
+  notifications in the browser, does that again on the new address.
+- A centre's own address (section 9) is not touched.
+
+Then, without hurry, because the old name keeps working:
+
+- **The older sign-in on Telegram's own page** (section 6) stops working on the
+  new address until BotFather knows it: add the Redirect URI
+  `https://<new name>/api/v1/student-auth/telegram/callback` and
+  `https://<new name>/` as Trusted Origin. Sign-in with a code from the bot is
+  not affected.
+- **Telegram webhook:** the bot still calls the old name, which answers. Point
+  it at `https://<new name>/api/v1/webhooks/telegram` with the same secret when
+  convenient.
+- **Payme, Click, telephony, FaceID:** give the new address wherever a callback
+  URL was entered in their cabinets.
+
+Keep `FORMER_DOMAIN` for as long as old links may be around. Removing the line
+(and running `up -d`) stops the old name from being served.
 
 ## Troubleshooting
 
