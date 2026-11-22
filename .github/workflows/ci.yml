@@ -39,6 +39,23 @@ jobs:
             -c "CREATE DATABASE kampus OWNER kampus;"
           pg_isready -h localhost -p 5432 -U kampus -d kampus
 
+      # A Caddyfile that does not parse takes the whole site down at the next
+      # update, so it is checked here as the server would load it: as shipped,
+      # and after a move with one and with two former names (A-202). The binary
+      # comes from Caddy's own releases; Docker Hub pulls are rate-limited here.
+      - name: Caddy configuration is valid
+        run: |
+          curl -fsSL -o /tmp/caddy.tgz https://github.com/caddyserver/caddy/releases/download/v2.8.4/caddy_2.8.4_linux_amd64.tar.gz
+          tar -xzf /tmp/caddy.tgz -C /tmp caddy
+          DOMAIN=crm.example.uz /tmp/caddy validate --config docker/Caddyfile --adapter caddyfile
+          DOMAIN=crm.example.uz FORMER_DOMAIN=http://former-address.invalid /tmp/caddy validate --config docker/Caddyfile --adapter caddyfile
+          DOMAIN=crm.example.uz FORMER_DOMAIN=old.example.uz /tmp/caddy validate --config docker/Caddyfile --adapter caddyfile
+          DOMAIN=crm.example.uz FORMER_DOMAIN="old.example.uz, www.example.uz" /tmp/caddy validate --config docker/Caddyfile --adapter caddyfile
+          DOMAIN=:80 /tmp/caddy validate --config docker/Caddyfile --adapter caddyfile
+          DOMAIN=crm.example.uz FORMER_DOMAIN="old.example.uz, www.example.uz" /tmp/caddy adapt --config docker/Caddyfile --adapter caddyfile > /tmp/caddy.json
+          grep -q '"old.example.uz"' /tmp/caddy.json && grep -q '"www.example.uz"' /tmp/caddy.json
+          grep -q 'https://crm.example.uz{http.request.uri}' /tmp/caddy.json
+
       - uses: actions/setup-node@v4
         with:
           node-version: 22

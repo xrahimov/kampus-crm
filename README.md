@@ -88,7 +88,8 @@ on `http://localhost:3000`.
 [docs/DEPLOY.md](docs/DEPLOY.md) walks through a single-server deployment (Hetzner CX23 or any Ubuntu
 VPS) with `docker-compose.prod.yml`: Caddy for HTTPS, the worker, nightly database dumps and a
 first-start bootstrap (`npm run db:bootstrap`) that creates the organisation and the CEO login from
-environment variables instead of demo data.
+environment variables instead of demo data. Section 13 there moves a running server to a new
+address while the old one keeps leading to it (`FORMER_DOMAIN`).
 
 ## Integrations
 
