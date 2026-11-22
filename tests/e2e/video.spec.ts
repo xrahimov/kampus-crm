@@ -451,10 +451,13 @@ test.describe("video lessons", () => {
   }) => {
     test.setTimeout(150_000);
     const stamp = Date.now();
-    // The teacher on a tablet without screen capture, the student on a phone (A-183).
+    // The teacher on an unfolded Android phone, which has no screen capture whatever its
+    // Chrome version; the student on a phone (A-183).
     const teacherContext = await browser.newContext({
       viewport: { width: 1180, height: 820 },
       hasTouch: true,
+      userAgent:
+        "Mozilla/5.0 (Linux; Android 16; SM-F966B) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/157.0.0.0 Mobile Safari/537.36",
     });
     await teacherContext.addInitScript(() => {
       Object.defineProperty(MediaDevices.prototype, "getDisplayMedia", { value: undefined });
@@ -495,6 +498,10 @@ test.describe("video lessons", () => {
 
     // The share notice now leads to "show a file": the lesson panel with the upload button.
     await teacher.getByTestId("share-unavailable-button").click();
+    // On Android the notice says it is the browser, not its version (A-200).
+    await expect(teacher.getByTestId("share-unavailable")).toContainText(
+      "Browsers on Android phones and tablets cannot share the screen from a web page, whichever version",
+    );
     await teacher.getByTestId("share-unavailable").getByTestId("share-use-lesson").click();
     const panel = teacher.getByTestId("lesson-panel");
     await expect(panel.getByTestId("lesson-show-file")).toBeVisible({ timeout: 10_000 });

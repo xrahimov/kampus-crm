@@ -5642,7 +5642,8 @@
       "shareScreen": "Ekranni ko‘rsatish",
       "stopSharing": "Ko‘rsatishni to‘xtatish",
       "shareUnavailableButton": "Bu brauzerda ekranni ko‘rsatib bo‘lmaydi",
-      "shareUnavailable": "Bu brauzer ekranni ko‘rsata olmaydi (iPad va telefon brauzerlari bunga faqat iPadOS 27 dan ruxsat beradi). Buning o‘rniga:",
+      "shareUnavailable": "Bu brauzer ekranni ko‘rsata olmaydi. iPad va iPhone’da bu faqat iPadOS va iOS 27 dan ishlaydi. Buning o‘rniga:",
+      "shareUnavailableAndroid": "Android telefon va planshetlardagi brauzerlar qaysi versiyada bo‘lishidan qat’i nazar veb-sahifadan ekranni ko‘rsata olmaydi; Google Meet kabi ilovalar o‘rnatilgani uchun buni qila oladi. Buning o‘rniga:",
       "shareUseBoard": "Doskani ochish",
       "shareUseLesson": "Faylni hammaga ko‘rsatish",
       "shareError": {

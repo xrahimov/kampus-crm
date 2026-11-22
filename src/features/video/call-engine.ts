@@ -1289,6 +1289,15 @@ async function openDisplay(): Promise<MediaStream> {
 }
 
 /**
+ * Whether this is a browser on Android. None of them offers screen capture to a
+ * web page, whichever version (checked 2026-11: Chrome 157, Samsung Internet 31,
+ * Firefox 160), so the room words its notice for them (A-200).
+ */
+export function isAndroidBrowser(userAgent: string): boolean {
+  return /Android/i.test(userAgent);
+}
+
+/**
  * Whether to ask for the screen's sound when sharing. Only Chromium browsers
  * capture it, and asking elsewhere can make the request fail, so the request is
  * made only where `navigator.userAgentData` exists (Chrome, Edge, Opera).

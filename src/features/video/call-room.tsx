@@ -38,7 +38,7 @@ import { PACE_REACTIONS, REACTIONS, type Reaction } from "@/lib/validation/video
 import { cn } from "@/lib/utils";
 import { canAnnotate } from "@/lib/video-material";
 
-import { CHAT_MAX_LENGTH, type CallEngine, type RemotePeer } from "./call-engine";
+import { CHAT_MAX_LENGTH, isAndroidBrowser, type CallEngine, type RemotePeer } from "./call-engine";
 import { BreakoutPanel, breakoutCountdown } from "./breakout-panel";
 import { LessonPanel } from "./lesson-panel";
 import { MaterialStage } from "./material-stage";
@@ -713,7 +713,11 @@ export function CallRoom({
           role="status"
           data-testid="share-unavailable"
         >
-          <span>{t("shareUnavailable")}</span>
+          <span>
+            {isAndroidBrowser(navigator.userAgent)
+              ? t("shareUnavailableAndroid")
+              : t("shareUnavailable")}
+          </span>
           {isHost && (
             <NoticeAction
               onClick={() => {

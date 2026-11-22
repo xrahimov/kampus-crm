@@ -1,6 +1,11 @@
 import { describe, expect, it } from "vitest";
 
-import { screenSending, shareFailure, videoBitrate } from "@/features/video/call-engine";
+import {
+  isAndroidBrowser,
+  screenSending,
+  shareFailure,
+  videoBitrate,
+} from "@/features/video/call-engine";
 import { pipOrder } from "@/features/video/pip-order";
 import { videoSyncSchema } from "@/lib/validation/video";
 
@@ -117,6 +122,26 @@ describe("a browser's problem report (A-200)", () => {
     ).toBe(false);
     expect(
       videoSyncSchema.safeParse({ secret, issue: { kind: "other", reason: "x" } }).success,
+    ).toBe(false);
+  });
+});
+
+describe("the notice where the browser cannot share (A-200)", () => {
+  it("knows an Android browser, folded or unfolded, from the others", () => {
+    expect(
+      isAndroidBrowser(
+        "Mozilla/5.0 (Linux; Android 16; SM-F966B) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/157.0.0.0 Mobile Safari/537.36",
+      ),
+    ).toBe(true);
+    expect(
+      isAndroidBrowser(
+        "Mozilla/5.0 (iPad; CPU OS 18_6 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.6 Mobile/15E148 Safari/604.1",
+      ),
+    ).toBe(false);
+    expect(
+      isAndroidBrowser(
+        "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/157.0.0.0 Safari/537.36",
+      ),
     ).toBe(false);
   });
 });

@@ -5642,7 +5642,8 @@
       "shareScreen": "Share screen",
       "stopSharing": "Stop sharing",
       "shareUnavailableButton": "Screen sharing is not possible in this browser",
-      "shareUnavailable": "This browser cannot share the screen (iPad and phone browsers allow it only from iPadOS 27). Instead:",
+      "shareUnavailable": "This browser cannot share the screen. On an iPad or iPhone it works only from iPadOS or iOS 27. Instead:",
+      "shareUnavailableAndroid": "Browsers on Android phones and tablets cannot share the screen from a web page, whichever version they are; apps like Google Meet can because they are installed. Instead:",
       "shareUseBoard": "Open the whiteboard",
       "shareUseLesson": "Show a file to everyone",
       "shareError": {
