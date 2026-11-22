@@ -193,6 +193,16 @@ migration and no setting. The link a teacher copies is
 works wherever students can sign in (phone and password, or a code from the
 bot, A-196).
 
+The update that brings dependable screen sharing and the mini window (A-200,
+A-201) has no migration and no setting. Two things to know after it:
+
+- Every screen share that fails in someone's browser leaves one line in the app's
+  log, with the reason, the room, the person's role and their browser. Read them
+  with `docker compose -f docker-compose.prod.yml logs app | grep '\[video\]'`.
+- The mini window opens by itself only in Chrome and Edge on a computer, and only
+  on an `https` address (the live site is one). Nothing on the server switches it
+  on or off; a person can switch it off for the site in the browser.
+
 The update that brings sign-in with a Telegram code (A-196) has one migration,
 `20261116200000_sign_in_codes`. It only adds: three tables (`TelegramContact`,
 `PhoneSignInCode`, `JoinRequest`), a few nullable columns, and it marks everyone

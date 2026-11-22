@@ -14,6 +14,10 @@ export const POST = route<typeof videoSyncSchema._output, Params>(
   { auth: false, body: videoSyncSchema, skipCsrf: true },
   async ({ request, params, body }) => {
     assertSameOrigin(request);
-    return json(await syncVideoPeer(params.id, body));
+    return json(
+      await syncVideoPeer(params.id, body, undefined, {
+        userAgent: request.headers.get("user-agent"),
+      }),
+    );
   },
 );
