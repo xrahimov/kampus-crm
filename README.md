@@ -19,6 +19,11 @@ several organisations on one server, the round-2 items and the online-lesson too
 packages. Each addition is one row in [docs/ASSUMPTIONS.md](docs/ASSUMPTIONS.md) from A-100 onwards,
 and its "Where things stand now" section gives the short version.
 
+The phone and tablet app lives in [`mobile/`](mobile): one React Native (Expo) project for Android,
+iOS and the web, on the same `/api/v1` and the same message files as the site. What it has, how to
+run and build it, and what is still to come is in [docs/MOBILE-APPS.md](docs/MOBILE-APPS.md) (A-203
+to A-205).
+
 [docs/DEMO-GUIDE.md](docs/DEMO-GUIDE.md) is a script for showing the whole app to a centre's owner or
 its teachers, stop by stop, with the manual's own screenshots.
 
@@ -125,6 +130,9 @@ app and its tests run without any external account. Webhooks: `POST /api/v1/webh
   `PLAYWRIGHT_CHROMIUM_PATH` to reuse an installed browser.
 - `.github/workflows/ci.yml` runs lint, format check, typecheck, unit tests, the production build
   and the Playwright suite against a PostgreSQL service on every pull request and push to `main`.
+- The app has its own checks in `.github/workflows/mobile.yml`, run when `mobile/`, the message files
+  or the shared date helpers change: typecheck, lint, Jest tests, the web build, an Android app file
+  (kept with the run for 30 days) and a start of that file on an emulated phone.
 
 ## Project layout
 
@@ -137,11 +145,12 @@ src/components/         ui/ (shadcn-style primitives), data/ (search, sort, pagi
 src/features/<module>/  client UI per module: tables, dialogs, forms, charts
 src/lib/                shared by client and server: zod schemas, rbac catalogue, api client, dates
 src/server/             auth, rbac, audit, errors, http helpers, services, jobs, excel, storage, db
+mobile/                 the phone and tablet app (React Native, Expo): docs/MOBILE-APPS.md
 scripts/worker.ts       background job worker
 scripts/import-soff-export.ts  copies a whole centre from SOFF CRM, dry run first (docs/DEPLOY.md §11)
 scripts/copy-pdf-worker.mjs  copies the PDF reader's worker into public/pdfjs after a pdfjs-dist update
 tests/unit, tests/e2e   Vitest and Playwright suites
-docs/                   ARCHITECTURE.md, ASSUMPTIONS.md, DEMO-GUIDE.md, DEPLOY.md, EXPLORATION.md, TRACEABILITY.md
+docs/                   ARCHITECTURE.md, ASSUMPTIONS.md, DEMO-GUIDE.md, DEPLOY.md, EXPLORATION.md, MOBILE-APPS.md, TRACEABILITY.md
 ```
 
 Layering rule: UI → `/api/v1` route → `server/services` → Prisma. Components never import from

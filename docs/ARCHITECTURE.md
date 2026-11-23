@@ -217,6 +217,8 @@ Every list endpoint takes the common query contract (§2). Every mutation is aud
 **Auth / session**
 `POST /auth/login` · `POST /auth/logout` · `GET /auth/me` · `POST /auth/active-branch` · `POST /auth/view` (the header's view switch, A-194: TEACHING or FULL, only for people who hold a teaching role and another one)
 
+For the phone app (A-203, A-204; [MOBILE-APPS.md](MOBILE-APPS.md)): a call with the header `x-kampus-app` gets the session `token` in the sign-in answer instead of a cookie and sends it back as `Authorization: Bearer`. `GET /auth/options` (is a Telegram code offered, which bot) · `POST /auth/web-handoff` (a one-minute link that opens a page of the site signed in) · `GET /auth/web-handoff?code` (that link) · `GET /student-auth/home` (the student's or parent's home as data) · `GET /public/class/:token/portal` (one membership's page as data)
+
 **Dashboard (EXP §1)**
 ✓ `GET /dashboard/kpis?branchId` · ✓ `GET /dashboard/schedule?branchId&weekday&step` · ✓ `GET /dashboard/finance?branchId&year&month&paymentMethodId`
 

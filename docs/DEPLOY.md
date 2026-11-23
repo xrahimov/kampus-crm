@@ -204,6 +204,13 @@ A-201) has no migration and no setting. Two things to know after it:
   on an `https` address (the live site is one). Nothing on the server switches it
   on or off; a person can switch it off for the site in the browser.
 
+The update that lets the phone app sign in (A-203, A-204) has one migration,
+`20261123000000_app_sessions`. It only adds: a column `Session.app` (false for
+every session that exists) and an empty table `WebHandoff`. Nothing changes for
+browsers and there is no new environment variable. The app itself is not part of
+the server: `mobile/` is left out of the Docker image, and the server update
+does not build or publish it (see [MOBILE-APPS.md](MOBILE-APPS.md)).
+
 The update that lets the server move to a new address (A-202) has no migration.
 It adds one optional line to `.env`, `FORMER_DOMAIN`, and a block in
 `docker/Caddyfile` that does nothing until that line is set. Section 13 has the

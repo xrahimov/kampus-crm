@@ -1,0 +1,169 @@
+name: Mobile app
+
+# The Kampus app for phones and tablets (mobile/, A-203). It shares the site's
+# message files and a few pure helpers, so a change to those runs this too.
+on:
+  push:
+    branches: [main]
+    paths:
+      - "mobile/**"
+      - "messages/**"
+      - "src/lib/dates.ts"
+      - ".github/workflows/mobile.yml"
+  pull_request:
+    paths:
+      - "mobile/**"
+      - "messages/**"
+      - "src/lib/dates.ts"
+      - ".github/workflows/mobile.yml"
+  workflow_dispatch:
+    inputs:
+      ios:
+        description: "Also build for the iPhone simulator (a macOS runner: ten times the minutes)"
+        type: boolean
+        default: false
+
+concurrency:
+  group: mobile-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  checks:
+    name: Typecheck, lint, tests, web build
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    defaults:
+      run:
+        working-directory: mobile
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: mobile/package-lock.json
+      - name: Install
+        run: npm ci
+      - name: Typecheck
+        run: npm run typecheck
+      - name: Lint
+        run: npm run lint
+      - name: Tests
+        run: npm test -- --ci
+      # The same code as a web page: what the site will move to, part by part.
+      - name: Web build
+        run: npm run export:web
+
+  android:
+    name: Android app file
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    defaults:
+      run:
+        working-directory: mobile
+    env:
+      # Every build gets a higher number, so a newer file installs over an older one.
+      APP_BUILD: ${{ github.run_number }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: mobile/package-lock.json
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+      - uses: gradle/actions/setup-gradle@v4
+      - name: Install
+        run: npm ci
+      # The android/ folder is generated from app.config.ts, never kept in git.
+      - name: Generate the Android project
+        run: npx expo prebuild --platform android --no-install
+      # A release build carries its own JavaScript, so it runs without a
+      # computer beside it. It is signed with the template's test key: fine for
+      # trying the app, not for Google Play (that key will be kai's own).
+      # arm64 is every current phone and tablet; x86_64 is the emulator below.
+      - name: Build
+        working-directory: mobile/android
+        run: ./gradlew assembleRelease --no-daemon -PreactNativeArchitectures=arm64-v8a,x86_64
+      - name: Name the file
+        run: cp android/app/build/outputs/apk/release/app-release.apk "$RUNNER_TEMP/kampus-${{ github.run_number }}.apk"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: kampus-android
+          path: ${{ runner.temp }}/kampus-${{ github.run_number }}.apk
+          if-no-files-found: error
+          retention-days: 30
+
+  android-smoke:
+    name: Android app starts
+    needs: android
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          name: kampus-android
+          path: apk
+      - name: Allow the emulator to use hardware acceleration
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+      # Installs the file on an emulated phone, opens it and waits for the
+      # sign-in screen: the proof that the app starts outside a browser.
+      - uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 34
+          arch: x86_64
+          target: google_apis
+          profile: pixel_6
+          disable-animations: true
+          emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -no-snapshot
+          script: bash mobile/scripts/android-smoke.sh apk/*.apk
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: kampus-android-screen
+          path: |
+            smoke/*.png
+            smoke/*.xml
+            smoke/*.txt
+          if-no-files-found: warn
+          retention-days: 14
+
+  ios:
+    name: iPhone simulator build
+    if: github.event_name == 'workflow_dispatch' && inputs.ios
+    runs-on: macos-15
+    timeout-minutes: 60
+    defaults:
+      run:
+        working-directory: mobile
+    env:
+      APP_BUILD: ${{ github.run_number }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: mobile/package-lock.json
+      - name: Install
+        run: npm ci
+      - name: Generate the iOS project
+        run: npx expo prebuild --platform ios
+      # No signing: this proves the app compiles for iOS. A file for a real
+      # iPhone needs kai's Apple Developer account.
+      - name: Build for the simulator
+        working-directory: mobile/ios
+        run: |
+          xcodebuild -workspace Kampus.xcworkspace -scheme Kampus -configuration Release \
+            -sdk iphonesimulator -derivedDataPath build CODE_SIGNING_ALLOWED=NO \
+            ONLY_ACTIVE_ARCH=YES -quiet build

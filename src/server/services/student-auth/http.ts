@@ -2,6 +2,7 @@ import { NextResponse, type NextRequest } from "next/server";
 
 import { STUDENT_SESSION_COOKIE } from "@/lib/auth/constants";
 import { locales, routing } from "@/i18n/routing";
+import { requestSessionToken } from "@/server/auth/app-client";
 import { isAppError } from "@/server/errors/app-error";
 import {
   normalizeHost,
@@ -29,6 +30,17 @@ export function requestLocale(value: string | null | undefined): string {
 export function cookieSecure(): boolean {
   if (process.env.COOKIE_SECURE === "false") return false;
   return process.env.NODE_ENV === "production";
+}
+
+/**
+ * The student session token of a request: the phone app's Bearer header (A-203),
+ * else the browser's cookie. `fromHeader` means no cookie was involved.
+ */
+export function studentSessionToken(request: NextRequest): {
+  token: string | null;
+  fromHeader: boolean;
+} {
+  return requestSessionToken(request, STUDENT_SESSION_COOKIE);
 }
 
 export function setStudentCookie(response: NextResponse, token: string): void {

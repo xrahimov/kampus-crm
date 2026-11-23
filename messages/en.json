@@ -6250,5 +6250,33 @@
     "chooseRole": "Choose a role",
     "theirNote": "They wrote: {note}",
     "fillAll": "Fill in every field first."
+  },
+  "mobile": {
+    "offline": "No connection to Kampus. Check the internet and try again.",
+    "retry": "Try again",
+    "doorStudent": "Student or parent",
+    "doorStaff": "Staff",
+    "language": "Language",
+    "startLesson": "Start the lesson",
+    "roomHint": "The lesson room opens in your browser, already signed in.",
+    "owes": "Owes {amount}",
+    "grade": "grade",
+    "students": "{count, plural, =0 {No students} one {# student} other {# students}}",
+    "emptyDayHint": "The arrows above show another day. Groups has the whole month.",
+    "lessonGone": "This lesson is not on your list for that day.",
+    "noTeachingTitle": "Nothing for this account in the app yet",
+    "noTeachingText": "The app has the teacher's day so far. Everything else is on the site.",
+    "noGroupsTitle": "No groups yet",
+    "noGroupsText": "A group appears here when the office gives you one to teach.",
+    "noTopic": "No topic yet",
+    "prevMonth": "Previous month",
+    "nextMonth": "Next month",
+    "openOnSite": "Open Kampus on the web",
+    "groupOnSite": "Open the whole group on the web",
+    "siteTitle": "The rest of Kampus",
+    "siteText": "Students, payments, tests and reports are on the site for now. It opens already signed in.",
+    "version": "Kampus {version}",
+    "myPage": "Open my full page",
+    "myPageHint": "Answering homework, tests, the chat and the online lesson open on your page for now."
   }
 }

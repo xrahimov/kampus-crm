@@ -24,6 +24,8 @@ import { noteSignIn } from "./account.service";
 export interface LoginContext {
   ip?: string | null;
   userAgent?: string | null;
+  /** The phone app is signing in (A-203): the session lives 30 days. */
+  app?: boolean;
 }
 
 /** A Telegram sign-in code lives five minutes and survives four wrong guesses (A-124). */
@@ -177,6 +179,7 @@ export async function issueSession(
     ip: ctx.ip,
     userAgent: ctx.userAgent,
     signedInWith: method,
+    app: ctx.app ?? false,
   });
 }
 

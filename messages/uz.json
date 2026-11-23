@@ -6250,5 +6250,33 @@
     "chooseRole": "Lavozimni tanlang",
     "theirNote": "Yozgani: {note}",
     "fillAll": "Avval barcha maydonlarni to‘ldiring."
+  },
+  "mobile": {
+    "offline": "Kampus bilan aloqa yo'q. Internetni tekshirib, qayta urinib ko'ring.",
+    "retry": "Qayta urinish",
+    "doorStudent": "O'quvchi yoki ota-ona",
+    "doorStaff": "Xodim",
+    "language": "Til",
+    "startLesson": "Darsni boshlash",
+    "roomHint": "Dars xonasi brauzerda ochiladi, qayta kirish shart emas.",
+    "owes": "Qarzi {amount}",
+    "grade": "baho",
+    "students": "{count, plural, =0 {O'quvchi yo'q} other {# ta o'quvchi}}",
+    "emptyDayHint": "Yuqoridagi strelkalar boshqa kunni ko'rsatadi. Butun oy Guruhlar bo'limida.",
+    "lessonGone": "Bu dars o'sha kungi ro'yxatingizda yo'q.",
+    "noTeachingTitle": "Bu hisob uchun ilovada hozircha hech narsa yo'q",
+    "noTeachingText": "Ilovada hozircha o'qituvchining kuni bor. Qolgan hammasi saytda.",
+    "noGroupsTitle": "Hozircha guruh yo'q",
+    "noGroupsText": "Ma'muriyat sizga guruh biriktirganda u shu yerda ko'rinadi.",
+    "noTopic": "Mavzu kiritilmagan",
+    "prevMonth": "Oldingi oy",
+    "nextMonth": "Keyingi oy",
+    "openOnSite": "Kampusni saytda ochish",
+    "groupOnSite": "Butun guruhni saytda ochish",
+    "siteTitle": "Kampusning qolgan qismi",
+    "siteText": "O'quvchilar, to'lovlar, testlar va hisobotlar hozircha saytda. U kirilgan holda ochiladi.",
+    "version": "Kampus {version}",
+    "myPage": "Sahifamni to'liq ochish",
+    "myPageHint": "Uy vazifasiga javob, testlar, chat va onlayn dars hozircha sahifangizda ochiladi."
   }
 }

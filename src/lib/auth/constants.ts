@@ -5,6 +5,14 @@ export const CSRF_HEADER = "x-csrf-token";
 
 /** Session lifetime: 12 hours, extended on activity (sliding). */
 export const SESSION_TTL_MS = 12 * 60 * 60 * 1000;
+/**
+ * A session the phone app opened (A-203) lasts 30 days from its last use: a
+ * phone is one person's own device, and an app that asks for the password
+ * every morning is not used.
+ */
+export const APP_SESSION_TTL_MS = 30 * 24 * 60 * 60 * 1000;
+/** The phone app names itself with this header on every request (its value is the app version). */
+export const APP_CLIENT_HEADER = "x-kampus-app";
 /** How often the sliding expiry is pushed forward. */
 export const SESSION_TOUCH_INTERVAL_MS = 5 * 60 * 1000;
 
