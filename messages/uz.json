@@ -6425,6 +6425,14 @@
     "pages": {
       "more": "Yana sahifalar",
       "fewer": "Kamroq sahifa"
+    },
+    "studentsPage": {
+      "search": "Ism yoki telefon",
+      "more": "Yana ko'rsatish",
+      "none": "Mos o'quvchi topilmadi.",
+      "noneYet": "Hozircha o'quvchilar yo'q.",
+      "call": "Qo'ng'iroq qilish",
+      "noPhone": "Telefon raqami sizga ko'rsatilmaydi."
     }
   }
 }

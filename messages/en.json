@@ -6425,6 +6425,14 @@
     "pages": {
       "more": "More pages",
       "fewer": "Fewer pages"
+    },
+    "studentsPage": {
+      "search": "Name or phone",
+      "more": "Show more",
+      "none": "No student matches.",
+      "noneYet": "No students yet.",
+      "call": "Call",
+      "noPhone": "The phone number is not shown to you."
     }
   }
 }

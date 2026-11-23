@@ -12,8 +12,9 @@ spoken reply, the group chat, materials added from the phone), A-215 (the studen
 flashcards, the class stream, news, results and badges, rating a lesson), A-216 (the student's
 schedule with booking, time zone, paying online, Telegram, invite code and certificates), A-217
 (the teacher's homework set and checked from the phone, the class stream, the gradebook and the
-notes), A-218 (the teacher's course plan, coins and tests of a group) and A-219 (a group's exams, knowledge
-by topic, comments on students and history).
+notes), A-218 (the teacher's course plan, coins and tests of a group), A-219 (a group's exams, knowledge
+by topic, comments on students and history) and A-220 (Students for teachers: the list and one
+student's page).
 
 Why React Native and not the site in a wrapper: kai's choice on 2026-11-23 ("rewrite it in react
 native"), with two requirements said the same day: one code base in the end, and teachers must be
@@ -29,6 +30,7 @@ able to work from an iPad or a phone.
 | Teacher: a group's homework (set with a file, checked with rubric points), class stream, gradebook, notes        | Built, phone and tablet (A-217)                                                                    |
 | Teacher: a group's course plan (when students get a topic), coins given, test results                            | Built, phone and tablet (A-218)                                                                    |
 | Teacher: a group's exams with scores, knowledge by topic, comments on students, history                          | Built, phone and tablet (A-219)                                                                    |
+| Teacher: Students (search, a student's page with calls, groups, progress, tests, notes)                          | Built, phone and tablet (A-220)                                                                    |
 | Student and parent: home, a group's page (lessons, marks, grades, payments), password                            | Built, phone and tablet                                                                            |
 | Pages the app does not have (staff)                                                                              | Open on the site in the phone's browser, already signed in (A-204); a student's side has none left |
 | Android app file                                                                                                 | Built by GitHub on every change; starts on an emulated phone                                       |
@@ -181,6 +183,10 @@ mobile/
   history entry comes from `src/lib/group-history.ts`, which the site's history tab uses too.
   `GroupPages` in `group-screen.tsx` shows the first six pages and folds the rest; a new page goes
   into its list, before or after the fold by how often a teacher needs it.
+- **Students for teachers (A-220).** `src/api/staff-students.ts` holds the calls; the list is an
+  infinite query over `/students?sort=fullName:asc` (30 a page, `q` for the search).
+  `students-screen.tsx` is the tab, `student-screen.tsx` the page of one student; its parts ask
+  for their data when opened. A call is `Linking.openURL("tel:…")`.
 - **The teacher's side of a group (A-214).** `src/api/group-pages.ts` holds the calls (behind the
   session): the group's chat and materials, storing a file (`uploadDocument`) and adding it
   (`addGroupFile`). `src/features/shared/` holds what the student's and the teacher's side draw the

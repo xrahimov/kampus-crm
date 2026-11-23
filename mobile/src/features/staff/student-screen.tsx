@@ -1,0 +1,610 @@
+import { useQueryClient } from "@tanstack/react-query";
+import { useLocalSearchParams, useRouter } from "expo-router";
+import { ChevronRight, Phone } from "lucide-react-native";
+import { useState } from "react";
+import { Linking, Pressable, ScrollView, StyleSheet, View } from "react-native";
+
+import {
+  addCommentOnStudent,
+  studentKeys,
+  useStudent,
+  useStudentComments,
+  useStudentProgress,
+  useStudentTests,
+} from "@/api/staff-students";
+import type {
+  StudentComment,
+  StudentDetail,
+  StudentProgress,
+  StudentTests,
+  TopicStat,
+} from "@/api/types";
+import { Button } from "@/components/button";
+import { Field } from "@/components/field";
+import { Header } from "@/components/header";
+import {
+  Avatar,
+  Badge,
+  Card,
+  Divider,
+  EmptyState,
+  Loading,
+  Notice,
+  Screen,
+} from "@/components/surface";
+import { Text } from "@/components/text";
+import { PendingScreen } from "@/features/shared/pending-screen";
+import { WordChip } from "@/features/student/answer-parts";
+import { dayAsDate, weekdayAsDate } from "@/lib/days";
+import { errorText, useDate, useMoney, useTranslations } from "@/lib/i18n";
+import { useLayout } from "@/lib/layout";
+import { space, useTheme } from "@/lib/theme";
+
+const SECTIONS = ["groups", "progress", "testResults", "comments"] as const;
+type Section = (typeof SECTIONS)[number];
+
+/**
+ * One student on the teacher's side, in the app (A-220): who they are and how
+ * to reach them and their parents, the groups they are in, how they are
+ * doing, their tests, and the notes written about them.
+ */
+export function StudentScreen() {
+  const { id } = useLocalSearchParams<{ id: string }>();
+  const t = useTranslations();
+  const { wide } = useLayout();
+  const query = useStudent(id);
+  const [section, setSection] = useState<Section>("groups");
+
+  const header = <Header back title={query.data?.fullName ?? t("students.title")} />;
+  if (!query.data) return <PendingScreen header={header} query={query} />;
+  const student = query.data;
+
+  const sections = (
+    <View style={styles.block}>
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        contentContainerStyle={styles.chips}
+        keyboardShouldPersistTaps="handled"
+      >
+        {SECTIONS.map((key) => (
+          <WordChip
+            key={key}
+            label={t(`students.detail.tabs.${key}`)}
+            chosen={section === key}
+            onPress={() => setSection(key)}
+            testID={`student-tab-${key}`}
+          />
+        ))}
+      </ScrollView>
+      {section === "groups" ? <Groups student={student} /> : null}
+      {section === "progress" ? <Progress id={id} /> : null}
+      {section === "testResults" ? <Tests id={id} /> : null}
+      {section === "comments" ? <Comments id={id} /> : null}
+    </View>
+  );
+
+  return (
+    <Screen
+      header={header}
+      onRefresh={() => void query.refetch()}
+      refreshing={query.isRefetching}
+      contentStyle={wide ? styles.split : styles.column}
+    >
+      {wide ? (
+        <>
+          <View style={styles.widePerson}>
+            <Person student={student} />
+          </View>
+          <View style={styles.wideSections}>{sections}</View>
+        </>
+      ) : (
+        <>
+          <Person student={student} />
+          {sections}
+        </>
+      )}
+    </Screen>
+  );
+}
+
+/** A phone number with a button that starts the call. */
+function PhoneLine({ name, phone, testID }: { name: string; phone: string; testID: string }) {
+  const tm = useTranslations("mobile.studentsPage");
+  const { colors } = useTheme();
+  return (
+    <View style={styles.line}>
+      <View style={styles.fill}>
+        <Text variant="bodyStrong" numberOfLines={1}>
+          {name}
+        </Text>
+        <Text variant="small" tone="mutedForeground">
+          {phone}
+        </Text>
+      </View>
+      <Button
+        compact
+        variant="outline"
+        label={tm("call")}
+        icon={<Phone size={16} color={colors.foreground} />}
+        onPress={() => void Linking.openURL(`tel:${phone.replace(/[^+0-9]/g, "")}`)}
+        testID={testID}
+      />
+    </View>
+  );
+}
+
+function Person({ student }: { student: StudentDetail }) {
+  const t = useTranslations();
+  const tm = useTranslations("mobile.studentsPage");
+  const formatDate = useDate();
+  const money = useMoney();
+  const facts = [
+    student.birthDate
+      ? `${t("students.detail.birthDate")}: ${formatDate(dayAsDate(student.birthDate), {
+          dateStyle: "medium",
+        })}`
+      : null,
+    student.schoolName,
+    ...student.customFields.filter((f) => f.value).map((f) => `${f.name}: ${f.value}`),
+  ].filter(Boolean);
+  return (
+    <View style={styles.block}>
+      <Card testID="student-person">
+        <View style={styles.head}>
+          <Avatar name={student.fullName} size={48} />
+          <View style={styles.fill}>
+            <Text variant="heading">{student.fullName}</Text>
+            <View style={styles.badges}>
+              {student.isArchived ? <Badge label={t("common.archived")} /> : null}
+              {student.isBlacklisted ? (
+                <Badge tone="destructive" label={t("students.blacklisted")} />
+              ) : null}
+              {student.balance < 0 ? (
+                <Badge
+                  tone="destructive"
+                  label={t("mobile.owes", { amount: money(-student.balance) })}
+                  testID="student-owes"
+                />
+              ) : null}
+            </View>
+          </View>
+          {student.gradeAverage !== null ? (
+            <View style={styles.average}>
+              <Text variant="figure" testID="student-grade">
+                {student.gradeAverage}
+              </Text>
+              <Text variant="small" tone="mutedForeground">
+                {t("groups.grades.average")}
+              </Text>
+            </View>
+          ) : null}
+        </View>
+        {student.phone ? (
+          <PhoneLine
+            name={t("students.detail.phone")}
+            phone={student.phone}
+            testID="student-call"
+          />
+        ) : (
+          <Text variant="small" tone="mutedForeground" testID="student-no-phone">
+            {tm("noPhone")}
+          </Text>
+        )}
+        {facts.length > 0 ? (
+          <Text variant="small" tone="mutedForeground">
+            {facts.join(", ")}
+          </Text>
+        ) : null}
+        {student.note ? <Text>{student.note}</Text> : null}
+      </Card>
+      <Card testID="student-parents">
+        <Text variant="heading">{t("students.parents.title")}</Text>
+        {student.parents.length === 0 ? (
+          <Text tone="mutedForeground">{t("students.parents.empty")}</Text>
+        ) : (
+          student.parents.map((parent) => (
+            <PhoneLine
+              key={parent.id}
+              name={parent.fullName}
+              phone={parent.phone}
+              testID={`parent-call-${parent.id}`}
+            />
+          ))
+        )}
+      </Card>
+    </View>
+  );
+}
+
+function Groups({ student }: { student: StudentDetail }) {
+  const t = useTranslations();
+  const router = useRouter();
+  const formatDate = useDate();
+  const { colors } = useTheme();
+  if (student.groups.length === 0) {
+    return <EmptyState title={t("students.detail.noGroups")} />;
+  }
+  return (
+    <Card style={styles.flush}>
+      {student.groups.map((group, index) => {
+        const days = [...group.weekdays]
+          .sort((a, b) => a - b)
+          .map((d) => formatDate(weekdayAsDate(d), { weekday: "short" }))
+          .join(", ");
+        return (
+          <View key={group.membershipId}>
+            {index > 0 ? <Divider /> : null}
+            <Pressable
+              onPress={() =>
+                router.push({ pathname: "/staff/group/[id]", params: { id: group.groupId } })
+              }
+              accessibilityRole="button"
+              accessibilityLabel={group.groupName}
+              style={({ pressed }) => [
+                styles.row,
+                pressed ? { backgroundColor: colors.muted } : null,
+              ]}
+              testID={`student-group-${group.groupId}`}
+            >
+              <View style={styles.fill}>
+                <Text variant="bodyStrong" numberOfLines={1}>
+                  {group.groupName}
+                </Text>
+                <Text variant="small" tone="mutedForeground">
+                  {[
+                    group.courseName,
+                    [days, group.time].filter(Boolean).join(" "),
+                    group.teacherName,
+                  ]
+                    .filter(Boolean)
+                    .join(", ")}
+                </Text>
+              </View>
+              {group.status !== "ACTIVE" ? (
+                <Badge label={t(`groups.memberStatuses.${group.status}`)} />
+              ) : null}
+              <ChevronRight size={18} color={colors.mutedForeground} />
+            </Pressable>
+          </View>
+        );
+      })}
+    </Card>
+  );
+}
+
+function Figure({ label, value, testID }: { label: string; value: string; testID?: string }) {
+  return (
+    <View style={styles.figure}>
+      <Text variant="figure" testID={testID}>
+        {value}
+      </Text>
+      <Text variant="small" tone="mutedForeground">
+        {label}
+      </Text>
+    </View>
+  );
+}
+
+function Progress({ id }: { id: string }) {
+  const t = useTranslations();
+  const tp = useTranslations("students.progress");
+  const formatDate = useDate();
+  const query = useStudentProgress(id, true);
+  if (query.isLoading) return <Loading />;
+  if (!query.data) return <Notice tone="destructive">{errorText(t, query.error)}</Notice>;
+  const data: StudentProgress = query.data;
+  const percent = (value: number | null) => (value === null ? "–" : `${value}%`);
+  const number = (value: number | null) => (value === null ? "–" : String(value));
+  return (
+    <View style={styles.block} testID="student-progress">
+      <Card>
+        <View style={styles.figures}>
+          <Figure
+            label={tp("gradeAverage")}
+            value={number(data.gradeAverage)}
+            testID="progress-grade"
+          />
+          <Figure
+            label={tp("attendance")}
+            value={percent(data.attendancePercent)}
+            testID="progress-attendance"
+          />
+          <Figure label={tp("examAverage")} value={number(data.examAverage)} />
+        </View>
+      </Card>
+      {data.byGroup.length > 0 ? (
+        <Card style={styles.flush}>
+          {data.byGroup.map((group, index) => (
+            <View key={group.groupId}>
+              {index > 0 ? <Divider /> : null}
+              <View style={styles.row} testID={`progress-group-${group.groupId}`}>
+                <View style={styles.fill}>
+                  <Text variant="bodyStrong" numberOfLines={1}>
+                    {group.groupName}
+                  </Text>
+                  <Text variant="small" tone="mutedForeground">
+                    {[
+                      group.courseName,
+                      `${tp("lessons")}: ${group.lessons}`,
+                      `${tp("attendance")}: ${percent(group.attendancePercent)}`,
+                    ].join(", ")}
+                  </Text>
+                </View>
+                <Text variant="figure">{number(group.gradeAverage)}</Text>
+              </View>
+            </View>
+          ))}
+        </Card>
+      ) : null}
+      <Text variant="heading">{tp("byMonth")}</Text>
+      {data.months.length === 0 ? (
+        <Text tone="mutedForeground">{tp("noData")}</Text>
+      ) : (
+        <Card style={styles.flush}>
+          {data.months.map((month, index) => (
+            <View key={month.month}>
+              {index > 0 ? <Divider /> : null}
+              <View style={styles.row} testID={`progress-month-${month.month}`}>
+                <View style={styles.fill}>
+                  <Text variant="bodyStrong">
+                    {formatDate(dayAsDate(`${month.month}-15`), {
+                      month: "short",
+                      year: "numeric",
+                    })}
+                  </Text>
+                  <Text variant="small" tone="mutedForeground">
+                    {`${tp("lessons")}: ${month.lessons}, ${tp("attendance")}: ${percent(
+                      month.attendancePercent,
+                    )}`}
+                  </Text>
+                </View>
+                <Text variant="figure">{number(month.gradeAverage)}</Text>
+              </View>
+            </View>
+          ))}
+        </Card>
+      )}
+      <Text variant="heading">{tp("exams")}</Text>
+      {data.exams.length === 0 ? (
+        <Text tone="mutedForeground">{tp("noExams")}</Text>
+      ) : (
+        <Card style={styles.flush}>
+          {data.exams.map((exam, index) => (
+            <View key={exam.examId}>
+              {index > 0 ? <Divider /> : null}
+              <View style={styles.row} testID={`progress-exam-${exam.examId}`}>
+                <View style={styles.fill}>
+                  <Text variant="bodyStrong" numberOfLines={1}>
+                    {exam.name}
+                  </Text>
+                  <Text variant="small" tone="mutedForeground">
+                    {[
+                      formatDate(dayAsDate(exam.date), { dateStyle: "medium" }),
+                      exam.groupName,
+                      exam.level,
+                    ]
+                      .filter(Boolean)
+                      .join(", ")}
+                  </Text>
+                </View>
+                {exam.score === null ? null : (
+                  <Text variant="figure">
+                    {exam.score}/{exam.maxScore}
+                  </Text>
+                )}
+                {!exam.isPresent ? (
+                  <Badge tone="warning" label={t("exams.results.absent")} />
+                ) : exam.passed === null ? (
+                  <Badge label={t("exams.results.notGraded")} />
+                ) : (
+                  <Badge
+                    tone={exam.passed ? "success" : "destructive"}
+                    label={exam.passed ? t("exams.results.passed") : t("exams.results.failed")}
+                  />
+                )}
+              </View>
+            </View>
+          ))}
+        </Card>
+      )}
+    </View>
+  );
+}
+
+function Topics({ title, none, topics }: { title: string; none: string; topics: TopicStat[] }) {
+  return (
+    <Card>
+      <Text variant="heading">{title}</Text>
+      {topics.length === 0 ? (
+        <Text tone="mutedForeground">{none}</Text>
+      ) : (
+        topics.map((topic) => (
+          <View key={`${topic.subject}/${topic.topic}`} style={styles.line}>
+            <View style={styles.fill}>
+              <Text variant="bodyStrong">{topic.topic}</Text>
+              <Text variant="small" tone="mutedForeground">
+                {topic.subject}
+              </Text>
+            </View>
+            <Text variant="figure">{topic.accuracy === null ? "–" : `${topic.accuracy}%`}</Text>
+          </View>
+        ))
+      )}
+    </Card>
+  );
+}
+
+function Tests({ id }: { id: string }) {
+  const t = useTranslations();
+  const tr = useTranslations("tests.results");
+  const formatDate = useDate();
+  const query = useStudentTests(id, true);
+  if (query.isLoading) return <Loading />;
+  if (!query.data) return <Notice tone="destructive">{errorText(t, query.error)}</Notice>;
+  const data: StudentTests = query.data;
+  if (data.kpis.total === 0) return <EmptyState title={tr("empty")} />;
+  const percent = (value: number | null) => (value === null ? "–" : `${value}%`);
+  return (
+    <View style={styles.block} testID="student-tests">
+      <Card>
+        <View style={styles.figures}>
+          <Figure label={tr("total")} value={String(data.kpis.total)} testID="tests-total" />
+          <Figure label={tr("average")} value={percent(data.kpis.average)} testID="tests-average" />
+          <Figure label={tr("best")} value={percent(data.kpis.best)} />
+          <Figure label={tr("worst")} value={percent(data.kpis.worst)} />
+        </View>
+        {data.level ? (
+          <Text variant="small" tone="mutedForeground" testID="tests-level">
+            {tr("level")}: {tr(`levels.${data.level}`)}
+          </Text>
+        ) : null}
+      </Card>
+      <Topics
+        title={tr("problemTopics")}
+        none={tr("noProblemTopics")}
+        topics={data.problemTopics}
+      />
+      <Topics title={tr("strongTopics")} none={tr("noStrongTopics")} topics={data.strongTopics} />
+      <Text variant="heading">{tr("attempts")}</Text>
+      <Card style={styles.flush}>
+        {data.attempts.map((attempt, index) => (
+          <View key={attempt.id}>
+            {index > 0 ? <Divider /> : null}
+            <View style={styles.row} testID={`tests-attempt-${attempt.id}`}>
+              <View style={styles.fill}>
+                <Text variant="bodyStrong" numberOfLines={1}>
+                  {attempt.testName}
+                </Text>
+                <Text variant="small" tone="mutedForeground">
+                  {[
+                    attempt.subject,
+                    formatDate(new Date(attempt.submittedAt), { dateStyle: "medium" }),
+                    attempt.durationSeconds
+                      ? tr("minutes", {
+                          count: Math.max(1, Math.round(attempt.durationSeconds / 60)),
+                        })
+                      : null,
+                  ]
+                    .filter(Boolean)
+                    .join(", ")}
+                </Text>
+              </View>
+              <View style={styles.average}>
+                <Text variant="figure">{attempt.percent}%</Text>
+                <Text variant="small" tone="mutedForeground">
+                  {attempt.score}/{attempt.maxScore}
+                </Text>
+              </View>
+              <Badge
+                tone={attempt.passed ? "success" : "destructive"}
+                label={attempt.passed ? t("tests.detail.passed") : t("tests.detail.failed")}
+              />
+            </View>
+          </View>
+        ))}
+      </Card>
+    </View>
+  );
+}
+
+function Comments({ id }: { id: string }) {
+  const t = useTranslations();
+  const tc = useTranslations("students.comments");
+  const formatDate = useDate();
+  const client = useQueryClient();
+  const query = useStudentComments(id, true);
+  const [text, setText] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [problem, setProblem] = useState<string | null>(null);
+  if (query.isLoading) return <Loading />;
+  if (!query.data) return <Notice tone="destructive">{errorText(t, query.error)}</Notice>;
+
+  const add = () => {
+    const note = text.trim();
+    if (!note || busy) return;
+    setBusy(true);
+    setProblem(null);
+    addCommentOnStudent(id, note)
+      .then((saved) => {
+        client.setQueryData<StudentComment[]>(studentKeys.comments(id), (old) => [
+          saved,
+          ...(old ?? []),
+        ]);
+        setText("");
+      })
+      .catch((error: unknown) => setProblem(errorText(t, error)))
+      .finally(() => setBusy(false));
+  };
+
+  return (
+    <View style={styles.block} testID="student-comments">
+      <Card>
+        <Field
+          label={tc("new")}
+          placeholder={tc("placeholder")}
+          value={text}
+          onChangeText={setText}
+          multiline
+          maxLength={2000}
+          style={styles.text}
+          testID="student-comment-text"
+        />
+        {problem ? (
+          <Notice tone="destructive" testID="student-comment-problem">
+            {problem}
+          </Notice>
+        ) : null}
+        <Button
+          label={t("common.add")}
+          loading={busy}
+          disabled={text.trim().length === 0}
+          onPress={add}
+          style={styles.start}
+          testID="student-comment-add"
+        />
+      </Card>
+      {query.data.length === 0 ? <Text tone="mutedForeground">{tc("empty")}</Text> : null}
+      {query.data.map((comment) => (
+        <Card key={comment.id} testID={`student-comment-${comment.id}`}>
+          <Text>{comment.text}</Text>
+          <Text variant="small" tone="mutedForeground">
+            {[
+              comment.groupName,
+              comment.authorName,
+              formatDate(new Date(comment.createdAt), { dateStyle: "medium", timeStyle: "short" }),
+            ]
+              .filter(Boolean)
+              .join(", ")}
+          </Text>
+        </Card>
+      ))}
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  fill: { flex: 1 },
+  column: { gap: space[4] },
+  split: { flexDirection: "row", alignItems: "flex-start", gap: space[6] },
+  widePerson: { flex: 2 },
+  wideSections: { flex: 3 },
+  block: { gap: space[3] },
+  chips: { gap: space[2], paddingRight: space[2] },
+  flush: { padding: 0, gap: 0 },
+  head: { flexDirection: "row", alignItems: "flex-start", gap: space[3] },
+  badges: { flexDirection: "row", flexWrap: "wrap", gap: space[2], marginTop: space[1] },
+  average: { alignItems: "flex-end" },
+  line: { flexDirection: "row", alignItems: "center", gap: space[3] },
+  row: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: space[3],
+    paddingHorizontal: space[4],
+    paddingVertical: space[3],
+  },
+  figures: { flexDirection: "row", flexWrap: "wrap", gap: space[4] },
+  figure: { minWidth: 96, flexGrow: 1 },
+  text: { minHeight: 72, textAlignVertical: "top" },
+  start: { alignSelf: "flex-start" },
+});
