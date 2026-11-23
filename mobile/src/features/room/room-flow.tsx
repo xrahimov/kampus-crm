@@ -14,7 +14,7 @@ import type { JoinDto, VideoPeerRole } from "@kampus/lib/video/dto";
 
 import { CallScreen } from "./call-screen";
 import { room } from "./look";
-import { callAudio, CALLS_AVAILABLE, prepareCalls, StreamView } from "./platform";
+import { callAudio, CALLS_AVAILABLE, prepareCalls, screenShare, StreamView } from "./platform";
 import { initials } from "./tile";
 
 type Outcome = "left" | "ended" | "gone" | "error";
@@ -74,8 +74,15 @@ export function RoomFlow({
     setError(null);
     try {
       const self = await join();
-      const next = new CallEngine(self, stream, { origin: API_ORIGIN });
-      callAudio.start();
+      const next = new CallEngine(self, stream, {
+        origin: API_ORIGIN,
+        openDisplay: screenShare.open,
+      });
+      callAudio.start({
+        title: t("mobile.room.callNotice", { group: title }),
+        text: t("mobile.room.callNoticeText"),
+        channel: t("mobile.room.callChannel"),
+      });
       next.start();
       setOutcome(null);
       setEngine(next);

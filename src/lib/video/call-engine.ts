@@ -111,6 +111,12 @@ export interface CallEngineOptions {
    * app); empty on the site, whose requests go to its own origin.
    */
   origin?: string;
+  /**
+   * Opens the device's own screen capture where a browser's picker does not
+   * exist: the phone app (A-208). It rejects like `getDisplayMedia` does, with
+   * an error whose `name` is NotAllowedError, AbortError and so on.
+   */
+  openDisplay?: () => Promise<MediaStream>;
 }
 
 const POLL_FAST_MS = 400;
@@ -246,6 +252,8 @@ export class CallEngine {
 
   /** The address this participant's polls go to. */
   private readonly syncUrl: string;
+  /** The app's own way to capture the screen; null in a browser, which has its picker. */
+  private readonly openOwnDisplay: (() => Promise<MediaStream>) | null;
 
   private listeners = new Set<() => void>();
   /** Bumped on every change; the snapshot for useSyncExternalStore. */
@@ -255,6 +263,7 @@ export class CallEngine {
     this.self = self;
     this.local = local;
     this.syncUrl = `${options.origin ?? ""}/api/v1/video/peers/${self.participantId}/sync`;
+    this.openOwnDisplay = options.openDisplay ?? null;
     this.camera = local.getVideoTracks()[0] ?? null;
     this.media = {
       audio: local.getAudioTracks().some((t) => t.enabled),
@@ -702,13 +711,14 @@ export class CallEngine {
    * for the room to show (A-200).
    */
   async shareScreen(): Promise<void> {
-    if (this.screen || this.choosingScreen || !navigator.mediaDevices?.getDisplayMedia) return;
+    if (this.screen || this.choosingScreen) return;
+    if (!this.openOwnDisplay && !navigator.mediaDevices?.getDisplayMedia) return;
     this.choosingScreen = true;
     this.shareError = null;
     const asked = Date.now();
     let display: MediaStream;
     try {
-      display = await openDisplay();
+      display = await (this.openOwnDisplay ? this.openOwnDisplay() : openDisplay());
     } catch (error) {
       this.choosingScreen = false;
       const reason = shareFailure(error, Date.now() - asked);

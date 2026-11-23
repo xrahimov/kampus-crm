@@ -22,7 +22,8 @@ and its "Where things stand now" section gives the short version.
 The phone and tablet app lives in [`mobile/`](mobile): one React Native (Expo) project for Android,
 iOS and the web, on the same `/api/v1` and the same message files as the site. What it has, how to
 run and build it, and what is still to come is in [docs/MOBILE-APPS.md](docs/MOBILE-APPS.md) (A-203
-to A-205, and A-207 for the lesson room inside the app).
+to A-205, and A-207 to A-210 for the lesson room inside the app with its whiteboard, shown files
+and screen sharing from Android).
 
 [docs/DEMO-GUIDE.md](docs/DEMO-GUIDE.md) is a script for showing the whole app to a centre's owner or
 its teachers, stop by stop, with the manual's own screenshots.

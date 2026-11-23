@@ -1,6 +1,17 @@
-import type { StyleProp, ViewStyle } from "react-native";
+import {
+  Dimensions,
+  PermissionsAndroid,
+  PixelRatio,
+  Platform,
+  type StyleProp,
+  type ViewStyle,
+} from "react-native";
 import InCallManager from "react-native-incall-manager";
-import { registerGlobals, RTCView } from "react-native-webrtc";
+import { mediaDevices, registerGlobals, RTCView } from "react-native-webrtc";
+
+import { SCREEN_MAX_WIDTH } from "@kampus/lib/video/call-engine";
+
+import { callService } from "../../../modules/kampus-call";
 
 /*
  * What a lesson room needs from the phone (A-207): WebRTC itself, a view that
@@ -68,14 +79,35 @@ export function RemoteAudio(_props: { stream: MediaStream }) {
   return null;
 }
 
-/** The loudspeaker and a screen that stays awake, from joining until leaving. */
+/** What the phone's notice says while a lesson runs with another app in front. */
+export interface CallWords {
+  title: string;
+  text: string;
+  channel: string;
+}
+
+/**
+ * The loudspeaker and a screen that stays awake, from joining until leaving. On
+ * Android the lesson also runs as a foreground service (A-208): without it the
+ * phone silences the microphone as soon as another app is in front.
+ */
 export const callAudio = {
-  start(): void {
+  start(words: CallWords): void {
     try {
       InCallManager.start({ media: "video" });
       InCallManager.setKeepScreenOn(true);
     } catch {
       // No audio routing on this device: the call still works on the default output.
+    }
+    if (Platform.OS === "android") {
+      callService.start(words);
+      // The notice is how the person comes back to the lesson; Android 13 asks before
+      // showing any. A "no" changes nothing else: the service runs either way.
+      if (Number(Platform.Version) >= 33) {
+        void PermissionsAndroid.request(PermissionsAndroid.PERMISSIONS.POST_NOTIFICATIONS).catch(
+          () => undefined,
+        );
+      }
     }
   },
   stop(): void {
@@ -84,6 +116,54 @@ export const callAudio = {
       InCallManager.stop();
     } catch {
       // Nothing was started.
+    }
+    if (Platform.OS === "android") callService.stop();
+  },
+};
+
+/** The names a browser gives a capture that did not start; the phone gives them as the message. */
+const CAPTURE_ERRORS = new Set([
+  "NotAllowedError",
+  "AbortError",
+  "NotReadableError",
+  "NotFoundError",
+  "SecurityError",
+]);
+
+/** A refusal from the phone, named the way the call engine sorts a browser's. */
+export function captureError(error: unknown): { name: string; message: string } {
+  const message =
+    typeof error === "object" && error !== null && "message" in error ? String(error.message) : "";
+  const name =
+    typeof error === "object" && error !== null && "name" in error ? String(error.name) : "";
+  if (CAPTURE_ERRORS.has(name)) return { name, message };
+  if (CAPTURE_ERRORS.has(message)) return { name: message, message: "" };
+  return { name: "Error", message: message || String(error) };
+}
+
+/** How much to shrink a screen whose longer side has this many pixels, so no more than Full HD goes out. */
+export function captureScale(longestSidePx: number): number {
+  if (!(longestSidePx > SCREEN_MAX_WIDTH)) return 1;
+  return Math.round((SCREEN_MAX_WIDTH / longestSidePx) * 100) / 100;
+}
+
+/**
+ * Sharing this device's screen (A-208). Android asks the person once per share
+ * ("Start recording or casting?") and then captures whatever is in front, also
+ * other apps. iPhones and iPads come next: they need an app extension.
+ */
+export const screenShare = {
+  available: Platform.OS === "android",
+  async open(): Promise<MediaStream> {
+    const screen = Dimensions.get("screen");
+    const longest = Math.max(screen.width, screen.height) * PixelRatio.get();
+    try {
+      const stream = await mediaDevices.getDisplayMedia({
+        android: { resolutionScale: captureScale(longest) },
+      });
+      return stream as unknown as MediaStream;
+    } catch (error) {
+      throw captureError(error);
     }
   },
 };

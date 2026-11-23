@@ -6284,7 +6284,35 @@
       "openSettings": "Open settings",
       "unavailable": "This device cannot open a video lesson.",
       "peerFailed": "Could not connect to this person. Their network may block direct calls.",
-      "stageElsewhere": "The teacher is showing a file or the whiteboard to everyone."
+      "shareStarted": "Everyone sees your screen now. Open what you want to show, then come back here to stop.",
+      "shareFailed": "Screen sharing did not start. Try again.",
+      "shareBlocked": "The phone did not allow Kampus to capture the screen. Try again and press Start in the phone's question.",
+      "shareNotice": "Kampus is sharing your screen",
+      "shareNoticeText": "Everyone in the lesson sees your screen. Open Kampus to stop.",
+      "shareChannel": "Screen sharing",
+      "callNotice": "Lesson in progress: {group}",
+      "callNoticeText": "Your microphone and camera stay on while the lesson is open. Tap to go back to it.",
+      "callChannel": "Lessons in progress",
+      "tools": "Lesson tools",
+      "material": {
+        "open": "Open outside the lesson",
+        "failed": "This file could not be opened inside the lesson. Open it outside the lesson.",
+        "linkText": "The teacher is showing this link. It opens outside the lesson.",
+        "fileText": "This kind of file cannot be displayed inside the lesson. Open it outside the lesson.",
+        "hostPlayHint": "Play, pause and jump here: everyone's player follows yours.",
+        "play": "Play for everyone",
+        "pause": "Pause for everyone",
+        "back10": "Back 10 seconds",
+        "forward10": "Forward 10 seconds",
+        "jump": "Jump in the file"
+      },
+      "files": {
+        "title": "Show a file to everyone",
+        "hint": "Choose one of the lesson's or the group's materials. It opens on everyone's screen.",
+        "show": "Show",
+        "stop": "Stop showing",
+        "shown": "On everyone's screen now"
+      }
     },
     "permissions": {
       "camera": "Kampus uses the camera so that your teacher and classmates see you in a video lesson.",

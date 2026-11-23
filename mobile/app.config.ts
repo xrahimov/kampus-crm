@@ -23,7 +23,15 @@ const PERMISSIONS = {
   uz: (uz as Messages).mobile.permissions,
 };
 interface Messages {
-  mobile: { permissions: { camera: string; microphone: string } };
+  mobile: {
+    permissions: { camera: string; microphone: string };
+    room: { shareNotice: string; shareNoticeText: string; shareChannel: string };
+  };
+}
+/** The notice Android shows while the screen is shared (A-208). */
+function shareWords(messages: unknown) {
+  const room = (messages as Messages).mobile.room;
+  return { title: room.shareNotice, text: room.shareNoticeText, channel: room.shareChannel };
 }
 /** Under `ios`, so the sentences reach the iPhone's question and stay out of Android's resources. */
 function iosWording(locale: keyof typeof PERMISSIONS): { ios: Record<string, string> } {
@@ -44,7 +52,20 @@ function iosWording(locale: keyof typeof PERMISSIONS): { ios: Record<string, str
 const SHRINKER_RULES = [
   "-dontwarn org.webrtc.**",
   "-keep class com.zxcpoiu.incallmanager.** { *; }",
+  // The lesson's own service and module (modules/kampus-call).
+  "-keep class center.kampus.call.** { *; }",
+  // The PDF page view (A-210) draws through native code that calls back by name.
+  "-keep class io.legere.pdfiumandroid.** { *; }",
+  "-keep class com.github.barteksc.pdfviewer.** { *; }",
 ].join("\n");
+
+/**
+ * A build pointed at a plain http server is a test build against a computer on
+ * the desk (http://10.0.2.2:3000 from the Android emulator). Android refuses
+ * plain http in a release build unless told otherwise; the builds that go to
+ * people talk to https and keep the refusal.
+ */
+const PLAIN_HTTP = (process.env.EXPO_PUBLIC_API_URL ?? "").startsWith("http://");
 
 const LAPIS = "#17234b";
 const TURQUOISE = "#58d4d0";
@@ -99,6 +120,10 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
       "android.permission.ACCESS_NETWORK_STATE",
       "android.permission.BLUETOOTH_CONNECT",
       "android.permission.WAKE_LOCK",
+      // Sharing the screen (A-208) runs as a service with a visible notice.
+      "android.permission.FOREGROUND_SERVICE",
+      "android.permission.FOREGROUND_SERVICE_MEDIA_PROJECTION",
+      "android.permission.POST_NOTIFICATIONS",
     ],
   },
   web: {
@@ -115,7 +140,14 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     "expo-localization",
     "expo-font",
     "expo-web-browser",
-    ["expo-build-properties", { android: { extraProguardRules: SHRINKER_RULES } }],
+    [
+      "expo-build-properties",
+      { android: { extraProguardRules: SHRINKER_RULES, usesCleartextTraffic: PLAIN_HTTP } },
+    ],
+    [
+      "./plugins/with-screen-share",
+      { words: { en: shareWords(en), ru: shareWords(ru), uz: shareWords(uz) } },
+    ],
     [
       "expo-splash-screen",
       {
