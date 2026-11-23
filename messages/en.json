@@ -6352,7 +6352,12 @@
       "openOutside": "Open with another app"
     },
     "materials": {
-      "continueFrom": "Continue from {time}"
+      "continueFrom": "Continue from {time}",
+      "addLink": "Add a link"
+    },
+    "checking": {
+      "spoken": "Spoken answer",
+      "reply": "Comment or voice"
     }
   }
 }

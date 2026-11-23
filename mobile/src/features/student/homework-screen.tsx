@@ -400,7 +400,7 @@ function AnswerForm({
       {homework.speaking ? (
         <View style={styles.block}>
           <Text variant="smallStrong">{t("recordAnswer")}</Text>
-          <VoiceRecorder value={recording} onChange={setRecording} />
+          <VoiceRecorder value={recording} onChange={setRecording} label={t("yourRecording")} />
         </View>
       ) : null}
       <Field

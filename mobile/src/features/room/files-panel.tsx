@@ -1,10 +1,20 @@
-import { FileText, Film, Image as ImageIcon, Link2, Music, RefreshCw } from "lucide-react-native";
-import { useEffect, useState } from "react";
+import {
+  FileText,
+  Film,
+  Image as ImageIcon,
+  Link2,
+  Music,
+  Paperclip,
+  RefreshCw,
+} from "lucide-react-native";
+import { useEffect, useState, type ReactNode } from "react";
 import { ActivityIndicator, Pressable, ScrollView, StyleSheet, View } from "react-native";
 
+import { addGroupFile } from "@/api/group-pages";
 import { Text } from "@/components/text";
+import { chooseFile, choosePhoto, type Picked } from "@/features/files/pick";
 import { API_ORIGIN } from "@/lib/api";
-import { useTranslations } from "@/lib/i18n";
+import { errorText, useTranslations } from "@/lib/i18n";
 import { radius, space } from "@/lib/theme";
 import { materialView, type MaterialView } from "@kampus/lib/video-material";
 import type { CallEngine } from "@kampus/lib/video/call-engine";
@@ -13,6 +23,7 @@ import { room } from "./look";
 
 /** The lesson beside the call, as the server answers a participant (the site's lesson panel reads the same). */
 export interface CallLesson {
+  lesson: { id: string } | null;
   materials: {
     id: string;
     kind: "FILE" | "LINK" | "RECORDING";
@@ -52,12 +63,47 @@ function KindIcon({ view }: { view: MaterialView }) {
  * materials first, then the group's. One press shows a file; the one that is
  * shown has "Stop showing".
  */
-export function FilesPanel({ engine, onShown }: { engine: CallEngine; onShown: () => void }) {
+export function FilesPanel({
+  engine,
+  groupId,
+  onShown,
+}: {
+  engine: CallEngine;
+  /** The group whose materials a teacher may add to from this device (A-214). */
+  groupId?: string;
+  onShown: () => void;
+}) {
   const t = useTranslations("video.lesson");
   const tm = useTranslations("mobile.room.files");
+  const th = useTranslations("mobile.homework");
+  const te = useTranslations();
   const [data, setData] = useState<CallLesson | null>(null);
   const [failed, setFailed] = useState(false);
   const [reloads, setReloads] = useState(0);
+  const [adding, setAdding] = useState(false);
+  const [problem, setProblem] = useState<string | null>(null);
+  const lessonId = data?.lesson?.id ?? null;
+
+  // A file from this device joins the lesson's materials, then the list is read again.
+  const add = async (from: () => Promise<Picked>) => {
+    if (!groupId || adding) return;
+    setProblem(null);
+    const picked = await from().catch((): Picked => ({ kind: "none" }));
+    if (picked.kind === "refused") {
+      setProblem(th(picked.reason));
+      return;
+    }
+    if (picked.kind !== "file") return;
+    setAdding(true);
+    try {
+      await addGroupFile(groupId, lessonId, fileTitle(picked.file.name), picked.file);
+      setReloads((n) => n + 1);
+    } catch (error) {
+      setProblem(errorText(te, error));
+    } finally {
+      setAdding(false);
+    }
+  };
   const shownId = engine.currentStage.material?.id ?? null;
 
   useEffect(() => {
@@ -111,6 +157,38 @@ export function FilesPanel({ engine, onShown }: { engine: CallEngine; onShown: (
       <Text variant="small" style={styles.muted}>
         {tm("hint")}
       </Text>
+      {groupId && engine.self.role === "HOST" ? (
+        <View style={styles.addRow} testID="files-add">
+          {/* No "Take a photo" here: the lesson holds the camera. */}
+          <AddButton
+            label={th("choosePhoto")}
+            busy={adding}
+            onPress={() => void add(choosePhoto)}
+            testID="files-add-photo"
+          >
+            <ImageIcon size={16} color={room.ink} />
+          </AddButton>
+          <AddButton
+            label={th("chooseFile")}
+            busy={adding}
+            onPress={() => void add(chooseFile)}
+            testID="files-add-file"
+          >
+            <Paperclip size={16} color={room.ink} />
+          </AddButton>
+          {adding ? <ActivityIndicator color={room.ink} /> : null}
+        </View>
+      ) : null}
+      {problem ? (
+        <Text
+          variant="small"
+          style={styles.problem}
+          accessibilityRole="alert"
+          testID="files-problem"
+        >
+          {problem}
+        </Text>
+      ) : null}
       {materials.length === 0 ? (
         <Text style={styles.muted} testID="files-empty">
           {t("noMaterials")}
@@ -167,7 +245,55 @@ export function FilesPanel({ engine, onShown }: { engine: CallEngine; onShown: (
   );
 }
 
+/** A file's name without its ending, as the material's title. */
+function fileTitle(name: string): string {
+  const dot = name.lastIndexOf(".");
+  return (dot > 0 ? name.slice(0, dot) : name).slice(0, 200) || name;
+}
+
+function AddButton({
+  label,
+  busy,
+  onPress,
+  testID,
+  children,
+}: {
+  label: string;
+  busy: boolean;
+  onPress: () => void;
+  testID: string;
+  children: ReactNode;
+}) {
+  return (
+    <Pressable
+      onPress={onPress}
+      disabled={busy}
+      accessibilityRole="button"
+      accessibilityState={{ disabled: busy, busy }}
+      style={({ pressed }) => [styles.add, (pressed || busy) && styles.pressed]}
+      testID={testID}
+    >
+      {children}
+      <Text variant="smallStrong" style={styles.ink}>
+        {label}
+      </Text>
+    </Pressable>
+  );
+}
+
 const styles = StyleSheet.create({
+  addRow: { flexDirection: "row", flexWrap: "wrap", alignItems: "center", gap: space[2] },
+  add: {
+    minHeight: 40,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: space[2],
+    paddingHorizontal: space[3],
+    borderRadius: radius.full,
+    borderWidth: 1,
+    borderColor: room.border,
+  },
+  problem: { color: room.warning },
   center: { minHeight: 160, alignItems: "center", justifyContent: "center", gap: space[3] },
   list: { gap: space[2], padding: space[3], paddingTop: 0 },
   ink: { color: room.ink },

@@ -42,9 +42,12 @@ export async function recordingFile(uri: string): Promise<PickedFile> {
 export function VoiceRecorder({
   value,
   onChange,
+  label,
 }: {
   value: PickedFile | null;
   onChange: (file: PickedFile | null) => void;
+  /** What the finished recording is called beside its play button. */
+  label: string;
 }) {
   const t = useTranslations("mobile.homework");
   const tp = useTranslations("mobile.room");
@@ -107,7 +110,7 @@ export function VoiceRecorder({
   return (
     <View style={styles.block}>
       {value ? (
-        <AudioClip source={{ uri: value.uri }} label={t("recordAgain")} testID="recorder-clip" />
+        <AudioClip source={{ uri: value.uri }} label={label} testID="recorder-clip" />
       ) : null}
       <View style={styles.row}>
         <Button

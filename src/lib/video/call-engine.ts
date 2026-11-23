@@ -174,6 +174,44 @@ export function shareFailure(error: unknown, elapsedMs: number): ShareFailure | 
   return "failed";
 }
 
+/** How long a teacher who has just joined takes the board back from the students' devices. */
+export const BOARD_RETURN_MS = 30_000;
+
+/**
+ * Whether this device hands the board it holds to a teacher who has just
+ * appeared. The board lives on the devices in the lesson, and a teacher whose
+ * phone dropped out and came back (or who moved to another device) starts
+ * empty while everyone else still sees the drawing. One device answers, the
+ * one whose id sorts first among those who are not teachers, so the teacher is
+ * not sent the same drawing by a whole class.
+ */
+export function givesBoardBack(
+  self: { id: string; role: string },
+  peers: Array<{ id: string; role: string }>,
+  newcomer: { role: string },
+  strokes: number,
+): boolean {
+  if (self.role === "HOST" || newcomer.role !== "HOST" || strokes === 0) return false;
+  // Another teacher in the lesson gives the newcomer the board as usual.
+  if (peers.some((p) => p.role === "HOST" && p !== newcomer)) return false;
+  const holders = [self.id, ...peers.filter((p) => p.role !== "HOST").map((p) => p.id)].sort();
+  return holders[0] === self.id;
+}
+
+/**
+ * Whether a board history is taken from its sender: always from a teacher; from
+ * anyone else only by a teacher in the first moments after joining (the board
+ * coming back, see `givesBoardBack`).
+ */
+export function takesBoardHistory(
+  selfRole: string,
+  senderRole: string,
+  msSinceJoin: number,
+): boolean {
+  if (senderRole === "HOST") return true;
+  return selfRole === "HOST" && msSinceJoin >= 0 && msSinceJoin < BOARD_RETURN_MS;
+}
+
 export class CallEngine {
   readonly self: JoinDto;
   status: CallStatus = "connecting";
@@ -233,6 +271,8 @@ export class CallEngine {
   boardStudentsMayDraw = false;
   /** Peers that still need the board history (the teacher sends it after they appear). */
   private boardNewcomers = new Set<string>();
+  /** When this engine started: a teacher takes the board back only at the start. */
+  private readonly bornAt = Date.now();
   /** The open poll, else the last closed one (A-153). */
   poll: PollDto | null = null;
   /** Breakout rooms as the server last reported them (A-156). */
@@ -576,9 +616,12 @@ export class CallEngine {
     this.onChange();
   }
 
-  /** The teacher's browser gives newcomers the board so far, in batches under the signal size. */
+  /**
+   * The teacher's device gives newcomers the board so far, in batches under the
+   * signal size. A student's device does the same for a teacher who came back
+   * (`givesBoardBack`), without the teacher's own switch for who may draw.
+   */
   private sendBoardHistory(to: string): void {
-    if (this.self.role !== "HOST") return;
     const strokes = this.board.map(({ by: _by, ...s }) => s);
     const batches: BoardStroke[][] = [];
     let batch: BoardStroke[] = [];
@@ -597,7 +640,9 @@ export class CallEngine {
     batches.forEach((b, i) =>
       this.send(to, "board", { op: "sync", strokes: b, done: i === batches.length - 1 }),
     );
-    this.send(to, "board", { op: "allow", students: this.boardStudentsMayDraw });
+    if (this.self.role === "HOST") {
+      this.send(to, "board", { op: "allow", students: this.boardStudentsMayDraw });
+    }
   }
 
   /** Teacher only: asks a question with 2-6 answers; any open poll closes. */
@@ -1020,7 +1065,16 @@ export class CallEngine {
       if (link) link.info = p;
       else {
         this.addPeer(p);
-        if (this.self.role === "HOST" && (this.board.length > 0 || this.boardStudentsMayDraw)) {
+        if (this.self.role === "HOST") {
+          if (this.board.length > 0 || this.boardStudentsMayDraw) this.boardNewcomers.add(p.id);
+        } else if (
+          givesBoardBack(
+            { id: this.self.participantId, role: this.self.role },
+            peers,
+            p,
+            this.board.length,
+          )
+        ) {
           this.boardNewcomers.add(p.id);
         }
       }
@@ -1167,10 +1221,12 @@ export class CallEngine {
         const parsed = boardOpSchema.safeParse(payload);
         if (!parsed.success) return;
         const op = parsed.data;
-        // Only the teacher clears the board, lets students draw or sends history.
+        // Only the teacher clears the board or lets students draw. History comes from
+        // the teacher, or goes back to a teacher who has just joined.
+        if ((op.op === "clear" || op.op === "allow") && link.info.role !== "HOST") return;
         if (
-          (op.op === "clear" || op.op === "allow" || op.op === "sync") &&
-          link.info.role !== "HOST"
+          op.op === "sync" &&
+          !takesBoardHistory(this.self.role, link.info.role, Date.now() - this.bornAt)
         ) {
           return;
         }

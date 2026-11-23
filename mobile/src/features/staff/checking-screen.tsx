@@ -1,5 +1,7 @@
+import { useRouter } from "expo-router";
+import { ExternalLink, MessageSquare, Paperclip } from "lucide-react-native";
 import { useState } from "react";
-import { StyleSheet, View } from "react-native";
+import { Linking, StyleSheet, View } from "react-native";
 
 import { useCheckingQueue, useReviewAnswer } from "@/api/hooks";
 import type { CheckingItem } from "@/api/types";
@@ -8,14 +10,21 @@ import { Field } from "@/components/field";
 import { Header } from "@/components/header";
 import { Card, EmptyState, Loading, Notice, Screen } from "@/components/surface";
 import { Text } from "@/components/text";
-import { ApiError } from "@/lib/api";
+import { AudioClip } from "@/features/files/audio-clip";
+import { fileRoute } from "@/features/files/file-screen";
+import { VoiceRecorder } from "@/features/files/recorder";
+import { fileSource } from "@/features/room/file-source";
+import { ApiError, type PickedFile } from "@/lib/api";
 import { dayAsDate } from "@/lib/days";
 import { errorText, useDate, useTranslations } from "@/lib/i18n";
-import { space } from "@/lib/theme";
+import { space, useTheme } from "@/lib/theme";
+import { materialView } from "@kampus/lib/video-material";
 
-import { OpenOnSite } from "./open-on-site";
-
-/** Homework answers waiting for the teacher, oldest first: accept, or return with a word. */
+/**
+ * Homework answers waiting for the teacher, oldest first: accept or return,
+ * with a written or a spoken word. The student's file opens in the app and a
+ * spoken answer plays in place (A-214).
+ */
 export function CheckingScreen() {
   const t = useTranslations();
   const query = useCheckingQueue();
@@ -72,9 +81,12 @@ export function CheckingScreen() {
 function AnswerCard({ item }: { item: CheckingItem }) {
   const t = useTranslations();
   const formatDate = useDate();
+  const router = useRouter();
+  const { colors } = useTheme();
   const review = useReviewAnswer();
-  const [returning, setReturning] = useState(false);
+  const [replying, setReplying] = useState(false);
   const [comment, setComment] = useState("");
+  const [voice, setVoice] = useState<PickedFile | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   const send = (status: "ACCEPTED" | "RETURNED") => {
@@ -85,10 +97,14 @@ function AnswerCard({ item }: { item: CheckingItem }) {
         membershipId: item.membershipId,
         status,
         teacherComment: comment.trim() || null,
+        voice,
       },
       { onError: (e) => setError(errorText(t, e)) },
     );
   };
+
+  const attachment = item.attachmentUrl;
+  const spoken = attachment !== null && materialView("FILE", attachment) === "audio";
 
   return (
     <Card testID={`answer-${item.homeworkId}-${item.membershipId}`}>
@@ -110,7 +126,18 @@ function AnswerCard({ item }: { item: CheckingItem }) {
         <Text variant="smallStrong" tone="mutedForeground">
           {t("checking.task")}
         </Text>
-        <Text numberOfLines={returning ? undefined : 4}>{item.title ?? item.text}</Text>
+        <Text numberOfLines={replying ? undefined : 4}>{item.title ?? item.text}</Text>
+        {item.linkUrl ? (
+          <Button
+            compact
+            variant="ghost"
+            label={t("mobile.homework.openLink")}
+            icon={<ExternalLink size={16} color={colors.primary} />}
+            onPress={() => void Linking.openURL(item.linkUrl!).catch(() => undefined)}
+            style={styles.start}
+            testID="answer-task-link"
+          />
+        ) : null}
       </View>
       <View style={styles.part}>
         <Text variant="smallStrong" tone="mutedForeground">
@@ -121,58 +148,92 @@ function AnswerCard({ item }: { item: CheckingItem }) {
             }),
           })}
         </Text>
-        <Text>{item.note ?? t("checking.noNote")}</Text>
+        {item.note || !attachment ? <Text>{item.note ?? t("checking.noNote")}</Text> : null}
+        {attachment ? (
+          spoken ? (
+            // A spoken answer plays right here, as it does on the site.
+            <AudioClip
+              source={fileSource(attachment)}
+              label={t("mobile.checking.spoken")}
+              testID="answer-audio"
+            />
+          ) : (
+            <Button
+              compact
+              variant="outline"
+              label={t("checking.attachment")}
+              icon={<Paperclip size={16} color={colors.foreground} />}
+              onPress={() => router.push(fileRoute(attachment, item.fullName))}
+              style={styles.start}
+              testID="answer-attachment"
+            />
+          )
+        ) : null}
       </View>
-      {item.attachmentUrl || item.speaking ? (
-        <OpenOnSite path="/checking" label={t("checking.attachment")} testID="answer-attachment" />
-      ) : null}
-      {returning ? (
-        <Field
-          label={t("checking.comment")}
-          placeholder={t("checking.commentPlaceholder")}
-          value={comment}
-          onChangeText={setComment}
-          multiline
-          autoFocus
-          testID="return-comment"
-        />
+      {replying ? (
+        <View style={styles.reply} testID="answer-reply">
+          <Field
+            label={t("checking.comment")}
+            placeholder={t("checking.commentPlaceholder")}
+            value={comment}
+            onChangeText={setComment}
+            multiline
+            maxLength={1000}
+            testID="return-comment"
+          />
+          <View style={styles.part}>
+            <Text variant="smallStrong">{t("groups.homework.voiceReply")}</Text>
+            <VoiceRecorder
+              value={voice}
+              onChange={setVoice}
+              label={t("groups.homework.voiceReply")}
+            />
+          </View>
+        </View>
       ) : null}
       {error ? <Notice tone="destructive">{error}</Notice> : null}
       <View style={styles.actions}>
-        {returning ? (
-          <>
-            <Button
-              compact
-              variant="outline"
-              label={t("common.cancel")}
-              onPress={() => setReturning(false)}
-            />
-            <Button
-              compact
-              label={t("checking.returnSend")}
-              onPress={() => send("RETURNED")}
-              loading={review.isPending}
-              testID="return-send"
-            />
-          </>
+        {replying ? (
+          <Button
+            compact
+            variant="ghost"
+            label={t("common.cancel")}
+            disabled={review.isPending}
+            onPress={() => {
+              setReplying(false);
+              setComment("");
+              setVoice(null);
+            }}
+            testID="reply-cancel"
+          />
         ) : (
-          <>
-            <Button
-              compact
-              variant="outline"
-              label={t("checking.return")}
-              onPress={() => setReturning(true)}
-              testID="return"
-            />
-            <Button
-              compact
-              label={t("checking.accept")}
-              onPress={() => send("ACCEPTED")}
-              loading={review.isPending}
-              testID="accept"
-            />
-          </>
+          <Button
+            compact
+            variant="ghost"
+            label={t("mobile.checking.reply")}
+            icon={<MessageSquare size={16} color={colors.primary} />}
+            onPress={() => setReplying(true)}
+            testID="reply"
+          />
         )}
+        <Button
+          compact
+          variant="outline"
+          label={t("checking.return")}
+          // Returning takes a second press: the first one asks what to fix.
+          onPress={() => (replying ? send("RETURNED") : setReplying(true))}
+          loading={review.isPending && review.variables?.status === "RETURNED"}
+          disabled={review.isPending}
+          testID="return"
+        />
+        <Button
+          compact
+          label={t("checking.accept")}
+          onPress={() => send("ACCEPTED")}
+          loading={review.isPending && review.variables?.status === "ACCEPTED"}
+          disabled={review.isPending}
+          testID="accept"
+        />
       </View>
     </Card>
   );
@@ -181,5 +242,13 @@ function AnswerCard({ item }: { item: CheckingItem }) {
 const styles = StyleSheet.create({
   column: { maxWidth: 720 },
   part: { gap: space[1] },
-  actions: { flexDirection: "row", justifyContent: "flex-end", gap: space[2] },
+  reply: { gap: space[3] },
+  start: { alignSelf: "flex-start" },
+  actions: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    justifyContent: "flex-end",
+    alignItems: "center",
+    gap: space[2],
+  },
 });

@@ -1,4 +1,4 @@
-import { StyleSheet } from "react-native";
+import { Platform, StyleSheet } from "react-native";
 import Pdf from "react-native-pdf";
 
 import type { FileSource } from "./file-source";
@@ -26,7 +26,7 @@ export function PdfPage({
       key={page}
       source={{ uri: source.uri, headers: source.headers, cache: true }}
       page={page}
-      singlePage
+      {...(Platform.OS === "android" ? ANDROID_ONE_PAGE : IOS_ONE_PAGE)}
       fitPolicy={2}
       enableDoubleTapZoom={false}
       trustAllCerts={false}
@@ -39,6 +39,22 @@ export function PdfPage({
     />
   );
 }
+
+/** PDFKit shows one page of the file and still says how many the file has. */
+const IOS_ONE_PAGE = { singlePage: true } as const;
+/*
+ * On Android "single page" loads only that page and then reports a file of one
+ * page, so the teacher could not turn it. The whole file is opened instead,
+ * laid out a page per screen, and held still: no swiping, no pinching.
+ */
+const ANDROID_ONE_PAGE = {
+  horizontal: true,
+  enablePaging: true,
+  scrollEnabled: false,
+  minScale: 1,
+  maxScale: 1,
+  spacing: 0,
+} as const;
 
 const styles = StyleSheet.create({
   page: { flex: 1, backgroundColor: "#ffffff" },

@@ -166,7 +166,10 @@ export async function openPanel(control: string) {
   await screen.findByTestId("room-sheet");
 }
 
-export async function renderRoom(engine: Fake, props: { onEndForAll?: () => Promise<void> } = {}) {
+export async function renderRoom(
+  engine: Fake,
+  props: { onEndForAll?: () => Promise<void>; groupId?: string } = {},
+) {
   const onLeave = jest.fn();
   await render(
     <SafeAreaProvider

@@ -8,7 +8,8 @@ import type {
   PortalTest,
   PortalTestRun,
 } from "@/api/types";
-import { ChatScreen, CHAT_POLL_MS } from "@/features/student/chat-screen";
+import { CHAT_POLL_MS } from "@/features/shared/chat-thread";
+import { ChatScreen } from "@/features/student/chat-screen";
 import { ExerciseScreen } from "@/features/student/exercise-screen";
 import { MaterialsScreen } from "@/features/student/materials-screen";
 import { answer, clearClients, renderScreen, sentBody } from "@/features/student/test-support";
@@ -142,6 +143,7 @@ describe("a group's materials in the app", () => {
       pathname: "/file",
       params: {
         url: items[1]!.url,
+        recording: "1",
         title: "Lesson recording",
         token: "tok",
         material: "m2",

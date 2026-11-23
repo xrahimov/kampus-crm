@@ -23,8 +23,10 @@ The phone and tablet app lives in [`mobile/`](mobile): one React Native (Expo) p
 iOS and the web, on the same `/api/v1` and the same message files as the site. What it has, how to
 run and build it, and what is still to come is in [docs/MOBILE-APPS.md](docs/MOBILE-APPS.md) (A-203
 to A-205, A-207 to A-211 for the lesson room inside the app with its whiteboard, shown files,
-polls, breakout rooms and screen sharing from Android, A-212 for homework answered in the app, and
-A-213 for a group's tests, materials, chat and exercises in the app).
+polls, breakout rooms and screen sharing from Android, A-212 for homework answered in the app,
+A-213 for a group's tests, materials, chat and exercises in the app, and A-214 for the teacher's
+side of a group: answers with their files and a spoken reply, the group chat and materials added
+from the phone).
 
 [docs/DEMO-GUIDE.md](docs/DEMO-GUIDE.md) is a script for showing the whole app to a centre's owner or
 its teachers, stop by stop, with the manual's own screenshots.

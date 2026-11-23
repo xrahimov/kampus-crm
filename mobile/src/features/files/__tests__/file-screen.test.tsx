@@ -72,10 +72,21 @@ describe("a file opened in the app", () => {
     expect(route.params).toEqual({
       url: RECORDING,
       title: "Lesson recording",
+      recording: "1",
       token: "tok",
       material: "m2",
       stream: "",
       resume: "40",
+    });
+    // A teacher's recording keeps no place: there is no personal page to keep it on.
+    expect(fileRoute("/api/v1/files/rec/a", "Lesson recording", { stream: null }).params).toEqual({
+      url: "/api/v1/files/rec/a",
+      title: "Lesson recording",
+      recording: "1",
+      token: "",
+      material: "",
+      stream: "",
+      resume: "0",
     });
   });
 

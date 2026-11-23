@@ -167,6 +167,39 @@ describe("a shown file in the app", () => {
     expect(engine.setMaterialPlayback).toHaveBeenLastCalledWith(false, 120);
   });
 
+  it("keeps the buttons working after the file played to its end", async () => {
+    const engine = TEACHER();
+    show(engine, { view: "video", url: "/api/v1/public/class/tok/files/clip.mp4" });
+    await renderRoom(engine);
+    await screen.findByTestId("material-transport");
+    const player = players[players.length - 1]! as FakePlayer & { status: string };
+
+    // Android: at the end the player is "idle" again and no longer names its length.
+    await act(async () => {
+      player.currentTime = 120;
+      player.playing = false;
+      player.status = "idle";
+      player.duration = 0;
+      player.emit("timeUpdate", { currentTime: 120 });
+      player.emit("playingChange", { isPlaying: false });
+      player.emit("statusChange", { status: "idle" });
+      player.emit("playToEnd", undefined);
+    });
+    expect(engine.setMaterialPlayback).toHaveBeenLastCalledWith(false, 120);
+    expect(screen.getByTestId("material-time")).toHaveTextContent("2:00 / 2:00");
+
+    await fireEvent.press(screen.getByTestId("material-back"));
+    expect(player.currentTime).toBe(110);
+    expect(engine.setMaterialPlayback).toHaveBeenLastCalledWith(false, 110);
+
+    // Play at the very end starts the file over.
+    player.currentTime = 120;
+    await fireEvent.press(screen.getByTestId("material-play"));
+    expect(player.currentTime).toBe(0);
+    expect(player.play).toHaveBeenCalled();
+    expect(engine.setMaterialPlayback).toHaveBeenLastCalledWith(true, 0);
+  });
+
   it("puts a student's player where the teacher's is, with no buttons", async () => {
     const engine = STUDENT();
     // Playing since 05:00:00 from second 20; the server's clock says 05:00:00 now.

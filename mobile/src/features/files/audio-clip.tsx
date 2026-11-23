@@ -1,9 +1,11 @@
 import { useAudioPlayer, useAudioPlayerStatus } from "expo-audio";
 import { Pause, Play } from "lucide-react-native";
-import { Pressable, StyleSheet, View } from "react-native";
+import { useState } from "react";
+import { ActivityIndicator, Pressable, StyleSheet, View } from "react-native";
 
 import { Text } from "@/components/text";
 import { clock, type FileSource } from "@/features/room/file-source";
+import { useLocalFile } from "@/features/files/local-file";
 import { useTranslations } from "@/lib/i18n";
 import { radius, space, useTheme } from "@/lib/theme";
 
@@ -11,15 +13,29 @@ import { radius, space, useTheme } from "@/lib/theme";
  * A short recording played in place (A-212): a spoken answer, the teacher's
  * voice reply. One button, the time, and a bar that fills.
  */
-export function AudioClip({
-  source,
-  label,
-  testID,
-}: {
-  source: FileSource;
-  label: string;
-  testID?: string;
-}) {
+export function AudioClip(props: { source: FileSource; label: string; testID?: string }) {
+  const t = useTranslations("mobile.file");
+  const { colors } = useTheme();
+  const [failed, setFailed] = useState(false);
+  // A browser cannot send the session with a recording's address; it is fetched first.
+  const file = useLocalFile(props.source, () => setFailed(true));
+  if (!file) {
+    return (
+      <View style={[styles.clip, { backgroundColor: colors.muted }]} testID={props.testID}>
+        {failed ? (
+          <Text variant="small" tone="destructive">
+            {t("failed")}
+          </Text>
+        ) : (
+          <ActivityIndicator color={colors.mutedForeground} />
+        )}
+      </View>
+    );
+  }
+  return <Clip {...props} source={file} />;
+}
+
+function Clip({ source, label, testID }: { source: FileSource; label: string; testID?: string }) {
   const t = useTranslations("mobile.homework");
   const { colors } = useTheme();
   const player = useAudioPlayer(
@@ -80,6 +96,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     gap: space[3],
+    minHeight: 56,
     padding: space[2],
     borderRadius: radius.md,
   },

@@ -315,6 +315,20 @@ export interface PortalMaterial {
   resumeSec: number | null;
 }
 
+/** A material as staff see it (materials.service.ts): who added it, who watched it. */
+export interface GroupMaterial extends PortalMaterial {
+  /** A recording: how many students opened it, and how many watched it to the end. */
+  watched: { started: number; finished: number } | null;
+  createdByName: string | null;
+  createdAt: string;
+}
+
+export interface GroupMaterials {
+  items: GroupMaterial[];
+  /** Lessons a material can be tied to: past ones and the next two weeks, newest first. */
+  lessons: Array<{ id: string; date: string; topic: string | null }>;
+}
+
 /* ----- The group chat (group-chat.service.ts) ----- */
 
 export interface ChatMessage {

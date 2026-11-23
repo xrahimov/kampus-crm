@@ -6352,7 +6352,12 @@
       "openOutside": "Boshqa ilovada ochish"
     },
     "materials": {
-      "continueFrom": "{time} dan davom etish"
+      "continueFrom": "{time} dan davom etish",
+      "addLink": "Havola qo'shish"
+    },
+    "checking": {
+      "spoken": "Og'zaki javob",
+      "reply": "Izoh yoki ovoz"
     }
   }
 }

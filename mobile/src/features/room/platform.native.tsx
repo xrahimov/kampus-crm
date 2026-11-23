@@ -91,6 +91,9 @@ export interface CallWords {
  * Android the lesson also runs as a foreground service (A-208): without it the
  * phone silences the microphone as soon as another app is in front.
  */
+/** Counts lessons started and left, so an answer that comes late belongs to no lesson. */
+let lessonRun = 0;
+
 export const callAudio = {
   start(words: CallWords): void {
     try {
@@ -100,13 +103,20 @@ export const callAudio = {
       // No audio routing on this device: the call still works on the default output.
     }
     if (Platform.OS === "android") {
+      const run = ++lessonRun;
       callService.start(words);
       // The notice is how the person comes back to the lesson; Android 13 asks before
-      // showing any. A "no" changes nothing else: the service runs either way.
+      // showing any. A "no" changes nothing else: the service runs either way. A "yes"
+      // comes after the service has started, when Android has already dropped its
+      // notice, so the service is told once more and puts the notice up.
       if (Number(Platform.Version) >= 33) {
-        void PermissionsAndroid.request(PermissionsAndroid.PERMISSIONS.POST_NOTIFICATIONS).catch(
-          () => undefined,
-        );
+        void PermissionsAndroid.request(PermissionsAndroid.PERMISSIONS.POST_NOTIFICATIONS)
+          .then((result) => {
+            if (result === PermissionsAndroid.RESULTS.GRANTED && run === lessonRun) {
+              callService.start(words);
+            }
+          })
+          .catch(() => undefined);
       }
     }
   },
@@ -117,7 +127,10 @@ export const callAudio = {
     } catch {
       // Nothing was started.
     }
-    if (Platform.OS === "android") callService.stop();
+    if (Platform.OS === "android") {
+      lessonRun += 1;
+      callService.stop();
+    }
   },
 };
 

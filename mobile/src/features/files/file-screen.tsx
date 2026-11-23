@@ -9,7 +9,7 @@ import { saveMaterialProgress } from "@/api/portal";
 
 import { Button } from "@/components/button";
 import { Header } from "@/components/header";
-import { EmptyState } from "@/components/surface";
+import { EmptyState, Loading } from "@/components/surface";
 import { fileSource, opensWithoutSession, type FileSource } from "@/features/room/file-source";
 import { useTranslations } from "@/lib/i18n";
 import { space, useTheme } from "@/lib/theme";
@@ -17,13 +17,17 @@ import { openOnSite } from "@/lib/web";
 import { materialView } from "@kampus/lib/video-material";
 
 import { AudioClip } from "./audio-clip";
+import { useLocalFile } from "./local-file";
 import { PdfDocument } from "./pdf-document";
 
 /** A lesson recording's extras: its streaming copy, and whose place in it to keep (A-213). */
 export interface RecordingRoute {
-  /** The membership token and the material's id: where the place in the recording is saved. */
-  token: string;
-  material: string;
+  /**
+   * The membership token and the material's id: where a student's place in the
+   * recording is saved. A teacher's recording has neither; nothing is saved.
+   */
+  token?: string;
+  material?: string;
   /** The streaming copy's address, when the server has made one. */
   stream?: string | null;
   /** Seconds to continue from. */
@@ -38,8 +42,9 @@ export function fileRoute(url: string, title: string, recording?: RecordingRoute
     params: {
       url,
       title,
-      token: recording.token,
-      material: recording.material,
+      recording: "1",
+      token: recording.token ?? "",
+      material: recording.material ?? "",
       stream: recording.stream ?? "",
       resume: String(Math.floor(recording.resume ?? 0)),
     },
@@ -60,6 +65,7 @@ export function FileScreen() {
   const {
     url = "",
     title,
+    recording: isRecording,
     token,
     material,
     stream,
@@ -67,6 +73,7 @@ export function FileScreen() {
   } = useLocalSearchParams<{
     url: string;
     title?: string;
+    recording?: string;
     token?: string;
     material?: string;
     stream?: string;
@@ -76,8 +83,10 @@ export function FileScreen() {
   const { colors } = useTheme();
   const [failed, setFailed] = useState(false);
   const source = fileSource(url);
+  // A phone sends the session with its request; a browser fetches a staff file first.
+  const file = useLocalFile(source, () => setFailed(true));
   const recording = token && material ? { token, material } : null;
-  const view = failed ? "file" : materialView(recording ? "RECORDING" : "FILE", url);
+  const view = failed ? "file" : materialView(isRecording ? "RECORDING" : "FILE", url);
   const name = title || t("title");
 
   const openOutside = () => {
@@ -88,8 +97,10 @@ export function FileScreen() {
   return (
     <View style={[styles.page, { backgroundColor: colors.background }]} testID="file-screen">
       <Header back title={name} />
-      {view === "pdf" ? (
-        <PdfDocument source={source} onError={() => setFailed(true)} />
+      {!file && view !== "file" ? (
+        <Loading />
+      ) : view === "pdf" ? (
+        <PdfDocument source={file ?? source} onError={() => setFailed(true)} />
       ) : view === "image" ? (
         <ScrollView
           maximumZoomScale={4}
@@ -99,7 +110,7 @@ export function FileScreen() {
           testID="file-image-space"
         >
           <Image
-            source={source}
+            source={file ?? source}
             accessibilityLabel={name}
             resizeMode="contain"
             onError={() => setFailed(true)}
@@ -111,14 +122,14 @@ export function FileScreen() {
         <Video
           // A phone plays the streaming copy (an iPhone cannot play the raw recording);
           // a browser plays the file itself.
-          source={stream && Platform.OS !== "web" ? fileSource(stream) : source}
+          source={stream && Platform.OS !== "web" ? fileSource(stream) : (file ?? source)}
           resume={Number(resume) || 0}
           recording={recording}
           onError={() => setFailed(true)}
         />
       ) : view === "audio" ? (
         <View style={styles.center}>
-          <AudioClip source={source} label={name} testID="file-audio" />
+          <AudioClip source={file ?? source} label={name} testID="file-audio" />
         </View>
       ) : (
         <View style={styles.center}>
@@ -211,6 +222,7 @@ function Video({
       player={player}
       nativeControls
       contentFit="contain"
+      allowsVideoFrameAnalysis={false}
       style={styles.fill}
       testID="file-video"
     />

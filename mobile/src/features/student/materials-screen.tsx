@@ -1,27 +1,18 @@
 import { useFocusEffect, useLocalSearchParams, useRouter } from "expo-router";
-import { ChevronRight, ExternalLink, FileText, Link2, Video } from "lucide-react-native";
 import { useCallback } from "react";
-import { Linking, Pressable, StyleSheet, View } from "react-native";
+import { Linking, StyleSheet } from "react-native";
 
 import { usePortal } from "@/api/hooks";
 import { usePortalMaterials } from "@/api/portal";
-import type { MaterialKind, PortalMaterial } from "@/api/types";
+import type { PortalMaterial } from "@/api/types";
 import { Button } from "@/components/button";
 import { Header } from "@/components/header";
-import { Card, Divider, EmptyState, Loading, Screen } from "@/components/surface";
-import { Text } from "@/components/text";
+import { EmptyState, Loading, Screen } from "@/components/surface";
 import { fileRoute } from "@/features/files/file-screen";
 import { clock } from "@/features/room/file-source";
-import { dayAsDate } from "@/lib/days";
-import { errorText, useDate, useTranslations } from "@/lib/i18n";
-import { space, useTheme } from "@/lib/theme";
-import { groupByLesson } from "@kampus/lib/material-groups";
-
-const KIND_ICON: Record<MaterialKind, typeof FileText> = {
-  FILE: FileText,
-  LINK: Link2,
-  RECORDING: Video,
-};
+import { MaterialList } from "@/features/shared/material-list";
+import { errorText, useTranslations } from "@/lib/i18n";
+import { space } from "@/lib/theme";
 
 /** A place this close to the start is not worth naming. */
 const RESUME_FROM_SEC = 5;
@@ -34,7 +25,7 @@ const RESUME_FROM_SEC = 5;
 export function MaterialsScreen() {
   const { token } = useLocalSearchParams<{ token: string }>();
   const t = useTranslations();
-  const formatDate = useDate();
+  const router = useRouter();
   const portal = usePortal(token);
   const query = usePortalMaterials(token);
   const { refetch } = query;
@@ -67,56 +58,7 @@ export function MaterialsScreen() {
       </Screen>
     );
   }
-  const groups = groupByLesson(query.data);
-  return (
-    <Screen
-      header={header}
-      onRefresh={() => void query.refetch()}
-      refreshing={query.isRefetching}
-      contentStyle={styles.list}
-    >
-      {groups.length === 0 ? <EmptyState title={t("portal.materials.empty")} /> : null}
-      {groups.map((group) => (
-        <View key={group.key} style={styles.group} testID="materials-group">
-          <View>
-            <Text variant="bodyStrong">
-              {group.lessonDate
-                ? t("portal.materials.lessonOf", {
-                    date: formatDate(dayAsDate(group.lessonDate), {
-                      day: "numeric",
-                      month: "short",
-                    }),
-                  })
-                : t("portal.materials.general")}
-            </Text>
-            {group.lessonTopic ? (
-              <Text variant="small" tone="mutedForeground" numberOfLines={2}>
-                {group.lessonTopic}
-              </Text>
-            ) : null}
-          </View>
-          <Card style={styles.flush}>
-            {group.items.map((material, index) => (
-              <View key={material.id}>
-                {index > 0 ? <Divider /> : null}
-                <MaterialRow token={token} material={material} />
-              </View>
-            ))}
-          </Card>
-        </View>
-      ))}
-    </Screen>
-  );
-}
-
-function MaterialRow({ token, material }: { token: string; material: PortalMaterial }) {
-  const t = useTranslations();
-  const { colors } = useTheme();
-  const router = useRouter();
-  const Icon = KIND_ICON[material.kind];
-  const resume = material.resumeSec ?? 0;
-
-  const open = () => {
+  const open = (material: PortalMaterial) => {
     if (material.kind === "LINK") {
       void Linking.openURL(material.url).catch(() => undefined);
       return;
@@ -127,64 +69,32 @@ function MaterialRow({ token, material }: { token: string; material: PortalMater
             token,
             material: material.id,
             stream: material.hlsUrl,
-            resume,
+            resume: material.resumeSec ?? 0,
           })
         : fileRoute(material.url, material.title),
     );
   };
-
-  const details = [
-    // A recording the teacher renamed still says what it is.
-    material.kind === "RECORDING" && material.title !== t("portal.materials.recording")
-      ? t("portal.materials.recording")
-      : null,
-    material.durationSec
-      ? t("portal.materials.duration", {
-          minutes: Math.max(1, Math.round(material.durationSec / 60)),
-        })
-      : null,
-    material.kind === "RECORDING" && resume > RESUME_FROM_SEC
-      ? t("mobile.materials.continueFrom", { time: clock(resume) })
-      : null,
-  ].filter(Boolean);
-
   return (
-    <Pressable
-      onPress={open}
-      accessibilityRole={material.kind === "LINK" ? "link" : "button"}
-      accessibilityLabel={material.title}
-      style={({ pressed }) => [styles.row, pressed && { backgroundColor: colors.muted }]}
-      testID={`material-${material.id}`}
+    <Screen
+      header={header}
+      onRefresh={() => void query.refetch()}
+      refreshing={query.isRefetching}
+      contentStyle={styles.list}
     >
-      <Icon size={20} color={colors.mutedForeground} />
-      <View style={styles.fill}>
-        <Text numberOfLines={2}>{material.title}</Text>
-        {details.length > 0 ? (
-          <Text variant="small" tone="mutedForeground" numberOfLines={1}>
-            {details.join(", ")}
-          </Text>
-        ) : null}
-      </View>
-      {material.kind === "LINK" ? (
-        <ExternalLink size={18} color={colors.mutedForeground} />
-      ) : (
-        <ChevronRight size={20} color={colors.mutedForeground} />
-      )}
-    </Pressable>
+      <MaterialList
+        items={query.data}
+        emptyText={t("portal.materials.empty")}
+        onOpen={open}
+        details={(material) => [
+          material.kind === "RECORDING" && (material.resumeSec ?? 0) > RESUME_FROM_SEC
+            ? t("mobile.materials.continueFrom", { time: clock(material.resumeSec ?? 0) })
+            : null,
+        ]}
+      />
+    </Screen>
   );
 }
 
 const styles = StyleSheet.create({
-  fill: { flex: 1 },
   list: { gap: space[6] },
-  group: { gap: space[2] },
-  flush: { padding: 0, gap: 0, overflow: "hidden" },
-  row: {
-    minHeight: 56,
-    flexDirection: "row",
-    alignItems: "center",
-    gap: space[3],
-    paddingHorizontal: space[4],
-    paddingVertical: space[3],
-  },
 });
