@@ -2,6 +2,8 @@ import * as Application from "expo-application";
 import * as Device from "expo-device";
 import { Platform } from "react-native";
 
+import { sendForm, type FormAnswer } from "./send-form";
+
 /*
  * The app's line to the Kampus server (A-203). The same /api/v1 the website
  * uses; the app names itself with `x-kampus-app`, and carries its session token
@@ -148,15 +150,9 @@ export async function apiForm<T>(
       form.append("file", { uri: file.uri, name: file.name, type: file.type } as unknown as Blob);
     }
   }
-  let response: Response;
+  let response: FormAnswer;
   try {
-    // No Content-Type here: the form sets it, with its boundary.
-    response = await fetch(apiUrl(path), {
-      method: "POST",
-      headers,
-      credentials: "omit",
-      body: form,
-    });
+    response = await sendForm(apiUrl(path), headers, form);
   } catch {
     throw new NetworkError();
   }
@@ -173,7 +169,10 @@ function baseHeaders(): Record<string, string> {
   return headers;
 }
 
-async function readAnswer<T>(response: Response, token: string | null): Promise<T> {
+async function readAnswer<T>(
+  response: Pick<Response, "status" | "ok" | "text">,
+  token: string | null,
+): Promise<T> {
   if (response.status === 204) return undefined as T;
   const text = await response.text();
   let data: unknown = null;

@@ -123,7 +123,16 @@ mobile/
   documents, with the server's size and kind rules checked on the phone), `recorder.tsx` and
   `audio-clip.tsx` (`expo-audio`), `file-screen.tsx` (the `/file` route) with
   `pdf-document.native.tsx` and `pdf-document.tsx` (the web build: the browser's own viewer).
-  `apiForm` in `src/lib/api.ts` sends a form with a file.
+  `apiForm` in `src/lib/api.ts` sends a form with a file through `src/lib/send-form`: on a phone
+  that is React Native's own request (`send-form.native.ts`, XMLHttpRequest), because Expo's
+  `fetch` refuses a file given by its address on the phone ("Unsupported FormDataPart
+  implementation"), which the web build and the tests never show; the web build and the tests use
+  `send-form.ts` (`fetch`). Never send a form with a file through `fetch` in the app. Photos from
+  an iPhone's library are asked for in the compatible form (JPEG), since the server takes no HEIC.
+- **The keyboard.** Android draws the app edge to edge here, so the window does not shrink for the
+  keyboard. `Screen` (`src/components/surface.tsx`), the chat thread and the lesson's side sheet
+  sit in a `KeyboardAvoidingView` with `padding` on Android as well as iPhone; a new screen with
+  its own text box at the bottom needs the same.
 - **A group's pages for students (A-213).** `src/api/portal.ts` holds the calls (the personal
   link's token is the key, no session). `tests-screen.tsx` is the list, the run and the result;
   `materials-screen.tsx` lists files, links and recordings and hands a recording to the file page

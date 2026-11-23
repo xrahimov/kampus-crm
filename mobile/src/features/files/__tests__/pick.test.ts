@@ -4,6 +4,7 @@ import * as ImagePicker from "expo-image-picker";
 import {
   checkFile,
   chooseFile,
+  choosePhoto,
   FILE_MAX_BYTES,
   sendableType,
   takePhoto,
@@ -83,5 +84,16 @@ describe("a file chosen on the phone", () => {
       kind: "file",
       file: { name: "e.pdf", type: "application/pdf" },
     });
+  });
+
+  it("asks an iPhone for the copy of a photo the server takes (JPEG, not HEIC)", async () => {
+    (ImagePicker.launchImageLibraryAsync as jest.Mock).mockResolvedValueOnce({
+      canceled: true,
+      assets: null,
+    });
+    expect(await choosePhoto()).toEqual({ kind: "none" });
+    expect(ImagePicker.launchImageLibraryAsync).toHaveBeenCalledWith(
+      expect.objectContaining({ preferredAssetRepresentationMode: "compatible" }),
+    );
   });
 });

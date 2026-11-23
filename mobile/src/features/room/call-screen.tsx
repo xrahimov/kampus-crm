@@ -30,7 +30,6 @@ import {
 import {
   Keyboard,
   KeyboardAvoidingView,
-  Platform,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -596,7 +595,8 @@ export function CallScreen({
             accessibilityLabel={t("dismiss")}
           />
           <KeyboardAvoidingView
-            behavior={Platform.OS === "ios" ? "padding" : undefined}
+            // Android draws under the keyboard too (edge to edge), so both make room themselves.
+            behavior="padding"
             style={[styles.sheet, { maxHeight: height * 0.72 }]}
           >
             {/* The keyboard-avoiding view sets its own bottom padding, so the room for

@@ -1,6 +1,8 @@
 import type { ReactNode } from "react";
 import {
   ActivityIndicator,
+  KeyboardAvoidingView,
+  Platform,
   Pressable,
   RefreshControl,
   ScrollView,
@@ -60,43 +62,50 @@ export function Screen({
       ]}
     >
       {header}
-      {scroll ? (
-        <ScrollView
-          style={styles.fill}
-          contentContainerStyle={styles.grow}
-          keyboardShouldPersistTaps="handled"
-          // iOS: a field under the keyboard is scrolled into view (Android resizes the window).
-          automaticallyAdjustKeyboardInsets
-          refreshControl={
-            onRefresh ? (
-              <RefreshControl
-                refreshing={refreshing}
-                onRefresh={onRefresh}
-                tintColor={colors.ring}
-              />
-            ) : undefined
-          }
-        >
-          <View style={inner}>{children}</View>
-        </ScrollView>
-      ) : (
-        <View style={[styles.fill, inner]}>{children}</View>
-      )}
-      {footer ? (
-        <View
-          style={[
-            styles.footer,
-            {
-              backgroundColor: colors.card,
-              borderTopColor: colors.border,
-              paddingBottom: space[3] + insets.bottom,
-              paddingHorizontal: pad,
-            },
-          ]}
-        >
-          <View style={styles.footerColumn}>{footer}</View>
-        </View>
-      ) : null}
+      <KeyboardAvoidingView
+        style={styles.fill}
+        // Android draws under the keyboard (edge to edge): the page gives up that room and the
+        // field being typed in stays in view. iOS moves the scrolling part by itself (below).
+        behavior={Platform.OS === "android" ? "padding" : undefined}
+      >
+        {scroll ? (
+          <ScrollView
+            style={styles.fill}
+            contentContainerStyle={styles.grow}
+            keyboardShouldPersistTaps="handled"
+            // iOS: a field under the keyboard is scrolled into view.
+            automaticallyAdjustKeyboardInsets
+            refreshControl={
+              onRefresh ? (
+                <RefreshControl
+                  refreshing={refreshing}
+                  onRefresh={onRefresh}
+                  tintColor={colors.ring}
+                />
+              ) : undefined
+            }
+          >
+            <View style={inner}>{children}</View>
+          </ScrollView>
+        ) : (
+          <View style={[styles.fill, inner]}>{children}</View>
+        )}
+        {footer ? (
+          <View
+            style={[
+              styles.footer,
+              {
+                backgroundColor: colors.card,
+                borderTopColor: colors.border,
+                paddingBottom: space[3] + insets.bottom,
+                paddingHorizontal: pad,
+              },
+            ]}
+          >
+            <View style={styles.footerColumn}>{footer}</View>
+          </View>
+        ) : null}
+      </KeyboardAvoidingView>
     </View>
   );
 }
