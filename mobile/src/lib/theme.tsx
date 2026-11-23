@@ -37,6 +37,9 @@ export const palette = {
     sidebarForeground: "#becbe2",
     sidebarMuted: "#27355f",
     sidebarActive: "#58d4d0",
+    // The two series of a chart (A-230): lapis and turquoise, checked for colour-blind readers.
+    series1: "#3d5fc4",
+    series2: "#0f9a9b",
     scrim: "rgba(10, 19, 49, 0.45)",
   },
   dark: {
@@ -66,6 +69,8 @@ export const palette = {
     sidebarForeground: "#becbe2",
     sidebarMuted: "#111932",
     sidebarActive: "#58d4d0",
+    series1: "#5f7fe0",
+    series2: "#27a5a2",
     scrim: "rgba(1, 3, 12, 0.6)",
   },
 } as const;

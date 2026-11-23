@@ -1,5 +1,4 @@
 import { useQueryClient } from "@tanstack/react-query";
-import { useRouter } from "expo-router";
 import { useState } from "react";
 import { StyleSheet, View } from "react-native";
 
@@ -12,8 +11,10 @@ import { api, APP_VERSION } from "@/lib/api";
 import { DeviceSettings } from "@/features/shared/device-settings";
 import { errorText, useTranslations } from "@/lib/i18n";
 import { useLayout } from "@/lib/layout";
-import { can, useMe, useSession } from "@/lib/session";
+import { useMe, useSession } from "@/lib/session";
 import { space } from "@/lib/theme";
+
+import { Menu } from "@/features/office/menu";
 
 import { OpenOnSite } from "./open-on-site";
 
@@ -24,7 +25,6 @@ export function MoreScreen() {
   const { signOut, refreshMe } = useSession();
   const { wide } = useLayout();
   const client = useQueryClient();
-  const router = useRouter();
   const [error, setError] = useState<string | null>(null);
   const [leaving, setLeaving] = useState(false);
 
@@ -55,6 +55,8 @@ export function MoreScreen() {
           </View>
         </View>
       </Card>
+      {/* Every page the person may open, before the choices of view and branch (A-230). */}
+      <Menu />
       {error ? <Notice tone="destructive">{error}</Notice> : null}
       {me.view.canSwitch ? (
         <ChoiceList
@@ -74,20 +76,6 @@ export function MoreScreen() {
           onChange={(branchId) => void change("/auth/active-branch", { branchId })}
           options={me.branches.map((b) => ({ value: b.id, label: b.name }))}
         />
-      ) : null}
-      {can(me, "announcements.view") ? (
-        <Card>
-          <Text variant="heading">{t("announcements.title")}</Text>
-          <Text variant="small" tone="mutedForeground">
-            {t("mobile.announcements.hint")}
-          </Text>
-          <Button
-            variant="outline"
-            label={t("mobile.announcements.open")}
-            onPress={() => router.push("/staff/announcements")}
-            testID="open-announcements"
-          />
-        </Card>
       ) : null}
       <Card>
         <Text variant="heading">{t("mobile.siteTitle")}</Text>

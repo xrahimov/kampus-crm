@@ -48,6 +48,16 @@ export function GlassScope({ children }: { children: ReactNode }) {
 }
 
 /**
+ * Glass inside this has no backdrop to name: a sheet in a window of its own
+ * (a `Modal`) cannot blur the page of the window under it on Android. An
+ * iPhone blurs whatever is behind without being told; Android gets the nearly
+ * solid pane.
+ */
+export function NoBackdrop({ children }: { children: ReactNode }) {
+  return <BackdropContext.Provider value={null}>{children}</BackdropContext.Provider>;
+}
+
+/**
  * The part of the screen that glass floats over. It comes before the glass in
  * the tree, and glass is never put inside it: a pane cannot blur itself.
  */

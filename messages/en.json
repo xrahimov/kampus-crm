@@ -6443,6 +6443,11 @@
       "posted": "Posted. {count, plural, =0 {No student} one {# student} other {# students}} will see it.",
       "open": "Open announcements",
       "hint": "A notice to one of your groups: on the students' pages, in Telegram and, if you like, by SMS."
+    },
+    "office": {
+      "searchTitle": "Search",
+      "searchLabel": "Name or phone number",
+      "searchHint": "Type at least two letters of a name or digits of a phone number. Students, groups and leads you may see are searched."
     }
   }
 }
