@@ -7,7 +7,15 @@ import { useToday } from "@/api/hooks";
 import type { Today, TodayLesson } from "@/api/types";
 import { Button } from "@/components/button";
 import { Header } from "@/components/header";
-import { Badge, Card, EmptyState, Loading, Notice, Screen } from "@/components/surface";
+import {
+  Badge,
+  Card,
+  EmptyState,
+  Loading,
+  Notice,
+  Screen,
+  usePullToReload,
+} from "@/components/surface";
 import { Text } from "@/components/text";
 import { ApiError } from "@/lib/api";
 import { addDays, dayAsDate } from "@/lib/days";
@@ -33,6 +41,11 @@ export function TodayScreen() {
   const query = useToday(date);
   const day = query.data;
   const [chosen, setChosen] = useState<string | null>(null);
+  // The lesson list of the two-column layout reloads on a pull, as the phone's page does.
+  const reload = usePullToReload({
+    onRefresh: () => void query.refetch(),
+    refreshing: query.isRefetching,
+  });
 
   const shown = day?.date ?? date;
   const isToday = !day || day.date === day.today;
@@ -125,9 +138,17 @@ export function TodayScreen() {
   }
   return (
     <Screen header={header} scroll={false} contentStyle={styles.split}>
-      <ScrollView style={styles.master} contentContainerStyle={styles.column}>
-        {list}
-      </ScrollView>
+      <View style={styles.master}>
+        <ScrollView
+          style={styles.fill}
+          contentContainerStyle={styles.column}
+          testID="today-lessons"
+          {...reload.scrollProps}
+        >
+          {list}
+        </ScrollView>
+        {reload.sign}
+      </View>
       <ScrollView
         style={styles.detail}
         contentContainerStyle={styles.column}

@@ -136,11 +136,14 @@ mobile/
   view's `contentInset`, not padding. Reloading by pulling down: Android uses the
   system's refresh control, moved below the header (`progressViewOffset`). An iPhone and iPad
   do not: on the iOS 27 simulators the system's spinner drew nowhere under a floating header,
-  whatever was tried. There `Screen` measures the pull itself (`onScrollEndDrag`, 72 points)
-  and draws its own sign (`ReloadSign`: a small pane of glass under the header that comes in
-  with the pull and spins while the page reloads). On both the sign belongs to the person's
-  pull (`useShownReload`): it shows from the pull until the page has reloaded and at least
-  0.7 s; a reload nobody pulled shows none.
+  whatever was tried. There the pull is measured by the app (`onScrollEndDrag`: the page moved 48 points,
+  which is a drag of about 90 because an iPhone's page resists) and the app draws its own sign
+  (`ReloadSign`: a small pane of glass under the header, pale while the pull is short, clear
+  and turning once it is far enough and while the page reloads). Both are in
+  `usePullToReload` (`surface.tsx`), which `Screen` uses; a list that scrolls by itself (the
+  tablet's lessons of the day) calls it too. The sign belongs to the person's pull: it shows
+  from the pull until the page has reloaded and at least 0.7 s; a reload nobody pulled shows
+  none.
 - **Motion (A-224).** `src/components/motion.tsx`, on `react-native-reanimated` (it was already
   in every build, the router brings it). `Press` is anything pressable: it sinks under the
   finger and springs back. `useArrival` gives cards the cascade in which they appear (the first

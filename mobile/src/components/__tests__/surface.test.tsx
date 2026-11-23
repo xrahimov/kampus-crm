@@ -1,8 +1,8 @@
 import { act, screen } from "@testing-library/react-native";
 import { useState } from "react";
-import { Platform, StyleSheet, Text, View } from "react-native";
+import { Platform, ScrollView, StyleSheet, Text, View } from "react-native";
 
-import { Screen } from "@/components/surface";
+import { Screen, usePullToReload } from "@/components/surface";
 import { clearClients, renderScreen } from "@/features/student/test-support";
 
 jest.mock("@react-native-async-storage/async-storage", () =>
@@ -110,6 +110,54 @@ describe("the reload sign on an iPhone", () => {
     // A second pull while it reloads does not start another one.
     await dragAndLetGo(90);
     expect(onRefresh).toHaveBeenCalledTimes(1);
+  });
+
+  it("starts to turn once the pull is far enough, before the page is let go", async () => {
+    const onRefresh = jest.fn();
+    await renderScreen(
+      <Screen onRefresh={onRefresh} refreshing={false}>
+        <Text>Page</Text>
+      </Screen>,
+    );
+    const scroll = screen.getByTestId("screen-scroll");
+    const rest = scroll.props.contentOffset.y as number;
+    const dragTo = (by: number) =>
+      act(async () =>
+        screen
+          .getByTestId("screen-scroll")
+          .props.onScroll({ nativeEvent: { contentOffset: { x: 0, y: rest - by } } }),
+      );
+    await dragTo(30);
+    expect(spinning()).toBe(false);
+    await dragTo(60);
+    expect(spinning()).toBe(true);
+    // Pushed back up without letting go: nothing reloads.
+    await dragTo(10);
+    expect(spinning()).toBe(false);
+    expect(onRefresh).not.toHaveBeenCalled();
+  });
+
+  it("serves a list that scrolls by itself, like the tablet's lessons of the day", async () => {
+    const onRefresh = jest.fn();
+    function Lessons() {
+      const reload = usePullToReload({ onRefresh });
+      return (
+        <View>
+          <ScrollView testID="lessons" {...reload.scrollProps}>
+            <Text>Lesson</Text>
+          </ScrollView>
+          {reload.sign}
+        </View>
+      );
+    }
+    await renderScreen(<Lessons />);
+    const at = { nativeEvent: { contentOffset: { x: 0, y: -60 } } };
+    await act(async () => {
+      screen.getByTestId("lessons").props.onScroll(at);
+      screen.getByTestId("lessons").props.onScrollEndDrag(at);
+    });
+    expect(onRefresh).toHaveBeenCalledTimes(1);
+    expect(spinning()).toBe(true);
   });
 
   it("stays long enough to be seen, however quick the server", async () => {
