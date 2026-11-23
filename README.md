@@ -26,8 +26,9 @@ to A-205, A-207 to A-211 for the lesson room inside the app with its whiteboard,
 polls, breakout rooms and screen sharing from Android, A-212 for homework answered in the app,
 A-213 for a group's tests, materials, chat and exercises in the app, A-214 for the teacher's
 side of a group: answers with their files and a spoken reply, the group chat and materials added
-from the phone, and A-215 for the student's course with flashcards, the class stream, news,
-results and rating a lesson).
+from the phone, A-215 for the student's course with flashcards, the class stream, news, results
+and rating a lesson, and A-216 for the student's schedule with booking, time zone, paying online,
+Telegram, invite code and certificates).
 
 [docs/DEMO-GUIDE.md](docs/DEMO-GUIDE.md) is a script for showing the whole app to a centre's owner or
 its teachers, stop by stop, with the manual's own screenshots.

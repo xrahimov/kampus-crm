@@ -11,11 +11,20 @@ import {
   Target,
   Trophy,
 } from "lucide-react-native";
-import { StyleSheet, View } from "react-native";
+import * as WebBrowser from "expo-web-browser";
+import { Linking, Platform, Share, StyleSheet, View } from "react-native";
 
 import { usePortal } from "@/api/hooks";
 import { usePortalBadges, usePortalGradebook } from "@/api/portal";
-import type { BadgeCode, Portal, PortalBadge, PortalGradebook } from "@/api/types";
+import { usePortalCertificates } from "@/api/portal-own";
+import type {
+  BadgeCode,
+  Portal,
+  PortalBadge,
+  PortalCertificate,
+  PortalGradebook,
+} from "@/api/types";
+import { Button } from "@/components/button";
 import { Header } from "@/components/header";
 import { Badge, Card, Divider, Screen, type Tone } from "@/components/surface";
 import { Text } from "@/components/text";
@@ -45,7 +54,8 @@ const BADGE_ICON: Record<BadgeCode, typeof Award> = {
 
 /**
  * How the student is doing, in the app (A-215): the grade in the course part
- * by part, the badges earned and still to earn, exams and the tests taken.
+ * by part, the badges earned and still to earn, certificates (A-216), exams
+ * and the tests taken.
  */
 export function ResultsScreen() {
   const { token } = useLocalSearchParams<{ token: string }>();
@@ -54,6 +64,7 @@ export function ResultsScreen() {
   const portal = usePortal(token);
   const gradebook = usePortalGradebook(token);
   const badges = usePortalBadges(token);
+  const certificates = usePortalCertificates(token);
 
   const header = (
     <Header back title={t("portal.tabs.results")} subtitle={portal.data?.portal.group.name} />
@@ -63,11 +74,15 @@ export function ResultsScreen() {
     void portal.refetch();
     void gradebook.refetch();
     void badges.refetch();
+    void certificates.refetch();
   };
   const grade = gradebook.data ? <Gradebook data={gradebook.data} /> : null;
   const earned = badges.data ? <Badges badges={badges.data} /> : null;
   const taken = (
     <>
+      {certificates.data && certificates.data.length > 0 ? (
+        <Certificates certificates={certificates.data} />
+      ) : null}
       <Exams portal={portal.data.portal} />
       <Tests portal={portal.data.portal} />
     </>
@@ -221,6 +236,66 @@ function Exams({ portal }: { portal: Portal }) {
           </View>
         );
       })}
+    </Card>
+  );
+}
+
+/**
+ * The student's certificates. Each has a public page anyone may open to check
+ * it: **Open** shows that page over the app, **Share** hands its link to the
+ * phone's share sheet.
+ */
+function Certificates({ certificates }: { certificates: PortalCertificate[] }) {
+  const t = useTranslations();
+  const formatDate = useDate();
+  const open = (url: string) =>
+    void (
+      Platform.OS === "web"
+        ? Linking.openURL(url)
+        : WebBrowser.openBrowserAsync(url, { enableBarCollapsing: true })
+    ).catch(() => undefined);
+  return (
+    <Card testID="certificates">
+      <Text variant="heading">{t("portal.results.certificates")}</Text>
+      {certificates.map((certificate, index) => (
+        <View key={certificate.id} style={styles.rows}>
+          {index > 0 ? <Divider /> : null}
+          <View style={styles.rows} testID={`certificate-${certificate.id}`}>
+            <View>
+              <Text variant="bodyStrong">
+                {[certificate.title, certificate.level].filter(Boolean).join(", ")}
+              </Text>
+              <Text variant="small" tone="mutedForeground">
+                {t("portal.results.certificateMeta", {
+                  number: certificate.number,
+                  date: formatDate(dayAsDate(certificate.issuedAt), { dateStyle: "medium" }),
+                })}
+              </Text>
+            </View>
+            <View style={styles.line}>
+              <Button
+                compact
+                variant="outline"
+                label={t("portal.results.openCertificate")}
+                onPress={() => open(certificate.url)}
+                testID={`certificate-open-${certificate.id}`}
+              />
+              <Button
+                compact
+                variant="ghost"
+                label={t("mobile.certificates.share")}
+                onPress={() =>
+                  void Share.share({ message: certificate.url }).catch(() => undefined)
+                }
+                testID={`certificate-share-${certificate.id}`}
+              />
+            </View>
+          </View>
+        </View>
+      ))}
+      <Text variant="small" tone="mutedForeground">
+        {t("portal.results.certificateHint")}
+      </Text>
     </Card>
   );
 }

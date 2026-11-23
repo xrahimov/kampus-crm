@@ -2,31 +2,35 @@ import { useLocalSearchParams, useRouter } from "expo-router";
 import {
   Award,
   BookOpen,
+  CalendarDays,
   ChevronRight,
   ClipboardCheck,
-  ExternalLink,
+  CreditCard,
   FolderOpen,
+  Gift,
   Megaphone,
   MessageCircle,
   MessagesSquare,
   NotebookPen,
+  Send,
+  type LucideIcon,
 } from "lucide-react-native";
 import { Pressable, StyleSheet, View } from "react-native";
 
 import { usePortal } from "@/api/hooks";
 import { usePortalChat, usePortalCourse, usePortalNews } from "@/api/portal";
-import type { AttendanceStatus, Portal } from "@/api/types";
+import { usePortalTelegram } from "@/api/portal-own";
+import type { AttendanceStatus, PayOptions, Portal } from "@/api/types";
 import { Button } from "@/components/button";
 import { Header } from "@/components/header";
 import { Badge, Card, Divider, EmptyState, Loading, Screen, type Tone } from "@/components/surface";
 import { Text } from "@/components/text";
 import { dayAsDate } from "@/lib/days";
-import { errorText, useDate, useLocaleChoice, useMoney, useTranslations } from "@/lib/i18n";
+import { errorText, useDate, useMoney, useTranslations } from "@/lib/i18n";
 import { useLayout } from "@/lib/layout";
 import { space, useTheme } from "@/lib/theme";
 
 import { LessonRating } from "./lesson-rating";
-import { openPersonalPage } from "./open-page";
 
 const ATTENDANCE_TONE: Record<AttendanceStatus, Tone> = {
   PRESENT: "success",
@@ -38,16 +42,13 @@ const ATTENDANCE_TONE: Record<AttendanceStatus, Tone> = {
 /**
  * One group as the student sees it: the next lesson, how they are doing, each
  * past lesson with its mark, grade and the student's own rating, and the
- * payments. Homework, tests, the course, materials, the chat, the class
- * stream, news and results are pages of the app (A-212, A-213, A-215); the
- * schedule and paying online open on the personal page for now.
+ * payments. Everything else the personal page has is a page of the app
+ * (A-212, A-213, A-215, A-216), so nothing here opens the site.
  */
 export function ClassScreen() {
   const { token } = useLocalSearchParams<{ token: string }>();
   const t = useTranslations();
-  const { locale } = useLocaleChoice();
   const { wide } = useLayout();
-  const { colors } = useTheme();
   const query = usePortal(token);
   const portal = query.data?.portal;
 
@@ -82,18 +83,10 @@ export function ClassScreen() {
     <View style={styles.block}>
       <NextLesson portal={portal} />
       <Stats portal={portal} />
-      <Pages token={token} />
-      <Button
-        variant="outline"
-        label={t("mobile.myPage")}
-        icon={<ExternalLink size={18} color={colors.foreground} />}
-        onPress={() => void openPersonalPage(locale, token)}
-        testID="open-my-page"
-      />
-      <Text variant="small" tone="mutedForeground">
-        {t("mobile.myPageHint")}
-      </Text>
-      <Money portal={portal} />
+      <LearningPages token={token} />
+      <GroupPages token={token} />
+      <Money portal={portal} pay={query.data?.pay} token={token} />
+      <OwnPages token={token} />
     </View>
   );
   const lessons = (
@@ -125,87 +118,39 @@ export function ClassScreen() {
   );
 }
 
-/**
- * The group's pages inside the app, one row each. The chat and the news show
- * what is unread; the course is listed once it has topics.
- */
-function Pages({ token }: { token: string }) {
-  const t = useTranslations();
+interface PageRow {
+  id: string;
+  label: string;
+  Icon: LucideIcon;
+  /** How many are unread, or waiting. */
+  count?: number;
+  /** A quiet word on the right, such as "Not connected". */
+  note?: string;
+  pathname:
+    | "/student/homework/[token]"
+    | "/student/tests/[token]"
+    | "/student/course/[token]"
+    | "/student/materials/[token]"
+    | "/student/results/[token]"
+    | "/student/chat/[token]"
+    | "/student/stream/[token]"
+    | "/student/news/[token]"
+    | "/student/schedule/[token]"
+    | "/student/telegram/[token]"
+    | "/student/invite/[token]";
+}
+
+/** Rows that each open a page of the group. */
+function PageRows({ token, rows, testID }: { token: string; rows: PageRow[]; testID: string }) {
   const { colors } = useTheme();
   const router = useRouter();
-  const unread = usePortalChat(token).data?.unread ?? 0;
-  const unreadNews = (usePortalNews(token).data ?? []).filter((item) => !item.read).length;
-  const hasCourse = (usePortalCourse(token).data?.total ?? 0) > 0;
-  const params = { token };
-  const rows = [
-    {
-      id: "homework",
-      label: t("portal.tabs.homework"),
-      Icon: NotebookPen,
-      count: 0,
-      open: () => router.push({ pathname: "/student/homework/[token]", params }),
-    },
-    {
-      id: "tests",
-      label: t("portal.tabs.tests"),
-      Icon: ClipboardCheck,
-      count: 0,
-      open: () => router.push({ pathname: "/student/tests/[token]", params }),
-    },
-    ...(hasCourse
-      ? [
-          {
-            id: "course",
-            label: t("portal.tabs.course"),
-            Icon: BookOpen,
-            count: 0,
-            open: () => router.push({ pathname: "/student/course/[token]", params }),
-          },
-        ]
-      : []),
-    {
-      id: "materials",
-      label: t("portal.tabs.materials"),
-      Icon: FolderOpen,
-      count: 0,
-      open: () => router.push({ pathname: "/student/materials/[token]", params }),
-    },
-    {
-      id: "chat",
-      label: t("portal.tabs.chat"),
-      Icon: MessageCircle,
-      count: unread,
-      open: () => router.push({ pathname: "/student/chat/[token]", params }),
-    },
-    {
-      id: "stream",
-      label: t("portal.tabs.stream"),
-      Icon: MessagesSquare,
-      count: 0,
-      open: () => router.push({ pathname: "/student/stream/[token]", params }),
-    },
-    {
-      id: "news",
-      label: t("portal.tabs.announcements"),
-      Icon: Megaphone,
-      count: unreadNews,
-      open: () => router.push({ pathname: "/student/news/[token]", params }),
-    },
-    {
-      id: "results",
-      label: t("portal.tabs.results"),
-      Icon: Award,
-      count: 0,
-      open: () => router.push({ pathname: "/student/results/[token]", params }),
-    },
-  ];
   return (
-    <Card style={styles.flush} testID="pages">
-      {rows.map(({ id, label, Icon, count, open }, index) => (
+    <Card style={styles.flush} testID={testID}>
+      {rows.map(({ id, label, Icon, count = 0, note, pathname }, index) => (
         <View key={id}>
           {index > 0 ? <Divider /> : null}
           <Pressable
-            onPress={open}
+            onPress={() => router.push({ pathname, params: { token } })}
             accessibilityRole="button"
             accessibilityLabel={label}
             style={({ pressed }) => [styles.page, pressed && { backgroundColor: colors.muted }]}
@@ -218,12 +163,123 @@ function Pages({ token }: { token: string }) {
             {count > 0 ? (
               <Badge tone="accent" label={String(count)} testID={`unread-${id}`} />
             ) : null}
+            {note ? (
+              <Text variant="small" tone="mutedForeground" testID={`note-${id}`}>
+                {note}
+              </Text>
+            ) : null}
             <ChevronRight size={20} color={colors.mutedForeground} />
           </Pressable>
         </View>
       ))}
     </Card>
   );
+}
+
+/**
+ * What the student learns from: homework, tests, the course once it has
+ * topics, materials and results.
+ */
+function LearningPages({ token }: { token: string }) {
+  const t = useTranslations();
+  const hasCourse = (usePortalCourse(token).data?.total ?? 0) > 0;
+  const rows: PageRow[] = [
+    {
+      id: "homework",
+      label: t("portal.tabs.homework"),
+      Icon: NotebookPen,
+      pathname: "/student/homework/[token]",
+    },
+    {
+      id: "tests",
+      label: t("portal.tabs.tests"),
+      Icon: ClipboardCheck,
+      pathname: "/student/tests/[token]",
+    },
+    ...(hasCourse
+      ? [
+          {
+            id: "course",
+            label: t("portal.tabs.course"),
+            Icon: BookOpen,
+            pathname: "/student/course/[token]" as const,
+          },
+        ]
+      : []),
+    {
+      id: "materials",
+      label: t("portal.tabs.materials"),
+      Icon: FolderOpen,
+      pathname: "/student/materials/[token]",
+    },
+    {
+      id: "results",
+      label: t("portal.tabs.results"),
+      Icon: Award,
+      pathname: "/student/results/[token]",
+    },
+  ];
+  return <PageRows token={token} rows={rows} testID="pages" />;
+}
+
+/** The group itself: its chat, stream and news with what is unread, and its times. */
+function GroupPages({ token }: { token: string }) {
+  const t = useTranslations();
+  const unread = usePortalChat(token).data?.unread ?? 0;
+  const unreadNews = (usePortalNews(token).data ?? []).filter((item) => !item.read).length;
+  const rows: PageRow[] = [
+    {
+      id: "chat",
+      label: t("portal.tabs.chat"),
+      Icon: MessageCircle,
+      count: unread,
+      pathname: "/student/chat/[token]",
+    },
+    {
+      id: "stream",
+      label: t("portal.tabs.stream"),
+      Icon: MessagesSquare,
+      pathname: "/student/stream/[token]",
+    },
+    {
+      id: "news",
+      label: t("portal.tabs.announcements"),
+      Icon: Megaphone,
+      count: unreadNews,
+      pathname: "/student/news/[token]",
+    },
+    {
+      id: "schedule",
+      label: t("portal.tabs.schedule"),
+      Icon: CalendarDays,
+      pathname: "/student/schedule/[token]",
+    },
+  ];
+  return <PageRows token={token} rows={rows} testID="group-pages" />;
+}
+
+/** Telegram with how many chats are connected, and the invite code. */
+function OwnPages({ token }: { token: string }) {
+  const t = useTranslations();
+  const telegram = usePortalTelegram(token, false).data;
+  const rows: PageRow[] = [
+    {
+      id: "telegram",
+      label: t("portal.telegram.title"),
+      Icon: Send,
+      note: telegram
+        ? t("mobile.telegram.connectedCount", { count: telegram.chats.length })
+        : undefined,
+      pathname: "/student/telegram/[token]",
+    },
+    {
+      id: "invite",
+      label: t("portal.referral.title"),
+      Icon: Gift,
+      pathname: "/student/invite/[token]",
+    },
+  ];
+  return <PageRows token={token} rows={rows} testID="own-pages" />;
 }
 
 function NextLesson({ portal }: { portal: Portal }) {
@@ -277,16 +333,23 @@ function Stats({ portal }: { portal: Portal }) {
   );
 }
 
-function Money({ portal }: { portal: Portal }) {
+function Money({ portal, pay, token }: { portal: Portal; pay?: PayOptions; token: string }) {
   const t = useTranslations();
   const money = useMoney();
   const formatDate = useDate();
+  const router = useRouter();
+  const { colors } = useTheme();
   const { balance, payments, nextPaymentDate } = portal.money;
+  const canPay = (pay?.providers.length ?? 0) > 0;
   return (
     <Card testID="money">
       <Text variant="heading">{t("portal.tabs.money")}</Text>
       {balance < 0 ? (
-        <Text tone="destructive">{t("portal.money.debt", { amount: money(-balance) })}</Text>
+        <Text tone="destructive" testID="debt">
+          {canPay
+            ? t("mobile.debtOnline", { amount: money(-balance) })
+            : t("portal.money.debt", { amount: money(-balance) })}
+        </Text>
       ) : (
         <View style={styles.line}>
           <Text tone="mutedForeground" style={styles.fill}>
@@ -311,6 +374,31 @@ function Money({ portal }: { portal: Portal }) {
             {formatDate(dayAsDate(nextPaymentDate), { day: "numeric", month: "short" })}
           </Text>
         </View>
+      ) : null}
+      {portal.packages && portal.packages.offers.length > 0 ? (
+        <View style={styles.offers} testID="package-offers">
+          <Text variant="small" tone="mutedForeground">
+            {t("portal.money.packages")}
+          </Text>
+          {portal.packages.offers.map((offer) => (
+            <Text key={offer.id}>
+              {t("portal.money.packageOffer", {
+                name: offer.name,
+                lessons: offer.lessons,
+                price: money(offer.price),
+              })}
+            </Text>
+          ))}
+        </View>
+      ) : null}
+      {canPay ? (
+        <Button
+          variant="saffron"
+          label={t("mobile.payOnline")}
+          icon={<CreditCard size={18} color={colors.saffronForeground} />}
+          onPress={() => router.push({ pathname: "/student/pay/[token]", params: { token } })}
+          testID="open-pay"
+        />
       ) : null}
       {payments.length === 0 ? (
         <Text variant="small" tone="mutedForeground">
@@ -415,6 +503,7 @@ const styles = StyleSheet.create({
     paddingVertical: space[3],
   },
   day: { width: 92 },
+  offers: { gap: 2 },
   rating: { paddingHorizontal: space[4], paddingBottom: space[3] },
   marks: { alignItems: "flex-end", gap: space[1] },
 });

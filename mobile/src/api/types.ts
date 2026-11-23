@@ -251,7 +251,7 @@ export interface LessonRating {
 }
 
 export interface Portal {
-  student: { fullName: string; coins: number };
+  student: { fullName: string; coins: number; timeZone: string | null };
   group: { name: string; courseName: string; teachers: string[]; endDate: string };
   nextLesson: Pick<PortalLesson, "id" | "date" | "startTime" | "endTime" | "topic"> | null;
   lessons: PortalLesson[];
@@ -268,7 +268,13 @@ export interface Portal {
       method: string | null;
     }>;
   };
-  packages: { purchased: number; used: number; lessonsLeft: number } | null;
+  packages: {
+    purchased: number;
+    used: number;
+    lessonsLeft: number;
+    /** Packages the centre sells for this group. */
+    offers: Array<{ id: string; name: string; lessons: number; price: number }>;
+  } | null;
   exams: Array<{
     id: string;
     name: string;
@@ -600,4 +606,110 @@ export interface PortalBadge {
   /** When it was earned; null while it is still locked. */
   earnedAt: string | null;
   groupName: string | null;
+}
+
+/* ----- The schedule on the student's side (reschedule.service.ts, video.service.ts) ----- */
+
+export interface WeeklyTime {
+  /** 1 is Monday. */
+  weekday: number;
+  startTime: string;
+  endTime: string;
+}
+
+/** What the personal link says about the group (ClassPageDto): its weekly times, in the student's zone when they set one. */
+export interface ClassPage {
+  organizationName: string;
+  groupName: string;
+  studentName: string;
+  enabled: boolean;
+  roomId: string | null;
+  schedule: WeeklyTime[];
+  timeZone: string | null;
+  localSchedule: WeeklyTime[] | null;
+}
+
+export interface LessonTime {
+  date: string;
+  startTime: string;
+  endTime: string;
+}
+
+export interface PortalSchedule {
+  rules: {
+    /** The centre allows it and the group has one student. */
+    enabled: boolean;
+    hours: number;
+    workStart: string;
+    workEnd: string;
+    stepMinutes: number;
+    bookingLimit: number;
+    bookedAhead: number;
+  };
+  upcoming: Array<
+    LessonTime & {
+      id: string;
+      topic: string | null;
+      /** Still inside the window: the student may move or cancel it. */
+      canChange: boolean;
+      /** When the window closes, as an instant. */
+      deadline: string;
+    }
+  >;
+  /** Lessons taken off without a new time; the student may pick one. */
+  cancelled: Array<{
+    dayOffId: string;
+    date: string;
+    startTime: string | null;
+    endTime: string | null;
+    /** The teacher's reason, or `@student.moved` / `@student.cancelled`. */
+    reason: string;
+  }>;
+  /** The teacher keeps booking hours: `slots` are their free times over two weeks. */
+  hasAvailability: boolean;
+  slots: LessonTime[];
+}
+
+/* ----- Paying online (online-payments.service.ts) ----- */
+
+export type PayProvider = "PAYME" | "CLICK";
+
+export interface PayOptions {
+  /** Providers the centre switched on, in the order to show them. */
+  providers: PayProvider[];
+  suggestedAmount: number;
+  suggestedMonth: string;
+  months: string[];
+}
+
+export interface PaymentStatus {
+  id: string;
+  provider: PayProvider;
+  status: "PENDING" | "PAID" | "CANCELLED";
+  amount: number;
+  effectiveMonth: string;
+}
+
+/* ----- Telegram, the invite code, certificates ----- */
+
+export interface PortalTelegram {
+  /** Opens the centre's bot with the student's code; null when the bot is not set up. */
+  link: string | null;
+  chats: Array<{ chatId: string; name: string | null; linkedAt: string }>;
+}
+
+export interface PortalReferral {
+  code: string;
+  link: string | null;
+  joined: number;
+}
+
+export interface PortalCertificate {
+  id: string;
+  number: string;
+  title: string;
+  level: string | null;
+  issuedAt: string;
+  /** The public page anyone may open to check it. */
+  url: string;
 }
