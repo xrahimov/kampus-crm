@@ -1,4 +1,5 @@
 import type { Prisma } from "@/generated/prisma/client";
+import { rubricCriterionSchema, type RubricCriterion } from "@/lib/validation/groups";
 import { prisma, type DbClient } from "@/server/db/prisma";
 import { authorize, type Actor } from "@/server/rbac/authorize";
 import { groupScope } from "@/server/services/groups/shared";
@@ -25,6 +26,8 @@ export interface CheckingItemDto {
   text: string;
   linkUrl: string | null;
   speaking: boolean;
+  /** An assignment's criteria, each scored when the answer is accepted (A-161); empty without one. */
+  rubric: RubricCriterion[];
   /** The student's answer. */
   note: string | null;
   attachmentUrl: string | null;
@@ -38,6 +41,12 @@ export interface CheckingQueueDto {
 }
 
 const PAGE = 100;
+
+/** The stored rubric, or none when the JSON is not what we wrote. */
+const rubricOf = (value: unknown): RubricCriterion[] => {
+  const parsed = rubricCriterionSchema.array().safeParse(value);
+  return parsed.success ? parsed.data : [];
+};
 
 function waiting(actor: Actor): Prisma.HomeworkSubmissionWhereInput {
   return {
@@ -74,6 +83,7 @@ export async function listCheckingQueue(
             title: true,
             linkUrl: true,
             speaking: true,
+            rubric: true,
             lesson: {
               select: { date: true, topic: true, courseTopic: { select: { title: true } } },
             },
@@ -100,6 +110,7 @@ export async function listCheckingQueue(
       text: r.homework.text,
       linkUrl: r.homework.linkUrl,
       speaking: r.homework.speaking,
+      rubric: rubricOf(r.homework.rubric),
       note: r.note,
       attachmentUrl: r.attachmentUrl,
       submittedAt: r.submittedAt.toISOString(),

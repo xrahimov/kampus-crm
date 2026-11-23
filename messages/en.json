@@ -6387,6 +6387,14 @@
     "certificates": {
       "share": "Share"
     },
-    "debtOnline": "You owe {amount}."
+    "debtOnline": "You owe {amount}.",
+    "task": {
+      "noDate": "No date",
+      "emptyHint": "Set the first one above: choose a lesson or start an assignment.",
+      "pick": "Choose the lesson it belongs to, or start an assignment with a name of its own.",
+      "assignmentHint": "A project or essay for the whole group, not tied to one lesson.",
+      "answers": "Answers",
+      "hideAnswers": "Hide answers"
+    }
   }
 }

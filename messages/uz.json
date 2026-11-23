@@ -6387,6 +6387,14 @@
     "certificates": {
       "share": "Ulashish"
     },
-    "debtOnline": "Qarzingiz: {amount}."
+    "debtOnline": "Qarzingiz: {amount}.",
+    "task": {
+      "noDate": "Muddatsiz",
+      "emptyHint": "Birinchisini yuqorida bering: darsni tanlang yoki loyiha topshirig'ini boshlang.",
+      "pick": "Vazifa qaysi darsga tegishli ekanini tanlang yoki o'z nomi bilan loyiha topshirig'ini boshlang.",
+      "assignmentHint": "Butun guruh uchun loyiha yoki insho, bitta darsga bog'lanmagan.",
+      "answers": "Javoblar",
+      "hideAnswers": "Javoblarni yashirish"
+    }
   }
 }

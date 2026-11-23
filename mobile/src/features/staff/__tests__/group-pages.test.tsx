@@ -80,6 +80,7 @@ function item(change: Partial<CheckingItem>): CheckingItem {
     text: "Exercise 4 on page 31",
     linkUrl: null,
     speaking: false,
+    rubric: [],
     note: "Done",
     attachmentUrl: null,
     submittedAt: "2026-11-22T10:00:00.000Z",

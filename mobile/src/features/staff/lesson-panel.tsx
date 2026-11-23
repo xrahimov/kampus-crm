@@ -1,5 +1,6 @@
+import { useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "expo-router";
-import { Check, Minus, Video, X } from "lucide-react-native";
+import { Check, Minus, Paperclip, Video, X } from "lucide-react-native";
 import { useState } from "react";
 import { Pressable, StyleSheet, TextInput, View } from "react-native";
 
@@ -8,19 +9,22 @@ import {
   useMarkAttendance,
   useMonthGrid,
   useSetGrade,
-  useSetHomework,
   useSetTopic,
   useStartVideo,
 } from "@/api/hooks";
+import { saveLessonHomework, staffGroupKeys } from "@/api/staff-group";
 import type { AttendanceStatus, TodayLesson, TodayMember } from "@/api/types";
 import { Button } from "@/components/button";
 import { Field } from "@/components/field";
 import { Avatar, Badge, Card, Divider, Notice, Segmented } from "@/components/surface";
 import { Text } from "@/components/text";
-import { monthOf } from "@/lib/days";
-import { errorText, useMoney, useTranslations } from "@/lib/i18n";
+import { fileRoute } from "@/features/files/file-screen";
+import { dayAsDate, monthOf } from "@/lib/days";
+import { errorText, useDate, useMoney, useTranslations } from "@/lib/i18n";
 import { useLayout } from "@/lib/layout";
 import { font, radius, space, useTheme } from "@/lib/theme";
+
+import { TaskForm, type TaskDraft } from "./task-form";
 
 type Tab = "attendance" | "grades";
 
@@ -409,18 +413,26 @@ function GradeInput({
 
 function HomeworkCard({ lesson, canMark }: { lesson: TodayLesson; canMark: boolean }) {
   const t = useTranslations();
-  const save = useSetHomework(lesson.id);
+  const formatDate = useDate();
+  const router = useRouter();
+  const client = useQueryClient();
+  const { colors } = useTheme();
   const [editing, setEditing] = useState(false);
-  const [text, setText] = useState(lesson.homework?.text ?? "");
+  const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const homework = lesson.homework;
 
-  const submit = () => {
+  const submit = (draft: TaskDraft) => {
+    setBusy(true);
     setError(null);
-    save.mutate(
-      { text: text.trim() },
-      { onSuccess: () => setEditing(false), onError: (e) => setError(errorText(t, e)) },
-    );
+    saveLessonHomework(lesson.id, draft)
+      .then(() => {
+        setEditing(false);
+        void client.invalidateQueries({ queryKey: ["today"] });
+        void client.invalidateQueries({ queryKey: staffGroupKeys.homework(lesson.groupId) });
+      })
+      .catch((e: unknown) => setError(errorText(t, e)))
+      .finally(() => setBusy(false));
   };
 
   return (
@@ -434,53 +446,63 @@ function HomeworkCard({ lesson, canMark }: { lesson: TodayLesson; canMark: boole
         ) : null}
       </View>
       {editing ? (
+        <TaskForm
+          start={homework ?? {}}
+          today={lesson.date}
+          busy={busy}
+          problem={error}
+          onSave={submit}
+          onCancel={() => {
+            setEditing(false);
+            setError(null);
+          }}
+        />
+      ) : homework ? (
         <>
-          <Field
-            label={t("today.homework.text")}
-            value={text}
-            onChangeText={setText}
-            multiline
-            autoFocus
-            error={error}
-            style={styles.homeworkInput}
-            testID="homework-text"
-          />
-          <View style={styles.actions}>
+          <Text testID="homework-shown">{homework.text}</Text>
+          {homework.dueDate ? (
+            <Text variant="small" tone="mutedForeground" testID="homework-due">
+              {t("groups.homework.due", {
+                date: formatDate(dayAsDate(homework.dueDate), { day: "numeric", month: "short" }),
+              })}
+            </Text>
+          ) : null}
+          {homework.attachmentUrl ? (
             <Button
               compact
               variant="outline"
-              label={t("today.homework.cancel")}
-              onPress={() => setEditing(false)}
+              label={t("mobile.homework.openFile")}
+              icon={<Paperclip size={16} color={colors.foreground} />}
+              onPress={() =>
+                router.push(fileRoute(homework.attachmentUrl!, t("today.homework.title")))
+              }
+              style={styles.start}
+              testID="homework-file"
             />
-            <Button
-              compact
-              label={t("today.homework.save")}
-              onPress={submit}
-              loading={save.isPending}
-              disabled={text.trim().length === 0}
-              testID="homework-save"
-            />
-          </View>
-        </>
-      ) : homework ? (
-        <>
-          <Text>{homework.text}</Text>
+          ) : null}
           <Text variant="small" tone="mutedForeground">
             {t("today.homework.submitted", { count: homework.submitted })}
           </Text>
-          {canMark ? (
+          <View style={styles.actions}>
             <Button
               compact
-              variant="outline"
-              label={t("common.edit")}
-              onPress={() => {
-                setText(homework.text);
-                setEditing(true);
-              }}
-              style={styles.start}
-              testID="homework-edit"
+              variant="ghost"
+              label={t("today.homework.open")}
+              onPress={() =>
+                router.push({ pathname: "/staff/homework/[id]", params: { id: lesson.groupId } })
+              }
+              testID="homework-open"
             />
-          ) : null}
+            {canMark ? (
+              <Button
+                compact
+                variant="outline"
+                label={t("common.edit")}
+                onPress={() => setEditing(true)}
+                testID="homework-edit"
+              />
+            ) : null}
+          </View>
         </>
       ) : (
         <>
@@ -545,5 +567,4 @@ const styles = StyleSheet.create({
   suggest: { flexDirection: "row", alignItems: "center", gap: space[2] },
   actions: { flexDirection: "row", justifyContent: "flex-end", gap: space[2] },
   start: { alignSelf: "flex-start" },
-  homeworkInput: { minHeight: 96, textAlignVertical: "top" },
 });

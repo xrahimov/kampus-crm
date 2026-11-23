@@ -226,6 +226,8 @@ describe("assignments (A-161)", () => {
       lessonDate: null,
       title: "City essay",
       note: "My city is Urganch…",
+      // The phone app scores the criteria straight from the queue (A-217).
+      rubric: ESSAY.rubric,
     });
 
     // Too many points, or one per criterion missing, is refused.

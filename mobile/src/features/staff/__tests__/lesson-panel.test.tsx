@@ -89,6 +89,9 @@ function Harness() {
   return current ? <LessonPanel lesson={current} canMark canSeeBalances={false} /> : null;
 }
 
+/** The day the server and the cache hold; a test may swap it before drawing. */
+let shown: Today = day;
+
 async function renderPanel() {
   const client = new QueryClient({
     // No timers left behind: nothing goes stale or is collected while a test runs.
@@ -98,7 +101,7 @@ async function renderPanel() {
     },
   });
   clients.push(client);
-  client.setQueryData(keys.today(null), day);
+  client.setQueryData(keys.today(null), shown);
   await render(
     <SafeAreaProvider
       initialMetrics={{
@@ -125,12 +128,13 @@ function serve(put: () => Response) {
     if (url.includes("/video")) {
       return answer(200, { enabled: false, room: null, todayLesson: null });
     }
-    if (url.includes("/today")) return answer(200, day);
+    if (url.includes("/today")) return answer(200, shown);
     return answer(200, { month: "2026-11", lessons: [], members: [] });
   });
 }
 
 beforeEach(() => {
+  shown = day;
   fetchMock.mockReset();
   serve(() => answer(204));
   globalThis.fetch = fetchMock as unknown as typeof fetch;
@@ -186,5 +190,64 @@ describe("marking a lesson", () => {
     await fireEvent.press(await screen.findByTestId("mark-PRESENT-m-1"));
     expect(await screen.findByTestId("lesson-error")).toBeTruthy();
     expect(await screen.findByText("0 of 2 marked · 0 present")).toBeTruthy();
+  });
+});
+
+describe("the lesson's homework", () => {
+  it("changes the words and keeps the link, the file and the speaking mark set elsewhere", async () => {
+    shown = {
+      ...day,
+      lessons: [
+        {
+          ...lesson,
+          homework: {
+            id: "hw-1",
+            text: "Record the dialogue",
+            linkUrl: "https://example.org/dialogue",
+            attachmentUrl: "/api/v1/files/documents/dialogue.pdf",
+            speaking: true,
+            dueDate: "2026-11-25",
+            submitted: 1,
+            toCheck: 1,
+          },
+        },
+      ],
+    };
+    serve(() => answer(200, {}));
+    await renderPanel();
+    expect(await screen.findByTestId("homework-shown")).toHaveTextContent("Record the dialogue");
+    expect(screen.getByTestId("homework-due")).toHaveTextContent("Due Nov 25");
+    expect(screen.getByTestId("homework-file")).toBeTruthy();
+
+    await fireEvent.press(screen.getByTestId("homework-edit"));
+    await fireEvent.changeText(screen.getByTestId("task-text"), "Record the dialogue twice");
+    await fireEvent.press(screen.getByTestId("task-save"));
+    await waitFor(() => expect(puts()).toHaveLength(1));
+    const [url, init] = puts()[0] as [string, RequestInit];
+    expect(url).toMatch(/\/lessons\/lesson-1\/homework$/);
+    expect(JSON.parse(String(init.body))).toEqual({
+      text: "Record the dialogue twice",
+      linkUrl: "https://example.org/dialogue",
+      attachmentUrl: "/api/v1/files/documents/dialogue.pdf",
+      dueDate: "2026-11-25",
+      speaking: true,
+    });
+    await waitFor(() => expect(screen.queryByTestId("task-form")).toBeNull());
+  });
+
+  it("sets a first homework with only what to do", async () => {
+    serve(() => answer(200, {}));
+    await renderPanel();
+    await fireEvent.press(await screen.findByTestId("homework-set"));
+    await fireEvent.changeText(screen.getByTestId("task-text"), "Page 12, exercise 3");
+    await fireEvent.press(screen.getByTestId("task-save"));
+    await waitFor(() => expect(puts()).toHaveLength(1));
+    expect(JSON.parse(String((puts()[0] as [string, RequestInit])[1].body))).toEqual({
+      text: "Page 12, exercise 3",
+      linkUrl: null,
+      attachmentUrl: null,
+      dueDate: null,
+      speaking: false,
+    });
   });
 });

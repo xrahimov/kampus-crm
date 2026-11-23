@@ -1,7 +1,7 @@
 import { useRouter } from "expo-router";
-import { ExternalLink, MessageSquare, Paperclip } from "lucide-react-native";
+import { ExternalLink, MessageSquare, Minus, Paperclip, Plus } from "lucide-react-native";
 import { useState } from "react";
-import { Linking, StyleSheet, View } from "react-native";
+import { Linking, Pressable, StyleSheet, View } from "react-native";
 
 import { useCheckingQueue, useReviewAnswer } from "@/api/hooks";
 import type { CheckingItem } from "@/api/types";
@@ -17,7 +17,7 @@ import { fileSource } from "@/features/room/file-source";
 import { ApiError, type PickedFile } from "@/lib/api";
 import { dayAsDate } from "@/lib/days";
 import { errorText, useDate, useTranslations } from "@/lib/i18n";
-import { space, useTheme } from "@/lib/theme";
+import { radius, space, useTheme } from "@/lib/theme";
 import { materialView } from "@kampus/lib/video-material";
 
 /**
@@ -78,7 +78,11 @@ export function CheckingScreen() {
   );
 }
 
-function AnswerCard({ item }: { item: CheckingItem }) {
+/**
+ * One waiting answer with its verdict. An assignment with a rubric asks for
+ * the points first: **Accept** opens them, the second press sends (A-217).
+ */
+export function AnswerCard({ item }: { item: CheckingItem }) {
   const t = useTranslations();
   const formatDate = useDate();
   const router = useRouter();
@@ -88,16 +92,21 @@ function AnswerCard({ item }: { item: CheckingItem }) {
   const [comment, setComment] = useState("");
   const [voice, setVoice] = useState<PickedFile | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [scoring, setScoring] = useState(false);
+  const [points, setPoints] = useState<number[]>(() => item.rubric.map(() => 0));
+  const hasRubric = item.rubric.length > 0;
 
   const send = (status: "ACCEPTED" | "RETURNED") => {
     setError(null);
     review.mutate(
       {
+        groupId: item.groupId,
         homeworkId: item.homeworkId,
         membershipId: item.membershipId,
         status,
         teacherComment: comment.trim() || null,
         voice,
+        rubricScores: status === "ACCEPTED" && hasRubric ? points : undefined,
       },
       { onError: (e) => setError(errorText(t, e)) },
     );
@@ -191,6 +200,31 @@ function AnswerCard({ item }: { item: CheckingItem }) {
           </View>
         </View>
       ) : null}
+      {scoring ? (
+        <View style={styles.reply} testID="answer-rubric">
+          <Text variant="smallStrong">{t("groups.homework.assignment.rubric")}</Text>
+          {item.rubric.map((criterion, index) => (
+            <View key={`${index}-${criterion.name}`} style={styles.criterion}>
+              <Text style={styles.fill}>{criterion.name}</Text>
+              <Stepper
+                value={points[index] ?? 0}
+                max={criterion.max}
+                label={criterion.name}
+                onChange={(value) =>
+                  setPoints((old) => old.map((p, i) => (i === index ? value : p)))
+                }
+                testID={`rubric-${index}`}
+              />
+            </View>
+          ))}
+          <Text variant="bodyStrong" testID="rubric-total">
+            {t("groups.homework.assignment.score", {
+              points: points.reduce((sum, p) => sum + p, 0),
+              max: item.rubric.reduce((sum, c) => sum + c.max, 0),
+            })}
+          </Text>
+        </View>
+      ) : null}
       {error ? <Notice tone="destructive">{error}</Notice> : null}
       <View style={styles.actions}>
         {replying ? (
@@ -229,7 +263,8 @@ function AnswerCard({ item }: { item: CheckingItem }) {
         <Button
           compact
           label={t("checking.accept")}
-          onPress={() => send("ACCEPTED")}
+          // With a rubric the first press shows the points to give.
+          onPress={() => (hasRubric && !scoring ? setScoring(true) : send("ACCEPTED"))}
           loading={review.isPending && review.variables?.status === "ACCEPTED"}
           disabled={review.isPending}
           testID="accept"
@@ -239,8 +274,71 @@ function AnswerCard({ item }: { item: CheckingItem }) {
   );
 }
 
+/** Points from 0 to `max`, one tap at a time. */
+function Stepper({
+  value,
+  max,
+  label,
+  onChange,
+  testID,
+}: {
+  value: number;
+  max: number;
+  label: string;
+  onChange: (value: number) => void;
+  testID: string;
+}) {
+  const t = useTranslations();
+  const { colors } = useTheme();
+  const key = (delta: number, Icon: typeof Minus, id: string) => {
+    const next = Math.max(0, Math.min(max, value + delta));
+    return (
+      <Pressable
+        onPress={() => onChange(next)}
+        disabled={next === value}
+        accessibilityRole="button"
+        accessibilityLabel={`${label}: ${next}`}
+        hitSlop={6}
+        style={[
+          styles.step,
+          { borderColor: colors.input, backgroundColor: colors.card },
+          next === value && styles.dim,
+        ]}
+        testID={`${testID}-${id}`}
+      >
+        <Icon size={18} color={colors.foreground} />
+      </Pressable>
+    );
+  };
+  return (
+    <View style={styles.stepper}>
+      {key(-1, Minus, "minus")}
+      <Text variant="bodyStrong" style={styles.points} testID={`${testID}-value`}>
+        {value}
+      </Text>
+      {key(1, Plus, "plus")}
+      <Text variant="small" tone="mutedForeground">
+        {t("groups.homework.assignment.outOf", { points: max })}
+      </Text>
+    </View>
+  );
+}
+
 const styles = StyleSheet.create({
   column: { maxWidth: 720 },
+  fill: { flex: 1 },
+  criterion: { flexDirection: "row", flexWrap: "wrap", alignItems: "center", gap: space[2] },
+  stepper: { flexDirection: "row", alignItems: "center", gap: space[2] },
+  step: {
+    width: 40,
+    height: 40,
+    alignItems: "center",
+    justifyContent: "center",
+    borderWidth: 1,
+    borderRadius: radius.md,
+  },
+  dim: { opacity: 0.4 },
+  points: { minWidth: 24, textAlign: "center" },
   part: { gap: space[1] },
   reply: { gap: space[3] },
   start: { alignSelf: "flex-start" },

@@ -396,7 +396,14 @@ function LessonCard({
     try {
       await api(`/lessons/${lesson.id}/homework`, {
         method: "PUT",
-        body: { text: homeworkText, dueDate: homeworkDue || null, linkUrl: null },
+        // Today edits the words and the day; a link, a file or "speaking" set in the group stays.
+        body: {
+          text: homeworkText,
+          dueDate: homeworkDue || null,
+          linkUrl: lesson.homework?.linkUrl ?? null,
+          attachmentUrl: lesson.homework?.attachmentUrl ?? null,
+          speaking: lesson.homework?.speaking ?? false,
+        },
       });
       setHomeworkOpen(false);
       setHomeworkText("");

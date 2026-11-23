@@ -229,6 +229,23 @@ describe("the teacher's day", () => {
       "PRESENT",
     );
     expect(updated.homework).toMatchObject({ text: "Read page 5", submitted: 0, toCheck: 0 });
+
+    // What Today does not edit comes back with the lesson, so an edit from Today or
+    // from the phone can send it along and nothing set in the group is lost (A-217).
+    await setHomework(teacher, lesson.id, {
+      text: "Record the dialogue",
+      linkUrl: "https://example.org/dialogue",
+      attachmentUrl: "/api/v1/files/documents/dialogue.pdf",
+      speaking: true,
+      dueDate: null,
+    });
+    const again = (await getToday(teacher)).lessons.find((l) => l.id === lesson.id)!;
+    expect(again.homework).toMatchObject({
+      text: "Record the dialogue",
+      linkUrl: "https://example.org/dialogue",
+      attachmentUrl: "/api/v1/files/documents/dialogue.pdf",
+      speaking: true,
+    });
   });
 
   it("keeps each teacher to their own groups and the office in the branch", async () => {
