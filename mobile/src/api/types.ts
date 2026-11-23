@@ -91,17 +91,41 @@ export interface GroupSlot {
   weekday: number;
   startTime: string;
   endTime: string;
+  roomId: string | null;
   roomName: string | null;
+}
+
+export type GroupTeacherRole = "MAIN" | "ASSISTANT" | "CO_TEACHER";
+export type ShareType = "PERCENT" | "PER_LESSON" | "PER_STUDENT";
+export type WeekdayPattern = "EVEN" | "ODD" | "EVERY_DAY" | "CUSTOM";
+export type BillingMode = "MONTHLY" | "PACKAGES";
+
+export interface GroupTeacher {
+  userId: string;
+  fullName: string;
+  role: GroupTeacherRole;
+  shareType: ShareType;
+  shareValue: number;
+  since: string;
 }
 
 export interface Group {
   id: string;
+  branchId: string;
   branchName: string;
   name: string;
+  courseId: string;
   courseName: string;
   courseColor: string | null;
+  coursePrice: number;
+  courseDurationMonths: number;
+  gradingSystemId: string | null;
+  gradingSystemName: string;
+  billingMode: BillingMode;
+  weekdayPattern: WeekdayPattern;
   slots: GroupSlot[];
-  teachers: Array<{ userId: string; fullName: string; role: "MAIN" | "ASSISTANT" | "CO_TEACHER" }>;
+  teachers: GroupTeacher[];
+  supportTeachers: Array<{ userId: string; fullName: string }>;
   startDate: string;
   endDate: string;
   status: GroupStatus;

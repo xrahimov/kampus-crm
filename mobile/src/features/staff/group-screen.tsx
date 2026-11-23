@@ -34,6 +34,7 @@ import { useLayout } from "@/lib/layout";
 import { can, useMe } from "@/lib/session";
 import { radius, space, useTheme } from "@/lib/theme";
 
+import { GroupOffice } from "../groups/group-office";
 import { useScheduleLine } from "./groups-screen";
 import { OpenOnSite } from "./open-on-site";
 
@@ -45,8 +46,9 @@ function thisMonth(): string {
 /**
  * One group: its homework, chat, materials, stream, gradebook and notes, the
  * month's lessons (each opens to be marked) and the students with their
- * average grade. What is left of the group's page (the office's side:
- * payments, discounts, history) is a tap away on the site.
+ * average grade, and for the office what the group is and what is done with
+ * it (A-233). What is left of the group's page (packages, discounts) is a tap
+ * away on the site.
  */
 export function GroupScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -58,7 +60,10 @@ export function GroupScreen() {
   const grid = useMonthGrid(id, month);
   const router = useRouter();
   const { colors } = useTheme();
-  const maySeeStudents = can(useMe(), "students.view");
+  const me = useMe();
+  const maySeeStudents = can(me, "students.view");
+  // The office's list of the group's students: balances, add, move, remove (A-233).
+  const mayManage = can(me, "groups.update");
 
   const header = (
     <Header
@@ -102,7 +107,21 @@ export function GroupScreen() {
 
   const students = grid.data ? (
     <View style={styles.block}>
-      <Text variant="heading">{t("mobile.students", { count: grid.data.members.length })}</Text>
+      {group.data ? <GroupOffice group={group.data} /> : null}
+      <View style={styles.studentsHead}>
+        <Text variant="heading" style={styles.fill}>
+          {t("mobile.students", { count: grid.data.members.length })}
+        </Text>
+        {mayManage ? (
+          <Button
+            variant="outline"
+            compact
+            label={t("mobile.groups.manageStudents")}
+            onPress={() => router.push({ pathname: "/staff/members/[id]", params: { id } })}
+            testID="group-members"
+          />
+        ) : null}
+      </View>
       <Card style={styles.flush}>
         {grid.data.members.map((member, index) => (
           <View key={member.membershipId}>
@@ -412,6 +431,7 @@ const styles = StyleSheet.create({
   fill: { flex: 1 },
   split: { flexDirection: "row", alignItems: "flex-start", gap: space[6] },
   block: { gap: space[3] },
+  studentsHead: { flexDirection: "row", alignItems: "center", gap: space[2] },
   flush: { padding: 0, gap: 0, overflow: "hidden" },
   month: { flexDirection: "row", alignItems: "center", gap: space[2] },
   pages: { flexDirection: "row", flexWrap: "wrap", gap: space[2] },

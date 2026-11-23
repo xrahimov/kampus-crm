@@ -6456,6 +6456,16 @@
       "archivedOnly": "Faqat arxivdagi o'quvchilar",
       "replyPlaceholder": "Javob yozing…",
       "toGroup": "Guruhga qo'shish"
+    },
+    "groups": {
+      "search": "Guruh nomi",
+      "count": "{count} ta guruh",
+      "manageStudents": "O'quvchilarni boshqarish",
+      "openStudent": "O'quvchi sahifasini ochish",
+      "undoDayOff": "Darsni qaytarish",
+      "undoDayOffTitle": "Dam olish kuni bekor qilinsinmi?",
+      "undoDayOffText": "{date} kungi dars jadvalga qaytadi. Ko'chirilgan dars o'z kuniga qaytadi.",
+      "nothingThatDay": "{day}: dars yo'q."
     }
   }
 }

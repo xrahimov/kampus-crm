@@ -204,6 +204,13 @@ A-201) has no migration and no setting. Two things to know after it:
   on an `https` address (the live site is one). Nothing on the server switches it
   on or off; a person can switch it off for the site in the browser.
 
+The update for the app's Groups pages (A-233) has no migration and no new
+environment variable. It adds two read-only calls the app asks for,
+`GET /api/v1/groups/options` and `GET /api/v1/groups/timetable`; the site reads
+the same data on its own pages and is unchanged. Until the server has this
+update, the app's group form, the groups filters and its Timetable say "Not
+found" (the rest of the app works).
+
 The update that lets the phone app sign in (A-203, A-204) has one migration,
 `20261123000000_app_sessions`. It only adds: a column `Session.app` (false for
 every session that exists) and an empty table `WebHandoff`. Nothing changes for

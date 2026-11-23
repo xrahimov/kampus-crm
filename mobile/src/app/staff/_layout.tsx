@@ -47,6 +47,8 @@ export default function StaffLayout() {
       <Stack.Screen name="leads/inbox/[id]" />
       <Stack.Screen name="absences" />
       <Stack.Screen name="join-requests" />
+      <Stack.Screen name="members/[id]" />
+      <Stack.Screen name="timetable" />
       {/* A lesson is left with its own button, not by a stray swipe from the edge. */}
       <Stack.Screen name="room/[id]" options={{ gestureEnabled: false, animation: "fade" }} />
     </Stack>

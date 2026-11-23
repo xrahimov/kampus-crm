@@ -119,7 +119,7 @@ describe("a pane of glass", () => {
     expect(there).toBeLessThan(screen.getByTestId("blur").props.intensity as number);
   });
 
-  it("is nearly solid on Android where nothing can be blurred", async () => {
+  it("is solid on Android where nothing can be blurred", async () => {
     // Before Android 12 there is no blur; and glass with no backdrop has nothing to blur.
     for (const version of [30, 36]) {
       device("android", version);
