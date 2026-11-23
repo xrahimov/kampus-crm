@@ -45,7 +45,10 @@ test.describe("help", () => {
     // Signed out: the sign-in page offers the video about signing in.
     await page.goto("/en/login");
     const offer = page.getByTestId("help-video");
-    await expect(offer).toContainText("Signing in");
+    await expect(offer).toContainText("How to sign in for the first time");
+    await expect(page.getByTestId("first-sign-in-note")).toContainText(
+      "staff approve your account",
+    );
     await offer.getByTestId("help-video-play").click();
     const loginPlayer = page.getByTestId("help-video-player");
     await expect

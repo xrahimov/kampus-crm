@@ -49,6 +49,26 @@ export function helpVideoFile(id: HelpVideoId): string {
   return `${String(HELP_VIDEO_IDS.indexOf(id) + 1).padStart(2, "0")}-${id}.mp4`;
 }
 
+/**
+ * The how-to videos recorded in the phone app, for the app's own sign-in screen
+ * (A-229): the site's videos show a browser and say there is nothing to
+ * install, which is not true of the app. They are asked for like the others,
+ * under these names, and live in the folder `app` beside the site's videos of
+ * their language.
+ */
+export const APP_HELP_VIDEO_IDS = ["app-sign-in", "app-student"] as const;
+export type AppHelpVideoId = (typeof APP_HELP_VIDEO_IDS)[number];
+
+export function isAppHelpVideoId(value: string): value is AppHelpVideoId {
+  return (APP_HELP_VIDEO_IDS as readonly string[]).includes(value);
+}
+
+/** The file of an app video inside the folder of its language: `app/01-sign-in.mp4`. */
+export function appHelpVideoFile(id: AppHelpVideoId): string {
+  const number = String(APP_HELP_VIDEO_IDS.indexOf(id) + 1).padStart(2, "0");
+  return `app/${number}-${id.slice("app-".length)}.mp4`;
+}
+
 /** Where the browser asks for a video. */
 export function helpVideoSrc(locale: string, id: HelpVideoId): string {
   return `/api/v1/help-videos/${locale}/${id}`;

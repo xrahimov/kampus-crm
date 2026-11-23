@@ -7,9 +7,11 @@ import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { WORDS } from "../../scripts/tutorial-videos/words";
 import { HELP_ARTICLES, type HelpSectionSpec } from "@/features/help/catalog";
 import {
+  APP_HELP_VIDEO_IDS,
   HELP_VIDEO_IDS,
   HELP_VIDEO_LOCALES,
   HELP_VIDEO_TEXT,
+  appHelpVideoFile,
   helpVideoFile,
   helpVideoSrc,
 } from "@/features/help/videos";
@@ -55,6 +57,9 @@ describe("the folder of how-to videos", () => {
     // Not a video of the list, and a video under a wrong number: neither is offered.
     writeFileSync(path.join(dir, "en", "notes.txt"), "x");
     writeFileSync(path.join(dir, "uz", "02-sign-in.mp4"), bytes);
+    // The phone app's own video of signing in (A-229), in its folder beside the site's.
+    mkdirSync(path.join(dir, "en", "app"));
+    writeFileSync(path.join(dir, "en", "app", "01-sign-in.mp4"), bytes.subarray(0, 40));
     forgetHelpVideos();
   });
   afterAll(() => {
@@ -79,6 +84,23 @@ describe("the folder of how-to videos", () => {
     expect(await helpVideoRange("en", "notes.txt")).toBeNull();
     expect(await helpVideoRange("..", "sign-in")).toBeNull();
     expect(await helpVideoRange("ru", "sign-in")).toBeNull();
+  });
+
+  it("keeps the videos recorded in the phone app apart from the site's (A-229)", async () => {
+    expect([...APP_HELP_VIDEO_IDS].map(appHelpVideoFile)).toEqual([
+      "app/01-sign-in.mp4",
+      "app/02-student.mp4",
+    ]);
+    // The app's video is its own file, not the site's of the same subject.
+    expect((await helpVideoRange("en", "app-sign-in"))?.size).toBe(40);
+    expect((await helpVideoRange("en", "sign-in"))?.size).toBe(100);
+    // Not recorded yet, another language, and names that only look like one.
+    expect(await helpVideoRange("en", "app-student")).toBeNull();
+    expect(await helpVideoRange("uz", "app-sign-in")).toBeNull();
+    expect(await helpVideoRange("en", "app-groups")).toBeNull();
+    expect(await helpVideoRange("en", "app/01-sign-in")).toBeNull();
+    // The manual's list is the site's videos only.
+    expect([...(await availableHelpVideos("en"))].sort()).toEqual(["groups", "sign-in"]);
   });
 
   it("answers a browser that seeks with the part it asked for", async () => {

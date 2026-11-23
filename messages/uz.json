@@ -103,6 +103,10 @@
     "codeAgain": "Yangi kod yuborish",
     "codeResent": "Yangi kod yuborildi. Avvalgisi endi ishlamaydi.",
     "widgetLink": "Boshqa yo‘l: Telegramning o‘z sahifasi orqali kirish",
+    "firstSignIn": {
+      "video": "Birinchi marta qanday kiriladi",
+      "note": "Birinchi kirishda hisobingizni markaz xodimlari tasdiqlaydi. Tasdiqlangach, bot Telegramda xabar beradi."
+    },
     "setPasswordTitle": "Parol tanlang",
     "setPasswordSubtitle": "Parol bo‘lsa, keyingi safar faqat telefon raqami va parol bilan kirasiz. Telegram kodi ham ishlayveradi.",
     "setPasswordLater": "Hozir emas",
@@ -6261,10 +6265,6 @@
     "fillAll": "Avval barcha maydonlarni to‘ldiring."
   },
   "mobile": {
-    "video": {
-      "signIn": "Kampusga kirish",
-      "student": "O‘quvchining sahifasi"
-    },
     "offline": "Kampus bilan aloqa yo'q. Internetni tekshirib, qayta urinib ko'ring.",
     "retry": "Qayta urinish",
     "doorStudent": "O'quvchi yoki ota-ona",

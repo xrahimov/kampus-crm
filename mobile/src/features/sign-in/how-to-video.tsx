@@ -10,15 +10,22 @@ import { apiUrl } from "@/lib/api";
 import { useLocaleChoice, useTranslations } from "@/lib/i18n";
 import { radius, space, useTheme } from "@/lib/theme";
 
-/** The how-to videos the sign-in screen offers: one for staff, one for students and parents. */
-export type HowToVideoId = "sign-in" | "student-portal";
+/**
+ * The how-to videos the sign-in screen offers: one for staff, one for students
+ * and parents. They are the ones recorded in the app (`APP_HELP_VIDEO_IDS` on
+ * the site's side), not the site's own: those show a browser and say there is
+ * nothing to install.
+ */
+export type HowToVideoId = "app-sign-in" | "app-student";
 
 /**
- * The how-to video under the sign-in form, as on the site's sign-in pages
- * (A-199, A-229): one row that opens into the player. The videos are files on
- * the Kampus server, one per language, open to everyone; a server without the
- * video of this language shows nothing. Nothing of the video itself is fetched
- * until the row is pressed.
+ * What a first sign-in takes, under the sign-in form (A-229): the how-to video
+ * of the site's sign-in pages (A-199) as one row that opens into the player,
+ * and under it the line that a new account is approved by the centre's staff.
+ * The line always shows. The videos are files on the Kampus server, one per
+ * language, open to everyone; a server without the app's video of this
+ * language shows the line alone. Nothing of the video itself is fetched until the row
+ * is pressed.
  */
 export function HowToVideo({ id }: { id: HowToVideoId }) {
   const t = useTranslations();
@@ -33,37 +40,49 @@ export function HowToVideo({ id }: { id: HowToVideoId }) {
   });
   // Which video is open, not a yes or no: another language or the other door starts closed.
   const [open, setOpen] = useState<string | null>(null);
-  if (!there.data) return null;
 
-  const title = t(id === "sign-in" ? "mobile.video.signIn" : "mobile.video.student");
-  if (open === url) {
-    return (
-      <Animated.View entering={appear} style={styles.frame} testID="how-to-video">
-        <Player url={url} title={title} />
-      </Animated.View>
-    );
-  }
+  // One title at both doors (kai): what the person is here for, not the film's own name.
+  const title = t("auth.firstSignIn.video");
   return (
-    <Press
-      onPress={() => setOpen(url)}
-      accessibilityRole="button"
-      accessibilityLabel={`${t("help.video")}: ${title}`}
-      sink={0.985}
-      // It shows once the server has answered: it comes in, it does not pop.
-      arrives
-      style={[styles.row, { borderColor: colors.border, backgroundColor: colors.card }]}
-      testID="how-to-video-play"
+    <View
+      style={[styles.card, { borderColor: colors.border, backgroundColor: colors.card }]}
+      testID="first-sign-in"
     >
-      <View style={[styles.play, { backgroundColor: colors.sidebar }]}>
-        <Play size={16} color={colors.sidebarActive} fill={colors.sidebarActive} />
-      </View>
-      <View style={styles.words}>
-        <Text variant="small" tone="mutedForeground">
-          {t("help.video")}
-        </Text>
-        <Text variant="bodyStrong">{title}</Text>
-      </View>
-    </Press>
+      {!there.data ? null : open === url ? (
+        <Animated.View entering={appear} style={styles.frame} testID="how-to-video">
+          <Player url={url} title={title} />
+        </Animated.View>
+      ) : (
+        <Press
+          onPress={() => setOpen(url)}
+          accessibilityRole="button"
+          accessibilityLabel={`${t("help.video")}: ${title}`}
+          sink={0.985}
+          // It shows once the server has answered: it comes in, it does not pop.
+          arrives
+          style={styles.row}
+          testID="how-to-video-play"
+        >
+          <View style={[styles.play, { backgroundColor: colors.sidebar }]}>
+            <Play size={16} color={colors.sidebarActive} fill={colors.sidebarActive} />
+          </View>
+          <View style={styles.words}>
+            <Text variant="small" tone="mutedForeground">
+              {t("help.video")}
+            </Text>
+            <Text variant="bodyStrong">{title}</Text>
+          </View>
+        </Press>
+      )}
+      <Text
+        variant="small"
+        tone="mutedForeground"
+        style={[styles.note, { backgroundColor: colors.muted }]}
+        testID="first-sign-in-note"
+      >
+        {t("auth.firstSignIn.note")}
+      </Text>
+    </View>
   );
 }
 
@@ -93,14 +112,13 @@ async function hasVideo(url: string): Promise<boolean> {
 }
 
 const styles = StyleSheet.create({
+  card: { borderWidth: 1, borderRadius: radius.lg, overflow: "hidden" },
   row: {
     flexDirection: "row",
     alignItems: "center",
     gap: space[3],
     paddingHorizontal: space[4],
     paddingVertical: space[3],
-    borderWidth: 1,
-    borderRadius: radius.lg,
   },
   play: {
     width: 36,
@@ -110,6 +128,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   words: { flexShrink: 1 },
-  frame: { borderRadius: radius.lg, overflow: "hidden", backgroundColor: "#000" },
+  note: { paddingHorizontal: space[4], paddingVertical: space[3] },
+  frame: { backgroundColor: "#000" },
   video: { width: "100%", aspectRatio: 16 / 9 },
 });

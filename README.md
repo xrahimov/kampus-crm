@@ -33,8 +33,8 @@ the phone, the class stream, the gradebook and the notes, A-218 for the teacher'
 coins and tests of a group, A-219 for a group's exams, knowledge by topic, comments on students
 and history, A-220 for Students on the teacher's side, A-221 for
 announcements, A-222 for the whiteboard saved from the app, A-223 for screen sharing from an
-iPhone or iPad, A-224 for the glass look and smooth motion, and A-229 for the how-to video on
-the app's sign-in screen). The site has the same glass on
+iPhone or iPad, A-224 for the glass look and smooth motion, and A-229 for the app's sign-in screen:
+who approves a new account, its how-to video and the tiled wall). The site has the same glass on
 its top bar, menus, dialogs and the assistant's panel (A-225).
 
 [docs/DEMO-GUIDE.md](docs/DEMO-GUIDE.md) is a script for showing the whole app to a centre's owner or

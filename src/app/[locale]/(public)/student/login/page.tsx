@@ -3,7 +3,7 @@ import { headers } from "next/headers";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 
 import { HelpVideo } from "@/features/help/help-video";
-import { helpVideoSrc, helpVideoText } from "@/features/help/videos";
+import { helpVideoSrc } from "@/features/help/videos";
 import { StudentLogin } from "@/features/student-app/student-login";
 import { redirect } from "@/i18n/navigation";
 import { lessonLinkGroupId } from "@/lib/lesson-link";
@@ -49,6 +49,7 @@ export default async function Page({ params, searchParams }: Props) {
   );
   const query = new URLSearchParams({ locale });
   if (next) query.set("next", next);
+  const auth = await getTranslations({ locale, namespace: "auth" });
   return (
     <div className="mx-auto w-full max-w-md">
       <StudentLogin
@@ -65,7 +66,7 @@ export default async function Page({ params, searchParams }: Props) {
           compact
           className="mt-4"
           src={helpVideoSrc(locale, "student-portal")}
-          title={helpVideoText(locale, "student-portal").title}
+          title={auth("firstSignIn.video")}
           label={(await getTranslations({ locale, namespace: "help" }))("video")}
         />
       )}

@@ -94,12 +94,16 @@ export function SignInScreen() {
     return (
       <View style={[styles.split, { backgroundColor: colors.background }]}>
         <View style={[styles.wall, { backgroundColor: palette.light.sidebar }]}>
-          <TileWall id="sign-in-wall" />
-          <View style={[styles.wallBrand, { paddingTop: insets.top + space[8] }]}>
-            <KampusMark size={44} />
-            <Text variant="title" style={styles.wallName}>
+          <TileWall />
+          {/* As on the site: the name and what Kampus is, at the foot of the wall. */}
+          <View
+            style={[styles.wallBrand, { paddingBottom: insets.bottom + space[10] }]}
+            pointerEvents="none"
+          >
+            <Text variant="display" style={styles.wallName}>
               {t("app.name")}
             </Text>
+            <Text style={styles.wallTagline}>{t("app.tagline")}</Text>
           </View>
         </View>
         <KeyboardAvoidingView
@@ -358,8 +362,8 @@ function FormStep({
           <TelegramHowTo botName={botName} botUrl={botUrl} />
         </>
       ) : null}
-      {/* The how-to video about signing in, where the server has it (as on the site, A-199). */}
-      <HowToVideo id={door === "STAFF" ? "sign-in" : "student-portal"} />
+      {/* What a first sign-in takes: the how-to video where the server has it, and who approves (A-229). */}
+      <HowToVideo id={door === "STAFF" ? "app-sign-in" : "app-student"} />
     </View>
   );
 }
@@ -785,12 +789,14 @@ const styles = StyleSheet.create({
   wall: { flex: 5, overflow: "hidden" },
   side: { flex: 6 },
   wallBrand: {
+    flex: 1,
+    justifyContent: "flex-end",
     paddingHorizontal: space[10],
-    flexDirection: "row",
-    alignItems: "center",
     gap: space[3],
+    maxWidth: 460,
   },
-  wallName: { color: "#ffffff" },
+  wallName: { color: "#ffffff", fontSize: 36, lineHeight: 42 },
+  wallTagline: { color: palette.light.sidebarForeground, fontSize: 18, lineHeight: 26 },
   sideScroll: {
     flexGrow: 1,
     justifyContent: "center",

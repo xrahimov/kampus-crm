@@ -26,7 +26,7 @@ able to work from an iPad or a phone.
 | Part                                                                                                             | State                                                                                                                    |
 | ---------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------ |
 | Sign-in: phone and password, a code from Telegram, the waiting list, choosing a password                         | Built                                                                                                                    |
-| Sign-in: the how-to video under the form (A-229)                                                                 | Built; plays inside the app where the server has the video                                                               |
+| Sign-in: who approves a new account, the how-to video, the tiled wall with its drops (A-229)                     | Built; the video row shows once the videos recorded in the app are on the server                                         |
 | Teacher: today, a lesson (attendance, grades, topic, homework, lesson room), groups, checking                    | Built, phone and tablet                                                                                                  |
 | Teacher: an answer's file and spoken answer in the app, a spoken reply; group chat; group materials              | Built, phone and tablet (A-214)                                                                                          |
 | Teacher: a group's homework (set with a file, checked with rubric points), class stream, gradebook, notes        | Built, phone and tablet (A-217)                                                                                          |
@@ -92,11 +92,19 @@ mobile/
   `src/api/types.ts` mirror the services' DTOs; when a service's answer changes, they change with it.
 - **Sign-in.** The app sends `x-kampus-app` and gets the session token in the answer; it keeps it in
   the phone's protected storage and sends it as `Authorization: Bearer` (A-203).
-- **The how-to video on the sign-in screen (A-229).** `HowToVideo`
-  (`src/features/sign-in/how-to-video.tsx`) offers the site's sign-in video (staff) or the student's
-  video (student or parent) in the app's language. It asks for the first byte of
-  `/api/v1/help-videos/<language>/<id>` and shows its row only where that answers, so a server
-  without the videos shows nothing; the film is fetched only when the row is pressed.
+- **First sign-in on the sign-in screen (A-229).** `HowToVideo`
+  (`src/features/sign-in/how-to-video.tsx`) is a card under the form: the line that a new account is
+  approved by the centre's staff, always, and above it the row "How to sign in for the first time"
+  where the server has the video. The app asks for the videos recorded in the app itself
+  (`app-sign-in` for staff, `app-student` for students and parents; files
+  `help-videos/<language>/app/01-sign-in.mp4` and `app/02-student.mp4`), not the site's, which say
+  there is nothing to install. It asks for the first byte of `/api/v1/help-videos/<language>/<id>`
+  and shows the row only where that answers; the film is fetched only when the row is pressed.
+- **The tiled wall (A-229).** `TileWall` (`src/components/tile-wall.tsx`) is the lapis panel of the
+  tablet's sign-in screen, the same wall as the site's. Every star is placed by `starCentres`; do
+  not go back to an SVG `Pattern` with `patternTransform`: iOS draws it unturned and cut off. Each
+  star has a lit face whose opacity follows the light on it: a band of daylight, up to three drops
+  (a touch; `litByDrop`) and the finger resting on the wall. All of it runs on the UI thread.
 - **Languages.** `messages/uz.json`, `ru.json` and `en.json` are the app's texts too. Texts only the
   app has live under the `mobile` key of the same files, so the key-parity test covers them.
 - **Look.** `src/lib/theme.tsx` holds the site's colours as plain values (light and dark), Onest in
