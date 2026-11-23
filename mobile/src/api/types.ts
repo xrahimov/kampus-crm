@@ -982,3 +982,118 @@ export interface GroupHistoryRow {
   actorName: string | null;
   at: string;
 }
+
+/* ----- Students on the teacher's side (A-220) ----- */
+
+export interface StudentGroup {
+  membershipId: string;
+  groupId: string;
+  groupName: string;
+  courseName: string;
+  status: MembershipStatus;
+  groupStatus: GroupStatus;
+  teacherName: string | null;
+  /** "09:00–10:30", when the group has one time. */
+  time: string | null;
+  weekdays: number[];
+  balance: number;
+}
+
+export interface StudentRow {
+  id: string;
+  fullName: string;
+  /** Null when the centre keeps phone numbers from this person. */
+  phone: string | null;
+  note: string | null;
+  isArchived: boolean;
+  isBlacklisted: boolean;
+  gradeAverage: number | null;
+  /** Negative when the student owes. */
+  balance: number;
+  groups: StudentGroup[];
+}
+
+export interface StudentDetail extends StudentRow {
+  birthDate: string | null;
+  schoolName: string | null;
+  parents: Array<{ id: string; fullName: string; phone: string }>;
+  customFields: Array<{ id: string; name: string; value: string | null }>;
+}
+
+export interface StudentProgress {
+  gradeAverage: number | null;
+  attendancePercent: number | null;
+  examAverage: number | null;
+  months: Array<{
+    month: string;
+    gradeAverage: number | null;
+    attendancePercent: number | null;
+    lessons: number;
+  }>;
+  byGroup: Array<{
+    groupId: string;
+    groupName: string;
+    courseName: string;
+    status: string;
+    gradeAverage: number | null;
+    attendancePercent: number | null;
+    lessons: number;
+  }>;
+  exams: Array<{
+    examId: string;
+    name: string;
+    date: string;
+    groupName: string | null;
+    score: number | null;
+    maxScore: number;
+    passed: boolean | null;
+    level: string | null;
+    isPresent: boolean;
+  }>;
+}
+
+export interface StudentAttempt {
+  id: string;
+  testName: string;
+  subject: string;
+  score: number;
+  maxScore: number;
+  percent: number;
+  passed: boolean;
+  durationSeconds: number | null;
+  submittedAt: string;
+}
+
+export interface StudentTests {
+  kpis: {
+    total: number;
+    average: number | null;
+    best: number | null;
+    worst: number | null;
+    averageSeconds: number | null;
+  };
+  level: "LOW" | "MEDIUM" | "HIGH" | null;
+  problemTopics: TopicStat[];
+  strongTopics: TopicStat[];
+  attempts: StudentAttempt[];
+}
+
+/* ----- Announcements on the staff side (A-221) ----- */
+
+export interface Announcement {
+  id: string;
+  audience: "CENTRE" | "BRANCH" | "GROUP";
+  branchName: string | null;
+  groupId: string | null;
+  groupName: string | null;
+  title: string;
+  body: string;
+  sendSms: boolean;
+  /** How many students it was addressed to. */
+  recipients: number;
+  telegramQueued: number;
+  smsQueued: number;
+  reads: number;
+  createdAt: string;
+  createdByName: string | null;
+}

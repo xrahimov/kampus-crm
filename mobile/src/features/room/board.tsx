@@ -1,5 +1,5 @@
-import { Eraser, Trash2, Undo2, Users } from "lucide-react-native";
-import { memo, useMemo, useRef, useState } from "react";
+import { Download, Eraser, Trash2, Undo2, Users } from "lucide-react-native";
+import { memo, useEffect, useMemo, useRef, useState, type RefObject } from "react";
 import {
   Pressable,
   StyleSheet,
@@ -12,6 +12,7 @@ import {
 import Svg, { Defs, G, Mask, Path, Rect } from "react-native-svg";
 
 import { Text } from "@/components/text";
+import { apiBytes } from "@/lib/api";
 import { useTranslations } from "@/lib/i18n";
 import { radius, space } from "@/lib/theme";
 import {
@@ -22,6 +23,7 @@ import {
 } from "@kampus/lib/validation/video";
 import type { CallEngine } from "@kampus/lib/video/call-engine";
 
+import { boardPicture } from "./board-picture";
 import {
   BOARD_ASPECT,
   BOARD_BACKGROUND,
@@ -159,6 +161,7 @@ export function BoardSurface({
   tools,
   aspect = BOARD_ASPECT,
   transparent = false,
+  picture,
   style,
 }: {
   engine: CallEngine;
@@ -167,6 +170,8 @@ export function BoardSurface({
   aspect?: number;
   /** True over a shown page: only the marks are painted. */
   transparent?: boolean;
+  /** Where the drawn board is kept for whoever saves its picture. */
+  picture?: RefObject<Svg | null>;
   style?: StyleProp<ViewStyle>;
 }) {
   const t = useTranslations("video.board");
@@ -222,6 +227,7 @@ export function BoardSurface({
   return (
     <View style={[styles.surface, style]} testID="board-surface">
       <Svg
+        ref={picture}
         width="100%"
         height="100%"
         viewBox={`0 0 ${BOARD_UNITS} ${height}`}
@@ -268,6 +274,7 @@ export function BoardToolbar({
   layer,
   tools,
   onTools,
+  onSave,
   dark = false,
   style,
 }: {
@@ -275,6 +282,8 @@ export function BoardToolbar({
   layer: string;
   tools: BoardTools;
   onTools: (change: Partial<BoardTools>) => void;
+  /** Present for the teacher on the whiteboard: saves it as a lesson material. */
+  onSave?: () => Promise<void>;
   /** Over the room's dark bars the icons are light. */
   dark?: boolean;
   style?: StyleProp<ViewStyle>;
@@ -287,6 +296,23 @@ export function BoardToolbar({
   const chosen = dark ? "rgba(255,255,255,0.18)" : "rgba(23,35,75,0.12)";
   const { color, width, erase } = tools;
   const mine = strokes.some((s) => s.by === null);
+
+  const [saving, setSaving] = useState<"idle" | "busy" | "saved" | "failed">("idle");
+  const settle = useRef<ReturnType<typeof setTimeout> | null>(null);
+  useEffect(() => () => void (settle.current && clearTimeout(settle.current)), []);
+  const save = async () => {
+    if (!onSave) return;
+    if (settle.current) clearTimeout(settle.current);
+    setSaving("busy");
+    try {
+      await onSave();
+      setSaving("saved");
+    } catch {
+      setSaving("failed");
+    }
+    // What happened stays long enough to be read, then the tools are as before.
+    settle.current = setTimeout(() => setSaving("idle"), 4000);
+  };
 
   return (
     <View style={[styles.toolbar, style]} testID="board-toolbar">
@@ -382,6 +408,28 @@ export function BoardToolbar({
           >
             <Trash2 size={18} color={ink} />
           </Pressable>
+          {onSave ? (
+            <Pressable
+              onPress={() => void save()}
+              disabled={saving === "busy" || strokes.length === 0}
+              accessibilityRole="button"
+              accessibilityLabel={t("save")}
+              style={[styles.tool, (saving === "busy" || strokes.length === 0) && styles.dim]}
+              testID="board-save"
+            >
+              <Download size={18} color={ink} />
+            </Pressable>
+          ) : null}
+          {saving !== "idle" ? (
+            <Text
+              variant="small"
+              style={[styles.saved, { color: ink }]}
+              accessibilityLiveRegion="polite"
+              testID="board-save-state"
+            >
+              {saving === "busy" ? t("saving") : saving === "saved" ? t("saved") : t("saveFailed")}
+            </Text>
+          ) : null}
         </>
       ) : null}
     </View>
@@ -392,6 +440,15 @@ export function BoardToolbar({
 export function WhiteboardStage({ engine }: { engine: CallEngine }) {
   const [tools, setTools] = useBoardTools();
   const [box, setBox] = useState({ width: 0, height: 0 });
+  const picture = useRef<Svg | null>(null);
+  // Only the teacher saves the board, under the lesson's materials (as on the site).
+  const save =
+    engine.self.role === "HOST"
+      ? async () => {
+          const png = await boardPicture(picture.current, engine.boardLayer(""));
+          await apiBytes(`/video/rooms/${engine.self.roomId}/board`, png, "image/png");
+        }
+      : undefined;
   const measure = (event: LayoutChangeEvent) => {
     const { width, height } = event.nativeEvent.layout;
     const next = fitBox({ width, height }, BOARD_ASPECT);
@@ -404,10 +461,13 @@ export function WhiteboardStage({ engine }: { engine: CallEngine }) {
         layer=""
         tools={tools}
         onTools={setTools}
+        onSave={save}
         style={styles.onWhite}
       />
       <View style={styles.boardSpace} onLayout={measure} testID="board-space">
-        {box.width > 0 ? <BoardSurface engine={engine} layer="" tools={tools} style={box} /> : null}
+        {box.width > 0 ? (
+          <BoardSurface engine={engine} layer="" tools={tools} picture={picture} style={box} />
+        ) : null}
       </View>
     </View>
   );
@@ -435,6 +495,8 @@ const styles = StyleSheet.create({
   swatchRing: { borderWidth: 1, borderColor: "rgba(255,255,255,0.6)" },
   dim: { opacity: 0.35 },
   spring: { flexGrow: 1 },
+  // What saving came to; on a narrow toolbar it takes a line of its own.
+  saved: { paddingHorizontal: space[2], opacity: 0.8 },
   // The room's own dark surface around the board, so the white sheet reads as the board.
   stage: { flex: 1, borderRadius: radius.lg, overflow: "hidden", backgroundColor: "#111a36" },
   boardSpace: { flex: 1, alignItems: "center", justifyContent: "center" },

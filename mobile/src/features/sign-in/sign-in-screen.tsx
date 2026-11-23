@@ -24,6 +24,7 @@ import { TileWall } from "@/components/tile-wall";
 import { api } from "@/lib/api";
 import { errorText, LOCALES, useLocaleChoice, useTranslations } from "@/lib/i18n";
 import { useLayout } from "@/lib/layout";
+import { phoneTyped } from "@/lib/phone";
 import { useSession } from "@/lib/session";
 import { palette, radius, space, useTheme } from "@/lib/theme";
 
@@ -309,7 +310,7 @@ function FormStep({
       <Field
         label={t("auth.phone")}
         value={phone}
-        onChangeText={setPhone}
+        onChangeText={(text) => setPhone(phoneTyped(text))}
         error={phoneError}
         placeholder={t("auth.phonePlaceholder")}
         keyboardType="phone-pad"

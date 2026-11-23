@@ -23,6 +23,10 @@ on:
         description: "Also build for the iPhone simulator (a macOS runner: ten times the minutes)"
         type: boolean
         default: false
+      ios_extension:
+        description: "Only compile the iPhone screen-share extension (a macOS runner, a few minutes; nothing else runs)"
+        type: boolean
+        default: false
 
 concurrency:
   group: mobile-${{ github.ref }}
@@ -34,6 +38,7 @@ permissions:
 jobs:
   checks:
     name: Typecheck, lint, tests, web build
+    if: ${{ !(github.event_name == 'workflow_dispatch' && inputs.ios_extension) }}
     runs-on: ubuntu-latest
     timeout-minutes: 15
     defaults:
@@ -57,9 +62,16 @@ jobs:
       # The same code as a web page: what the site will move to, part by part.
       - name: Web build
         run: npm run export:web
+      # Building for iPhone needs a Mac; that the project is generated with the
+      # screen-share extension in it (A-223) can be checked anywhere.
+      - name: The iPhone project has its screen-share extension
+        run: |
+          npx expo prebuild --platform ios --no-install
+          node scripts/check-ios-project.mjs
 
   android:
     name: Android app file
+    if: ${{ !(github.event_name == 'workflow_dispatch' && inputs.ios_extension) }}
     runs-on: ubuntu-latest
     timeout-minutes: 45
     defaults:
@@ -138,6 +150,34 @@ jobs:
             smoke/*.txt
           if-no-files-found: warn
           retention-days: 14
+
+  # The screen-share extension (A-223) is Swift that only a Mac can compile. It
+  # depends on nothing but the system, so it builds alone in a few minutes,
+  # without the pods the whole app needs.
+  ios-extension:
+    name: iPhone screen-share extension compiles
+    if: github.event_name == 'workflow_dispatch' && inputs.ios_extension
+    runs-on: macos-15
+    timeout-minutes: 15
+    defaults:
+      run:
+        working-directory: mobile
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: mobile/package-lock.json
+      - name: Install
+        run: npm ci
+      - name: Generate the iOS project
+        run: npx expo prebuild --platform ios --no-install
+      - name: Compile the extension for the simulator
+        working-directory: mobile/ios
+        run: |
+          xcodebuild -project Kampus.xcodeproj -target KampusBroadcast -configuration Release \
+            -sdk iphonesimulator CODE_SIGNING_ALLOWED=NO build
 
   ios:
     name: iPhone simulator build

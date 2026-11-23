@@ -11,7 +11,9 @@ import { mediaDevices, registerGlobals, RTCView } from "react-native-webrtc";
 
 import { SCREEN_MAX_WIDTH } from "@kampus/lib/video/call-engine";
 
-import { callService } from "../../../modules/kampus-call";
+import { broadcast, callService } from "../../../modules/kampus-call";
+
+import { startBroadcast } from "./ios-broadcast";
 
 /*
  * What a lesson room needs from the phone (A-207): WebRTC itself, a view that
@@ -161,13 +163,24 @@ export function captureScale(longestSidePx: number): number {
 }
 
 /**
- * Sharing this device's screen (A-208). Android asks the person once per share
+ * Sharing this device's screen. Android (A-208) asks the person once per share
  * ("Start recording or casting?") and then captures whatever is in front, also
- * other apps. iPhones and iPads come next: they need an app extension.
+ * other apps. An iPhone or iPad (A-223) opens the system's "Screen Broadcast"
+ * sheet with Kampus chosen; after "Start Broadcast" the app's extension hands
+ * the screen over, also while other apps are in front.
  */
 export const screenShare = {
-  available: Platform.OS === "android",
+  available: Platform.OS === "android" || (Platform.OS === "ios" && broadcast.available),
   async open(): Promise<MediaStream> {
+    if (Platform.OS === "ios") {
+      // Rejects like a closed picker when the person does not start the broadcast.
+      await startBroadcast();
+      try {
+        return (await mediaDevices.getDisplayMedia({})) as unknown as MediaStream;
+      } catch (error) {
+        throw captureError(error);
+      }
+    }
     const screen = Dimensions.get("screen");
     const longest = Math.max(screen.width, screen.height) * PixelRatio.get();
     try {

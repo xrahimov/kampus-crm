@@ -71,6 +71,7 @@ export function fakeEngine(role: JoinDto["role"], others: RemotePeer[]) {
   const engine = {
     self: {
       participantId: "me",
+      roomId: "room-1",
       secret: "room-secret",
       displayName: role === "HOST" ? "Demo Teacher" : "Demo Student",
       role,

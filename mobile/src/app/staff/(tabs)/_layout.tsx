@@ -1,5 +1,5 @@
 import { TabList, Tabs, TabSlot, TabTrigger } from "expo-router/ui";
-import { CalendarCheck, ClipboardCheck, Menu, Users } from "lucide-react-native";
+import { CalendarCheck, ClipboardCheck, Contact, Menu, Users } from "lucide-react-native";
 
 import { useCheckingQueue } from "@/api/hooks";
 import { NavItem, NavList } from "@/components/nav";
@@ -32,6 +32,12 @@ export default function StaffTabs() {
               testID="nav-checking"
             />
           </TabTrigger>
+          {/* The students a teacher may see; the office's rights decide who has the page. */}
+          {can(me, "students.view") ? (
+            <TabTrigger name="students" href="/staff/students" asChild>
+              <NavItem wide={wide} icon={Contact} label={t("nav.students")} testID="nav-students" />
+            </TabTrigger>
+          ) : null}
           <TabTrigger name="more" href="/staff/more" asChild>
             <NavItem wide={wide} icon={Menu} label={t("nav.more")} testID="nav-more" />
           </TabTrigger>

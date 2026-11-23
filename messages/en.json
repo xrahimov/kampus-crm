@@ -6283,7 +6283,7 @@
     "openOnSite": "Open Kampus on the web",
     "groupOnSite": "Open the whole group on the web",
     "siteTitle": "The rest of Kampus",
-    "siteText": "Students, payments, tests and reports are on the site for now. It opens already signed in.",
+    "siteText": "Payments, leads, reports, settings and writing tests are on the site for now. It opens already signed in.",
     "version": "Kampus {version}",
     "room": {
       "denied": "Kampus has no access to the camera or the microphone. You can join to watch and listen. To be seen and heard, allow both in the phone's settings.",
@@ -6425,6 +6425,19 @@
     "pages": {
       "more": "More pages",
       "fewer": "Fewer pages"
+    },
+    "studentsPage": {
+      "search": "Name or phone",
+      "more": "Show more",
+      "none": "No student matches.",
+      "noneYet": "No students yet.",
+      "call": "Call",
+      "noPhone": "The phone number is not shown to you."
+    },
+    "announcements": {
+      "posted": "Posted. {count, plural, =0 {No student} one {# student} other {# students}} will see it.",
+      "open": "Open announcements",
+      "hint": "A notice to one of your groups: on the students' pages, in Telegram and, if you like, by SMS."
     }
   }
 }

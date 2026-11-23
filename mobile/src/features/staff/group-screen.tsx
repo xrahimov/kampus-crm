@@ -56,6 +56,9 @@ export function GroupScreen() {
   const [month, setMonth] = useState(thisMonth);
   const group = useGroup(id);
   const grid = useMonthGrid(id, month);
+  const router = useRouter();
+  const { colors } = useTheme();
+  const maySeeStudents = can(useMe(), "students.view");
 
   const header = (
     <Header
@@ -104,7 +107,23 @@ export function GroupScreen() {
         {grid.data.members.map((member, index) => (
           <View key={member.membershipId}>
             {index > 0 ? <Divider /> : null}
-            <View style={styles.row}>
+            <Pressable
+              // A student's page opens for someone who may see students; one who
+              // left the group is no longer a teacher's to open.
+              disabled={
+                !maySeeStudents || member.status === "ARCHIVED" || member.status === "GRADUATED"
+              }
+              onPress={() =>
+                router.push({ pathname: "/staff/student/[id]", params: { id: member.studentId } })
+              }
+              accessibilityRole="button"
+              accessibilityLabel={member.fullName}
+              style={({ pressed }) => [
+                styles.row,
+                pressed ? { backgroundColor: colors.muted } : null,
+              ]}
+              testID={`member-${member.membershipId}`}
+            >
               <Avatar name={member.fullName} />
               <View style={styles.fill}>
                 <Text variant="bodyStrong" numberOfLines={1}>
@@ -124,7 +143,7 @@ export function GroupScreen() {
                   </Text>
                 </View>
               ) : null}
-            </View>
+            </Pressable>
           </View>
         ))}
       </Card>

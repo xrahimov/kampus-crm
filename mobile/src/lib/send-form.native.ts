@@ -5,12 +5,13 @@ import type { FormAnswer } from "./send-form";
  * the device (`{ uri, name, type }`), and only React Native's own request
  * (XMLHttpRequest) reads such a file while sending. The `fetch` Expo installs
  * builds the whole body in memory and refuses a file given by its address,
- * so a form never goes through it. Throws when nothing came back.
+ * so a form never goes through it. A picture made in the app (the saved
+ * whiteboard) goes the same way, as its bytes. Throws when nothing came back.
  */
 export function sendForm(
   url: string,
   headers: Record<string, string>,
-  form: FormData,
+  body: FormData | Uint8Array,
 ): Promise<FormAnswer> {
   return new Promise<FormAnswer>((resolve, reject) => {
     const request = new XMLHttpRequest();
@@ -30,6 +31,6 @@ export function sendForm(
     request.onerror = fail;
     request.ontimeout = fail;
     request.onabort = fail;
-    request.send(form);
+    request.send(body);
   });
 }

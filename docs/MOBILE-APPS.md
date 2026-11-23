@@ -12,8 +12,10 @@ spoken reply, the group chat, materials added from the phone), A-215 (the studen
 flashcards, the class stream, news, results and badges, rating a lesson), A-216 (the student's
 schedule with booking, time zone, paying online, Telegram, invite code and certificates), A-217
 (the teacher's homework set and checked from the phone, the class stream, the gradebook and the
-notes), A-218 (the teacher's course plan, coins and tests of a group) and A-219 (a group's exams, knowledge
-by topic, comments on students and history).
+notes), A-218 (the teacher's course plan, coins and tests of a group), A-219 (a group's exams, knowledge
+by topic, comments on students and history), A-220 (Students for teachers: the list and one
+student's page), A-221 (announcements), A-222 (the whiteboard saved from the app) and A-223
+(screen sharing from an iPhone or iPad).
 
 Why React Native and not the site in a wrapper: kai's choice on 2026-11-23 ("rewrite it in react
 native"), with two requirements said the same day: one code base in the end, and teachers must be
@@ -29,6 +31,8 @@ able to work from an iPad or a phone.
 | Teacher: a group's homework (set with a file, checked with rubric points), class stream, gradebook, notes        | Built, phone and tablet (A-217)                                                                    |
 | Teacher: a group's course plan (when students get a topic), coins given, test results                            | Built, phone and tablet (A-218)                                                                    |
 | Teacher: a group's exams with scores, knowledge by topic, comments on students, history                          | Built, phone and tablet (A-219)                                                                    |
+| Teacher: Students (search, a student's page with calls, groups, progress, tests, notes)                          | Built, phone and tablet (A-220)                                                                    |
+| Staff: announcements read, and posted to one group                                                               | Built, phone and tablet (A-221)                                                                    |
 | Student and parent: home, a group's page (lessons, marks, grades, payments), password                            | Built, phone and tablet                                                                            |
 | Pages the app does not have (staff)                                                                              | Open on the site in the phone's browser, already signed in (A-204); a student's side has none left |
 | Android app file                                                                                                 | Built by GitHub on every change; starts on an emulated phone                                       |
@@ -37,10 +41,10 @@ able to work from an iPad or a phone.
 | Push notifications                                                                                               | Next                                                                                               |
 | The lesson room inside the app: camera, microphone, chat, hands, reactions, the teacher's tools                  | Built, phone and tablet (A-207)                                                                    |
 | In the lesson room: whiteboard; files shown to everyone (PDF pages, pictures, video, audio, YouTube)             | Built, phone and tablet (A-209, A-210)                                                             |
-| In the lesson room: sharing the screen; a lesson that keeps running behind other apps                            | Built for Android (A-208); iPhone and iPad sharing is next                                         |
+| In the lesson room: sharing the screen; a lesson that keeps running behind other apps                            | Built: Android (A-208); iPhone and iPad (A-223), not yet tried on a real device                    |
 | In the lesson room: the teacher's polls and breakout rooms                                                       | Built, phone and tablet (A-211)                                                                    |
 | In the lesson room: a photo or file from the phone added to the lesson and shown                                 | Built, phone and tablet (A-214)                                                                    |
-| In the lesson room: saving the whiteboard                                                                        | Next                                                                                               |
+| In the lesson room: saving the whiteboard                                                                        | Built, phone and tablet (A-222)                                                                    |
 | Student and parent: homework answered in the app (text, photo, file, voice); files open in the app               | Built, phone and tablet (A-212)                                                                    |
 | Student and parent: tests, materials with lesson recordings, the group chat, exercises                           | Built, phone and tablet (A-213)                                                                    |
 | Student and parent: the course with flashcards, the class stream, news, results, rating a lesson                 | Built, phone and tablet (A-215)                                                                    |
@@ -55,7 +59,10 @@ None of this blocks building; each item unlocks one step.
 1. **Google Play Console** account, $25 once. A personal account must run a closed test with 12
    testers for 14 days before it may publish; an organisation account needs a D-U-N-S number.
 2. **Apple Developer Program**, $99 a year. An individual account needs no D-U-N-S number. Without
-   it no iPhone or iPad can install the app, not even kai's own for longer than a week.
+   it no iPhone or iPad can install the app, not even kai's own for longer than a week. In that
+   account the app needs two names, `center.kampus.app` and its screen-share extension
+   `center.kampus.app.broadcast`, both with the app group `group.center.kampus.app` (Xcode
+   creates them itself when it signs with the account).
 3. **Xcode** on the Mac (free, from the App Store, about 12 GB): lets the Mac build the iPhone app
    and run it in the simulator.
 4. Later, for push: a free **Firebase** project (Android) and a push key from the Apple account.
@@ -108,9 +115,22 @@ mobile/
   `plugins/with-screen-share.js` switches on the WebRTC library's screen-capture service in the
   generated `MainApplication`, adds its notification icon and translates its notice. The lesson's
   own foreground service lives in `modules/kampus-call` (an Expo module found by autolinking):
-  `callAudio.start()` starts it when someone joins and `callAudio.stop()` ends it. Nothing here
-  exists on iOS, where a call keeps running by itself and screen sharing needs a broadcast
-  extension that is not built yet.
+  `callAudio.start()` starts it when someone joins and `callAudio.stop()` ends it. On iOS a call
+  keeps running by itself (the "audio" background mode).
+- **Screen sharing on iPhone and iPad (A-223).** iOS captures the screen in an app extension, a
+  second small program inside the app. Its code is `plugins/broadcast/SampleHandler.swift`: it
+  sends each frame as a JPEG through a socket in the app group's folder
+  (`group.center.kampus.app`), in the form `react-native-webrtc` reads. `plugins/with-screen-share.js`
+  copies it into the generated project, adds the target `KampusBroadcast`
+  (`center.kampus.app.broadcast`), embeds it in the app before the script steps, and gives both
+  the app group. `modules/kampus-call/ios/KampusBroadcastModule.swift` opens the system's sheet
+  (`showPicker`) and passes on the extension's "started" and "stopped", which arrive as Darwin
+  notifications. `src/features/room/ios-broadcast.ts` waits for "started" (or reads a closed sheet
+  from the app coming back to the front) and only then asks the library for the screen's track.
+  `scripts/check-ios-project.mjs` checks the generated project on any computer; GitHub runs it on
+  every change. The app's workflow can also be started by hand with **ios_extension** ticked: a Mac
+  runner then compiles only the extension, in a few minutes. The iPhone simulator cannot capture a screen, so the share itself can only be
+  tried on a real iPhone or iPad, which needs Apple's account (below).
 - **Whiteboard and shown files (A-209, A-210).** `board.tsx` draws the engine's strokes with
   `react-native-svg` and sends new ones; `material-stage.tsx` draws a shown file by its kind and
   `files-panel.tsx` is the teacher's list. Files that differ by device come in pairs:
@@ -181,6 +201,20 @@ mobile/
   history entry comes from `src/lib/group-history.ts`, which the site's history tab uses too.
   `GroupPages` in `group-screen.tsx` shows the first six pages and folds the rest; a new page goes
   into its list, before or after the fold by how often a teacher needs it.
+- **Students for teachers (A-220).** `src/api/staff-students.ts` holds the calls; the list is an
+  infinite query over `/students?sort=fullName:asc` (30 a page, `q` for the search).
+  `students-screen.tsx` is the tab, `student-screen.tsx` the page of one student; its parts ask
+  for their data when opened. A call is `Linking.openURL("tel:…")`.
+- **Announcements (A-221).** `src/api/staff-announcements.ts` and `announcements-screen.tsx`, at
+  `/staff/announcements`, opened from **More**. A new notice always has the audience `GROUP`.
+- **Saving the whiteboard (A-222).** The teacher's toolbar on the whiteboard has a save button
+  (`board-save` in `src/features/room/board.tsx`). The picture is a PNG of 1600 by 900 and goes
+  as plain bytes to `POST /video/rooms/:roomId/board`, the address the site uses, through
+  `apiBytes` in `src/lib/api.ts` (it travels the way a form does, so a phone can send it).
+  Who makes the picture differs: `board-picture.native.ts` asks the drawn board itself
+  (`toDataURL` of react-native-svg; an iPhone is asked in points, so the size is divided by the
+  screen's density), `board-picture.ts` paints the strokes on a canvas with the site's own
+  painter, which now lives in `src/lib/video/board-paint.ts`. Tests swap the picture maker out.
 - **The teacher's side of a group (A-214).** `src/api/group-pages.ts` holds the calls (behind the
   session): the group's chat and materials, storing a file (`uploadDocument`) and adding it
   (`addGroupFile`). `src/features/shared/` holds what the student's and the teacher's side draw the

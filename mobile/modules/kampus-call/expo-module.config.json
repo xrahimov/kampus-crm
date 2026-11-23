@@ -1,5 +1,8 @@
 {
-  "platforms": ["android"],
+  "platforms": ["apple", "android"],
+  "apple": {
+    "modules": ["KampusBroadcastModule"]
+  },
   "android": {
     "modules": ["center.kampus.call.KampusCallModule"]
   }
