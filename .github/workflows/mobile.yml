@@ -57,6 +57,12 @@ jobs:
       # The same code as a web page: what the site will move to, part by part.
       - name: Web build
         run: npm run export:web
+      # Building for iPhone needs a Mac; that the project is generated with the
+      # screen-share extension in it (A-223) can be checked anywhere.
+      - name: The iPhone project has its screen-share extension
+        run: |
+          npx expo prebuild --platform ios --no-install
+          node scripts/check-ios-project.mjs
 
   android:
     name: Android app file

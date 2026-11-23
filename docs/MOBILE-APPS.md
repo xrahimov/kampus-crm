@@ -14,7 +14,8 @@ schedule with booking, time zone, paying online, Telegram, invite code and certi
 (the teacher's homework set and checked from the phone, the class stream, the gradebook and the
 notes), A-218 (the teacher's course plan, coins and tests of a group), A-219 (a group's exams, knowledge
 by topic, comments on students and history), A-220 (Students for teachers: the list and one
-student's page), A-221 (announcements) and A-222 (the whiteboard saved from the app).
+student's page), A-221 (announcements), A-222 (the whiteboard saved from the app) and A-223
+(screen sharing from an iPhone or iPad).
 
 Why React Native and not the site in a wrapper: kai's choice on 2026-11-23 ("rewrite it in react
 native"), with two requirements said the same day: one code base in the end, and teachers must be
@@ -40,7 +41,7 @@ able to work from an iPad or a phone.
 | Push notifications                                                                                               | Next                                                                                               |
 | The lesson room inside the app: camera, microphone, chat, hands, reactions, the teacher's tools                  | Built, phone and tablet (A-207)                                                                    |
 | In the lesson room: whiteboard; files shown to everyone (PDF pages, pictures, video, audio, YouTube)             | Built, phone and tablet (A-209, A-210)                                                             |
-| In the lesson room: sharing the screen; a lesson that keeps running behind other apps                            | Built for Android (A-208); iPhone and iPad sharing is next                                         |
+| In the lesson room: sharing the screen; a lesson that keeps running behind other apps                            | Built: Android (A-208); iPhone and iPad (A-223), not yet tried on a real device                    |
 | In the lesson room: the teacher's polls and breakout rooms                                                       | Built, phone and tablet (A-211)                                                                    |
 | In the lesson room: a photo or file from the phone added to the lesson and shown                                 | Built, phone and tablet (A-214)                                                                    |
 | In the lesson room: saving the whiteboard                                                                        | Built, phone and tablet (A-222)                                                                    |
@@ -58,7 +59,10 @@ None of this blocks building; each item unlocks one step.
 1. **Google Play Console** account, $25 once. A personal account must run a closed test with 12
    testers for 14 days before it may publish; an organisation account needs a D-U-N-S number.
 2. **Apple Developer Program**, $99 a year. An individual account needs no D-U-N-S number. Without
-   it no iPhone or iPad can install the app, not even kai's own for longer than a week.
+   it no iPhone or iPad can install the app, not even kai's own for longer than a week. In that
+   account the app needs two names, `center.kampus.app` and its screen-share extension
+   `center.kampus.app.broadcast`, both with the app group `group.center.kampus.app` (Xcode
+   creates them itself when it signs with the account).
 3. **Xcode** on the Mac (free, from the App Store, about 12 GB): lets the Mac build the iPhone app
    and run it in the simulator.
 4. Later, for push: a free **Firebase** project (Android) and a push key from the Apple account.
@@ -111,9 +115,21 @@ mobile/
   `plugins/with-screen-share.js` switches on the WebRTC library's screen-capture service in the
   generated `MainApplication`, adds its notification icon and translates its notice. The lesson's
   own foreground service lives in `modules/kampus-call` (an Expo module found by autolinking):
-  `callAudio.start()` starts it when someone joins and `callAudio.stop()` ends it. Nothing here
-  exists on iOS, where a call keeps running by itself and screen sharing needs a broadcast
-  extension that is not built yet.
+  `callAudio.start()` starts it when someone joins and `callAudio.stop()` ends it. On iOS a call
+  keeps running by itself (the "audio" background mode).
+- **Screen sharing on iPhone and iPad (A-223).** iOS captures the screen in an app extension, a
+  second small program inside the app. Its code is `plugins/broadcast/SampleHandler.swift`: it
+  sends each frame as a JPEG through a socket in the app group's folder
+  (`group.center.kampus.app`), in the form `react-native-webrtc` reads. `plugins/with-screen-share.js`
+  copies it into the generated project, adds the target `KampusBroadcast`
+  (`center.kampus.app.broadcast`), embeds it in the app before the script steps, and gives both
+  the app group. `modules/kampus-call/ios/KampusBroadcastModule.swift` opens the system's sheet
+  (`showPicker`) and passes on the extension's "started" and "stopped", which arrive as Darwin
+  notifications. `src/features/room/ios-broadcast.ts` waits for "started" (or reads a closed sheet
+  from the app coming back to the front) and only then asks the library for the screen's track.
+  `scripts/check-ios-project.mjs` checks the generated project on any computer; GitHub runs it on
+  every change. The iPhone simulator cannot capture a screen, so the share itself can only be
+  tried on a real iPhone or iPad, which needs Apple's account (below).
 - **Whiteboard and shown files (A-209, A-210).** `board.tsx` draws the engine's strokes with
   `react-native-svg` and sends new ones; `material-stage.tsx` draws a shown file by its kind and
   `files-panel.tsx` is the teacher's list. Files that differ by device come in pairs:
