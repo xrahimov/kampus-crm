@@ -148,10 +148,9 @@ export function useStudentSearch(q: string, enabled: boolean) {
   return useQuery({
     queryKey: followUpKeys.studentSearch(q),
     queryFn: ({ signal }) =>
-      api<Page<StudentRow>>(
-        `/students?sort=fullName:asc&pageSize=8&q=${encodeURIComponent(q)}`,
-        { signal },
-      ),
+      api<Page<StudentRow>>(`/students?sort=fullName:asc&pageSize=8&q=${encodeURIComponent(q)}`, {
+        signal,
+      }),
     enabled: enabled && q.length >= 2,
     placeholderData: (previous) => previous,
   });

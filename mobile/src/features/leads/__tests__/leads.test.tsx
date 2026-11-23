@@ -714,7 +714,9 @@ describe("the inbox", () => {
   };
 
   it("lists the chats with what waits unread and opens one", async () => {
-    serve({ "GET /leads/inbox": [chat(), chat({ id: "cv2", displayName: "Rustam", unreadCount: 0 })] });
+    serve({
+      "GET /leads/inbox": [chat(), chat({ id: "cv2", displayName: "Rustam", unreadCount: 0 })],
+    });
     await renderScreen(<InboxScreen />);
     expect(await screen.findByTestId("unread-cv1")).toHaveTextContent("2");
     expect(screen.queryByTestId("unread-cv2")).toBeNull();

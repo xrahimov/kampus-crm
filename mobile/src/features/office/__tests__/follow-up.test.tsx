@@ -135,7 +135,9 @@ describe("sign-in requests", () => {
       "POST /join-requests/j1/approve": { ok: true },
     });
     await renderScreen(<JoinRequestsScreen />);
-    expect(await screen.findByTestId("join-j1")).toHaveTextContent(/They wrote: I study in GE-Morning/);
+    expect(await screen.findByTestId("join-j1")).toHaveTextContent(
+      /They wrote: I study in GE-Morning/,
+    );
     await fireEvent.press(screen.getByTestId("join-approve-j1"));
     expect((await screen.findByTestId("join-name")).props.value).toBe("Sardor Karimov");
     await fireEvent.press(await screen.findByTestId("join-group"));
@@ -346,7 +348,9 @@ describe("absences", () => {
     });
     await renderScreen(<AbsencesScreen />);
     await fireEvent.press(await screen.findByTestId("absence-history-a1"));
-    expect(await screen.findByTestId("absence-contact-row-k1")).toHaveTextContent(/Call: No answer/);
+    expect(await screen.findByTestId("absence-contact-row-k1")).toHaveTextContent(
+      /Call: No answer/,
+    );
 
     await fireEvent.press(screen.getByTestId("absence-student-a1"));
     expect(mockPush).toHaveBeenCalledWith({
@@ -362,7 +366,11 @@ describe("absences", () => {
     ];
     serve({
       "GET /absences": listed([
-        absence({ status: "CLOSED", closedReason: "RETURNED", closedAt: "2026-11-22T08:00:00.000Z" }),
+        absence({
+          status: "CLOSED",
+          closedReason: "RETURNED",
+          closedAt: "2026-11-22T08:00:00.000Z",
+        }),
       ]),
     });
     await renderScreen(<AbsencesScreen />);

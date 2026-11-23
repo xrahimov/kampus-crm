@@ -186,7 +186,9 @@ function Case({
           {row.studentName}
         </Text>
         {row.status === "CLOSED" ? (
-          <Badge label={row.closedReason ? ta(`closed.${row.closedReason}`) : ta("status.CLOSED")} />
+          <Badge
+            label={row.closedReason ? ta(`closed.${row.closedReason}`) : ta("status.CLOSED")}
+          />
         ) : (
           <Badge label={ta("days", { count: row.days })} tone="warning" />
         )}
@@ -197,7 +199,8 @@ function Case({
           {row.teacher ? ` · ${ta("teacher", { name: row.teacher })}` : ""}
         </Text>
         <Text variant="small">
-          {ta(`reason.${row.reason}`, { count: row.missed })}, {ta("since", { date: day(row.sinceAt) })}
+          {ta(`reason.${row.reason}`, { count: row.missed })},{" "}
+          {ta("since", { date: day(row.sinceAt) })}
         </Text>
         <Text variant="small" tone="mutedForeground">
           {ta("columns.lastSeen")}: {row.lastPresentAt ? day(row.lastPresentAt) : ta("never")}
@@ -216,7 +219,12 @@ function Case({
       </View>
       <View style={styles.wrap}>
         {row.status === "OPEN" ? (
-          <Button compact label={ta("actions.log")} onPress={onLog} testID={`absence-log-${row.id}`} />
+          <Button
+            compact
+            label={ta("actions.log")}
+            onPress={onLog}
+            testID={`absence-log-${row.id}`}
+          />
         ) : null}
         <Button
           variant="outline"
@@ -238,7 +246,9 @@ function Case({
           variant="ghost"
           compact
           label={ta("actions.group")}
-          onPress={() => router.push({ pathname: "/staff/group/[id]", params: { id: row.groupId } })}
+          onPress={() =>
+            router.push({ pathname: "/staff/group/[id]", params: { id: row.groupId } })
+          }
           testID={`absence-group-${row.id}`}
         />
       </View>

@@ -103,7 +103,12 @@ export function LeadFlow({
 
   return (
     <>
-      <Sheet open={open && step === "card"} onClose={onClose} title={shown.fullName} testID="lead-card">
+      <Sheet
+        open={open && step === "card"}
+        onClose={onClose}
+        title={shown.fullName}
+        testID="lead-card"
+      >
         <View style={styles.column}>
           <LeadBadges lead={shown} today={today} />
           {shown.phones.length > 0 ? (
@@ -147,7 +152,11 @@ export function LeadFlow({
           ) : null}
           <View style={styles.wrap}>
             {mayChange && !shown.isArchived ? (
-              <Action label={tl("trial.book")} onPress={() => setStep("trial")} testID="lead-trial" />
+              <Action
+                label={tl("trial.book")}
+                onPress={() => setStep("trial")}
+                testID="lead-trial"
+              />
             ) : null}
             <Action
               label={tl("calls.actions.history")}
