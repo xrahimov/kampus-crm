@@ -6443,6 +6443,11 @@
       "posted": "E'lon qilindi. Uni {count} ta o'quvchi ko'radi.",
       "open": "E'lonlarni ochish",
       "hint": "Guruhlaringizdan biriga e'lon: o'quvchilar sahifasida, Telegramda va xohlasangiz SMS orqali."
+    },
+    "office": {
+      "searchTitle": "Qidiruv",
+      "searchLabel": "Ism yoki telefon raqami",
+      "searchHint": "Ismning kamida ikki harfini yoki raqamning ikki raqamini yozing. Sizga ochiq o'quvchilar, guruhlar va lidlar ichidan qidiriladi."
     }
   }
 }

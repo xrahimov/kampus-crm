@@ -51,7 +51,8 @@ able to work from an iPad or a phone.
 | Student and parent: tests, materials with lesson recordings, the group chat, exercises                           | Built, phone and tablet (A-213)                                                                                          |
 | Student and parent: the course with flashcards, the class stream, news, results, rating a lesson                 | Built, phone and tablet (A-215)                                                                                          |
 | Student and parent: the schedule with booking, the time zone, paying online, Telegram, invite code, certificates | Built, phone and tablet (A-216)                                                                                          |
-| The office's pages: students, payments, leads, reports                                                           | Later; on the site until then                                                                                            |
+| Office: Home (figures, setup list, forecast, rooms, money), notifications, search, the menu, My salary (A-230)   | Built, phone and tablet                                                                                                  |
+| The office's other pages: students for the office and payments, leads, timetable, finance, reports, settings     | Next, part by part (A-230 is part 1 of 6); they open on the site until then                                              |
 | The site running on the app's code                                                                               | Part by part, the student side first; wide tables, Excel and print last                                                  |
 
 ## What kai needs to do
@@ -105,6 +106,15 @@ mobile/
   not go back to an SVG `Pattern` with `patternTransform`: iOS draws it unturned and cut off. Each
   star has a lit face whose opacity follows the light on it: a band of daylight, up to three drops
   (a touch; `litByDrop`) and the finger resting on the wall. All of it runs on the UI thread.
+- **The office's side (A-230).** `src/features/office/` holds the centre's home (`home-screen.tsx`),
+  the bell's list, the search, "My salary" and the menu under More (`menu.tsx`); `src/api/office.ts`
+  has their calls, the same ones the site makes. `hasHome(me)` in `site-paths.ts` says who starts at
+  Home (the full view with `dashboard.view`); the tabs and the front door follow it. `nativeRoute`
+  there maps a site path to the app's screen, or to nothing, and `useOpenPath` then opens the site
+  already signed in. **When a part adds a screen, add its path to `nativeRoute`**: the menu, the
+  home's figures, notifications and search all start opening it in the app at once. Charts use
+  `PairBars` (`pair-bars.tsx`) and the two series colours of the theme (`series1`, `series2`); run
+  new chart colours through the palette check before adding any.
 - **Languages.** `messages/uz.json`, `ru.json` and `en.json` are the app's texts too. Texts only the
   app has live under the `mobile` key of the same files, so the key-parity test covers them.
 - **Look.** `src/lib/theme.tsx` holds the site's colours as plain values (light and dark), Onest in
