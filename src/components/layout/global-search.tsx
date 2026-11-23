@@ -128,7 +128,7 @@ export function GlobalSearch({
       />
       {open && term.length >= 2 && (
         <div
-          className="absolute top-full right-0 left-0 z-50 mt-1 max-h-96 origin-top animate-pop overflow-y-auto rounded-md border bg-popover p-1 text-popover-foreground shadow-lift"
+          className="absolute top-full right-0 left-0 z-50 mt-1 max-h-96 origin-top animate-pop overflow-y-auto rounded-lg border glass p-1 text-popover-foreground"
           data-testid="global-search-results"
           role="listbox"
         >

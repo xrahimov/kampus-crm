@@ -118,7 +118,7 @@ export function AssistantLauncher({
           aria-label={t("title")}
           data-testid="assistant-panel"
           className={cn(
-            "kampus-ai-panel fixed z-40 flex flex-col overflow-hidden rounded-xl border bg-card",
+            "kampus-ai-panel glass fixed z-40 flex flex-col overflow-hidden rounded-2xl border",
             "inset-x-2 top-16 bottom-2",
             "sm:inset-x-auto sm:top-auto sm:right-5 sm:bottom-24 sm:h-[min(41rem,calc(100dvh-7.5rem))] sm:w-[27rem]",
           )}

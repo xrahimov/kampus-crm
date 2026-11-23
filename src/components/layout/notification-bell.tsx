@@ -92,7 +92,7 @@ export function NotificationBell({ initialUnread }: { initialUnread: number }) {
       </Button>
       {open && (
         <div
-          className="absolute top-full right-0 z-50 mt-1 w-80 origin-top-right animate-pop rounded-md border bg-popover p-2 text-popover-foreground shadow-lift"
+          className="absolute top-full right-0 z-50 mt-1 w-80 origin-top-right animate-pop rounded-lg border glass p-2 text-popover-foreground"
           data-testid="notification-panel"
         >
           <div className="flex items-center justify-between px-1 pb-2">
