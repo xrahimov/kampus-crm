@@ -16,7 +16,7 @@ test.describe("authentication", () => {
     await page.goto("/en/login");
     await page.getByLabel("Phone number").fill(CEO_PHONE);
     await page.getByLabel("Password").fill("definitely-wrong");
-    await page.getByRole("button", { name: "Sign in" }).click();
+    await page.getByRole("button", { name: "Sign in", exact: true }).click();
     await expect(page.getByTestId("login-error")).toHaveText("Wrong phone number or password.");
   });
 
@@ -24,7 +24,7 @@ test.describe("authentication", () => {
     await page.goto("/en/login");
     await page.getByLabel("Phone number").fill(CEO_PHONE);
     await page.getByLabel("Password").fill(PASSWORD);
-    await page.getByRole("button", { name: "Sign in" }).click();
+    await page.getByRole("button", { name: "Sign in", exact: true }).click();
 
     await expect(page).toHaveURL(/\/en\/(dashboard|today)/);
     await expect(page.getByRole("heading", { level: 1 })).toContainText("Welcome, Demo CEO");
@@ -67,7 +67,7 @@ test.describe("authentication", () => {
     await page.goto("/en/login");
     await page.getByLabel("Phone number").fill(TEACHER_PHONE);
     await page.getByLabel("Password").fill(PASSWORD);
-    await page.getByRole("button", { name: "Sign in" }).click();
+    await page.getByRole("button", { name: "Sign in", exact: true }).click();
     await expect(page).toHaveURL(/\/en\/(dashboard|today)/);
 
     const nav = page.getByRole("navigation", { name: "Main" });
@@ -80,7 +80,7 @@ test.describe("authentication", () => {
     await page.goto("/en/login");
     await page.getByLabel("Phone number").fill(CEO_PHONE);
     await page.getByLabel("Password").fill(PASSWORD);
-    await page.getByRole("button", { name: "Sign in" }).click();
+    await page.getByRole("button", { name: "Sign in", exact: true }).click();
     await expect(page).toHaveURL(/\/en\/(dashboard|today)/);
 
     const cookies = await page.context().cookies();

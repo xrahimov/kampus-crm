@@ -103,6 +103,10 @@
     "codeAgain": "Send a new code",
     "codeResent": "A new code is on its way. The earlier one no longer works.",
     "widgetLink": "Another way: sign in on Telegram’s own page",
+    "firstSignIn": {
+      "video": "How to sign in for the first time",
+      "note": "The first time you sign in, the centre’s staff approve your account. The bot tells you in Telegram once they have."
+    },
     "setPasswordTitle": "Choose a password",
     "setPasswordSubtitle": "With a password, next time you sign in with just your phone number and password. A code from Telegram keeps working too.",
     "setPasswordLater": "Not now",

@@ -8,7 +8,7 @@ async function signIn(page: Page, phone: string, password = PASSWORD) {
   await page.goto("/en/login");
   await page.getByLabel("Phone number").fill(phone);
   await page.getByLabel("Password").fill(password);
-  await page.getByRole("button", { name: "Sign in" }).click();
+  await page.getByRole("button", { name: "Sign in", exact: true }).click();
   await expect(page).toHaveURL(/\/en\/(dashboard|today|groups)/);
 }
 
@@ -199,7 +199,7 @@ test.describe("sign-in with a code from Telegram (A-196)", () => {
     await expect(newcomer).toHaveURL(/\/en\/student\/login/);
     await newcomer.getByLabel("Phone number").fill(phone);
     await newcomer.getByLabel("Password").fill(OWN_PASSWORD);
-    await newcomer.getByRole("button", { name: "Sign in" }).click();
+    await newcomer.getByRole("button", { name: "Sign in", exact: true }).click();
     await expect(newcomer).toHaveURL(/\/en\/student$/);
   });
 });

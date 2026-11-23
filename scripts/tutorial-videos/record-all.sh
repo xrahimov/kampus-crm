@@ -8,7 +8,11 @@
 # when the recording is over.
 #
 #   npm run build                      # once, if .next is missing or stale
-#   scripts/tutorial-videos/record-all.sh [out-dir] [--only=sign-in,groups] [--voice]
+#   scripts/tutorial-videos/record-all.sh [out-dir] [--only=sign-in,groups] [--voice] [--app]
+#
+# With --app it records the videos of the phone app instead (A-229): upright
+# videos filmed in the app's browser build, written to <out>/<language>/app/.
+# Build that first: cd mobile && npm ci && npm run export:web
 #
 # With --voice the captions are also read aloud by Azure voices: the key is
 # read from AZURE_SPEECH_KEY and AZURE_SPEECH_REGION, or from the file named
@@ -25,10 +29,12 @@ cd "$(dirname "$0")/../.."
 OUT="tutorial-videos"
 ONLY=""
 VOICE=""
+APP=""
 for arg in "$@"; do
   case "$arg" in
     --only=*) ONLY="$arg" ;;
     --voice) VOICE="--voice" ;;
+    --app) APP="--app" ;;
     *) OUT="$arg" ;;
   esac
 done
@@ -36,6 +42,11 @@ mkdir -p "$OUT"
 
 if [ ! -d .next ]; then
   echo "No build found: run 'npm run build' first." >&2
+  exit 1
+fi
+
+if [ -n "$APP" ] && [ ! -f mobile/dist/index.html ]; then
+  echo "No browser build of the app found: run 'cd mobile && npm ci && npm run export:web' first." >&2
   exit 1
 fi
 
@@ -64,7 +75,7 @@ LOCALES=(en ru uz)
 SITE="${VIDEO_SITE_URL:-https://kampus.example}"
 if [ -n "$VOICE" ]; then
   echo "Fetching the voice of every caption (kept in $OUT/voice)"
-  npx tsx scripts/tutorial-videos/index.ts "${LOCALES[@]}" "--out=$OUT" --voice-only ${ONLY:+"$ONLY"}
+  npx tsx scripts/tutorial-videos/index.ts "${LOCALES[@]}" "--out=$OUT" --voice-only ${ONLY:+"$ONLY"} ${APP:+"$APP"}
 fi
 SERVERS=()
 stop_servers() {
@@ -89,9 +100,16 @@ for locale in "${LOCALES[@]}"; do
     node node_modules/next/dist/bin/next start > "$OUT/$locale-server.log" 2>&1 &
   SERVERS+=("$!")
   until curl -s -o /dev/null "$app/api/v1/health"; do sleep 1; done
+  # The phone app's browser build, served beside this language's server (its /api goes there).
+  phone="http://localhost:$((port + 100))"
+  if [ -n "$APP" ]; then
+    node mobile/scripts/serve-web.mjs "$((port + 100))" "$app" > "$OUT/$locale-app.log" 2>&1 &
+    SERVERS+=("$!")
+    until curl -s -o /dev/null "$phone/"; do sleep 1; done
+  fi
   # VIDEO_DATABASE_URL names the throwaway database: only there are stored notes rewritten (dress.ts).
-  DATABASE_URL="$url" VIDEO_DATABASE_URL="$url" APP_URL="$app" VIDEO_SITE_URL="$SITE" \
-    npx tsx scripts/tutorial-videos/index.ts "$locale" "--out=$OUT" ${ONLY:+"$ONLY"} ${VOICE:+"$VOICE"} \
+  DATABASE_URL="$url" VIDEO_DATABASE_URL="$url" APP_URL="$app" VIDEO_SITE_URL="$SITE" VIDEO_APP_URL="$phone" \
+    npx tsx scripts/tutorial-videos/index.ts "$locale" "--out=$OUT" ${ONLY:+"$ONLY"} ${VOICE:+"$VOICE"} ${APP:+"$APP"} \
     > "$OUT/$locale.log" 2>&1 &
   RECORDERS+=("$!")
   port=$((port + 1))

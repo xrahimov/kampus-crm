@@ -4,7 +4,7 @@ import { getTranslations, setRequestLocale } from "next-intl/server";
 
 import { AuthFrame, brandForRequest } from "@/features/auth/auth-frame";
 import { HelpVideo } from "@/features/help/help-video";
-import { helpVideoSrc, helpVideoText } from "@/features/help/videos";
+import { helpVideoSrc } from "@/features/help/videos";
 import { prisma } from "@/server/db/prisma";
 import { availableHelpVideos } from "@/server/help-videos";
 import { normalizeHost } from "@/server/services/settings/domains.service";
@@ -40,10 +40,14 @@ export default async function LoginPage({ params }: { params: Promise<{ locale: 
           compact
           className="mt-4"
           src={helpVideoSrc(locale, "sign-in")}
-          title={helpVideoText(locale, "sign-in").title}
+          title={t("firstSignIn.video")}
           label={(await getTranslations("help"))("video")}
         />
       )}
+      {/* Who lets a new account in, said before anyone tries (A-229). */}
+      <p className="mt-3 text-xs text-muted-foreground" data-testid="first-sign-in-note">
+        {t("firstSignIn.note")}
+      </p>
     </AuthFrame>
   );
 }

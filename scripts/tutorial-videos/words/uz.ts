@@ -405,4 +405,50 @@ export const uz: Words = {
       },
     },
   },
+  /** Ilovaning o‘zida yozilgan videolar, ilovaning kirish ekrani uchun (A-229). */
+  appSeries: "Kampus ilovasi qo‘llanmasi",
+  appVideos: {
+    "sign-in": {
+      title: "Ilovaga kirish",
+      note: "Kampusni o‘rnating, birinchi marta Telegramdan kelgan kod bilan, keyin parol bilan kiring.",
+      steps: {
+        install: "Kampus ilovasini telefon yoki planshetingizga o‘rnating va oching.",
+        door: "O‘qituvchilar, administratorlar va menejerlar “{mobile.doorStaff}” ni tanlaydi.",
+        phone:
+          "Birinchi marta Telegram orqali kirasiz. Telefon raqamingizni yozing va “{auth.getCode}” tugmasini bosing.",
+        bot: "Telegramda ekranda ko‘rsatilgan botni oching, Start ni, keyin “Raqamimni yuborish” tugmasini bosing. Bu faqat bir marta kerak.",
+        approve:
+          "Markazdagi kartangizda bor raqam kodni darhol oladi. Notanish raqam ruxsat so‘raydi va uni markaz xodimlari tasdiqlaydi.",
+        code: "Bot olti xonali kod yuboradi. Uni shu yerga yozing va “{auth.confirmCode}” tugmasini bosing.",
+        password:
+          "Endi Kampus o‘z parolingizni qo‘yishni taklif qiladi. Uni ikki marta yozing va “{auth.savePassword}” ni bosing.",
+        inside:
+          "Siz ichkaridasiz. “{nav.today}” darslaringizni ko‘rsatadi. Pastdagi panel guruhlar, tekshiriladigan vazifalar va o‘quvchilarni ochadi.",
+        again:
+          "Bundan keyin telefon raqami va parol yetarli. Parolni unutsangiz, Telegram kodi baribir ishlaydi.",
+      },
+    },
+    student: {
+      title: "O‘quvchilar va ota-onalar uchun ilova",
+      note: "Kampusni o‘rnating, Telegram kodi bilan kiring va darslar, vazifalar, natijalar va to‘lovlarni ko‘ring.",
+      steps: {
+        install: "O‘quvchilar va ota-onalar Kampus ilovasini telefonga o‘rnatib, ochadi.",
+        door: "“{mobile.doorStudent}” allaqachon tanlangan. Markazda yozilgan telefon raqamingizni kiriting.",
+        phone:
+          "Birinchi marta “{auth.getCode}” ni bosing. Telegramda botda Start ni bosing va raqamingizni yuboring. Bu faqat bir marta kerak.",
+        approve:
+          "Raqamingiz markazda hali bo‘lmasa, ilova kimligingizni so‘raydi va sizni markaz xodimlari tasdiqlaydi. Bot bu haqda xabar beradi.",
+        code: "Bot olti xonali kod yuboradi. Uni yozing va “{auth.confirmCode}” tugmasini bosing.",
+        password:
+          "Parolni hozir yoki keyinroq qo‘yish mumkin. Parol bilan keyingi safar kod kerak bo‘lmaydi.",
+        home: "Bosh sahifada guruhlaringiz va javob kutayotgan vazifalar ko‘rinadi. Hozir ketayotgan darsga shu yerdan qo‘shilasiz.",
+        group:
+          "Guruh sahifasida keyingi dars, jadval, vazifalar, materiallar va o‘qituvchi bilan chat bor.",
+        homework: "Vazifalar bo‘limida topshiriqni o‘qiysiz va javobingizni yuborasiz.",
+        results:
+          "Natijalar baholar, imtihonlar va davomatni ko‘rsatadi, ota-onalar farzandi qanday o‘qiyotganini doim biladi.",
+        money: "Guruh sahifasida nima to‘langani va qancha qolgani ham ko‘rinadi.",
+      },
+    },
+  },
 };

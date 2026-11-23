@@ -5,7 +5,9 @@ import { Readable } from "node:stream";
 
 import {
   HELP_VIDEO_IDS,
+  appHelpVideoFile,
   helpVideoFile,
+  isAppHelpVideoId,
   isHelpVideoId,
   isHelpVideoLocale,
   type HelpVideoId,
@@ -64,8 +66,15 @@ export async function helpVideoRange(
   start = 0,
   end?: number,
 ): Promise<StoredRange | null> {
-  if (!isHelpVideoLocale(locale) || !isHelpVideoId(id)) return null;
-  const file = path.join(/*turbopackIgnore: true*/ helpVideosDir(), locale, helpVideoFile(id));
+  if (!isHelpVideoLocale(locale)) return null;
+  // The site's videos, or the ones recorded in the phone app (A-229).
+  const name = isHelpVideoId(id)
+    ? helpVideoFile(id)
+    : isAppHelpVideoId(id)
+      ? appHelpVideoFile(id)
+      : null;
+  if (!name) return null;
+  const file = path.join(/*turbopackIgnore: true*/ helpVideosDir(), locale, name);
   let size: number;
   try {
     const info = await stat(/*turbopackIgnore: true*/ file);

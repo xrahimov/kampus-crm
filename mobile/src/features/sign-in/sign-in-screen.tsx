@@ -27,6 +27,7 @@ import { phoneTyped } from "@/lib/phone";
 import { useSession } from "@/lib/session";
 import { palette, radius, space, useTheme } from "@/lib/theme";
 
+import { HowToVideo } from "./how-to-video";
 import {
   normalizePhone,
   type CodeTicket,
@@ -93,12 +94,16 @@ export function SignInScreen() {
     return (
       <View style={[styles.split, { backgroundColor: colors.background }]}>
         <View style={[styles.wall, { backgroundColor: palette.light.sidebar }]}>
-          <TileWall id="sign-in-wall" />
-          <View style={[styles.wallBrand, { paddingTop: insets.top + space[8] }]}>
-            <KampusMark size={44} />
-            <Text variant="title" style={styles.wallName}>
+          <TileWall />
+          {/* As on the site: the name and what Kampus is, at the foot of the wall. */}
+          <View
+            style={[styles.wallBrand, { paddingBottom: insets.bottom + space[10] }]}
+            pointerEvents="none"
+          >
+            <Text variant="display" style={styles.wallName}>
               {t("app.name")}
             </Text>
+            <Text style={styles.wallTagline}>{t("app.tagline")}</Text>
           </View>
         </View>
         <KeyboardAvoidingView
@@ -357,6 +362,8 @@ function FormStep({
           <TelegramHowTo botName={botName} botUrl={botUrl} />
         </>
       ) : null}
+      {/* What a first sign-in takes: the how-to video where the server has it, and who approves (A-229). */}
+      <HowToVideo id={door === "STAFF" ? "app-sign-in" : "app-student"} />
     </View>
   );
 }
@@ -562,13 +569,13 @@ function PhoneCodeStep({
         </Text>
         <OpenBot botName={botName} botUrl={botUrl} />
       </View>
-      <View style={styles.pair}>
+      <View style={[styles.pair, styles.pairWrap]}>
         <Button
           variant="ghost"
           label={t("auth.startOver")}
           onPress={onStartOver}
           disabled={busy !== null}
-          style={styles.fill}
+          style={styles.grow}
         />
         <Button
           variant="ghost"
@@ -576,7 +583,7 @@ function PhoneCodeStep({
           onPress={resend}
           loading={busy === "resend"}
           disabled={busy !== null}
-          style={styles.fill}
+          style={styles.grow}
           testID="code-again"
         />
       </View>
@@ -782,12 +789,14 @@ const styles = StyleSheet.create({
   wall: { flex: 5, overflow: "hidden" },
   side: { flex: 6 },
   wallBrand: {
+    flex: 1,
+    justifyContent: "flex-end",
     paddingHorizontal: space[10],
-    flexDirection: "row",
-    alignItems: "center",
     gap: space[3],
+    maxWidth: 460,
   },
-  wallName: { color: "#ffffff" },
+  wallName: { color: "#ffffff", fontSize: 36, lineHeight: 42 },
+  wallTagline: { color: palette.light.sidebarForeground, fontSize: 18, lineHeight: 26 },
   sideScroll: {
     flexGrow: 1,
     justifyContent: "center",
@@ -814,6 +823,9 @@ const styles = StyleSheet.create({
   },
   code: { fontSize: 24, letterSpacing: 6, textAlign: "center" },
   pair: { flexDirection: "row", gap: space[2] },
+  // Two links side by side where both fit; a long one (Russian) drops under the other whole.
+  pairWrap: { flexWrap: "wrap", justifyContent: "center" },
+  grow: { flexGrow: 1 },
   locales: { flexDirection: "row", justifyContent: "center", gap: space[2] },
   locale: { minHeight: 44, paddingHorizontal: space[3], justifyContent: "center" },
   localeChosen: { textDecorationLine: "underline" },
