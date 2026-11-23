@@ -136,8 +136,8 @@ mobile/
   view's `contentInset`, not padding. Reloading by pulling down: Android uses the
   system's refresh control, moved below the header (`progressViewOffset`). An iPhone and iPad
   do not: on the iOS 27 simulators the system's spinner drew nowhere under a floating header,
-  whatever was tried. There the pull is measured by the app (`onScrollEndDrag`: the page moved 48 points,
-  which is a drag of about 90 because an iPhone's page resists) and the app draws its own sign
+  whatever was tried. There the pull is measured by the app (`onScrollEndDrag`: the page moved 40 points,
+  which is a drag of about 80 because an iPhone's page resists) and the app draws its own sign
   (`ReloadSign`: a small pane of glass under the header, pale while the pull is short, clear
   and turning once it is far enough and while the page reloads). Both are in
   `usePullToReload` (`surface.tsx`), which `Screen` uses; a list that scrolls by itself (the
@@ -194,6 +194,10 @@ mobile/
   while a text box had the cursor) and does not open a camera the device does not have: the iPhone
   simulator closes the app when asked ("Source type 1 not available"). The tests run as a real
   phone (`expo-device` in `jest.setup.js`).
+- **`flex: n` on a `ScrollView`.** A `ScrollView` brings `flexGrow: 1` of its own, and that wins
+  over the `flex: n` in its style: two scrolling columns with `flex: 4` and `flex: 7` share the
+  width evenly. A plain `View` with `flex: 4` beside one of them takes four fifths. Write
+  `flexGrow`, `flexShrink` and `flexBasis` out for columns (Today's two columns do).
 - **Text on Android.** A label exactly as wide as its words can lose its last word on Android:
   the line fits when measured and breaks when drawn, and the second line is outside the view
   ("Turn everyone's microphone off" in the lesson's People panel, on a tablet). Letting the

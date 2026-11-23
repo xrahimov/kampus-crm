@@ -169,10 +169,11 @@ export function Screen({
 
 /**
  * How far the page has to move down before letting go reloads it. An iPhone's
- * page resists a pull (it moves about half as far as the finger), so this is a
- * drag of about 90 points, as the system's own refresh asks for.
+ * page resists a pull (it moves about half as far as the finger, less on a
+ * taller screen), so this is a drag of about 80 points. At 48 a drag of 100
+ * was just enough on an iPhone and just short on an iPad.
  */
-const PULL_TO_RELOAD = 48;
+const PULL_TO_RELOAD = 40;
 /** Until the pull is far enough the sign is pale and small, so the two can be told apart. */
 const NOT_YET = 0.55;
 const RELOAD_SIGN = 40;
