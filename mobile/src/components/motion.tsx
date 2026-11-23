@@ -34,9 +34,9 @@ export const SPRING = { duration: 420, dampingRatio: 0.82 } as const;
 export const SPRING_FIRM = { duration: 380, dampingRatio: 1 } as const;
 
 /** Rows and cards that appear together arrive one after the other, this far apart. */
-const STEP_MS = 38;
+const STEP_MS = 26;
 /** After this many, the rest arrive with the last: a long list does not take seconds. */
-const STEPS = 9;
+const STEPS = 6;
 /** Beyond this many in one go nothing is animated: 700 students do not cascade. */
 const ANIMATED_MOST = 24;
 
@@ -62,11 +62,13 @@ function takePlace(): number {
 export function useArrival() {
   const [place] = useState(takePlace);
   if (place >= ANIMATED_MOST) return undefined;
-  const arrival = FadeInDown.duration(320).delay(Math.min(place, STEPS) * STEP_MS);
+  // The first is on its way at once and the last is in place within four tenths of a second:
+  // slower, and a page stood empty before anything showed (seen on the simulators).
+  const arrival = FadeInDown.duration(240).delay(Math.min(place, STEPS) * STEP_MS);
   // In a browser the library pins an element whose arrival has values of its own to the spot it
   // arrived at, out of the page's flow; there the arrival keeps the library's own distance.
   if (Platform.OS === "web") return arrival;
-  return arrival.withInitialValues({ opacity: 0, transform: [{ translateY: 10 }] });
+  return arrival.withInitialValues({ opacity: 0, transform: [{ translateY: 8 }] });
 }
 
 /** Something that appears in place: a notice, a count. */

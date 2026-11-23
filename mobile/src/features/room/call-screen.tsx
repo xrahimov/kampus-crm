@@ -23,8 +23,10 @@ import {
   createContext,
   useContext,
   useEffect,
+  useRef,
   useState,
   useSyncExternalStore,
+  type ComponentRef,
   type ReactNode,
 } from "react";
 import {
@@ -468,7 +470,7 @@ export function CallScreen({
             <Wall ids={everyone} render={(id, size) => tile(id, false, size)} />
           )}
         </View>
-        {panelBody && sideBySide ? <View style={styles.sidePanel}>{panelBody}</View> : null}
+        {panelBody && sideBySide ? <SidePanel>{panelBody}</SidePanel> : null}
       </View>
 
       {reactionsOpen ? (
@@ -623,6 +625,34 @@ export function CallScreen({
           </KeyboardAvoidingView>
         </View>
       ) : null}
+    </View>
+  );
+}
+
+/**
+ * The panel beside the lesson on a tablet. The chat's field stays above the
+ * keyboard: the view that makes the room works out the keyboard's overlap from
+ * its place in its parent, not on the screen, so it is told how far down the
+ * screen it starts. Without that it made too little room, by the height of
+ * what is above the panel.
+ */
+function SidePanel({ children }: { children: ReactNode }) {
+  const frame = useRef<ComponentRef<typeof View>>(null);
+  const [fromTop, setFromTop] = useState(0);
+  return (
+    <View
+      ref={frame}
+      style={styles.sidePanel}
+      onLayout={() => frame.current?.measureInWindow((_x, y) => setFromTop(Math.round(y)))}
+    >
+      <KeyboardAvoidingView
+        behavior="padding"
+        keyboardVerticalOffset={fromTop}
+        style={styles.fill}
+        testID="room-side-panel"
+      >
+        {children}
+      </KeyboardAvoidingView>
     </View>
   );
 }
@@ -1027,10 +1057,17 @@ function RoomButton({
         (disabled || busy) && styles.disabled,
       ]}
     >
-      {icon}
-      <Text variant="smallStrong" style={styles.ink} numberOfLines={2}>
+      {icon ? <View style={styles.buttonIcon}>{icon}</View> : null}
+      {/*
+        The label takes the room that is left instead of hugging its words: a label exactly as
+        wide as its text lost its last word on an Android tablet ("Turn everyone's microphone").
+        It may still shrink, so a long one goes onto a second line instead of past the edge.
+      */}
+      <Text variant="smallStrong" style={[styles.ink, styles.buttonLabel]} numberOfLines={2}>
         {label}
       </Text>
+      {/* As much room on the other side as the icon takes, so the label stays in the middle. */}
+      {icon ? <View style={styles.buttonIcon} /> : null}
     </Pressable>
   );
 }
@@ -1040,6 +1077,8 @@ const styles = StyleSheet.create({
   fill: { flex: 1 },
   row: { flexDirection: "row", gap: GAP },
   ink: { color: room.ink },
+  buttonLabel: { flexGrow: 1, flexShrink: 1, textAlign: "center" },
+  buttonIcon: { width: 18, alignItems: "center" },
   inkMuted: { color: room.inkMuted },
   activeInk: { color: room.activeInk },
   bar: {
@@ -1148,7 +1187,15 @@ const styles = StyleSheet.create({
     borderTopRightRadius: 28,
     overflow: "hidden",
   },
-  panel: { flex: 1, borderRadius: radius.lg, backgroundColor: room.surface, minHeight: 240 },
+  // It grows to fill a side column and a tall sheet, and is never shorter than what is in it:
+  // with `flex: 1` a sheet took the least height and cut the last tool off at the screen's edge.
+  panel: {
+    flexGrow: 1,
+    flexShrink: 1,
+    borderRadius: radius.lg,
+    backgroundColor: room.surface,
+    minHeight: 240,
+  },
   panelHead: {
     flexDirection: "row",
     alignItems: "center",

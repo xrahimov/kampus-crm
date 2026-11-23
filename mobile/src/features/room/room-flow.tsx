@@ -552,5 +552,6 @@ const styles = StyleSheet.create({
     gap: space[5],
     padding: space[6],
   },
-  doneActions: { alignSelf: "stretch", maxWidth: 420, width: "100%", gap: space[3] },
+  // Centred under the message on a tablet too; a phone is narrower than the limit.
+  doneActions: { alignSelf: "center", maxWidth: 420, width: "100%", gap: space[3] },
 });

@@ -1,6 +1,6 @@
 import { render, screen } from "@testing-library/react-native";
 import type { ReactNode } from "react";
-import { AccessibilityInfo, Platform, Text } from "react-native";
+import { AccessibilityInfo, Platform, StyleSheet, Text } from "react-native";
 
 import { Backdrop, Glass, GlassScope } from "@/components/glass";
 
@@ -25,8 +25,8 @@ jest.mock("expo-blur", () => {
   const React = jest.requireActual<typeof import("react")>("react");
   return {
     BlurView: (props: object) => React.createElement("BlurView", { ...props, testID: "blur" }),
-    BlurTargetView: ({ children }: { children: ReactNode }) =>
-      React.createElement("BlurTarget", { testID: "backdrop" }, children),
+    BlurTargetView: ({ children, ...props }: { children: ReactNode }) =>
+      React.createElement("BlurTarget", { ...props, testID: "backdrop" }, children),
   };
 });
 
@@ -81,6 +81,42 @@ describe("a pane of glass", () => {
     );
     expect(screen.getByTestId("backdrop")).toBeTruthy();
     expect(screen.getByTestId("blur").props.blurMethod).toBe("dimezisBlurViewSdk31Plus");
+  });
+
+  it("gives the backdrop the page's own colour, so Android does not blur the window's instead", async () => {
+    device("android", 35);
+    await render(
+      <GlassScope>
+        <Backdrop style={{ flex: 1 }} />
+        <Glass />
+      </GlassScope>,
+    );
+    const style = StyleSheet.flatten(screen.getByTestId("backdrop").props.style);
+    expect(style.backgroundColor).toEqual(expect.any(String));
+    expect(style.flex).toBe(1);
+    // Android reads what the backdrop's children draw, not the backdrop's own colour: the
+    // page's colour is painted by a view inside it, under everything else.
+    const page = screen.getByTestId("backdrop-page");
+    expect(page.parent).toBe(screen.getByTestId("backdrop"));
+    expect(StyleSheet.flatten(page.props.style)).toMatchObject({
+      position: "absolute",
+      backgroundColor: style.backgroundColor,
+    });
+  });
+
+  it("is thinner on Android, whose blur brings a tint of its own", async () => {
+    device("android", 35);
+    const android = await render(
+      <GlassScope>
+        <Backdrop />
+        <Glass />
+      </GlassScope>,
+    );
+    const there = screen.getByTestId("blur").props.intensity as number;
+    await android.unmount();
+    device("ios", "18.0");
+    await render(<Glass />);
+    expect(there).toBeLessThan(screen.getByTestId("blur").props.intensity as number);
   });
 
   it("is nearly solid on Android where nothing can be blurred", async () => {

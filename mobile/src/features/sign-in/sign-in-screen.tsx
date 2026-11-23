@@ -5,7 +5,6 @@ import { useRef, useState, type ComponentRef } from "react";
 import {
   KeyboardAvoidingView,
   Linking,
-  Platform,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -104,7 +103,9 @@ export function SignInScreen() {
         </View>
         <KeyboardAvoidingView
           style={styles.side}
-          behavior={Platform.OS === "ios" ? "padding" : undefined}
+          // Android draws under the keyboard (edge to edge), so it needs the room made as well:
+          // on a tablet lying on its side the keyboard covered the password and the button.
+          behavior="padding"
         >
           <ScrollView
             contentContainerStyle={[styles.sideScroll, { paddingTop: insets.top + space[8] }]}
@@ -120,7 +121,7 @@ export function SignInScreen() {
   return (
     <KeyboardAvoidingView
       style={[styles.fill, { backgroundColor: colors.background }]}
-      behavior={Platform.OS === "ios" ? "padding" : undefined}
+      behavior="padding"
     >
       <ScrollView
         contentContainerStyle={[

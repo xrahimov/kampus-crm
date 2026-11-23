@@ -23,35 +23,35 @@ able to work from an iPad or a phone.
 
 ## Where it stands
 
-| Part                                                                                                             | State                                                                                              |
-| ---------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------- |
-| Sign-in: phone and password, a code from Telegram, the waiting list, choosing a password                         | Built                                                                                              |
-| Teacher: today, a lesson (attendance, grades, topic, homework, lesson room), groups, checking                    | Built, phone and tablet                                                                            |
-| Teacher: an answer's file and spoken answer in the app, a spoken reply; group chat; group materials              | Built, phone and tablet (A-214)                                                                    |
-| Teacher: a group's homework (set with a file, checked with rubric points), class stream, gradebook, notes        | Built, phone and tablet (A-217)                                                                    |
-| Teacher: a group's course plan (when students get a topic), coins given, test results                            | Built, phone and tablet (A-218)                                                                    |
-| Teacher: a group's exams with scores, knowledge by topic, comments on students, history                          | Built, phone and tablet (A-219)                                                                    |
-| Teacher: Students (search, a student's page with calls, groups, progress, tests, notes)                          | Built, phone and tablet (A-220)                                                                    |
-| Staff: announcements read, and posted to one group                                                               | Built, phone and tablet (A-221)                                                                    |
-| Student and parent: home, a group's page (lessons, marks, grades, payments), password                            | Built, phone and tablet                                                                            |
-| Pages the app does not have (staff)                                                                              | Open on the site in the phone's browser, already signed in (A-204); a student's side has none left |
-| Android app file                                                                                                 | Built by GitHub on every change; starts on an emulated phone                                       |
-| iPhone and iPad build                                                                                            | A manual GitHub job (simulator only); a real device needs Apple's account                          |
-| Google Play and App Store                                                                                        | Not published: needs kai's accounts (below)                                                        |
-| Push notifications                                                                                               | Next                                                                                               |
-| The lesson room inside the app: camera, microphone, chat, hands, reactions, the teacher's tools                  | Built, phone and tablet (A-207)                                                                    |
-| In the lesson room: whiteboard; files shown to everyone (PDF pages, pictures, video, audio, YouTube)             | Built, phone and tablet (A-209, A-210)                                                             |
-| In the lesson room: sharing the screen; a lesson that keeps running behind other apps                            | Built: Android (A-208); iPhone and iPad (A-223), not yet tried on a real device                    |
-| In the lesson room: the teacher's polls and breakout rooms                                                       | Built, phone and tablet (A-211)                                                                    |
-| In the lesson room: a photo or file from the phone added to the lesson and shown                                 | Built, phone and tablet (A-214)                                                                    |
-| In the lesson room: saving the whiteboard                                                                        | Built, phone and tablet (A-222)                                                                    |
-| The look: glass bars and panes, smooth motion (iPhone, iPad and Android)                                         | Built (A-224); seen in a browser only, not yet on a phone                                          |
-| Student and parent: homework answered in the app (text, photo, file, voice); files open in the app               | Built, phone and tablet (A-212)                                                                    |
-| Student and parent: tests, materials with lesson recordings, the group chat, exercises                           | Built, phone and tablet (A-213)                                                                    |
-| Student and parent: the course with flashcards, the class stream, news, results, rating a lesson                 | Built, phone and tablet (A-215)                                                                    |
-| Student and parent: the schedule with booking, the time zone, paying online, Telegram, invite code, certificates | Built, phone and tablet (A-216)                                                                    |
-| The office's pages: students, payments, leads, reports                                                           | Later; on the site until then                                                                      |
-| The site running on the app's code                                                                               | Part by part, the student side first; wide tables, Excel and print last                            |
+| Part                                                                                                             | State                                                                                                                    |
+| ---------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------ |
+| Sign-in: phone and password, a code from Telegram, the waiting list, choosing a password                         | Built                                                                                                                    |
+| Teacher: today, a lesson (attendance, grades, topic, homework, lesson room), groups, checking                    | Built, phone and tablet                                                                                                  |
+| Teacher: an answer's file and spoken answer in the app, a spoken reply; group chat; group materials              | Built, phone and tablet (A-214)                                                                                          |
+| Teacher: a group's homework (set with a file, checked with rubric points), class stream, gradebook, notes        | Built, phone and tablet (A-217)                                                                                          |
+| Teacher: a group's course plan (when students get a topic), coins given, test results                            | Built, phone and tablet (A-218)                                                                                          |
+| Teacher: a group's exams with scores, knowledge by topic, comments on students, history                          | Built, phone and tablet (A-219)                                                                                          |
+| Teacher: Students (search, a student's page with calls, groups, progress, tests, notes)                          | Built, phone and tablet (A-220)                                                                                          |
+| Staff: announcements read, and posted to one group                                                               | Built, phone and tablet (A-221)                                                                                          |
+| Student and parent: home, a group's page (lessons, marks, grades, payments), password                            | Built, phone and tablet                                                                                                  |
+| Pages the app does not have (staff)                                                                              | Open on the site in the phone's browser, already signed in (A-204); a student's side has none left                       |
+| Android app file                                                                                                 | Built by GitHub on every change; starts on an emulated phone                                                             |
+| iPhone and iPad build                                                                                            | A manual GitHub job (simulator only); a real device needs Apple's account                                                |
+| Google Play and App Store                                                                                        | Not published: needs kai's accounts (below)                                                                              |
+| Push notifications                                                                                               | Next                                                                                                                     |
+| The lesson room inside the app: camera, microphone, chat, hands, reactions, the teacher's tools                  | Built, phone and tablet (A-207)                                                                                          |
+| In the lesson room: whiteboard; files shown to everyone (PDF pages, pictures, video, audio, YouTube)             | Built, phone and tablet (A-209, A-210)                                                                                   |
+| In the lesson room: sharing the screen; a lesson that keeps running behind other apps                            | Built: Android (A-208); iPhone and iPad (A-223): builds; Apple's sheet does not open in a simulator, needs a real device |
+| In the lesson room: the teacher's polls and breakout rooms                                                       | Built, phone and tablet (A-211)                                                                                          |
+| In the lesson room: a photo or file from the phone added to the lesson and shown                                 | Built, phone and tablet (A-214)                                                                                          |
+| In the lesson room: saving the whiteboard                                                                        | Built, phone and tablet (A-222)                                                                                          |
+| The look: glass bars and panes, smooth motion (iPhone, iPad and Android)                                         | Built (A-224, A-228); seen on the iPhone, iPad and Android simulators, not yet on a real phone                           |
+| Student and parent: homework answered in the app (text, photo, file, voice); files open in the app               | Built, phone and tablet (A-212)                                                                                          |
+| Student and parent: tests, materials with lesson recordings, the group chat, exercises                           | Built, phone and tablet (A-213)                                                                                          |
+| Student and parent: the course with flashcards, the class stream, news, results, rating a lesson                 | Built, phone and tablet (A-215)                                                                                          |
+| Student and parent: the schedule with booking, the time zone, paying online, Telegram, invite code, certificates | Built, phone and tablet (A-216)                                                                                          |
+| The office's pages: students, payments, leads, reports                                                           | Later; on the site until then                                                                                            |
+| The site running on the app's code                                                                               | Part by part, the student side first; wide tables, Excel and print last                                                  |
 
 ## What kai needs to do
 
@@ -127,13 +127,30 @@ mobile/
   screen: the page is the backdrop, the header and the save bar float over it, and the page
   leaves room for them at the top and bottom. The staff tabs do it for the navigation bar and
   tell the screens how much of the bottom the bar covers (`BottomBarSpace`). Only things that
-  float are glass; cards, rows and the tablet's rail are solid.
+  float are glass; cards, rows and the tablet's rail are solid. Learned on the simulators
+  (A-228): Android blurs only what the backdrop's CHILDREN draw and fills the rest with the
+  window's light background, so `Backdrop` paints the page's colour with a view of its own inside
+  it (a colour on the backdrop itself is outside what the blur reads; a dark header came out
+  grey twice). Android's blur brings a tint that grows with its strength, so the strength and
+  the pane's own veil are lower there. On an iPhone the room under the header is the scroll
+  view's `contentInset`, not padding. Reloading by pulling down: Android uses the
+  system's refresh control, moved below the header (`progressViewOffset`). An iPhone and iPad
+  do not: on the iOS 27 simulators the system's spinner drew nowhere under a floating header,
+  whatever was tried. There the pull is measured by the app (`onScrollEndDrag`: the page moved 40 points,
+  which is a drag of about 80 because an iPhone's page resists) and the app draws its own sign
+  (`ReloadSign`: a small pane of glass under the header, pale while the pull is short, clear
+  and turning once it is far enough and while the page reloads). Both are in
+  `usePullToReload` (`surface.tsx`), which `Screen` uses; a list that scrolls by itself (the
+  tablet's lessons of the day) calls it too. The sign belongs to the person's pull: it shows
+  from the pull until the page has reloaded and at least 0.7 s; a reload nobody pulled shows
+  none.
 - **Motion (A-224).** `src/components/motion.tsx`, on `react-native-reanimated` (it was already
   in every build, the router brings it). `Press` is anything pressable: it sinks under the
   finger and springs back. `useArrival` gives cards the cascade in which they appear (the first
   two dozen; a long list is simply there). `SPRING` and `SPRING_FIRM` are the app's two springs.
-  The navigation's highlight slides (`nav.tsx`), a chosen place fades up (`tab-fade.tsx`), the
-  segmented choice's fill slides (`surface.tsx`). The library follows the device's "Reduce
+  The navigation's highlight slides (`nav.tsx`), a chosen place fades up (`tab-fade.tsx`: the
+  start of that motion is set when the place is left, never when it comes back, or it blinks;
+  and it starts pale, not empty), the segmented choice's fill slides (`surface.tsx`). The library follows the device's "Reduce
   motion" by itself. In a browser an arrival must use the library's own animation unchanged:
   with values of its own, the library leaves the element pinned out of the page's flow.
   Tests run with the library's resolver (`jest.resolver` in `package.json`).
@@ -177,10 +194,24 @@ mobile/
   while a text box had the cursor) and does not open a camera the device does not have: the iPhone
   simulator closes the app when asked ("Source type 1 not available"). The tests run as a real
   phone (`expo-device` in `jest.setup.js`).
+- **`flex: n` on a `ScrollView`.** A `ScrollView` brings `flexGrow: 1` of its own, and that wins
+  over the `flex: n` in its style: two scrolling columns with `flex: 4` and `flex: 7` share the
+  width evenly. A plain `View` with `flex: 4` beside one of them takes four fifths. Write
+  `flexGrow`, `flexShrink` and `flexBasis` out for columns (Today's two columns do: two parts for
+  the list, three for the lesson).
+- **Text on Android.** A label exactly as wide as its words can lose its last word on Android:
+  the line fits when measured and breaks when drawn, and the second line is outside the view
+  ("Turn everyone's microphone off" in the lesson's People panel, on a tablet). Letting the
+  label shrink and `textBreakStrategy="simple"` (still set in `src/components/text.tsx`) did not
+  help. A button that fills its row gives its label the room that is left (`flexGrow: 1`,
+  centred), as `RoomButton` in the lesson does.
 - **The keyboard.** Android draws the app edge to edge here, so the window does not shrink for the
   keyboard. `Screen` (`src/components/surface.tsx`), the chat thread and the lesson's side sheet
   sit in a `KeyboardAvoidingView` with `padding` on Android as well as iPhone; a new screen with
-  its own text box at the bottom needs the same.
+  its own text box at the bottom needs the same. That view works out the keyboard's overlap from
+  its place in its parent, not on the screen: one that does not start at the top of the screen
+  must be told how far down it starts (`keyboardVerticalOffset`, measured with
+  `measureInWindow`; `SidePanel` in the lesson room does this), or it makes too little room.
 - **A group's pages for students (A-213).** `src/api/portal.ts` holds the calls (the personal
   link's token is the key, no session). `tests-screen.tsx` is the list, the run and the result;
   `materials-screen.tsx` lists files, links and recordings and hands a recording to the file page
@@ -251,7 +282,9 @@ mobile/
   shows a file that sits behind the session: a browser's picture or player cannot send the session,
   so the file is fetched first; a phone sends the session with its own request.
 - **A plain-http test build.** With `EXPO_PUBLIC_API_URL` starting with `http://` the Android build
-  allows plain http (for a server on the desk); every other build refuses it.
+  allows plain http (for a server on the desk); every other build refuses it. The address must be
+  set when `expo prebuild` runs, not only for the build after it: without it the manifest says
+  `usesCleartextTraffic="false"` and the app shows "No connection to Kampus".
 - **Shared code and its packages.** A file under `../src/lib` that the app imports may use only
   packages `mobile/` has installed too (today: `zod`). GitHub installs only `mobile/`'s packages for
   the app's checks, so anything else fails there first.
