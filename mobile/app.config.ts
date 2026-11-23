@@ -24,7 +24,7 @@ const PERMISSIONS = {
 };
 interface Messages {
   mobile: {
-    permissions: { camera: string; microphone: string };
+    permissions: { camera: string; microphone: string; photos: string };
     room: { shareNotice: string; shareNoticeText: string; shareChannel: string };
   };
 }
@@ -39,6 +39,7 @@ function iosWording(locale: keyof typeof PERMISSIONS): { ios: Record<string, str
     ios: {
       NSCameraUsageDescription: PERMISSIONS[locale].camera,
       NSMicrophoneUsageDescription: PERMISSIONS[locale].microphone,
+      NSPhotoLibraryUsageDescription: PERMISSIONS[locale].photos,
     },
   };
 }
@@ -90,10 +91,12 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     infoPlist: {
       ITSAppUsesNonExemptEncryption: false,
       CFBundleLocalizations: ["uz", "ru", "en"],
-      // The lesson room (A-207). The sentences are the English ones; `locales`
-      // below gives iOS the Uzbek and Russian wording.
+      // The lesson room (A-207) and homework answers (A-212). The sentences are
+      // the English ones; `locales` below gives iOS the Uzbek and Russian wording.
       NSCameraUsageDescription: PERMISSIONS.en.camera,
       NSMicrophoneUsageDescription: PERMISSIONS.en.microphone,
+      // A photo of the notebook as a homework answer (A-212).
+      NSPhotoLibraryUsageDescription: PERMISSIONS.en.photos,
       // A lesson keeps its sound when the teacher looks at another app for a moment.
       UIBackgroundModes: ["audio"],
     },

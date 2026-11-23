@@ -23,10 +23,13 @@ import { useRouter } from "@/i18n/navigation";
 import { api, ApiError } from "@/lib/api-client";
 import { VideoPlayer } from "@/features/shared/video-player";
 import { parseDateOnly } from "@/lib/dates";
+import { groupByLesson, NO_LESSON_KEY } from "@/lib/material-groups";
 import { useDateFormat } from "@/lib/use-date-format";
 import type { GroupMaterialsDto, MaterialDto } from "@/server/services/materials/materials.service";
 
-const NO_LESSON = "__none__";
+const NO_LESSON = NO_LESSON_KEY;
+
+export { groupByLesson };
 
 export const KIND_ICON = { FILE: FileText, LINK: Link2, RECORDING: Video } as const;
 
@@ -123,32 +126,6 @@ export function GroupMaterialsTab({
       />
     </div>
   );
-}
-
-/** Materials by lesson, newest lesson first, the group-wide ones last. */
-export function groupByLesson<
-  T extends Pick<MaterialDto, "lessonId" | "lessonDate" | "lessonTopic">,
->(items: T[]) {
-  const map = new Map<
-    string,
-    { key: string; lessonDate: string | null; lessonTopic: string | null; items: T[] }
-  >();
-  for (const m of items) {
-    const key = m.lessonId ?? NO_LESSON;
-    const g = map.get(key) ?? {
-      key,
-      lessonDate: m.lessonDate,
-      lessonTopic: m.lessonTopic,
-      items: [],
-    };
-    g.items.push(m);
-    map.set(key, g);
-  }
-  return [...map.values()].sort((a, b) => {
-    if (!a.lessonDate) return 1;
-    if (!b.lessonDate) return -1;
-    return b.lessonDate.localeCompare(a.lessonDate);
-  });
 }
 
 export function describeMaterial(

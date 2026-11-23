@@ -1,4 +1,6 @@
 import {
+  ChartColumn,
+  DoorOpen,
   FileText,
   Focus,
   Hand,
@@ -43,16 +45,27 @@ import { useLayout } from "@/lib/layout";
 import { font, radius, space } from "@/lib/theme";
 import { PACE_REACTIONS, REACTIONS } from "@kampus/lib/validation/video";
 import { CHAT_MAX_LENGTH, type CallEngine, type RemotePeer } from "@kampus/lib/video/call-engine";
-import { BOARD, MATERIAL, REACTION_EMOJI, roomView, SELF } from "@kampus/lib/video/room-view";
+import {
+  BOARD,
+  breakoutCountdown,
+  MATERIAL,
+  REACTION_EMOJI,
+  roomView,
+  SELF,
+} from "@kampus/lib/video/room-view";
 
 import { WhiteboardStage } from "./board";
+import { BreakoutPanel, useNow } from "./breakout-panel";
 import { FilesPanel } from "./files-panel";
 import { controlBar, gridColumns, room } from "./look";
 import { MaterialStage } from "./material-stage";
 import { RemoteAudio, screenShare } from "./platform";
+import { PollCard, PollPanel } from "./poll-panel";
 import { Tile } from "./tile";
 
-type Panel = "people" | "chat" | "tools" | "files" | "leave" | null;
+type Panel = "people" | "chat" | "tools" | "files" | "poll" | "breakout" | "leave" | null;
+/** The panels that open from the teacher's Lesson tools. */
+const TOOL_PANELS: Panel[] = ["tools", "files", "poll", "breakout"];
 
 const GAP = space[2];
 const NOTICE_MS = 6000;
@@ -235,6 +248,16 @@ export function CallScreen({
     return () => clearTimeout(timer);
   }, [panel]);
   const sheetArmed = armedPanel === panel;
+  // Lit while one of the teacher's tools is open or running.
+  const toolsOn =
+    TOOL_PANELS.includes(panel) ||
+    stage.board ||
+    stage.material !== null ||
+    breakout.rooms > 0 ||
+    Boolean(engine.poll?.open);
+  // The rooms' time left, in the line that says where this person is.
+  const now = useNow(breakout.rooms > 0 && breakout.endsAt !== null);
+  const roomsLeft = breakout.rooms > 0 ? breakoutCountdown(breakout.endsAt, now) : null;
 
   const leave = () => {
     if (onEndForAll) setPanel("leave");
@@ -279,11 +302,31 @@ export function CallScreen({
             onPress={() => setPanel("files")}
             testID="tool-files"
           />
+          <RoomButton
+            label={t("poll")}
+            icon={<ChartColumn size={18} color={room.ink} />}
+            onPress={() => setPanel("poll")}
+            testID="tool-poll"
+          />
+          <RoomButton
+            label={tm("breakout")}
+            icon={<DoorOpen size={18} color={room.ink} />}
+            onPress={() => setPanel("breakout")}
+            testID="tool-breakout"
+          />
         </View>
       </PanelFrame>
     ) : panel === "files" ? (
       <PanelFrame title={tm("files.title")} onClose={() => setPanel(null)}>
         <FilesPanel engine={engine} onShown={() => setPanel(null)} />
+      </PanelFrame>
+    ) : panel === "poll" ? (
+      <PanelFrame title={t("poll")} onClose={() => setPanel(null)}>
+        <PollPanel engine={engine} />
+      </PanelFrame>
+    ) : panel === "breakout" ? (
+      <PanelFrame title={tm("breakout")} onClose={() => setPanel(null)}>
+        <BreakoutPanel engine={engine} />
       </PanelFrame>
     ) : panel === "leave" ? (
       <PanelFrame title={t("endTitle")} onClose={() => setPanel(null)}>
@@ -358,7 +401,10 @@ export function CallScreen({
           <Banner>
             {breakout.mine === null
               ? t("breakoutMain", { rooms: breakout.rooms })
-              : t("breakoutIn", { number: breakout.mine })}
+              : isHost
+                ? tm("breakoutVisiting", { number: breakout.mine })
+                : t("breakoutIn", { number: breakout.mine })}
+            {roomsLeft ? ` ${roomsLeft}` : ""}
           </Banner>
         ) : null}
         {sharing && !shareSeen ? (
@@ -372,7 +418,7 @@ export function CallScreen({
           </Banner>
         ) : null}
         {engine.noShow && isHost ? <Banner>{t("noShow")}</Banner> : null}
-        {isStudent && engine.poll?.open ? <PollCard engine={engine} /> : null}
+        {isStudent ? <PollCard engine={engine} /> : null}
       </View>
 
       <View style={[styles.body, sideBySide && styles.row]}>
@@ -510,18 +556,11 @@ export function CallScreen({
           {isHost ? (
             <Control
               label={tm("tools")}
-              on={panel === "tools" || panel === "files" || stage.board || stage.material !== null}
+              on={toolsOn}
               onPress={() => setPanel((cur) => (cur === "tools" ? null : "tools"))}
               testID="open-tools"
             >
-              <LayoutGrid
-                size={22}
-                color={
-                  panel === "tools" || panel === "files" || stage.board || stage.material !== null
-                    ? room.activeInk
-                    : room.ink
-                }
-              />
+              <LayoutGrid size={22} color={toolsOn ? room.activeInk : room.ink} />
             </Control>
           ) : null}
           <Control label={t("leave")} danger onPress={leave} testID="leave">
@@ -587,38 +626,6 @@ function Wall({
   return (
     <View style={styles.fill} onLayout={measure} testID="tile-wall">
       {content}
-    </View>
-  );
-}
-
-/** A student's answer to the teacher's question (A-153). */
-function PollCard({ engine }: { engine: CallEngine }) {
-  const poll = engine.poll;
-  if (!poll) return null;
-  return (
-    <View style={styles.poll} testID="poll-card">
-      <Text variant="bodyStrong" style={styles.ink}>
-        {poll.question}
-      </Text>
-      <View style={styles.pollOptions}>
-        {poll.options.map((option, index) => {
-          const chosen = poll.myVote === index;
-          return (
-            <Pressable
-              key={`${index}-${option}`}
-              accessibilityRole="button"
-              accessibilityState={{ selected: chosen }}
-              onPress={() => engine.votePoll(index)}
-              style={[styles.pollOption, chosen && styles.pollChosen]}
-              testID={`poll-option-${index}`}
-            >
-              <Text variant="smallStrong" style={chosen ? styles.activeInk : styles.ink}>
-                {option}
-              </Text>
-            </Pressable>
-          );
-        })}
-      </View>
     </View>
   );
 }
@@ -1169,22 +1176,4 @@ const styles = StyleSheet.create({
     fontFamily: font.regular,
     fontSize: 15,
   },
-  poll: {
-    padding: space[3],
-    gap: space[2],
-    borderRadius: radius.md,
-    backgroundColor: room.surface,
-    borderWidth: 1,
-    borderColor: room.active,
-    marginBottom: space[1],
-  },
-  pollOptions: { flexDirection: "row", flexWrap: "wrap", gap: space[2] },
-  pollOption: {
-    minHeight: 40,
-    justifyContent: "center",
-    paddingHorizontal: space[3],
-    borderRadius: radius.md,
-    backgroundColor: room.surfaceRaised,
-  },
-  pollChosen: { backgroundColor: room.active },
 });

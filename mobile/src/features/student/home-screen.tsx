@@ -11,12 +11,10 @@ import { Badge, Card, EmptyState, Loading, Notice, Screen } from "@/components/s
 import { Text } from "@/components/text";
 import { DeviceSettings } from "@/features/shared/device-settings";
 import { dayAsDate } from "@/lib/days";
-import { errorText, useDate, useLocaleChoice, useMoney, useTranslations } from "@/lib/i18n";
+import { errorText, useDate, useMoney, useTranslations } from "@/lib/i18n";
 import { useLayout } from "@/lib/layout";
 import { useSession } from "@/lib/session";
 import { space, useTheme } from "@/lib/theme";
-
-import { openPersonalPage } from "./open-page";
 
 /**
  * A student's or parent's home: each person they sign in for, that person's
@@ -210,10 +208,18 @@ function GroupCard({ group }: { group: StudentHomeGroup }) {
 function HomeworkCard({ item }: { item: StudentHomeHomework }) {
   const t = useTranslations();
   const formatDate = useDate();
-  const { locale } = useLocaleChoice();
+  const router = useRouter();
   const day = (iso: string) => formatDate(dayAsDate(iso), { day: "numeric", month: "short" });
   return (
-    <Card onPress={() => void openPersonalPage(locale, item.token)} testID={`homework-${item.id}`}>
+    <Card
+      onPress={() =>
+        router.push({
+          pathname: "/student/homework/[token]",
+          params: { token: item.token, focus: item.id },
+        })
+      }
+      testID={`homework-${item.id}`}
+    >
       <View style={styles.rowTop}>
         <Text variant="smallStrong" tone="mutedForeground" style={styles.fill}>
           {[

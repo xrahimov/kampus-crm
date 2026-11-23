@@ -5352,7 +5352,7 @@
       "recordAnswer": "Record your answer",
       "yourRecording": "Your recording",
       "teacherVoice": "Teacher's reply",
-      "audioFileOptional": "Or attach an audio file (optional)",
+      "audioFileOptional": "Or attach a file (optional)",
       "assignment": "Assignment",
       "rubric": "How it is scored",
       "outOf": "{points} points",
@@ -6277,7 +6277,7 @@
     "siteText": "Students, payments, tests and reports are on the site for now. It opens already signed in.",
     "version": "Kampus {version}",
     "myPage": "Open my full page",
-    "myPageHint": "Answering homework, tests, the chat and the online lesson open on your page for now.",
+    "myPageHint": "Tests, the chat and materials open on your page for now.",
     "room": {
       "denied": "Kampus has no access to the camera or the microphone. You can join to watch and listen. To be seen and heard, allow both in the phone's settings.",
       "partial": "Kampus has access to only part of your devices. You can still join. Allow the camera and the microphone in the phone's settings to use both.",
@@ -6312,11 +6312,45 @@
         "show": "Show",
         "stop": "Stop showing",
         "shown": "On everyone's screen now"
-      }
+      },
+      "breakout": "Breakout rooms",
+      "breakoutVisiting": "You are visiting room {number}."
     },
     "permissions": {
-      "camera": "Kampus uses the camera so that your teacher and classmates see you in a video lesson.",
-      "microphone": "Kampus uses the microphone so that your teacher and classmates hear you in a video lesson."
+      "camera": "Kampus uses the camera so that your teacher and classmates see you in a video lesson, and to photograph homework.",
+      "microphone": "Kampus uses the microphone so that your teacher and classmates hear you in a video lesson, and to record a spoken answer.",
+      "photos": "Kampus opens your photos only when you choose one to send with homework."
+    },
+    "homework": {
+      "title": "Homework",
+      "toDo": "{count, plural, =0 {Nothing to do} one {# to do} other {# to do}}",
+      "takePhoto": "Take a photo",
+      "choosePhoto": "Choose a photo",
+      "chooseFile": "Choose a file",
+      "attached": "Attached: {name}",
+      "removeFile": "Remove the file",
+      "record": "Record",
+      "stopRecording": "Stop",
+      "recording": "Recording {time}",
+      "recordAgain": "Record again",
+      "removeRecording": "Remove the recording",
+      "micDenied": "Kampus may not use the microphone. Allow it in the phone's settings to record an answer.",
+      "cameraDenied": "Kampus may not use the camera. Allow it in the phone's settings to take a photo.",
+      "tooBig": "This file is larger than 20 MB. Choose a smaller one.",
+      "wrongType": "This kind of file cannot be sent. Send a photo, a PDF, a document, audio or a short video.",
+      "needAnswer": "Write an answer or attach a file first.",
+      "sent": "Sent to the teacher.",
+      "openFile": "Open the file",
+      "openLink": "Open the link",
+      "play": "Play",
+      "pause": "Pause",
+      "exercises": "{count, plural, one {# exercise} other {# exercises}} on your page"
+    },
+    "file": {
+      "title": "File",
+      "failed": "This file could not be opened.",
+      "cannotShow": "The app cannot show this kind of file.",
+      "openOutside": "Open with another app"
     }
   }
 }

@@ -1,5 +1,5 @@
-import { useLocalSearchParams } from "expo-router";
-import { ExternalLink } from "lucide-react-native";
+import { useLocalSearchParams, useRouter } from "expo-router";
+import { ExternalLink, NotebookPen } from "lucide-react-native";
 import { StyleSheet, View } from "react-native";
 
 import { usePortal } from "@/api/hooks";
@@ -24,8 +24,9 @@ const ATTENDANCE_TONE: Record<AttendanceStatus, Tone> = {
 
 /**
  * One group as the student sees it: the next lesson, how they are doing, each
- * past lesson with its mark and grade, and the payments. Answering homework,
- * tests, chat and the online lesson open on the personal page for now.
+ * past lesson with its mark and grade, and the payments. Homework is answered
+ * in the app (A-212); tests, the chat and materials open on the personal page
+ * for now.
  */
 export function ClassScreen() {
   const { token } = useLocalSearchParams<{ token: string }>();
@@ -33,6 +34,7 @@ export function ClassScreen() {
   const { locale } = useLocaleChoice();
   const { wide } = useLayout();
   const { colors } = useTheme();
+  const router = useRouter();
   const query = usePortal(token);
   const portal = query.data?.portal;
 
@@ -67,6 +69,12 @@ export function ClassScreen() {
     <View style={styles.block}>
       <NextLesson portal={portal} />
       <Stats portal={portal} />
+      <Button
+        label={t("portal.tabs.homework")}
+        icon={<NotebookPen size={18} color={colors.primaryForeground} />}
+        onPress={() => router.push({ pathname: "/student/homework/[token]", params: { token } })}
+        testID="open-homework"
+      />
       <Button
         variant="outline"
         label={t("mobile.myPage")}

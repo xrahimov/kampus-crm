@@ -5352,7 +5352,7 @@
       "recordAnswer": "Javobingizni yozib oling",
       "yourRecording": "Sizning yozuvingiz",
       "teacherVoice": "O‘qituvchi javobi",
-      "audioFileOptional": "Yoki audio fayl biriktiring (ixtiyoriy)",
+      "audioFileOptional": "Yoki fayl biriktiring (ixtiyoriy)",
       "assignment": "Topshiriq",
       "rubric": "Qanday baholanadi",
       "outOf": "{points} ball",
@@ -6277,7 +6277,7 @@
     "siteText": "O'quvchilar, to'lovlar, testlar va hisobotlar hozircha saytda. U kirilgan holda ochiladi.",
     "version": "Kampus {version}",
     "myPage": "Sahifamni to'liq ochish",
-    "myPageHint": "Uy vazifasiga javob, testlar, chat va onlayn dars hozircha sahifangizda ochiladi.",
+    "myPageHint": "Testlar, chat va materiallar hozircha sahifangizda ochiladi.",
     "room": {
       "denied": "Kampus kamera va mikrofondan foydalana olmayapti. Ko'rish va tinglash uchun kirishingiz mumkin. Sizni ko'rishlari va eshitishlari uchun telefon sozlamalarida ikkalasiga ruxsat bering.",
       "partial": "Kampus qurilmalaringizning faqat bir qismidan foydalana olyapti. Baribir kirishingiz mumkin. Kamera ham, mikrofon ham ishlashi uchun telefon sozlamalarida ruxsat bering.",
@@ -6312,11 +6312,45 @@
         "show": "Ko'rsatish",
         "stop": "Ko'rsatishni to'xtatish",
         "shown": "Hozir hammaning ekranida"
-      }
+      },
+      "breakout": "Guruh xonalari",
+      "breakoutVisiting": "Siz {number}-xonaga kirdingiz."
     },
     "permissions": {
-      "camera": "Kampus kameradan videodarsda o'qituvchi va guruhdoshlaringiz sizni ko'rishi uchun foydalanadi.",
-      "microphone": "Kampus mikrofondan videodarsda o'qituvchi va guruhdoshlaringiz sizni eshitishi uchun foydalanadi."
+      "camera": "Kampus kameradan videodarsda o'qituvchi va guruhdoshlaringiz sizni ko'rishi hamda uy vazifasini suratga olish uchun foydalanadi.",
+      "microphone": "Kampus mikrofondan videodarsda o'qituvchi va guruhdoshlaringiz sizni eshitishi hamda og'zaki javobni yozib olish uchun foydalanadi.",
+      "photos": "Kampus suratlaringizni faqat uy vazifasi uchun surat tanlaganingizda ochadi."
+    },
+    "homework": {
+      "title": "Uy vazifalari",
+      "toDo": "{count, plural, =0 {Hammasi bajarilgan} one {# ta bajarish kerak} other {# ta bajarish kerak}}",
+      "takePhoto": "Suratga olish",
+      "choosePhoto": "Surat tanlash",
+      "chooseFile": "Fayl tanlash",
+      "attached": "Biriktirildi: {name}",
+      "removeFile": "Faylni olib tashlash",
+      "record": "Yozib olish",
+      "stopRecording": "To'xtatish",
+      "recording": "Yozilmoqda {time}",
+      "recordAgain": "Qayta yozish",
+      "removeRecording": "Yozuvni olib tashlash",
+      "micDenied": "Kampus mikrofondan foydalana olmaydi. Javob yozib olish uchun telefon sozlamalarida ruxsat bering.",
+      "cameraDenied": "Kampus kameradan foydalana olmaydi. Suratga olish uchun telefon sozlamalarida ruxsat bering.",
+      "tooBig": "Bu fayl 20 MB dan katta. Kichikroq fayl tanlang.",
+      "wrongType": "Bunday faylni yuborib bo'lmaydi. Surat, PDF, hujjat, audio yoki qisqa video yuboring.",
+      "needAnswer": "Avval javob yozing yoki fayl biriktiring.",
+      "sent": "O'qituvchiga yuborildi.",
+      "openFile": "Faylni ochish",
+      "openLink": "Havolani ochish",
+      "play": "Tinglash",
+      "pause": "Pauza",
+      "exercises": "Sahifangizda {count, plural, one {# ta mashq} other {# ta mashq}}"
+    },
+    "file": {
+      "title": "Fayl",
+      "failed": "Bu faylni ochib bo'lmadi.",
+      "cannotShow": "Ilova bunday turdagi faylni ko'rsata olmaydi.",
+      "openOutside": "Boshqa ilovada ochish"
     }
   }
 }

@@ -91,6 +91,8 @@ function Navigation({ fontsReady }: { fontsReady: boolean }) {
         </Stack.Protected>
         <Stack.Protected guard={state.status === "staff" || state.status === "student"}>
           <Stack.Screen name="set-password" options={{ presentation: "modal" }} />
+          {/* A file opened inside the app: homework, materials (A-212). */}
+          <Stack.Screen name="file" />
         </Stack.Protected>
         <Stack.Screen name="index" />
       </Stack>

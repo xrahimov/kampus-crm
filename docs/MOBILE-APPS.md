@@ -5,7 +5,8 @@ to the same server as the site (`/api/v1`), speaks the same three languages from
 files, and wears the same look. Decisions are recorded in [ASSUMPTIONS.md](ASSUMPTIONS.md) as A-203
 (sign-in), A-204 (opening the site from the app), A-205 (the app itself), A-207 (the lesson room
 inside the app), A-208 (screen sharing from Android and lessons behind other apps), A-209 (the
-whiteboard) and A-210 (shown files).
+whiteboard), A-210 (shown files), A-211 (the teacher's polls and breakout rooms) and A-212 (homework
+answered in the app, files opened in the app).
 
 Why React Native and not the site in a wrapper: kai's choice on 2026-11-23 ("rewrite it in react
 native"), with two requirements said the same day: one code base in the end, and teachers must be
@@ -26,8 +27,10 @@ able to work from an iPad or a phone.
 | The lesson room inside the app: camera, microphone, chat, hands, reactions, the teacher's tools      | Built, phone and tablet (A-207)                                           |
 | In the lesson room: whiteboard; files shown to everyone (PDF pages, pictures, video, audio, YouTube) | Built, phone and tablet (A-209, A-210)                                    |
 | In the lesson room: sharing the screen; a lesson that keeps running behind other apps                | Built for Android (A-208); iPhone and iPad sharing is next                |
-| In the lesson room: running a poll, breakout rooms, showing a file straight from the phone           | Next (students already answer polls and follow their breakout room)       |
-| Answering homework, tests and chat inside the app                                                    | Next (today they open the personal page in the browser)                   |
+| In the lesson room: the teacher's polls and breakout rooms                                           | Built, phone and tablet (A-211)                                           |
+| In the lesson room: showing a file straight from the phone, saving the whiteboard                    | Next                                                                      |
+| Student and parent: homework answered in the app (text, photo, file, voice); files open in the app   | Built, phone and tablet (A-212)                                           |
+| Student and parent: exercises, tests, chat and materials inside the app                              | Next (today they open the personal page in the browser)                   |
 | The office's pages: students, payments, leads, reports                                               | Later; on the site until then                                             |
 | The site running on the app's code                                                                   | Part by part, the student side first; wide tables, Excel and print last   |
 
@@ -100,6 +103,15 @@ mobile/
   `pdf-page.native.tsx` (`react-native-pdf`) and `pdf-page.tsx` (the web build: a card),
   `youtube.native.tsx` (a web view) and `youtube.tsx` (an iframe). `file-source.ts` turns the
   server's file address into one the app can ask for, with the session for staff files.
+- **Polls and breakout rooms (A-211).** `poll-panel.tsx` (the teacher's form and results, the
+  student's card) and `breakout-panel.tsx` sit in the lesson's side panel like the chat; both only
+  call the shared engine. `panel-parts.tsx` holds the chips, buttons and inputs the panels share.
+- **Homework and files (A-212).** `src/features/student/homework-screen.tsx` is the page;
+  `src/features/files/` is shared by anything that sends or opens a file: `pick.ts` (camera, photos,
+  documents, with the server's size and kind rules checked on the phone), `recorder.tsx` and
+  `audio-clip.tsx` (`expo-audio`), `file-screen.tsx` (the `/file` route) with
+  `pdf-document.native.tsx` and `pdf-document.tsx` (the web build: the browser's own viewer).
+  `apiForm` in `src/lib/api.ts` sends a form with a file.
 - **A plain-http test build.** With `EXPO_PUBLIC_API_URL` starting with `http://` the Android build
   allows plain http (for a server on the desk); every other build refuses it.
 - **Shared code and its packages.** A file under `../src/lib` that the app imports may use only

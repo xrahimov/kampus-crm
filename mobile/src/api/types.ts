@@ -261,3 +261,160 @@ export interface Portal {
   };
   packages: { purchased: number; used: number; lessonsLeft: number } | null;
 }
+
+/* ----- A student's homework (homework.service.ts, PortalHomeworkDto) ----- */
+
+export type HomeworkAnswerStatus = "SUBMITTED" | "ACCEPTED" | "RETURNED";
+
+export interface PortalHomework {
+  id: string;
+  lessonDate: string | null;
+  lessonTopic: string | null;
+  /** An assignment's name; a lesson's homework has none. */
+  title: string | null;
+  rubric: Array<{ name: string; max: number }>;
+  maxScore: number | null;
+  text: string;
+  linkUrl: string | null;
+  /** Already an address the student may open: /api/v1/public/class/<token>/files/… */
+  attachmentUrl: string | null;
+  dueDate: string | null;
+  /** The answer is spoken: the student records it. */
+  speaking: boolean;
+  exercises: PortalExerciseSummary[];
+  submission: {
+    status: HomeworkAnswerStatus;
+    note: string | null;
+    attachmentUrl: string | null;
+    submittedAt: string;
+    teacherComment: string | null;
+    teacherAudioUrl: string | null;
+    rubricScores: number[] | null;
+    score: number | null;
+  } | null;
+}
+
+/* ----- A group's materials (materials.service.ts, MaterialDto as a student gets it) ----- */
+
+export type MaterialKind = "FILE" | "LINK" | "RECORDING";
+
+export interface PortalMaterial {
+  id: string;
+  lessonId: string | null;
+  lessonDate: string | null;
+  lessonTopic: string | null;
+  kind: MaterialKind;
+  title: string;
+  /** A file's address is already one the student may open; a link is the link itself. */
+  url: string;
+  size: number | null;
+  durationSec: number | null;
+  /** A recording's streaming copy, once the server has made one. */
+  hlsUrl: string | null;
+  /** Where the student stopped watching a recording, in seconds. */
+  resumeSec: number | null;
+}
+
+/* ----- The group chat (group-chat.service.ts) ----- */
+
+export interface ChatMessage {
+  id: string;
+  text: string;
+  at: string;
+  source: "WEB" | "TELEGRAM";
+  author: { kind: "STAFF" | "STUDENT"; name: string };
+  mine: boolean;
+}
+
+export interface GroupChat {
+  messages: ChatMessage[];
+  /** Messages by others since the reader last opened the chat. */
+  unread: number;
+}
+
+export interface PortalChat extends GroupChat {
+  teachers: string[];
+}
+
+/* ----- Tests on the student's side (portal-tests.service.ts) ----- */
+
+export interface PortalTest {
+  id: string;
+  name: string;
+  subject: string;
+  questionCount: number;
+  totalPoints: number;
+  timeLimitMinutes: number | null;
+  passPercent: number;
+  deadline: string | null;
+  available: boolean;
+  startedAt: string | null;
+  secondsLeft: number | null;
+  attempt: {
+    score: number;
+    maxScore: number;
+    percent: number;
+    passed: boolean;
+    submittedAt: string;
+  } | null;
+}
+
+export interface PortalTestRun {
+  id: string;
+  name: string;
+  subject: string;
+  timeLimitMinutes: number | null;
+  passPercent: number;
+  startedAt: string;
+  /** Seconds left as the server sees it; null without a time limit. */
+  secondsLeft: number | null;
+  questions: Array<{ id: string; text: string; options: string[]; points: number }>;
+}
+
+export interface PortalTestResult {
+  score: number;
+  maxScore: number;
+  percent: number;
+  passed: boolean;
+  coins: number;
+}
+
+/* ----- Self-check exercises (exercises.service.ts) ----- */
+
+export type PortalExerciseItem =
+  | { kind: "CHOICE"; prompt: string; options: string[]; multiple: boolean }
+  | { kind: "TRUE_FALSE"; prompt: string }
+  | { kind: "GAP"; prompt: string; gaps: number }
+  | { kind: "MATCH"; prompt: string; lefts: string[]; rights: string[] }
+  | { kind: "ORDER"; prompt: string; pieces: string[] }
+  | { kind: "SHORT"; prompt: string };
+
+export interface ExerciseBest {
+  score: number;
+  maxScore: number;
+  percent: number;
+}
+
+export interface PortalExerciseSummary {
+  id: string;
+  title: string;
+  itemCount: number;
+  attempts: number;
+  best: ExerciseBest | null;
+}
+
+export interface PortalExercise extends PortalExerciseSummary {
+  items: PortalExerciseItem[];
+}
+
+/** One item's answer, by its kind: indexes, true or false, a list of words, or one word. */
+export type ExerciseAnswer = number[] | boolean | string[] | string;
+
+export interface PortalExerciseResult {
+  score: number;
+  maxScore: number;
+  percent: number;
+  items: Array<{ correct: boolean; points: number; max: number; key: string[] }>;
+  best: ExerciseBest;
+  attempts: number;
+}
