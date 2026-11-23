@@ -75,14 +75,23 @@ export async function getStudentHome(
         select: { groupId: true },
       }),
       db.homework.findMany({
-        where: { groupId: { in: groupIds }, lesson: { date: { gte: since } } },
-        orderBy: { lesson: { date: "desc" } },
+        where: {
+          groupId: { in: groupIds },
+          OR: [
+            { lesson: { date: { gte: since } } },
+            // An assignment belongs to no lesson (A-161): its due date places it, or the day
+            // it was set when it has none.
+            { lessonId: null, dueDate: { gte: since } },
+            { lessonId: null, dueDate: null, createdAt: { gte: since } },
+          ],
+        },
         select: {
           id: true,
           groupId: true,
           text: true,
           title: true,
           dueDate: true,
+          createdAt: true,
           lesson: { select: { date: true } },
           group: { select: { name: true } },
           submissions: {
@@ -103,7 +112,11 @@ export async function getStudentHome(
         groups.find((g) => g.membershipId === m.id)?.token ?? "",
       ]),
     );
+    // Newest first, by the day each one belongs to.
+    const day = (h: (typeof homework)[number]) =>
+      (h.lesson?.date ?? h.dueDate ?? h.createdAt).getTime();
     const todo = homework
+      .sort((a, b) => day(b) - day(a))
       .filter((h) => {
         const status = h.submissions[0]?.status;
         return status === undefined || status === "RETURNED";

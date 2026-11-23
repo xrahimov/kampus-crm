@@ -171,6 +171,12 @@ mobile/
   implementation"), which the web build and the tests never show; the web build and the tests use
   `send-form.ts` (`fetch`). Never send a form with a file through `fetch` in the app. Photos from
   an iPhone's library are asked for in the compatible form (JPEG), since the server takes no HEIC.
+  On iOS the type the app names for a file does not reach the server: React Native names the part
+  by the file's ending (`audio/x-m4a` for a recording), so the server knows those names (A-226).
+  `pick.ts` puts the keyboard away before a picker opens (on an iPad the first tap did nothing
+  while a text box had the cursor) and does not open a camera the device does not have: the iPhone
+  simulator closes the app when asked ("Source type 1 not available"). The tests run as a real
+  phone (`expo-device` in `jest.setup.js`).
 - **The keyboard.** Android draws the app edge to edge here, so the window does not shrink for the
   keyboard. `Screen` (`src/components/surface.tsx`), the chat thread and the lesson's side sheet
   sit in a `KeyboardAvoidingView` with `padding` on Android as well as iPhone; a new screen with

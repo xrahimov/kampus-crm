@@ -1402,7 +1402,7 @@ export const uz: HelpContent = {
                 "O‘qituvchi javobni qabul qiladi yoki izoh bilan qaytaradi. Qaytarilgan vazifa “bajarish kerak” holatida qaytadi; **Qayta javob berish** ni bosing.",
               ],
             },
-            "**Topshiriq** – butun guruh uchun kattaroq vazifa, masalan loyiha yoki insho, muddati va nimaga qarab baholanishi jadvali bilan. Unga ham shu tarzda javob bering; o‘qituvchi tekshirgach har bir qator uchun ballingizni va jamini ko‘rasiz.",
+            "**Topshiriq** – butun guruh uchun kattaroq vazifa, masalan loyiha yoki insho, muddati va nimaga qarab baholanishi jadvali bilan. Javob bermaguningizcha u bosh sahifadagi **Bajariladigan uy vazifalari** ro‘yxatida ham turadi. Unga ham shu tarzda javob bering; o‘qituvchi tekshirgach har bir qator uchun ballingizni va jamini ko‘rasiz.",
           ],
         },
         chat: {

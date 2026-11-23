@@ -13,7 +13,13 @@ import { radius, space, useTheme } from "@/lib/theme";
  * A short recording played in place (A-212): a spoken answer, the teacher's
  * voice reply. One button, the time, and a bar that fills.
  */
-export function AudioClip(props: { source: FileSource; label: string; testID?: string }) {
+export function AudioClip(props: {
+  source: FileSource;
+  label: string;
+  /** How long it is, when known before the player has read the file (a recording just made). */
+  seconds?: number;
+  testID?: string;
+}) {
   const t = useTranslations("mobile.file");
   const { colors } = useTheme();
   const [failed, setFailed] = useState(false);
@@ -35,14 +41,25 @@ export function AudioClip(props: { source: FileSource; label: string; testID?: s
   return <Clip {...props} source={file} />;
 }
 
-function Clip({ source, label, testID }: { source: FileSource; label: string; testID?: string }) {
+function Clip({
+  source,
+  label,
+  seconds = 0,
+  testID,
+}: {
+  source: FileSource;
+  label: string;
+  seconds?: number;
+  testID?: string;
+}) {
   const t = useTranslations("mobile.homework");
   const { colors } = useTheme();
   const player = useAudioPlayer(
     source.headers ? { uri: source.uri, headers: source.headers } : { uri: source.uri },
   );
   const status = useAudioPlayerStatus(player);
-  const duration = status.duration > 0 ? status.duration : 0;
+  // The player learns the length a moment after the file is given to it.
+  const duration = status.duration > 0 ? status.duration : seconds;
   const done = duration > 0 ? Math.min(1, status.currentTime / duration) : 0;
 
   const toggle = () => {

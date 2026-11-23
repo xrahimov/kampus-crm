@@ -50,9 +50,52 @@ export const TYPE_BY_EXTENSION = Object.fromEntries(
   Object.entries(EXTENSION_BY_TYPE).map(([type, ext]) => [ext, type]),
 );
 
+const UPLOAD_TYPE_BY_EXTENSION: Record<string, string> = Object.fromEntries(
+  Object.entries(UPLOAD_EXTENSION_BY_TYPE).map(([type, ext]) => [ext, type]),
+);
+
 export const IMAGE_TYPES = Object.keys(IMAGE_EXTENSION_BY_TYPE);
 /** Everything an attachment may be: images plus the document types above. */
 export const ATTACHMENT_TYPES = Object.keys(UPLOAD_EXTENSION_BY_TYPE);
+
+/**
+ * Names the same types go by on some devices. An iPhone sends a voice
+ * recording as "audio/x-m4a" whatever the app asked for (it names the part by
+ * the file's ending), and Windows calls a zip "application/x-zip-compressed".
+ */
+const SAME_AS: Record<string, string> = {
+  "image/jpg": "image/jpeg",
+  "image/pjpeg": "image/jpeg",
+  "audio/x-m4a": "audio/mp4",
+  "audio/m4a": "audio/mp4",
+  "audio/mp3": "audio/mpeg",
+  "audio/x-wav": "audio/wav",
+  "audio/wave": "audio/wav",
+  "audio/vnd.wave": "audio/wav",
+  "application/x-zip-compressed": "application/zip",
+};
+/** What a device says when it does not know what a file is. */
+const UNNAMED_TYPES = ["", "application/octet-stream", "binary/octet-stream"];
+
+/**
+ * The type an uploaded file is stored as (A-226): the type it came with, by
+ * the name this server knows it by, when that is one of `allowed`. A file that
+ * came with no type of its own is known by the ending of its name. Null when
+ * the file is not one this upload takes.
+ */
+export function uploadType(
+  file: { type: string; name?: string },
+  allowed: readonly string[],
+): string | null {
+  const given = file.type.split(";")[0]!.trim().toLowerCase();
+  const known = SAME_AS[given] ?? given;
+  if (allowed.includes(known)) return known;
+  if (!UNNAMED_TYPES.includes(given)) return null;
+  const ending = /\.([a-z0-9]+)$/i.exec(file.name ?? "")?.[1]?.toLowerCase();
+  const byName =
+    ending === "jpeg" ? "image/jpeg" : ending ? UPLOAD_TYPE_BY_EXTENSION[ending] : undefined;
+  return byName && allowed.includes(byName) ? byName : null;
+}
 
 /** Builds a key for a new upload; the extension follows the content type. */
 export function newStorageKey(folder: string, contentType: string): string {

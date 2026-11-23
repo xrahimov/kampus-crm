@@ -7,7 +7,7 @@ import {
   HOMEWORK_FILE_MAX_BYTES,
   submitHomework,
 } from "@/server/services/homework/homework.service";
-import { ATTACHMENT_TYPES, getStorage, newStorageKey } from "@/server/storage/local";
+import { ATTACHMENT_TYPES, getStorage, newStorageKey, uploadType } from "@/server/storage/local";
 
 type Params = { token: string; homeworkId: string };
 
@@ -29,18 +29,13 @@ export const POST = route<undefined, Params>(
     let attachmentUrl: string | null = null;
     const file = form.get("file");
     if (file instanceof File && file.size > 0) {
-      if (!ATTACHMENT_TYPES.includes(file.type)) {
-        throw AppError.validation({ file: ["validation.attachmentType"] });
-      }
+      const type = uploadType(file, ATTACHMENT_TYPES);
+      if (!type) throw AppError.validation({ file: ["validation.attachmentType"] });
       if (file.size > HOMEWORK_FILE_MAX_BYTES) {
         throw AppError.validation({ file: ["validation.attachmentSize"] });
       }
-      const key = newStorageKey("homework", file.type);
-      const stored = await getStorage().put(
-        key,
-        new Uint8Array(await file.arrayBuffer()),
-        file.type,
-      );
+      const key = newStorageKey("homework", type);
+      const stored = await getStorage().put(key, new Uint8Array(await file.arrayBuffer()), type);
       attachmentUrl = `/api/v1/files/${stored.key}`;
     }
     await submitHomework(params.token, params.homeworkId, { ...parsed.data, attachmentUrl });

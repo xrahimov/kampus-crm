@@ -210,8 +210,13 @@ export function AnswerCard({ item }: { item: CheckingItem }) {
                 value={points[index] ?? 0}
                 max={criterion.max}
                 label={criterion.name}
-                onChange={(value) =>
-                  setPoints((old) => old.map((p, i) => (i === index ? value : p)))
+                // Counted from the points as they stand, so quick presses all count.
+                onStep={(delta) =>
+                  setPoints((old) =>
+                    old.map((p, i) =>
+                      i === index ? Math.max(0, Math.min(criterion.max, p + delta)) : p,
+                    ),
+                  )
                 }
                 testID={`rubric-${index}`}
               />
@@ -279,13 +284,13 @@ function Stepper({
   value,
   max,
   label,
-  onChange,
+  onStep,
   testID,
 }: {
   value: number;
   max: number;
   label: string;
-  onChange: (value: number) => void;
+  onStep: (delta: number) => void;
   testID: string;
 }) {
   const t = useTranslations();
@@ -294,7 +299,7 @@ function Stepper({
     const next = Math.max(0, Math.min(max, value + delta));
     return (
       <Pressable
-        onPress={() => onChange(next)}
+        onPress={() => onStep(delta)}
         disabled={next === value}
         accessibilityRole="button"
         accessibilityLabel={`${label}: ${next}`}

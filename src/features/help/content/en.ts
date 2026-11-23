@@ -1398,7 +1398,7 @@ export const en: HelpContent = {
                 "The teacher accepts the answer or returns it with a comment. A returned task comes back as “to do”; press **Answer again**.",
               ],
             },
-            "An **Assignment** is a bigger task for the whole group, such as a project or an essay, with a due date and a table of what it is scored on. Answer it the same way; once the teacher has checked it you see your points for each line and the total.",
+            "An **Assignment** is a bigger task for the whole group, such as a project or an essay, with a due date and a table of what it is scored on. Until you answer it, it is also listed under **Homework to do** on your home page. Answer it the same way; once the teacher has checked it you see your points for each line and the total.",
           ],
         },
         chat: {
