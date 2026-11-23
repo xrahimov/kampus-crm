@@ -16,6 +16,7 @@ import { useDateFormat } from "@/lib/use-date-format";
 import type { GroupHistoryDto, GroupNoteDto } from "@/server/services/groups/groups.service";
 
 import { weekdayLabel } from "./weekday";
+import { historyActionKey } from "@/lib/group-history";
 
 /** EXP §5 ESLATMALAR. */
 export function NotesTab({
@@ -156,7 +157,9 @@ export function HistoryTab({ history }: { history: Page<GroupHistoryDto> }) {
                     ? th.has(`fields.${h.field}`)
                       ? th(`fields.${h.field}`)
                       : h.field
-                    : th(`actions.${h.action.split(".")[1] ?? "update"}`)}
+                    : th(
+                        `actions.${historyActionKey(h.action, (key) => th.has(`actions.${key}`))}`,
+                      )}
                 </td>
                 <td className="max-w-xs px-3 py-2 text-muted-foreground">
                   {h.field ? renderValue(h.before, t, fmt) : "—"}

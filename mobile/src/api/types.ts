@@ -903,3 +903,82 @@ export interface TestDetail extends GroupTest {
   /** Open members of the groups the test was given to. */
   candidates: Array<{ studentId: string; fullName: string; groupId: string; groupName: string }>;
 }
+
+/* ----- A group's exams, knowledge, comments and history (A-219) ----- */
+
+export type ExamStatus = "NOT_STARTED" | "FINISHED";
+
+export interface GroupExam {
+  id: string;
+  type: "GROUP" | "MOCK";
+  name: string;
+  isRetake: boolean;
+  date: string;
+  startTime: string;
+  endTime: string;
+  examinerName: string | null;
+  roomName: string | null;
+  passScore: number;
+  maxScore: number;
+  status: ExamStatus;
+  studentCount: number;
+  gradedCount: number;
+}
+
+export interface ExamResultRow {
+  studentId: string;
+  fullName: string;
+  groupName: string | null;
+  score: number | null;
+  isPresent: boolean;
+  comment: string | null;
+  /** The grading level the score falls in; null on a custom scale. */
+  level: string | null;
+  passed: boolean | null;
+}
+
+export interface ExamResults {
+  exam: GroupExam;
+  rows: ExamResultRow[];
+}
+
+export interface TopicStat {
+  subject: string;
+  topic: string;
+  questions: number;
+  answered: number;
+  correct: number;
+  /** Correct out of answered, in percent; null with no answers. */
+  accuracy: number | null;
+}
+
+export interface GroupKnowledge {
+  topics: TopicStat[];
+  tests: Array<{ id: string; name: string; subject: string }>;
+  subjects: string[];
+  attempts: number;
+  students: number;
+}
+
+export interface StudentComment {
+  id: string;
+  studentId: string;
+  studentName: string;
+  groupId: string | null;
+  groupName: string | null;
+  text: string;
+  authorName: string | null;
+  createdAt: string;
+}
+
+export interface GroupHistoryRow {
+  id: string;
+  /** "group.update", "group.finish" and the like. */
+  action: string;
+  /** The field that changed; empty for a change without one. */
+  field: string;
+  before: unknown;
+  after: unknown;
+  actorName: string | null;
+  at: string;
+}

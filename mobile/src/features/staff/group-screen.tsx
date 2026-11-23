@@ -1,15 +1,21 @@
 import { useFocusEffect, useLocalSearchParams, useRouter } from "expo-router";
 import {
+  Award,
+  ChartNoAxesColumn,
+  ChevronDown,
   ChevronLeft,
   ChevronRight,
+  ChevronUp,
   ClipboardList,
   Coins,
   FileQuestion,
   FolderOpen,
   GraduationCap,
+  History,
   ListChecks,
   Megaphone,
   MessageSquare,
+  MessageSquareText,
   StickyNote,
 } from "lucide-react-native";
 import { useCallback, useState } from "react";
@@ -148,7 +154,10 @@ export function GroupScreen() {
   );
 }
 
-/** The group's other pages, each a screen of its own (A-214, A-217). */
+/** How many of a group's pages show before "More pages" is pressed. */
+const FIRST_PAGES = 6;
+
+/** The group's other pages, each a screen of its own (A-214, A-217 to A-219). */
 function GroupPages({ id }: { id: string }) {
   const t = useTranslations();
   const router = useRouter();
@@ -166,6 +175,7 @@ function GroupPages({ id }: { id: string }) {
       if (mayCheck) void refetchChecking();
     }, [refetchChat, refetchChecking, mayCheck]),
   );
+  const [all, setAll] = useState(false);
   const unread = chat.data?.unread ?? 0;
   const toCheck = checking.data?.items.filter((item) => item.groupId === id).length ?? 0;
   const pages = [
@@ -200,16 +210,22 @@ function GroupPages({ id }: { id: string }) {
       pathname: "/staff/stream/[id]" as const,
     },
     {
-      key: "gradebook",
-      label: t("groups.detail.tabs.gradebook"),
-      Icon: GraduationCap,
-      pathname: "/staff/gradebook/[id]" as const,
+      key: "coins",
+      label: t("groups.detail.tabs.coins"),
+      Icon: Coins,
+      pathname: "/staff/coins/[id]" as const,
     },
     {
       key: "plan",
       label: t("groups.detail.tabs.syllabus"),
       Icon: ListChecks,
       pathname: "/staff/plan/[id]" as const,
+    },
+    {
+      key: "gradebook",
+      label: t("groups.detail.tabs.gradebook"),
+      Icon: GraduationCap,
+      pathname: "/staff/gradebook/[id]" as const,
     },
     // Tests show to someone who may see them; a teacher may by default.
     ...(can(me, "tests.view")
@@ -220,24 +236,48 @@ function GroupPages({ id }: { id: string }) {
             Icon: FileQuestion,
             pathname: "/staff/tests/[id]" as const,
           },
+          {
+            key: "knowledge",
+            label: t("groups.detail.tabs.knowledge"),
+            Icon: ChartNoAxesColumn,
+            pathname: "/staff/knowledge/[id]" as const,
+          },
         ]
       : []),
-    {
-      key: "coins",
-      label: t("groups.detail.tabs.coins"),
-      Icon: Coins,
-      pathname: "/staff/coins/[id]" as const,
-    },
+    ...(can(me, "exams.view")
+      ? [
+          {
+            key: "exams",
+            label: t("groups.detail.tabs.exams"),
+            Icon: Award,
+            pathname: "/staff/exams/[id]" as const,
+          },
+        ]
+      : []),
     {
       key: "notes",
       label: t("groups.detail.tabs.notes"),
       Icon: StickyNote,
       pathname: "/staff/notes/[id]" as const,
     },
+    {
+      key: "comments",
+      label: t("groups.detail.tabs.comments"),
+      Icon: MessageSquareText,
+      pathname: "/staff/comments/[id]" as const,
+    },
+    {
+      key: "history",
+      label: t("groups.detail.tabs.history"),
+      Icon: History,
+      pathname: "/staff/history/[id]" as const,
+    },
   ];
+  // The pages a teacher opens every day come first; the rest wait behind one button.
+  const shown = all ? pages : pages.slice(0, FIRST_PAGES);
   return (
     <View style={styles.pages} testID="group-pages">
-      {pages.map(({ key, label, Icon, pathname, count = 0, countLabel, tone }) => (
+      {shown.map(({ key, label, Icon, pathname, count = 0, countLabel, tone }) => (
         <Pressable
           key={key}
           onPress={() => router.push({ pathname, params: { id } })}
@@ -250,12 +290,29 @@ function GroupPages({ id }: { id: string }) {
           testID={`open-${key}`}
         >
           <Icon size={20} color={colors.foreground} />
-          <Text variant="bodyStrong" style={styles.fill} numberOfLines={1}>
+          <Text variant="bodyStrong" style={styles.fill} numberOfLines={2}>
             {label}
           </Text>
           {count > 0 ? <Badge tone={tone} label={String(count)} testID={`count-${key}`} /> : null}
         </Pressable>
       ))}
+      {pages.length > FIRST_PAGES ? (
+        <Button
+          compact
+          variant="ghost"
+          label={all ? t("mobile.pages.fewer") : t("mobile.pages.more")}
+          icon={
+            all ? (
+              <ChevronUp size={16} color={colors.foreground} />
+            ) : (
+              <ChevronDown size={16} color={colors.foreground} />
+            )
+          }
+          onPress={() => setAll((was) => !was)}
+          style={styles.morePages}
+          testID="pages-more"
+        />
+      ) : null}
     </View>
   );
 }
@@ -339,6 +396,7 @@ const styles = StyleSheet.create({
   flush: { padding: 0, gap: 0, overflow: "hidden" },
   month: { flexDirection: "row", alignItems: "center", gap: space[2] },
   pages: { flexDirection: "row", flexWrap: "wrap", gap: space[2] },
+  morePages: { flexBasis: "100%", alignSelf: "flex-start" },
   page: {
     // Two to a row: the gap is taken off each half.
     flexBasis: "45%",

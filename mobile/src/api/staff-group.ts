@@ -5,16 +5,22 @@ import { api, type PickedFile } from "@/lib/api";
 import { uploadDocument } from "./group-pages";
 import type {
   CoinReason,
+  ExamResults,
   GroupCoinRow,
+  GroupExam,
   GroupGradebook,
+  GroupHistoryRow,
   GroupHomework,
   GroupHomeworkTask,
+  GroupKnowledge,
   GroupNote,
   GroupPlan,
   GroupProgress,
   GroupTest,
+  Page,
   RubricCriterion,
   StreamPost,
+  StudentComment,
   TestDetail,
   TopicReleaseMode,
 } from "./types";
@@ -22,7 +28,7 @@ import type {
 /*
  * The rest of a group's pages on the teacher's side: homework, the class
  * stream, the gradebook and the notes (A-217), the course plan, coins and
- * tests (A-218). The same calls the site's group page makes, behind the
+ * tests (A-218), exams, knowledge, comments and history (A-219). The same calls the site's group page makes, behind the
  * session.
  */
 
@@ -36,6 +42,12 @@ export const staffGroupKeys = {
   coins: (groupId: string) => ["group", groupId, "coins"] as const,
   coinReasons: ["coin-reasons"] as const,
   tests: (groupId: string) => ["group", groupId, "tests"] as const,
+  exams: (groupId: string) => ["group", groupId, "exams"] as const,
+  examResults: (examId: string) => ["exam", examId, "results"] as const,
+  knowledge: (groupId: string, subject: string | null, testId: string | null) =>
+    ["group", groupId, "knowledge", subject, testId] as const,
+  comments: (groupId: string) => ["group", groupId, "comments"] as const,
+  history: (groupId: string) => ["group", groupId, "history"] as const,
   test: (testId: string) => ["test", testId] as const,
 };
 
@@ -239,5 +251,85 @@ export function useTestDetail(testId: string, enabled: boolean) {
     queryKey: staffGroupKeys.test(testId),
     queryFn: ({ signal }) => api<TestDetail>(`/tests/${testId}`, { signal }),
     enabled,
+  });
+}
+
+/* ----- exams ----- */
+
+/** The group's exams and the mock exams it takes part in. */
+export function useGroupExams(groupId: string, enabled = true) {
+  return useQuery({
+    queryKey: staffGroupKeys.exams(groupId),
+    queryFn: async ({ signal }) =>
+      (await api<{ items: GroupExam[] }>(`/groups/${groupId}/exams`, { signal })).items,
+    enabled,
+    // A centre may hide the exam schedule from teachers; asking again changes nothing.
+    retry: false,
+  });
+}
+
+/** One exam's grading sheet; asked when its results are opened. */
+export function useExamResults(examId: string, enabled: boolean) {
+  return useQuery({
+    queryKey: staffGroupKeys.examResults(examId),
+    queryFn: ({ signal }) => api<ExamResults>(`/exams/${examId}/results`, { signal }),
+    enabled,
+  });
+}
+
+/* ----- knowledge by topic ----- */
+
+export function useGroupKnowledge(groupId: string, subject: string | null, testId: string | null) {
+  return useQuery({
+    queryKey: staffGroupKeys.knowledge(groupId, subject, testId),
+    queryFn: ({ signal }) => {
+      const query = [
+        subject ? `subject=${encodeURIComponent(subject)}` : null,
+        testId ? `testId=${encodeURIComponent(testId)}` : null,
+      ]
+        .filter(Boolean)
+        .join("&");
+      return api<GroupKnowledge>(`/groups/${groupId}/knowledge${query ? `?${query}` : ""}`, {
+        signal,
+      });
+    },
+    // The table stays while another choice loads.
+    placeholderData: (old) => old,
+  });
+}
+
+/* ----- comments on students ----- */
+
+export function useGroupComments(groupId: string) {
+  return useQuery({
+    queryKey: staffGroupKeys.comments(groupId),
+    queryFn: ({ signal }) =>
+      api<StudentComment[]>(`/groups/${groupId}/student-comments`, { signal }),
+  });
+}
+
+export function addStudentComment(
+  groupId: string,
+  studentId: string,
+  text: string,
+): Promise<StudentComment> {
+  return api<StudentComment>(`/groups/${groupId}/student-comments`, {
+    method: "POST",
+    body: { studentId, text },
+  });
+}
+
+/* ----- history ----- */
+
+/** How many of the latest changes the app asks for (the most one page holds). */
+export const HISTORY_PAGE = 100;
+
+export function useGroupHistory(groupId: string) {
+  return useQuery({
+    queryKey: staffGroupKeys.history(groupId),
+    queryFn: ({ signal }) =>
+      api<Page<GroupHistoryRow>>(`/groups/${groupId}/history?pageSize=${HISTORY_PAGE}`, {
+        signal,
+      }),
   });
 }
