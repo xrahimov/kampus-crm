@@ -1,10 +1,19 @@
 import { useFocusEffect, useLocalSearchParams, useRouter } from "expo-router";
-import { ChevronLeft, ChevronRight, FolderOpen, MessageSquare } from "lucide-react-native";
+import {
+  ChevronLeft,
+  ChevronRight,
+  ClipboardList,
+  FolderOpen,
+  GraduationCap,
+  Megaphone,
+  MessageSquare,
+  StickyNote,
+} from "lucide-react-native";
 import { useCallback, useState } from "react";
 import { Pressable, StyleSheet, View } from "react-native";
 
 import { useGroupChat } from "@/api/group-pages";
-import { useGroup, useMonthGrid } from "@/api/hooks";
+import { useCheckingQueue, useGroup, useMonthGrid } from "@/api/hooks";
 import type { GridLesson } from "@/api/types";
 import { Button } from "@/components/button";
 import { Header } from "@/components/header";
@@ -13,6 +22,7 @@ import { Text } from "@/components/text";
 import { addMonths, dayAsDate } from "@/lib/days";
 import { errorText, useDate, useTranslations } from "@/lib/i18n";
 import { useLayout } from "@/lib/layout";
+import { can, useMe } from "@/lib/session";
 import { radius, space, useTheme } from "@/lib/theme";
 
 import { useScheduleLine } from "./groups-screen";
@@ -24,9 +34,10 @@ function thisMonth(): string {
 }
 
 /**
- * One group: its chat and materials, the month's lessons (each opens to be
- * marked) and the students with their average grade. The rest of the group's
- * page (payments, notes, the gradebook) is a tap away on the site.
+ * One group: its homework, chat, materials, stream, gradebook and notes, the
+ * month's lessons (each opens to be marked) and the students with their
+ * average grade. What is left of the group's page (the office's side:
+ * payments, discounts, history) is a tap away on the site.
  */
 export function GroupScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -134,26 +145,44 @@ export function GroupScreen() {
   );
 }
 
-/** The group's chat and materials, each a screen of its own (A-214). */
+/** The group's other pages, each a screen of its own (A-214, A-217). */
 function GroupPages({ id }: { id: string }) {
   const t = useTranslations();
   const router = useRouter();
   const { colors } = useTheme();
+  const me = useMe();
   const chat = useGroupChat(id);
-  const { refetch } = chat;
-  // Coming back from the chat shows it as read.
+  const checking = useCheckingQueue(can(me, "groups.attendance.mark"));
+  const refetchChat = chat.refetch;
+  const refetchChecking = checking.refetch;
+  const mayCheck = can(me, "groups.attendance.mark");
+  // Coming back from the chat shows it as read; from the homework, what is still to check.
   useFocusEffect(
     useCallback(() => {
-      void refetch();
-    }, [refetch]),
+      void refetchChat();
+      if (mayCheck) void refetchChecking();
+    }, [refetchChat, refetchChecking, mayCheck]),
   );
   const unread = chat.data?.unread ?? 0;
+  const toCheck = checking.data?.items.filter((item) => item.groupId === id).length ?? 0;
   const pages = [
+    {
+      key: "homework",
+      label: t("groups.detail.tabs.homework"),
+      Icon: ClipboardList,
+      pathname: "/staff/homework/[id]" as const,
+      count: toCheck,
+      countLabel: t("today.homework.toCheck", { count: toCheck }),
+      tone: "warning" as const,
+    },
     {
       key: "chat",
       label: t("groups.detail.tabs.chat"),
       Icon: MessageSquare,
       pathname: "/staff/chat/[id]" as const,
+      count: unread,
+      countLabel: t("notifications.unreadCount", { count: unread }),
+      tone: "accent" as const,
     },
     {
       key: "materials",
@@ -161,19 +190,33 @@ function GroupPages({ id }: { id: string }) {
       Icon: FolderOpen,
       pathname: "/staff/materials/[id]" as const,
     },
+    {
+      key: "stream",
+      label: t("groups.detail.tabs.stream"),
+      Icon: Megaphone,
+      pathname: "/staff/stream/[id]" as const,
+    },
+    {
+      key: "gradebook",
+      label: t("groups.detail.tabs.gradebook"),
+      Icon: GraduationCap,
+      pathname: "/staff/gradebook/[id]" as const,
+    },
+    {
+      key: "notes",
+      label: t("groups.detail.tabs.notes"),
+      Icon: StickyNote,
+      pathname: "/staff/notes/[id]" as const,
+    },
   ];
   return (
-    <View style={styles.pages}>
-      {pages.map(({ key, label, Icon, pathname }) => (
+    <View style={styles.pages} testID="group-pages">
+      {pages.map(({ key, label, Icon, pathname, count = 0, countLabel, tone }) => (
         <Pressable
           key={key}
           onPress={() => router.push({ pathname, params: { id } })}
           accessibilityRole="button"
-          accessibilityLabel={
-            key === "chat" && unread > 0
-              ? `${label}, ${t("notifications.unreadCount", { count: unread })}`
-              : label
-          }
+          accessibilityLabel={count > 0 ? `${label}, ${countLabel}` : label}
           style={({ pressed }) => [
             styles.page,
             { borderColor: colors.input, backgroundColor: pressed ? colors.muted : colors.card },
@@ -184,7 +227,7 @@ function GroupPages({ id }: { id: string }) {
           <Text variant="bodyStrong" style={styles.fill} numberOfLines={1}>
             {label}
           </Text>
-          {key === "chat" && unread > 0 ? <Badge tone="accent" label={String(unread)} /> : null}
+          {count > 0 ? <Badge tone={tone} label={String(count)} testID={`count-${key}`} /> : null}
         </Pressable>
       ))}
     </View>
@@ -269,9 +312,11 @@ const styles = StyleSheet.create({
   block: { gap: space[3] },
   flush: { padding: 0, gap: 0, overflow: "hidden" },
   month: { flexDirection: "row", alignItems: "center", gap: space[2] },
-  pages: { flexDirection: "row", gap: space[2] },
+  pages: { flexDirection: "row", flexWrap: "wrap", gap: space[2] },
   page: {
-    flex: 1,
+    // Two to a row: the gap is taken off each half.
+    flexBasis: "45%",
+    flexGrow: 1,
     minHeight: 48,
     flexDirection: "row",
     alignItems: "center",

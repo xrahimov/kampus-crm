@@ -25,6 +25,9 @@ export interface TodayMember {
 export interface TodayHomework {
   id: string;
   text: string;
+  linkUrl: string | null;
+  attachmentUrl: string | null;
+  speaking: boolean;
   dueDate: string | null;
   submitted: number;
   toCheck: number;
@@ -155,6 +158,8 @@ export interface CheckingItem {
   text: string;
   linkUrl: string | null;
   speaking: boolean;
+  /** An assignment's criteria; empty without a rubric. */
+  rubric: RubricCriterion[];
   note: string | null;
   attachmentUrl: string | null;
   submittedAt: string;
@@ -712,4 +717,86 @@ export interface PortalCertificate {
   issuedAt: string;
   /** The public page anyone may open to check it. */
   url: string;
+}
+
+/* ----- A group's homework, stream, gradebook and notes on the teacher's side ----- */
+
+/** One line of an assignment's rubric (homework.service.ts, A-161). */
+export interface RubricCriterion {
+  name: string;
+  max: number;
+}
+
+export interface HomeworkAnswerRow {
+  membershipId: string;
+  studentId: string;
+  fullName: string;
+  /** Null while the student has sent nothing. */
+  status: HomeworkAnswerStatus | null;
+  note: string | null;
+  attachmentUrl: string | null;
+  submittedAt: string | null;
+  teacherComment: string | null;
+  teacherAudioUrl: string | null;
+  checkedByName: string | null;
+  rubricScores: number[] | null;
+  score: number | null;
+}
+
+export interface GroupHomeworkTask {
+  id: string;
+  /** Null for a standalone assignment, which carries a title instead. */
+  lessonId: string | null;
+  lessonDate: string | null;
+  lessonTopic: string | null;
+  title: string | null;
+  rubric: RubricCriterion[];
+  maxScore: number | null;
+  text: string;
+  linkUrl: string | null;
+  attachmentUrl: string | null;
+  dueDate: string | null;
+  speaking: boolean;
+  createdByName: string | null;
+  createdAt: string;
+  /** One row per current member of the group. */
+  submissions: HomeworkAnswerRow[];
+}
+
+export interface GroupHomework {
+  items: GroupHomeworkTask[];
+  /** Lessons a homework can be set for: past ones and the next two weeks, newest first. */
+  lessons: Array<{ id: string; date: string; topic: string | null; hasHomework: boolean }>;
+  /** The centre's day. */
+  today: string;
+}
+
+export interface GroupNote {
+  id: string;
+  text: string;
+  authorName: string | null;
+  createdAt: string;
+}
+
+export interface GradebookCategoryRow {
+  key: GradebookCategory;
+  weight: number;
+  /** Mean of the category's items in percent; null without items. */
+  percent: number | null;
+  count: number;
+}
+
+export interface GroupGradebook {
+  courseId: string;
+  courseName: string;
+  scaleName: string | null;
+  students: Array<{
+    membershipId: string;
+    studentId: string;
+    fullName: string;
+    status: MembershipStatus;
+    categories: GradebookCategoryRow[];
+    final: number | null;
+    level: string | null;
+  }>;
 }

@@ -104,8 +104,18 @@ export function checkFile(input: {
   };
 }
 
-/** Photos go out smaller than the camera makes them: a page of homework reads fine at this. */
-const PHOTO = { mediaTypes: ["images"], quality: 0.7 } satisfies ImagePicker.ImagePickerOptions;
+/**
+ * Photos go out smaller than the camera makes them: a page of homework reads
+ * fine at this. An iPhone keeps its photos as HEIC, which the server and most
+ * browsers do not take, so the picker is asked for the compatible copy (JPEG).
+ */
+const PHOTO = {
+  mediaTypes: ["images"],
+  quality: 0.7,
+  // The enum's own value, written out: nothing native is loaded to read it.
+  preferredAssetRepresentationMode:
+    "compatible" as ImagePicker.UIImagePickerPreferredAssetRepresentationMode,
+} satisfies ImagePicker.ImagePickerOptions;
 
 export async function takePhoto(): Promise<Picked> {
   const permission = await ImagePicker.requestCameraPermissionsAsync();

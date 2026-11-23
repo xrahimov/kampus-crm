@@ -9,8 +9,10 @@ whiteboard), A-210 (shown files), A-211 (the teacher's polls and breakout rooms)
 answered in the app, files opened in the app), A-213 (a group's tests, materials, chat and
 exercises in the app), A-214 (the teacher's side of a group: answers with their files and a
 spoken reply, the group chat, materials added from the phone), A-215 (the student's course with
-flashcards, the class stream, news, results and badges, rating a lesson) and A-216 (the student's
-schedule with booking, time zone, paying online, Telegram, invite code and certificates).
+flashcards, the class stream, news, results and badges, rating a lesson), A-216 (the student's
+schedule with booking, time zone, paying online, Telegram, invite code and certificates) and A-217
+(the teacher's homework set and checked from the phone, the class stream, the gradebook and the
+notes).
 
 Why React Native and not the site in a wrapper: kai's choice on 2026-11-23 ("rewrite it in react
 native"), with two requirements said the same day: one code base in the end, and teachers must be
@@ -23,6 +25,8 @@ able to work from an iPad or a phone.
 | Sign-in: phone and password, a code from Telegram, the waiting list, choosing a password                         | Built                                                                                              |
 | Teacher: today, a lesson (attendance, grades, topic, homework, lesson room), groups, checking                    | Built, phone and tablet                                                                            |
 | Teacher: an answer's file and spoken answer in the app, a spoken reply; group chat; group materials              | Built, phone and tablet (A-214)                                                                    |
+| Teacher: a group's homework (set with a file, checked with rubric points), class stream, gradebook, notes        | Built, phone and tablet (A-217)                                                                    |
+| Teacher: a group's course plan, tests and coins                                                                  | Next                                                                                               |
 | Student and parent: home, a group's page (lessons, marks, grades, payments), password                            | Built, phone and tablet                                                                            |
 | Pages the app does not have (staff)                                                                              | Open on the site in the phone's browser, already signed in (A-204); a student's side has none left |
 | Android app file                                                                                                 | Built by GitHub on every change; starts on an emulated phone                                       |
@@ -119,7 +123,16 @@ mobile/
   documents, with the server's size and kind rules checked on the phone), `recorder.tsx` and
   `audio-clip.tsx` (`expo-audio`), `file-screen.tsx` (the `/file` route) with
   `pdf-document.native.tsx` and `pdf-document.tsx` (the web build: the browser's own viewer).
-  `apiForm` in `src/lib/api.ts` sends a form with a file.
+  `apiForm` in `src/lib/api.ts` sends a form with a file through `src/lib/send-form`: on a phone
+  that is React Native's own request (`send-form.native.ts`, XMLHttpRequest), because Expo's
+  `fetch` refuses a file given by its address on the phone ("Unsupported FormDataPart
+  implementation"), which the web build and the tests never show; the web build and the tests use
+  `send-form.ts` (`fetch`). Never send a form with a file through `fetch` in the app. Photos from
+  an iPhone's library are asked for in the compatible form (JPEG), since the server takes no HEIC.
+- **The keyboard.** Android draws the app edge to edge here, so the window does not shrink for the
+  keyboard. `Screen` (`src/components/surface.tsx`), the chat thread and the lesson's side sheet
+  sit in a `KeyboardAvoidingView` with `padding` on Android as well as iPhone; a new screen with
+  its own text box at the bottom needs the same.
 - **A group's pages for students (A-213).** `src/api/portal.ts` holds the calls (the personal
   link's token is the key, no session). `tests-screen.tsx` is the list, the run and the result;
   `materials-screen.tsx` lists files, links and recordings and hands a recording to the file page
@@ -146,6 +159,15 @@ mobile/
   `expo-web-browser` and asks `pay/:id` until the payment is confirmed. `telegram-screen.tsx`
   opens the bot with `Linking` and looks for the new chat. `invite-screen.tsx` and the
   certificates in `results-screen.tsx` use the phone's share sheet (`Share`).
+- **A teacher's homework, stream, gradebook and notes (A-217).** `src/api/staff-group.ts` holds
+  the calls. `task-form.tsx` is the one form a task is written in (the lesson's card and the
+  group's homework page both show it; whoever shows it decides where the task is saved);
+  `features/files/attach.tsx` is the file part of any teacher's form (a new photo, a photo, a
+  file; a saved file opened, replaced or removed). `group-homework-screen.tsx` lists the tasks and
+  shows a waiting answer with `AnswerCard` from `checking-screen.tsx`, which also gives the points
+  of a rubric. `features/shared/stream-post.tsx` draws a post for the student's and the teacher's
+  stream; `group-stream-screen.tsx` adds the teacher's tools. A lesson's homework is always sent
+  whole (`saveLessonHomework`): the server replaces what it has.
 - **The teacher's side of a group (A-214).** `src/api/group-pages.ts` holds the calls (behind the
   session): the group's chat and materials, storing a file (`uploadDocument`) and adding it
   (`addGroupFile`). `src/features/shared/` holds what the student's and the teacher's side draw the

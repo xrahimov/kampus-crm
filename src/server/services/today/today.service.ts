@@ -44,6 +44,10 @@ export interface TodayMemberDto {
 export interface TodayHomeworkDto {
   id: string;
   text: string;
+  /** Sent back with an edit made from Today, so a link, a file or "speaking" set elsewhere stays. */
+  linkUrl: string | null;
+  attachmentUrl: string | null;
+  speaking: boolean;
   dueDate: string | null;
   submitted: number;
   toCheck: number;
@@ -121,6 +125,9 @@ const lessonInclude = {
     select: {
       id: true,
       text: true,
+      linkUrl: true,
+      attachmentUrl: true,
+      speaking: true,
       dueDate: true,
       submissions: { select: { status: true } },
     },
@@ -247,6 +254,9 @@ export async function getToday(
       ? {
           id: l.homework.id,
           text: l.homework.text,
+          linkUrl: l.homework.linkUrl,
+          attachmentUrl: l.homework.attachmentUrl,
+          speaking: l.homework.speaking,
           dueDate: l.homework.dueDate ? dateToIso(l.homework.dueDate) : null,
           submitted: l.homework.submissions.length,
           toCheck: l.homework.submissions.filter((s) => s.status === "SUBMITTED").length,

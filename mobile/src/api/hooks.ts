@@ -198,15 +198,6 @@ export function useSetTopic(lesson: { id: string; groupId: string; date: string 
   });
 }
 
-export function useSetHomework(lessonId: string) {
-  const client = useQueryClient();
-  return useMutation({
-    mutationFn: (input: { text: string }) =>
-      api<void>(`/lessons/${lessonId}/homework`, { method: "PUT", body: input }),
-    onSuccess: () => client.invalidateQueries({ queryKey: ["today"] }),
-  });
-}
-
 /** One student's grade for one lesson; null clears it. */
 export function useSetGrade(lesson: { id: string; groupId: string; date: string }) {
   const client = useQueryClient();
@@ -243,18 +234,22 @@ export function useReviewAnswer() {
   const client = useQueryClient();
   return useMutation({
     mutationFn: async (input: {
+      groupId: string;
       homeworkId: string;
       membershipId: string;
       status: "ACCEPTED" | "RETURNED";
       teacherComment?: string | null;
       /** A reply recorded on this device: stored first, then saved with the verdict. */
       voice?: PickedFile | null;
+      /** Points per criterion of an assignment's rubric, in its order. */
+      rubricScores?: number[];
     }) => {
       const body: Record<string, unknown> = {
         status: input.status,
         teacherComment: input.teacherComment ?? null,
       };
       if (input.voice) body.teacherAudioUrl = (await uploadDocument(input.voice)).url;
+      if (input.rubricScores) body.rubricScores = input.rubricScores;
       return api<void>(`/homework/${input.homeworkId}/submissions/${input.membershipId}`, {
         method: "PATCH",
         body,
@@ -273,6 +268,7 @@ export function useReviewAnswer() {
           : queue,
       );
       void client.invalidateQueries({ queryKey: ["today"] });
+      void client.invalidateQueries({ queryKey: ["group", input.groupId, "homework"] });
     },
   });
 }

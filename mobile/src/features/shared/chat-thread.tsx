@@ -3,7 +3,6 @@ import { useCallback, useEffect, useRef, useState, type ReactNode } from "react"
 import {
   FlatList,
   KeyboardAvoidingView,
-  Platform,
   Pressable,
   StyleSheet,
   TextInput,
@@ -113,10 +112,8 @@ export function ChatThread({
   return (
     <View style={[styles.page, { backgroundColor: colors.background }]} testID="chat-screen">
       {header}
-      <KeyboardAvoidingView
-        style={styles.fill}
-        behavior={Platform.OS === "ios" ? "padding" : undefined}
-      >
+      {/* Android draws under the keyboard too (edge to edge), so both make room themselves. */}
+      <KeyboardAvoidingView style={styles.fill} behavior="padding">
         <FlatList
           ref={list}
           data={messages}

@@ -142,3 +142,10 @@ jest.mock("expo-audio", () => {
     },
   };
 });
+
+/*
+ * A phone sends a form with its own request (src/lib/send-form.native.ts,
+ * which has a test of its own). In every other test a form goes through
+ * `fetch`, so the server a test makes up answers it too.
+ */
+jest.mock("./src/lib/send-form", () => jest.requireActual("./src/lib/send-form.ts"));
