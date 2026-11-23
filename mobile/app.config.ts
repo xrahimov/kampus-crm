@@ -25,12 +25,26 @@ const PERMISSIONS = {
 interface Messages {
   mobile: { permissions: { camera: string; microphone: string } };
 }
-function iosWording(locale: keyof typeof PERMISSIONS): Record<string, string> {
+/** Under `ios`, so the sentences reach the iPhone's question and stay out of Android's resources. */
+function iosWording(locale: keyof typeof PERMISSIONS): { ios: Record<string, string> } {
   return {
-    NSCameraUsageDescription: PERMISSIONS[locale].camera,
-    NSMicrophoneUsageDescription: PERMISSIONS[locale].microphone,
+    ios: {
+      NSCameraUsageDescription: PERMISSIONS[locale].camera,
+      NSMicrophoneUsageDescription: PERMISSIONS[locale].microphone,
+    },
   };
 }
+
+/*
+ * The release build is shrunk, and the shrinker stops at a class the WebRTC
+ * library names but does not ship (an optional video decoder). The library
+ * keeps everything it does ship by its own rules; the loudspeaker module is
+ * reached from JavaScript by name, so it is kept whole too.
+ */
+const SHRINKER_RULES = [
+  "-dontwarn org.webrtc.**",
+  "-keep class com.zxcpoiu.incallmanager.** { *; }",
+].join("\n");
 
 const LAPIS = "#17234b";
 const TURQUOISE = "#58d4d0";
@@ -101,6 +115,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     "expo-localization",
     "expo-font",
     "expo-web-browser",
+    ["expo-build-properties", { android: { extraProguardRules: SHRINKER_RULES } }],
     [
       "expo-splash-screen",
       {
