@@ -6261,6 +6261,10 @@
     "fillAll": "Avval barcha maydonlarni to‘ldiring."
   },
   "mobile": {
+    "video": {
+      "signIn": "Kampusga kirish",
+      "student": "O‘quvchining sahifasi"
+    },
     "offline": "Kampus bilan aloqa yo'q. Internetni tekshirib, qayta urinib ko'ring.",
     "retry": "Qayta urinish",
     "doorStudent": "O'quvchi yoki ota-ona",

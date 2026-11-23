@@ -26,6 +26,7 @@ able to work from an iPad or a phone.
 | Part                                                                                                             | State                                                                                                                    |
 | ---------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------ |
 | Sign-in: phone and password, a code from Telegram, the waiting list, choosing a password                         | Built                                                                                                                    |
+| Sign-in: the how-to video under the form (A-229)                                                                 | Built; plays inside the app where the server has the video                                                               |
 | Teacher: today, a lesson (attendance, grades, topic, homework, lesson room), groups, checking                    | Built, phone and tablet                                                                                                  |
 | Teacher: an answer's file and spoken answer in the app, a spoken reply; group chat; group materials              | Built, phone and tablet (A-214)                                                                                          |
 | Teacher: a group's homework (set with a file, checked with rubric points), class stream, gradebook, notes        | Built, phone and tablet (A-217)                                                                                          |
@@ -91,6 +92,11 @@ mobile/
   `src/api/types.ts` mirror the services' DTOs; when a service's answer changes, they change with it.
 - **Sign-in.** The app sends `x-kampus-app` and gets the session token in the answer; it keeps it in
   the phone's protected storage and sends it as `Authorization: Bearer` (A-203).
+- **The how-to video on the sign-in screen (A-229).** `HowToVideo`
+  (`src/features/sign-in/how-to-video.tsx`) offers the site's sign-in video (staff) or the student's
+  video (student or parent) in the app's language. It asks for the first byte of
+  `/api/v1/help-videos/<language>/<id>` and shows its row only where that answers, so a server
+  without the videos shows nothing; the film is fetched only when the row is pressed.
 - **Languages.** `messages/uz.json`, `ru.json` and `en.json` are the app's texts too. Texts only the
   app has live under the `mobile` key of the same files, so the key-parity test covers them.
 - **Look.** `src/lib/theme.tsx` holds the site's colours as plain values (light and dark), Onest in

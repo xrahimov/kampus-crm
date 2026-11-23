@@ -448,6 +448,11 @@ The videos are open to anyone who has the address
 people who are not signed in. Record them from demo data only, as the recorder
 does; never put a recording of a real centre's pages there.
 
+The phone and tablet app shows two of them on its sign-in screen from the same
+address (A-229): `01-sign-in.mp4` for staff and `21-student-portal.mp4` for
+students and parents, in the app's language. Nothing has to be set up for it; a
+language whose file is missing simply shows no video row in the app.
+
 The first time, the folder has to exist before the app starts with this
 version, or Docker creates it empty by itself (owned by root, which is fine).
 The folder is ignored by git and left out of the Docker build.

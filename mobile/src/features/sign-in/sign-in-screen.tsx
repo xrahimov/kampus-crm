@@ -27,6 +27,7 @@ import { phoneTyped } from "@/lib/phone";
 import { useSession } from "@/lib/session";
 import { palette, radius, space, useTheme } from "@/lib/theme";
 
+import { HowToVideo } from "./how-to-video";
 import {
   normalizePhone,
   type CodeTicket,
@@ -357,6 +358,8 @@ function FormStep({
           <TelegramHowTo botName={botName} botUrl={botUrl} />
         </>
       ) : null}
+      {/* The how-to video about signing in, where the server has it (as on the site, A-199). */}
+      <HowToVideo id={door === "STAFF" ? "sign-in" : "student-portal"} />
     </View>
   );
 }

@@ -6261,6 +6261,10 @@
     "fillAll": "Fill in every field first."
   },
   "mobile": {
+    "video": {
+      "signIn": "Signing in",
+      "student": "The student’s page"
+    },
     "offline": "No connection to Kampus. Check the internet and try again.",
     "retry": "Try again",
     "doorStudent": "Student or parent",
