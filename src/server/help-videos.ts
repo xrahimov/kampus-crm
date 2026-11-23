@@ -21,7 +21,9 @@ import type { StoredRange } from "./storage/storage";
  * shows the manual as before.
  */
 export function helpVideosDir(): string {
-  return path.resolve(process.env.HELP_VIDEOS_DIR || "help-videos");
+  // The folder is configuration, not part of the project: the hints below keep the
+  // bundler from packing the whole repository into the server output because of it.
+  return path.resolve(/*turbopackIgnore: true*/ process.env.HELP_VIDEOS_DIR || "help-videos");
 }
 
 const NONE: ReadonlySet<HelpVideoId> = new Set();
@@ -32,12 +34,12 @@ const seen = new Map<string, { at: number; ids: ReadonlySet<HelpVideoId> }>();
 /** Which videos exist in `locale`. Reads the folder at most once a minute. */
 export async function availableHelpVideos(locale: string): Promise<ReadonlySet<HelpVideoId>> {
   if (!isHelpVideoLocale(locale)) return NONE;
-  const dir = path.join(helpVideosDir(), locale);
+  const dir = path.join(/*turbopackIgnore: true*/ helpVideosDir(), locale);
   const known = seen.get(dir);
   if (known && Date.now() - known.at < FRESH_MS) return known.ids;
   let names: string[];
   try {
-    names = await readdir(dir);
+    names = await readdir(/*turbopackIgnore: true*/ dir);
   } catch {
     names = [];
   }
@@ -63,10 +65,10 @@ export async function helpVideoRange(
   end?: number,
 ): Promise<StoredRange | null> {
   if (!isHelpVideoLocale(locale) || !isHelpVideoId(id)) return null;
-  const file = path.join(helpVideosDir(), locale, helpVideoFile(id));
+  const file = path.join(/*turbopackIgnore: true*/ helpVideosDir(), locale, helpVideoFile(id));
   let size: number;
   try {
-    const info = await stat(file);
+    const info = await stat(/*turbopackIgnore: true*/ file);
     if (!info.isFile()) return null;
     size = info.size;
   } catch {
@@ -83,7 +85,7 @@ export async function helpVideoRange(
     };
   }
   const stream = Readable.toWeb(
-    createReadStream(file, { start, end: last }),
+    createReadStream(/*turbopackIgnore: true*/ file, { start, end: last }),
   ) as ReadableStream<Uint8Array>;
   return { stream, start, end: last, size, contentType: "video/mp4" };
 }
