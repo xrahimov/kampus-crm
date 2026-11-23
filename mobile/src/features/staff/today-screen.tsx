@@ -357,11 +357,11 @@ function Debtors({ day }: { day: Today }) {
 const styles = StyleSheet.create({
   fill: { flex: 1 },
   split: { flexDirection: "row", gap: space[6], maxWidth: 1280, paddingBottom: 0 },
-  // The two columns share the width evenly and the lesson list stops at 400. Written out,
-  // because a ScrollView brings a `flexGrow` of 1 that wins over `flex: n`: the columns were
-  // always even, and a plain View with `flex: 4` beside the scrolling detail took four fifths.
-  master: { flexGrow: 1, flexShrink: 1, flexBasis: 0, maxWidth: 400 },
-  detail: { flexGrow: 1, flexShrink: 1, flexBasis: 0 },
+  // The lesson gets three parts of the width and the list two, and the list stops at 400: on
+  // an upright iPad even columns left the attendance row too little room and names wrapped.
+  // Written out, because a ScrollView brings a `flexGrow` of 1 that wins over `flex: n`.
+  master: { flexGrow: 2, flexShrink: 1, flexBasis: 0, maxWidth: 400 },
+  detail: { flexGrow: 3, flexShrink: 1, flexBasis: 0 },
   column: { gap: space[4], paddingBottom: space[8] },
   switch: { flexDirection: "row", alignItems: "center", gap: space[2] },
   arrow: {

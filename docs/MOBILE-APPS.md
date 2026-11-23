@@ -197,7 +197,8 @@ mobile/
 - **`flex: n` on a `ScrollView`.** A `ScrollView` brings `flexGrow: 1` of its own, and that wins
   over the `flex: n` in its style: two scrolling columns with `flex: 4` and `flex: 7` share the
   width evenly. A plain `View` with `flex: 4` beside one of them takes four fifths. Write
-  `flexGrow`, `flexShrink` and `flexBasis` out for columns (Today's two columns do).
+  `flexGrow`, `flexShrink` and `flexBasis` out for columns (Today's two columns do: two parts for
+  the list, three for the lesson).
 - **Text on Android.** A label exactly as wide as its words can lose its last word on Android:
   the line fits when measured and breaks when drawn, and the second line is outside the view
   ("Turn everyone's microphone off" in the lesson's People panel, on a tablet). Letting the
