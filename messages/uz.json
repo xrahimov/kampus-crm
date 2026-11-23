@@ -6276,8 +6276,6 @@
     "siteTitle": "Kampusning qolgan qismi",
     "siteText": "O'quvchilar, to'lovlar, testlar va hisobotlar hozircha saytda. U kirilgan holda ochiladi.",
     "version": "Kampus {version}",
-    "myPage": "Sahifamni to'liq ochish",
-    "myPageHint": "Jadval va onlayn to'lov hozircha sahifangizda ochiladi.",
     "room": {
       "denied": "Kampus kamera va mikrofondan foydalana olmayapti. Ko'rish va tinglash uchun kirishingiz mumkin. Sizni ko'rishlari va eshitishlari uchun telefon sozlamalarida ikkalasiga ruxsat bering.",
       "partial": "Kampus qurilmalaringizning faqat bir qismidan foydalana olyapti. Baribir kirishingiz mumkin. Kamera ham, mikrofon ham ishlashi uchun telefon sozlamalarida ruxsat bering.",
@@ -6358,6 +6356,37 @@
     "checking": {
       "spoken": "Og'zaki javob",
       "reply": "Izoh yoki ovoz"
-    }
+    },
+    "schedule": {
+      "weekly": "Har hafta",
+      "cancelAsk": "{date} kungi dars bekor qilinsinmi? O'qituvchiga darhol xabar boradi.",
+      "cancelYes": "Ha, bekor qilish",
+      "keep": "Dars qolsin",
+      "centreTimes": "Bu darslarning kuni va vaqti markaz vaqti bo'yicha, {centre}."
+    },
+    "timeZone": {
+      "search": "Shahringizni toping",
+      "none": "Bunday nomli vaqt mintaqasi yo'q. Eng yaqin katta shaharni yozib ko'ring.",
+      "useCentre": "Markaz vaqtini ko'rsatish"
+    },
+    "pay": {
+      "none": "O'quv markazingiz hozircha onlayn to'lov qabul qilmaydi. Markazda to'lang.",
+      "pending": "To'lov hali tasdiqlanmoqda. Bir necha daqiqadan so'ng balansni yangilash uchun sahifani pastga torting.",
+      "where": "Karta ma'lumotlari to'lov tizimining o'z sahifasida kiritiladi, u Kampus ustida ochiladi. Tugatgach, uni yoping."
+    },
+    "telegram": {
+      "watching": "Telegramda Start tugmasini bosing va shu yerga qayting. Chat o'zi paydo bo'ladi.",
+      "noApp": "Telegram ochilmadi. Telegramni o'rnating va qayta urinib ko'ring.",
+      "connectedCount": "{count, plural, =0 {Ulanmagan} one {# ta chat ulangan} other {# ta chat ulangan}}"
+    },
+    "invite": {
+      "share": "Ulashish",
+      "copyByHand": "Bu qurilmada ulashish oynasi yo'q. Nusxa olish uchun yuqoridagi havolani bosib turing."
+    },
+    "payOnline": "Onlayn to'lash",
+    "certificates": {
+      "share": "Ulashish"
+    },
+    "debtOnline": "Qarzingiz: {amount}."
   }
 }

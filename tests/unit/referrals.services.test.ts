@@ -3,8 +3,11 @@
  * own: invite codes, the public form with `?ref=`, the one-time credit (coins
  * and the bonus payment) when the brought student gets a group, and the report.
  */
+import { NextRequest } from "next/server";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 
+import { GET as certificatesRoute } from "@/app/api/v1/public/class/[token]/certificates/route";
+import { GET as referralRoute } from "@/app/api/v1/public/class/[token]/referral/route";
 import { prisma } from "@/server/db/prisma";
 import type { Actor } from "@/server/rbac/authorize";
 import {
@@ -214,6 +217,29 @@ describe("invite codes", () => {
     const referral = await getPortalReferral(link.token, "uz");
     expect(referral?.code).toBe(aliceCode);
     expect(referral?.link).toMatch(new RegExp(`/uz/forms/${formSlug}\\?ref=${aliceCode}$`));
+  });
+
+  it("gives the phone app the same through the personal link, in the language it asks for", async () => {
+    const link = (await listStudentLinks(ceo, groupId)).find((l) => l.studentId === aliceId)!;
+    const ask = (token: string, query: string) =>
+      referralRoute(
+        new NextRequest(`http://localhost:3000/api/v1/public/class/${token}/referral${query}`),
+        { params: Promise.resolve({ token }) },
+      );
+    const russian = await ask(link.token, "?locale=ru");
+    expect(russian.status).toBe(200);
+    const body = (await russian.json()) as { code: string; link: string; joined: number };
+    expect(body.code).toBe(aliceCode);
+    expect(body.link).toMatch(new RegExp(`/ru/forms/${formSlug}\\?ref=${aliceCode}$`));
+    // An unknown language falls back to the site's default; an unknown link is not found.
+    const odd = (await (await ask(link.token, "?locale=xx")).json()) as { link: string };
+    expect(odd.link).toContain("/uz/forms/");
+    expect((await ask("not-a-real-token-at-all-123", "")).status).toBe(404);
+    const certificates = await certificatesRoute(
+      new NextRequest(`http://localhost:3000/api/v1/public/class/${link.token}/certificates`),
+      { params: Promise.resolve({ token: link.token }) },
+    );
+    expect(await certificates.json()).toEqual([]);
   });
 
   it("refuses a referrer who is the student themselves or from another centre", async () => {

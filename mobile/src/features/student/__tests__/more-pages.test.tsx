@@ -71,7 +71,7 @@ function lesson(change: Partial<PortalLesson>): PortalLesson {
 function portal(change: Partial<Portal> = {}): { portal: Portal } {
   return {
     portal: {
-      student: { fullName: "Demo Student One", coins: 12 },
+      student: { fullName: "Demo Student One", coins: 12, timeZone: null },
       group: {
         name: "GE-Morning A1",
         courseName: "General English",

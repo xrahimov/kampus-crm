@@ -9,6 +9,7 @@ import type {
   Group,
   GroupVideo,
   MonthGrid,
+  PayOptions,
   Portal,
   PortalHomework,
   StudentHome,
@@ -302,10 +303,13 @@ export function usePortal(token: string) {
   return useQuery({
     queryKey: ["student", "portal", token],
     queryFn: ({ signal }) =>
-      api<{ portal: Portal }>(`/public/class/${encodeURIComponent(token)}/portal`, {
-        signal,
-        anonymous: true,
-      }),
+      api<{ portal: Portal; pay: PayOptions }>(
+        `/public/class/${encodeURIComponent(token)}/portal`,
+        {
+          signal,
+          anonymous: true,
+        },
+      ),
   });
 }
 
