@@ -35,6 +35,7 @@ export function StaffRoomScreen() {
       title={group?.groupName ?? t("video.title")}
       ready
       join={() => api<JoinDto>(`/video/rooms/${id}/join`, { method: "POST" })}
+      groupId={group?.groupId}
       endForAll={async (roomId) => {
         await api(`/video/rooms/${roomId}/end`, { method: "POST" });
         if (group) await client.invalidateQueries({ queryKey: keys.video(group.groupId) });

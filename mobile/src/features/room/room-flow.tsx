@@ -33,6 +33,7 @@ export function RoomFlow({
   ready,
   waitingText,
   join,
+  groupId,
   endForAll,
 }: {
   /** Who the person will be in the room; a student sends a smaller picture. */
@@ -44,6 +45,8 @@ export function RoomFlow({
   ready: boolean;
   waitingText?: string;
   join: () => Promise<JoinDto>;
+  /** A teacher's group, for adding a file to the lesson from this device. */
+  groupId?: string;
   /** Present when this person may end the lesson for everyone. */
   endForAll?: (roomId: string) => Promise<void>;
 }) {
@@ -114,6 +117,7 @@ export function RoomFlow({
     return (
       <CallScreen
         engine={engine}
+        groupId={groupId}
         onLeave={() => {
           engine.leave();
           callAudio.stop();

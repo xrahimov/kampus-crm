@@ -1,4 +1,4 @@
-import { useEvent } from "expo";
+import { useEvent, useEventListener } from "expo";
 import { useVideoPlayer, VideoView, type VideoPlayer, type VideoSource } from "expo-video";
 import {
   ChevronLeft,
@@ -20,7 +20,6 @@ import { useEffect, useRef, useState, type ReactNode } from "react";
 import {
   Image,
   Linking,
-  Platform,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -30,6 +29,7 @@ import {
 } from "react-native";
 
 import { Text } from "@/components/text";
+import { useLocalFile } from "@/features/files/local-file";
 import { useTranslations } from "@/lib/i18n";
 import { font, radius, space } from "@/lib/theme";
 import { openOnSite } from "@/lib/web";
@@ -55,6 +55,8 @@ const ZOOM_STEPS = [1, 1.75, 2.5];
 /** How often a follower checks that its player is still in step with the teacher's. */
 const FOLLOW_CHECK_MS = 4000;
 const JUMP_SECONDS = 10;
+/** This close to the last second counts as the end of a file. */
+const END_SECONDS = 0.5;
 
 /**
  * A lesson material on everyone's stage, in the app (A-210). The teacher turns
@@ -355,8 +357,16 @@ function MediaPlayer({
     currentOffsetFromLive: null,
     bufferedPosition: 0,
   }).currentTime;
-  const ready = status.status === "readyToPlay";
-  const duration = ready && player.duration > 0 ? player.duration : 0;
+  // A file that has played to its end is no longer "ready" on Android, yet it can
+  // still be wound back and played again: what counts is that it opened once.
+  const [opened, setOpened] = useState(player.status === "readyToPlay");
+  const [duration, setDuration] = useState(player.duration > 0 ? player.duration : 0);
+  useEventListener(player, "statusChange", (change) => {
+    if (change.status !== "readyToPlay") return;
+    setOpened(true);
+    if (player.duration > 0) setDuration(player.duration);
+  });
+  const ready = opened && status.status !== "error";
   // A browser may refuse to start sound by itself: the viewer taps once.
   const [blocked, setBlocked] = useState(false);
 
@@ -371,7 +381,7 @@ function MediaPlayer({
     if (!ready) return;
     const follow = () => {
       const expected = expectedPosition({ playing, position, at }, engine.serverNow());
-      const target = player.duration > 0 ? Math.min(expected, player.duration) : expected;
+      const target = duration > 0 ? Math.min(expected, duration) : expected;
       if (needsSeek(player.currentTime, target)) moveTo(player, target);
       if (playing && !player.playing) {
         player.play();
@@ -391,15 +401,22 @@ function MediaPlayer({
     follow();
     const timer = setInterval(follow, FOLLOW_CHECK_MS);
     return () => clearInterval(timer);
-  }, [engine, player, isHost, ready, playing, position, at]);
+  }, [engine, player, isHost, ready, duration, playing, position, at]);
 
   const lead = (nextPlaying: boolean, nextTime: number) => {
-    const clamped = Math.max(0, duration > 0 ? Math.min(nextTime, duration) : nextTime);
+    let clamped = Math.max(0, duration > 0 ? Math.min(nextTime, duration) : nextTime);
+    // Play at the very end starts the file over.
+    if (nextPlaying && duration > 0 && clamped >= duration - END_SECONDS) clamped = 0;
     if (clamped !== player.currentTime) moveTo(player, clamped);
     if (nextPlaying) player.play();
     else player.pause();
     engine.setMaterialPlayback(nextPlaying, clamped);
   };
+
+  // The teacher's file ran out: everyone's player rests at the end, like after a pause.
+  useEventListener(player, "playToEnd", () => {
+    if (isHost) engine.setMaterialPlayback(false, duration > 0 ? duration : player.currentTime);
+  });
 
   const [barWidth, setBarWidth] = useState(0);
   const jumpTo = (event: GestureResponderEvent) => {
@@ -419,6 +436,8 @@ function MediaPlayer({
         player={player}
         nativeControls={false}
         contentFit="contain"
+        // No "copy the text in this picture" button over a paused frame (iOS).
+        allowsVideoFrameAnalysis={false}
         style={audio ? styles.hidden : styles.video}
       />
       {isHost ? (
@@ -507,42 +526,6 @@ function MediaPlayer({
 /** Puts a player at a second of its file. */
 function moveTo(player: VideoPlayer, seconds: number): void {
   player.currentTime = seconds;
-}
-
-/**
- * The file as this device can ask for it. A phone's picture and player send
- * the session with their request; a browser's cannot, so the web build fetches
- * a staff file itself and draws it from memory (null until it is there). A
- * student's link needs neither.
- */
-function useLocalFile(source: FileSource, onError: () => void): FileSource | null {
-  const viaFetch = Platform.OS === "web" && Boolean(source.headers);
-  const [local, setLocal] = useState<{ from: string; uri: string } | null>(null);
-  useEffect(() => {
-    if (!viaFetch) return;
-    let alive = true;
-    let made: string | null = null;
-    fetch(source.uri, { headers: source.headers, credentials: "omit" })
-      .then((response) => {
-        if (!response.ok) throw new Error(String(response.status));
-        return response.blob();
-      })
-      .then((blob) => {
-        if (!alive) return;
-        made = URL.createObjectURL(blob);
-        setLocal({ from: source.uri, uri: made });
-      })
-      .catch(() => {
-        if (alive) onError();
-      });
-    return () => {
-      alive = false;
-      if (made) URL.revokeObjectURL(made);
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- one fetch per file
-  }, [viaFetch, source.uri]);
-  if (!viaFetch) return source;
-  return local && local.from === source.uri ? { uri: local.uri } : null;
 }
 
 /** A picture on the stage; it reports its own shape once it is there. */

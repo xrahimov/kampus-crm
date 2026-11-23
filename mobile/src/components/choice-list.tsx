@@ -11,12 +11,15 @@ export function ChoiceList<T extends string>({
   value,
   onChange,
   error,
+  testID,
 }: {
   label: string;
   options: ReadonlyArray<{ value: T; label: string }>;
   value: T | null;
   onChange: (value: T) => void;
   error?: string | null;
+  /** Each row answers to `<testID>-<value>`. */
+  testID?: string;
 }) {
   const { colors } = useTheme();
   return (
@@ -31,6 +34,7 @@ export function ChoiceList<T extends string>({
               accessibilityRole="radio"
               accessibilityState={{ checked: chosen }}
               onPress={() => onChange(option.value)}
+              testID={testID ? `${testID}-${option.value}` : undefined}
               style={[
                 styles.row,
                 { backgroundColor: chosen ? colors.accent : colors.card },

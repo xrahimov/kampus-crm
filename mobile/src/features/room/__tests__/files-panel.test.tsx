@@ -1,4 +1,5 @@
 import { fireEvent, screen } from "@testing-library/react-native";
+import * as DocumentPicker from "expo-document-picker";
 
 import { fakeEngine, openPanel, peer, renderRoom, shown } from "@/features/room/test-support";
 
@@ -118,6 +119,65 @@ describe("showing a file from the app", () => {
     globalThis.fetch = answer({ materials: [] }) as unknown as typeof fetch;
     await fireEvent.press(screen.getByTestId("files-retry"));
     expect(await screen.findByTestId("files-empty")).toBeTruthy();
+  });
+
+  it("adds a file from this device to the lesson and lists it", async () => {
+    const stored = { key: "documents/x.pdf", url: "/api/v1/files/documents/x.pdf" };
+    const lesson = { lesson: { id: "les1" }, materials: [...LESSON.materials] };
+    const fetchMock = jest.fn(async (url: string, init?: RequestInit) => {
+      const reply = (status: number, body: unknown) => ({
+        ok: status < 300,
+        status,
+        json: async () => body,
+        text: async () => JSON.stringify(body),
+      });
+      if (url.endsWith("/lesson")) return reply(200, lesson);
+      if (url.endsWith("/uploads/documents")) return reply(201, stored);
+      if (url.endsWith("/groups/grp/materials") && init?.method === "POST") {
+        lesson.materials.push({
+          id: "l9",
+          kind: "FILE",
+          title: "worksheet-5",
+          url: stored.url,
+          general: false,
+        });
+        return reply(201, { id: "l9" });
+      }
+      return reply(404, {});
+    });
+    globalThis.fetch = fetchMock as unknown as typeof fetch;
+    (DocumentPicker.getDocumentAsync as jest.Mock).mockResolvedValueOnce({
+      canceled: false,
+      assets: [
+        {
+          uri: "file:///docs/worksheet-5.pdf",
+          name: "worksheet-5.pdf",
+          mimeType: "application/pdf",
+          size: 5000,
+        },
+      ],
+    });
+    const engine = fakeEngine("HOST", [peer("s", "Demo Student")]);
+    await renderRoom(engine, { groupId: "grp" });
+    await openFiles();
+    await fireEvent.press(await screen.findByTestId("files-add-file"));
+    expect(await screen.findByTestId("file-l9")).toBeTruthy();
+    const post = fetchMock.mock.calls.find(([url]) => url.endsWith("/groups/grp/materials"))!;
+    expect(JSON.parse(String(post[1]!.body))).toEqual({
+      lessonId: "les1",
+      kind: "FILE",
+      title: "worksheet-5",
+      url: stored.url,
+    });
+  });
+
+  it("has no adding without the teacher's group", async () => {
+    globalThis.fetch = answer(LESSON) as unknown as typeof fetch;
+    const engine = fakeEngine("HOST", [peer("s", "Demo Student")]);
+    await renderRoom(engine);
+    await openFiles();
+    await screen.findByTestId("files-list");
+    expect(screen.queryByTestId("files-add")).toBeNull();
   });
 
   it("is not offered to a student", async () => {

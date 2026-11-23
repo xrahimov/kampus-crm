@@ -6,8 +6,9 @@ files, and wears the same look. Decisions are recorded in [ASSUMPTIONS.md](ASSUM
 (sign-in), A-204 (opening the site from the app), A-205 (the app itself), A-207 (the lesson room
 inside the app), A-208 (screen sharing from Android and lessons behind other apps), A-209 (the
 whiteboard), A-210 (shown files), A-211 (the teacher's polls and breakout rooms), A-212 (homework
-answered in the app, files opened in the app) and A-213 (a group's tests, materials, chat and
-exercises in the app).
+answered in the app, files opened in the app), A-213 (a group's tests, materials, chat and
+exercises in the app) and A-214 (the teacher's side of a group: answers with their files and a
+spoken reply, the group chat, materials added from the phone).
 
 Why React Native and not the site in a wrapper: kai's choice on 2026-11-23 ("rewrite it in react
 native"), with two requirements said the same day: one code base in the end, and teachers must be
@@ -19,6 +20,7 @@ able to work from an iPad or a phone.
 | ---------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------- |
 | Sign-in: phone and password, a code from Telegram, the waiting list, choosing a password             | Built                                                                     |
 | Teacher: today, a lesson (attendance, grades, topic, homework, lesson room), groups, checking        | Built, phone and tablet                                                   |
+| Teacher: an answer's file and spoken answer in the app, a spoken reply; group chat; group materials  | Built, phone and tablet (A-214)                                           |
 | Student and parent: home, a group's page (lessons, marks, grades, payments), password                | Built, phone and tablet                                                   |
 | Pages the app does not have                                                                          | Open on the site in the phone's browser, already signed in (A-204)        |
 | Android app file                                                                                     | Built by GitHub on every change; starts on an emulated phone              |
@@ -29,7 +31,8 @@ able to work from an iPad or a phone.
 | In the lesson room: whiteboard; files shown to everyone (PDF pages, pictures, video, audio, YouTube) | Built, phone and tablet (A-209, A-210)                                    |
 | In the lesson room: sharing the screen; a lesson that keeps running behind other apps                | Built for Android (A-208); iPhone and iPad sharing is next                |
 | In the lesson room: the teacher's polls and breakout rooms                                           | Built, phone and tablet (A-211)                                           |
-| In the lesson room: showing a file straight from the phone, saving the whiteboard                    | Next                                                                      |
+| In the lesson room: a photo or file from the phone added to the lesson and shown                     | Built, phone and tablet (A-214)                                           |
+| In the lesson room: saving the whiteboard                                                            | Next                                                                      |
 | Student and parent: homework answered in the app (text, photo, file, voice); files open in the app   | Built, phone and tablet (A-212)                                           |
 | Student and parent: tests, materials with lesson recordings, the group chat, exercises               | Built, phone and tablet (A-213)                                           |
 | Student and parent: the course, news, the stream, the schedule with booking, paying online           | Next (today they open the personal page in the browser)                   |
@@ -120,6 +123,15 @@ mobile/
   with its streaming copy and the place to continue from; `chat-screen.tsx` is the thread;
   `exercise-screen.tsx` does one exercise; `answer-parts.tsx` holds the answer rows and word chips
   that tests and exercises share.
+- **The teacher's side of a group (A-214).** `src/api/group-pages.ts` holds the calls (behind the
+  session): the group's chat and materials, storing a file (`uploadDocument`) and adding it
+  (`addGroupFile`). `src/features/shared/` holds what the student's and the teacher's side draw the
+  same way: `chat-thread.tsx` (the thread, the box, asking for new messages) and
+  `material-list.tsx` (materials under their lessons, with an optional bin). The staff screens are
+  `group-chat-screen.tsx`, `group-materials-screen.tsx` and the reply part of
+  `checking-screen.tsx`. `useLocalFile` (`src/features/files/local-file.ts`) is how the web build
+  shows a file that sits behind the session: a browser's picture or player cannot send the session,
+  so the file is fetched first; a phone sends the session with its own request.
 - **A plain-http test build.** With `EXPO_PUBLIC_API_URL` starting with `http://` the Android build
   allows plain http (for a server on the desk); every other build refuses it.
 - **Shared code and its packages.** A file under `../src/lib` that the app imports may use only

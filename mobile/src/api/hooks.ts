@@ -2,6 +2,7 @@ import { useMutation, useQuery, useQueryClient, type QueryClient } from "@tansta
 
 import { api, apiForm, type PickedFile } from "@/lib/api";
 
+import { uploadDocument } from "./group-pages";
 import type {
   AttendanceStatus,
   CheckingQueue,
@@ -240,16 +241,24 @@ export function useSetGrade(lesson: { id: string; groupId: string; date: string 
 export function useReviewAnswer() {
   const client = useQueryClient();
   return useMutation({
-    mutationFn: (input: {
+    mutationFn: async (input: {
       homeworkId: string;
       membershipId: string;
       status: "ACCEPTED" | "RETURNED";
       teacherComment?: string | null;
-    }) =>
-      api<void>(`/homework/${input.homeworkId}/submissions/${input.membershipId}`, {
+      /** A reply recorded on this device: stored first, then saved with the verdict. */
+      voice?: PickedFile | null;
+    }) => {
+      const body: Record<string, unknown> = {
+        status: input.status,
+        teacherComment: input.teacherComment ?? null,
+      };
+      if (input.voice) body.teacherAudioUrl = (await uploadDocument(input.voice)).url;
+      return api<void>(`/homework/${input.homeworkId}/submissions/${input.membershipId}`, {
         method: "PATCH",
-        body: { status: input.status, teacherComment: input.teacherComment ?? null },
-      }),
+        body,
+      });
+    },
     onSuccess: (_data, input) => {
       client.setQueryData<CheckingQueue>(keys.checking, (queue) =>
         queue

@@ -1,9 +1,12 @@
 import { describe, expect, it } from "vitest";
 
 import {
+  BOARD_RETURN_MS,
+  givesBoardBack,
   isAndroidBrowser,
   screenSending,
   shareFailure,
+  takesBoardHistory,
   videoBitrate,
 } from "@/features/video/call-engine";
 import { pipOrder } from "@/features/video/pip-order";
@@ -143,5 +146,36 @@ describe("the notice where the browser cannot share (A-200)", () => {
         "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/157.0.0.0 Safari/537.36",
       ),
     ).toBe(false);
+  });
+});
+
+describe("the whiteboard coming back to a teacher who rejoined", () => {
+  const teacher = { id: "t-new", role: "HOST" };
+  const anna = { id: "a", role: "STUDENT" };
+  const bek = { id: "b", role: "STUDENT" };
+
+  it("is handed over by one student's device, the one that sorts first", () => {
+    expect(givesBoardBack(anna, [bek, teacher], teacher, 12)).toBe(true);
+    expect(givesBoardBack(bek, [anna, teacher], teacher, 12)).toBe(false);
+  });
+
+  it("is not handed over when there is nothing drawn or the newcomer is a student", () => {
+    expect(givesBoardBack(anna, [bek, teacher], teacher, 0)).toBe(false);
+    expect(givesBoardBack(anna, [bek, teacher], bek, 12)).toBe(false);
+  });
+
+  it("is left to another teacher who is already in the lesson", () => {
+    const other = { id: "t-old", role: "HOST" };
+    expect(givesBoardBack(anna, [other, teacher], teacher, 12)).toBe(false);
+    // A teacher never needs it: the usual history goes to every newcomer.
+    expect(givesBoardBack(other, [anna, teacher], teacher, 12)).toBe(false);
+  });
+
+  it("is taken from a student only by a teacher who has just joined", () => {
+    expect(takesBoardHistory("HOST", "STUDENT", 2_000)).toBe(true);
+    expect(takesBoardHistory("HOST", "STUDENT", BOARD_RETURN_MS + 1)).toBe(false);
+    expect(takesBoardHistory("STUDENT", "STUDENT", 2_000)).toBe(false);
+    expect(takesBoardHistory("STUDENT", "HOST", 10 * 60_000)).toBe(true);
+    expect(takesBoardHistory("HOST", "HOST", 10 * 60_000)).toBe(true);
   });
 });

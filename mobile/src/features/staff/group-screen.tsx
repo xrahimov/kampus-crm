@@ -1,8 +1,9 @@
-import { useLocalSearchParams, useRouter } from "expo-router";
-import { ChevronLeft, ChevronRight } from "lucide-react-native";
-import { useState } from "react";
+import { useFocusEffect, useLocalSearchParams, useRouter } from "expo-router";
+import { ChevronLeft, ChevronRight, FolderOpen, MessageSquare } from "lucide-react-native";
+import { useCallback, useState } from "react";
 import { Pressable, StyleSheet, View } from "react-native";
 
+import { useGroupChat } from "@/api/group-pages";
 import { useGroup, useMonthGrid } from "@/api/hooks";
 import type { GridLesson } from "@/api/types";
 import { Button } from "@/components/button";
@@ -23,9 +24,9 @@ function thisMonth(): string {
 }
 
 /**
- * One group: the month's lessons (each opens to be marked) and the students
- * with their average grade. The rest of the group's page (payments, notes,
- * materials) is a tap away on the site.
+ * One group: its chat and materials, the month's lessons (each opens to be
+ * marked) and the students with their average grade. The rest of the group's
+ * page (payments, notes, the gradebook) is a tap away on the site.
  */
 export function GroupScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -50,6 +51,7 @@ export function GroupScreen() {
 
   const lessons = (
     <View style={styles.block}>
+      <GroupPages id={id} />
       <MonthSwitch month={month} onChange={setMonth} />
       {grid.isLoading ? (
         <Loading />
@@ -132,6 +134,63 @@ export function GroupScreen() {
   );
 }
 
+/** The group's chat and materials, each a screen of its own (A-214). */
+function GroupPages({ id }: { id: string }) {
+  const t = useTranslations();
+  const router = useRouter();
+  const { colors } = useTheme();
+  const chat = useGroupChat(id);
+  const { refetch } = chat;
+  // Coming back from the chat shows it as read.
+  useFocusEffect(
+    useCallback(() => {
+      void refetch();
+    }, [refetch]),
+  );
+  const unread = chat.data?.unread ?? 0;
+  const pages = [
+    {
+      key: "chat",
+      label: t("groups.detail.tabs.chat"),
+      Icon: MessageSquare,
+      pathname: "/staff/chat/[id]" as const,
+    },
+    {
+      key: "materials",
+      label: t("groups.detail.tabs.materials"),
+      Icon: FolderOpen,
+      pathname: "/staff/materials/[id]" as const,
+    },
+  ];
+  return (
+    <View style={styles.pages}>
+      {pages.map(({ key, label, Icon, pathname }) => (
+        <Pressable
+          key={key}
+          onPress={() => router.push({ pathname, params: { id } })}
+          accessibilityRole="button"
+          accessibilityLabel={
+            key === "chat" && unread > 0
+              ? `${label}, ${t("notifications.unreadCount", { count: unread })}`
+              : label
+          }
+          style={({ pressed }) => [
+            styles.page,
+            { borderColor: colors.input, backgroundColor: pressed ? colors.muted : colors.card },
+          ]}
+          testID={`open-${key}`}
+        >
+          <Icon size={20} color={colors.foreground} />
+          <Text variant="bodyStrong" style={styles.fill} numberOfLines={1}>
+            {label}
+          </Text>
+          {key === "chat" && unread > 0 ? <Badge tone="accent" label={String(unread)} /> : null}
+        </Pressable>
+      ))}
+    </View>
+  );
+}
+
 function MonthSwitch({ month, onChange }: { month: string; onChange: (month: string) => void }) {
   const t = useTranslations();
   const formatDate = useDate();
@@ -210,6 +269,17 @@ const styles = StyleSheet.create({
   block: { gap: space[3] },
   flush: { padding: 0, gap: 0, overflow: "hidden" },
   month: { flexDirection: "row", alignItems: "center", gap: space[2] },
+  pages: { flexDirection: "row", gap: space[2] },
+  page: {
+    flex: 1,
+    minHeight: 48,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: space[2],
+    paddingHorizontal: space[3],
+    borderWidth: 1,
+    borderRadius: radius.md,
+  },
   arrow: {
     width: 40,
     height: 40,

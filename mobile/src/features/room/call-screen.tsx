@@ -28,6 +28,7 @@ import {
   type ReactNode,
 } from "react";
 import {
+  Keyboard,
   KeyboardAvoidingView,
   Platform,
   Pressable,
@@ -64,6 +65,8 @@ import { PollCard, PollPanel } from "./poll-panel";
 import { Tile } from "./tile";
 
 type Panel = "people" | "chat" | "tools" | "files" | "poll" | "breakout" | "leave" | null;
+/** Panels that hold a list: as a sheet they open tall, so more than two rows show. */
+const LIST_PANELS: Panel[] = ["people", "chat", "files", "poll", "breakout"];
 /** The panels that open from the teacher's Lesson tools. */
 const TOOL_PANELS: Panel[] = ["tools", "files", "poll", "breakout"];
 
@@ -83,10 +86,13 @@ const ControlSize = createContext(46);
  */
 export function CallScreen({
   engine,
+  groupId,
   onLeave,
   onEndForAll,
 }: {
   engine: CallEngine;
+  /** A teacher's group: lets them add a file to the lesson from this device. */
+  groupId?: string;
   onLeave: () => void;
   /** Present when this person may end the lesson for everyone. */
   onEndForAll?: () => Promise<void>;
@@ -100,6 +106,15 @@ export function CallScreen({
   const [pinned, setPinned] = useState<string | null>(null);
   const [sharerSeen, setSharerSeen] = useState<string | null>(null);
   const [panel, setPanel] = useState<Panel>(null);
+  const [keyboardUp, setKeyboardUp] = useState(false);
+  useEffect(() => {
+    const shown = Keyboard.addListener("keyboardDidShow", () => setKeyboardUp(true));
+    const hidden = Keyboard.addListener("keyboardDidHide", () => setKeyboardUp(false));
+    return () => {
+      shown.remove();
+      hidden.remove();
+    };
+  }, []);
   const [reactionsOpen, setReactionsOpen] = useState(false);
   const [ending, setEnding] = useState(false);
   const [mutedShownFor, setMutedShownFor] = useState<number | null>(null);
@@ -318,7 +333,7 @@ export function CallScreen({
       </PanelFrame>
     ) : panel === "files" ? (
       <PanelFrame title={tm("files.title")} onClose={() => setPanel(null)}>
-        <FilesPanel engine={engine} onShown={() => setPanel(null)} />
+        <FilesPanel engine={engine} groupId={groupId} onShown={() => setPanel(null)} />
       </PanelFrame>
     ) : panel === "poll" ? (
       <PanelFrame title={t("poll")} onClose={() => setPanel(null)}>
@@ -585,8 +600,19 @@ export function CallScreen({
             style={[styles.sheet, { maxHeight: height * 0.72 }]}
           >
             {/* The keyboard-avoiding view sets its own bottom padding, so the room for
-                the home indicator sits on a view of its own inside it. */}
-            <View style={[styles.sheetBody, { paddingBottom: insets.bottom }]}>{panelBody}</View>
+                the home indicator sits on a view of its own inside it. A list gets
+                most of the sheet's height; with the keyboard up it gives that back. */}
+            <View
+              style={[
+                styles.sheetBody,
+                { paddingBottom: Math.max(insets.bottom, space[3]) },
+                panel && LIST_PANELS.includes(panel) && !keyboardUp
+                  ? { minHeight: Math.max(280, Math.round(height * 0.6)) }
+                  : null,
+              ]}
+            >
+              {panelBody}
+            </View>
           </KeyboardAvoidingView>
         </View>
       ) : null}

@@ -6352,7 +6352,12 @@
       "openOutside": "Открыть в другом приложении"
     },
     "materials": {
-      "continueFrom": "Продолжить с {time}"
+      "continueFrom": "Продолжить с {time}",
+      "addLink": "Добавить ссылку"
+    },
+    "checking": {
+      "spoken": "Устный ответ",
+      "reply": "Комментарий или голос"
     }
   }
 }
