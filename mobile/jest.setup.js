@@ -79,6 +79,9 @@ jest.mock("expo-document-picker", () => ({
   getDocumentAsync: jest.fn(() => Promise.resolve({ canceled: true, assets: null })),
 }));
 
+// The tests run as on a real phone: the simulator has no camera, and the app does not open one there.
+jest.mock("expo-device", () => ({ ...jest.requireActual("expo-device"), isDevice: true }));
+
 jest.mock("expo-audio", () => {
   const React = require("react");
   /** The one recorder and the players made since the last reset; a test reads and drives them. */

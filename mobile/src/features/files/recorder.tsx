@@ -56,6 +56,8 @@ export function VoiceRecorder({
   const state = useAudioRecorderState(recorder, 500);
   const [denied, setDenied] = useState(false);
   const [busy, setBusy] = useState(false);
+  // How long the last recording ran, to show at once beside it.
+  const [seconds, setSeconds] = useState(0);
 
   const start = async () => {
     setBusy(true);
@@ -80,6 +82,7 @@ export function VoiceRecorder({
   const stop = async () => {
     setBusy(true);
     try {
+      setSeconds(state.durationMillis / 1000);
       await recorder.stop();
       // Back to the loudspeaker for listening.
       await setAudioModeAsync({ allowsRecording: false, playsInSilentMode: true });
@@ -110,7 +113,12 @@ export function VoiceRecorder({
   return (
     <View style={styles.block}>
       {value ? (
-        <AudioClip source={{ uri: value.uri }} label={label} testID="recorder-clip" />
+        <AudioClip
+          source={{ uri: value.uri }}
+          label={label}
+          seconds={seconds}
+          testID="recorder-clip"
+        />
       ) : null}
       <View style={styles.row}>
         <Button

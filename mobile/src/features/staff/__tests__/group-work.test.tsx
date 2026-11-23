@@ -324,6 +324,17 @@ describe("a group's homework on the teacher's side", () => {
     await fireEvent.press(screen.getByTestId("rubric-0-plus"));
     await fireEvent.press(screen.getByTestId("rubric-1-plus"));
     expect(screen.getByTestId("rubric-total")).toHaveTextContent("Score: 3 of 7");
+    // Presses faster than the screen redraws all count.
+    const plus = screen.getByTestId("rubric-1-plus");
+    await act(async () => {
+      // The button's own handler, three times before React draws again.
+      for (let press = 0; press < 3; press += 1) plus.props.onClick({});
+    });
+    expect(screen.getByTestId("rubric-total")).toHaveTextContent("Score: 6 of 7");
+    await fireEvent.press(screen.getByTestId("rubric-1-minus"));
+    await fireEvent.press(screen.getByTestId("rubric-1-minus"));
+    await fireEvent.press(screen.getByTestId("rubric-1-minus"));
+    expect(screen.getByTestId("rubric-total")).toHaveTextContent("Score: 3 of 7");
 
     await fireEvent.press(screen.getByTestId("accept"));
     await waitFor(() => expect(calls("PATCH", "/homework/h3/submissions/ms1")).toHaveLength(1));

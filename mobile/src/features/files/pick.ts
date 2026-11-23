@@ -1,5 +1,7 @@
+import * as Device from "expo-device";
 import * as DocumentPicker from "expo-document-picker";
 import * as ImagePicker from "expo-image-picker";
+import { Keyboard, Platform } from "react-native";
 
 import type { PickedFile } from "@/lib/api";
 
@@ -82,7 +84,7 @@ export function sendableType(type: string | null | undefined, name: string): str
 export type Picked =
   | { kind: "file"; file: PickedFile }
   | { kind: "none" }
-  | { kind: "refused"; reason: "tooBig" | "wrongType" | "cameraDenied" };
+  | { kind: "refused"; reason: "tooBig" | "wrongType" | "cameraDenied" | "noCamera" };
 
 /** Checks a file against what the server takes and names it for sending. */
 export function checkFile(input: {
@@ -117,10 +119,49 @@ const PHOTO = {
     "compatible" as ImagePicker.UIImagePickerPreferredAssetRepresentationMode,
 } satisfies ImagePicker.ImagePickerOptions;
 
+/**
+ * The keyboard goes before a picker opens. On an iPad a picker asked for while
+ * a text box had the cursor did not appear on the first tap; a picker over an
+ * open keyboard is in the way in any case.
+ */
+async function keyboardAway(): Promise<void> {
+  if (Platform.OS === "web") return;
+  const shown = Keyboard.isVisible();
+  Keyboard.dismiss();
+  if (!shown) return;
+  await new Promise<void>((resolve) => {
+    const done = () => {
+      clearTimeout(timer);
+      heard.remove();
+      resolve();
+    };
+    const heard = Keyboard.addListener("keyboardDidHide", done);
+    // Never waits on a keyboard that does not say it has gone.
+    const timer = setTimeout(done, 400);
+  });
+}
+
+/**
+ * An iPhone asked to open a camera it does not have does not answer: it closes
+ * the app, and what the person had typed goes with it. The one iPhone without
+ * a camera is the simulator, so the camera is not opened there.
+ */
+function hasNoCamera(): boolean {
+  return Platform.OS === "ios" && Device.isDevice === false;
+}
+
 export async function takePhoto(): Promise<Picked> {
+  if (hasNoCamera()) return { kind: "refused", reason: "noCamera" };
+  await keyboardAway();
   const permission = await ImagePicker.requestCameraPermissionsAsync();
   if (!permission.granted) return { kind: "refused", reason: "cameraDenied" };
-  const result = await ImagePicker.launchCameraAsync(PHOTO);
+  let result: ImagePicker.ImagePickerResult;
+  try {
+    result = await ImagePicker.launchCameraAsync(PHOTO);
+  } catch {
+    // Android says so when no camera app answers.
+    return { kind: "refused", reason: "noCamera" };
+  }
   const asset = result.canceled ? null : result.assets[0];
   if (!asset) return { kind: "none" };
   return checkFile({
@@ -133,6 +174,7 @@ export async function takePhoto(): Promise<Picked> {
 }
 
 export async function choosePhoto(): Promise<Picked> {
+  await keyboardAway();
   // The phone's own picker hands over only the chosen photo; no access to the gallery is asked.
   const result = await ImagePicker.launchImageLibraryAsync(PHOTO);
   const asset = result.canceled ? null : result.assets[0];
@@ -147,6 +189,7 @@ export async function choosePhoto(): Promise<Picked> {
 }
 
 export async function chooseFile(): Promise<Picked> {
+  await keyboardAway();
   const result = await DocumentPicker.getDocumentAsync({
     type: ATTACHMENT_TYPES,
     copyToCacheDirectory: true,

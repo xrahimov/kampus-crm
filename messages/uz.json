@@ -6343,6 +6343,7 @@
       "removeRecording": "Yozuvni olib tashlash",
       "micDenied": "Kampus mikrofondan foydalana olmaydi. Javob yozib olish uchun telefon sozlamalarida ruxsat bering.",
       "cameraDenied": "Kampus kameradan foydalana olmaydi. Suratga olish uchun telefon sozlamalarida ruxsat bering.",
+      "noCamera": "Bu qurilmada ishlatish mumkin bo‘lgan kamera yo‘q. Surat yoki fayl tanlang.",
       "tooBig": "Bu fayl 20 MB dan katta. Kichikroq fayl tanlang.",
       "wrongType": "Bunday faylni yuborib bo'lmaydi. Surat, PDF, hujjat, audio yoki qisqa video yuboring.",
       "needAnswer": "Avval javob yozing yoki fayl biriktiring.",

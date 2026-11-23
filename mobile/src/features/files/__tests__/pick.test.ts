@@ -1,5 +1,6 @@
 import * as DocumentPicker from "expo-document-picker";
 import * as ImagePicker from "expo-image-picker";
+import { Keyboard } from "react-native";
 
 import {
   checkFile,
@@ -11,6 +12,14 @@ import {
 } from "@/features/files/pick";
 
 /* Choosing what to send with an answer (A-212): what the server will take, and what it will not. */
+
+// A real phone unless a test says it is the simulator.
+const mockDevice = { isDevice: true };
+jest.mock("expo-device", () => ({
+  get isDevice() {
+    return mockDevice.isDevice;
+  },
+}));
 
 describe("a file chosen on the phone", () => {
   it("is known by the type the server uses", () => {
@@ -63,6 +72,47 @@ describe("a file chosen on the phone", () => {
     expect(await takePhoto()).toEqual({ kind: "refused", reason: "cameraDenied" });
     expect(await takePhoto()).toEqual({ kind: "none" });
     expect(await chooseFile()).toEqual({ kind: "none" });
+  });
+
+  it("does not open a camera the device does not have", async () => {
+    // The iPhone simulator: opening its camera closes the app.
+    mockDevice.isDevice = false;
+    (ImagePicker.launchCameraAsync as jest.Mock).mockClear();
+    expect(await takePhoto()).toEqual({ kind: "refused", reason: "noCamera" });
+    expect(ImagePicker.launchCameraAsync).not.toHaveBeenCalled();
+    mockDevice.isDevice = true;
+    // An Android device where no camera answers.
+    (ImagePicker.launchCameraAsync as jest.Mock).mockRejectedValueOnce(new Error("no camera"));
+    expect(await takePhoto()).toEqual({ kind: "refused", reason: "noCamera" });
+  });
+
+  it("puts the keyboard away before a picker opens", async () => {
+    const dismiss = jest.spyOn(Keyboard, "dismiss");
+    const visible = jest.spyOn(Keyboard, "isVisible").mockReturnValue(true);
+    let order: string[] = [];
+    const hide = jest.spyOn(Keyboard, "addListener").mockImplementation((name, heard) => {
+      // The keyboard says it has gone a moment after it is asked to.
+      setTimeout(() => {
+        order.push(name);
+        (heard as () => void)();
+      }, 10);
+      return { remove: jest.fn() } as unknown as ReturnType<typeof Keyboard.addListener>;
+    });
+    (DocumentPicker.getDocumentAsync as jest.Mock).mockImplementationOnce(async () => {
+      order.push("picker");
+      return { canceled: true, assets: null };
+    });
+    expect(await chooseFile()).toEqual({ kind: "none" });
+    expect(dismiss).toHaveBeenCalled();
+    expect(order).toEqual(["keyboardDidHide", "picker"]);
+
+    // No keyboard on the screen: nothing to wait for.
+    order = [];
+    visible.mockReturnValue(false);
+    hide.mockClear();
+    expect(await choosePhoto()).toEqual({ kind: "none" });
+    expect(hide).not.toHaveBeenCalled();
+    for (const spy of [dismiss, visible, hide]) spy.mockRestore();
   });
 
   it("hands over the photo and the document that were chosen", async () => {

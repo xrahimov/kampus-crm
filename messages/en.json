@@ -6343,6 +6343,7 @@
       "removeRecording": "Remove the recording",
       "micDenied": "Kampus may not use the microphone. Allow it in the phone's settings to record an answer.",
       "cameraDenied": "Kampus may not use the camera. Allow it in the phone's settings to take a photo.",
+      "noCamera": "This device has no camera to use. Choose a photo or a file instead.",
       "tooBig": "This file is larger than 20 MB. Choose a smaller one.",
       "wrongType": "This kind of file cannot be sent. Send a photo, a PDF, a document, audio or a short video.",
       "needAnswer": "Write an answer or attach a file first.",

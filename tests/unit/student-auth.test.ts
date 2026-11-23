@@ -269,6 +269,37 @@ describe("sessions and the bot (A-150)", () => {
     await expect(resolveStudentSession(prisma, "nope")).resolves.toBeNull();
   });
 
+  it("lists an assignment that belongs to no lesson under homework to do", async () => {
+    const account = await prisma.studentAccount.findUniqueOrThrow({
+      where: { telegramUserId: tg(2) },
+    });
+    const principal = await resolveStudentSession(
+      prisma,
+      await createStudentSession(prisma, account.id, {}),
+    );
+    const long = new Date(Date.now() - 60 * 86_400_000);
+    const soon = new Date(Date.now() + 5 * 86_400_000);
+    const make = (title: string, more: { dueDate?: Date; createdAt?: Date } = {}) =>
+      prisma.homework.create({ data: { groupId, title, text: `${TAG} ${title}`, ...more } });
+    const essay = await make("Essay: my town");
+    const project = await make("Project", { dueDate: soon, createdAt: long });
+    await make("Old essay", { createdAt: long });
+    await make("Old project", { dueDate: long, createdAt: long });
+    const done = await make("Done essay");
+    const membership = await prisma.groupMembership.findFirstOrThrow({
+      where: { groupId, studentId: ali },
+    });
+    await prisma.homeworkSubmission.create({
+      data: { homeworkId: done.id, membershipId: membership.id, status: "ACCEPTED" },
+    });
+
+    const home = await getStudentHome(principal!);
+    const todo = home.profiles[0]!.homework;
+    expect(todo.map((h) => h.title)).toEqual(["Project", "Essay: my town"]);
+    expect(todo.map((h) => h.id)).toEqual([project.id, essay.id]);
+    expect(todo[1]).toMatchObject({ lessonDate: null, dueDate: null, returned: false });
+  });
+
   it("a bot sign-in link works once", async () => {
     const account = await prisma.studentAccount.findUniqueOrThrow({
       where: { telegramUserId: tg(2) },
