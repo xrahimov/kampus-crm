@@ -69,6 +69,13 @@ export function setSessionLostHandler(handler: (() => void) | null): void {
   onSessionLost = handler;
 }
 
+/** What a picture, a PDF or a video behind the session is asked for with. */
+export function sessionHeaders(): Record<string, string> {
+  const headers: Record<string, string> = { "x-kampus-app": APP_VERSION };
+  if (sessionToken) headers.Authorization = `Bearer ${sessionToken}`;
+  return headers;
+}
+
 export function apiUrl(path: string): string {
   return `${API_ORIGIN}/api/v1${path}`;
 }

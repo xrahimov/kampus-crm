@@ -1,11 +1,6 @@
-import { act, fireEvent, render, screen, waitFor } from "@testing-library/react-native";
-import { SafeAreaProvider } from "react-native-safe-area-context";
+import { act, fireEvent, screen, waitFor } from "@testing-library/react-native";
 
-import { CallScreen } from "@/features/room/call-screen";
-import { I18nProvider } from "@/lib/i18n";
-import { ThemeProvider } from "@/lib/theme";
-import type { CallEngine, RemotePeer } from "@kampus/lib/video/call-engine";
-import type { JoinDto, StageDto } from "@kampus/lib/video/dto";
+import { fakeEngine, openPanel, peer, renderRoom, shown } from "@/features/room/test-support";
 
 jest.mock("@react-native-async-storage/async-storage", () =>
   // eslint-disable-next-line @typescript-eslint/no-require-imports
@@ -23,112 +18,8 @@ jest.mock("react-native-incall-manager", () => ({
 /*
  * The lesson room in the app (A-207), drawn over a stand-in for the call
  * engine: what the buttons ask the engine to do, and who a teacher and a
- * student see where. The engine itself and the rules of the stage have their
- * own tests on the site's side (tests/unit/video-*.test.ts).
+ * student see where.
  */
-
-type Stream = MediaStream & { toURL(): string };
-
-function stream(id: string, camera = true): Stream {
-  const video = camera ? [{ id: `${id}-video`, kind: "video" }] : [];
-  return {
-    id,
-    getVideoTracks: () => video,
-    getAudioTracks: () => [{ id: `${id}-audio`, kind: "audio" }],
-    toURL: () => `stream:${id}`,
-  } as unknown as Stream;
-}
-
-function peer(id: string, name: string, change: Partial<RemotePeer> = {}): RemotePeer {
-  return {
-    id,
-    displayName: name,
-    role: "STUDENT",
-    joinedAt: "2026-11-23T05:00:00.000Z",
-    media: { audio: true, video: true, screen: false, hand: false },
-    handRaisedAt: null,
-    stream: stream(id),
-    connection: "connected",
-    ...change,
-  };
-}
-
-/** Everything the screen reads from the engine, with every action a spy. */
-function fakeEngine(role: JoinDto["role"], others: RemotePeer[]) {
-  const listeners = new Set<() => void>();
-  const stage: StageDto = { spotlight: null, focus: false, board: false, material: null };
-  const engine = {
-    self: {
-      participantId: "me",
-      displayName: role === "HOST" ? "Demo Teacher" : "Demo Student",
-      role,
-      groupName: "GE-Morning A1",
-    },
-    version: 0,
-    media: { audio: true, video: true, screen: false, hand: false },
-    chat: [] as Array<{ id: number; from: string | null; name: string; text: string; at: Date }>,
-    unread: 0,
-    mutedBy: null as { name: string; at: number } | null,
-    loweredBy: null,
-    notice: null as { text: string; name: string; at: number } | null,
-    noShow: null,
-    poll: null,
-    breakout: { rooms: 0, endsAt: null, mine: null, everyone: null },
-    handRaisedAt: null as string | null,
-    canSwitchCamera: false,
-    currentStage: stage,
-    localStream: stream("me"),
-    remote: others,
-    subscribe: (listener: () => void) => {
-      listeners.add(listener);
-      return () => listeners.delete(listener);
-    },
-    getVersion: () => engine.version,
-    peers: () => engine.remote,
-    activeReactions: () => new Map(),
-    paceTally: () => ({ slower: 0, faster: 0 }),
-    setAudio: jest.fn(),
-    setVideo: jest.fn(),
-    setHand: jest.fn(),
-    sendChat: jest.fn(),
-    markChatRead: jest.fn(),
-    mutePeers: jest.fn(),
-    lowerHand: jest.fn(),
-    setStage: jest.fn(),
-    react: jest.fn(),
-    votePoll: jest.fn(),
-    dismissNotice: jest.fn(),
-    switchCamera: jest.fn(),
-    /** Tells the screen something changed, as the real engine does after every sync. */
-    change(update: () => void) {
-      update();
-      engine.version += 1;
-      listeners.forEach((listener) => listener());
-    },
-  };
-  return engine;
-}
-
-type Fake = ReturnType<typeof fakeEngine>;
-
-async function renderRoom(engine: Fake, props: { onEndForAll?: () => Promise<void> } = {}) {
-  const onLeave = jest.fn();
-  await render(
-    <SafeAreaProvider
-      initialMetrics={{
-        frame: { x: 0, y: 0, width: 390, height: 800 },
-        insets: { top: 0, left: 0, right: 0, bottom: 0 },
-      }}
-    >
-      <ThemeProvider>
-        <I18nProvider>
-          <CallScreen engine={engine as unknown as CallEngine} onLeave={onLeave} {...props} />
-        </I18nProvider>
-      </ThemeProvider>
-    </SafeAreaProvider>,
-  );
-  return { onLeave };
-}
 
 describe("the lesson room in the app", () => {
   it("turns the microphone, the camera and a student's hand on and off through the engine", async () => {
@@ -151,9 +42,23 @@ describe("the lesson room in the app", () => {
     await screen.findByTestId("call-room");
     expect(screen.queryByTestId("toggle-hand")).toBeNull();
 
-    await fireEvent.press(screen.getByTestId("leave"));
+    await openPanel("leave");
     expect(onLeave).not.toHaveBeenCalled();
     await fireEvent.press(await screen.findByTestId("end-for-all"));
+    await waitFor(() => expect(onEndForAll).toHaveBeenCalledTimes(1));
+  });
+
+  it("ignores a press that lands on a sheet the moment it opens", async () => {
+    // The sheet comes up under the finger that pressed Leave; "End for everyone" lies there.
+    const engine = fakeEngine("HOST", [peer("a", "Aziza Karimova")]);
+    const onEndForAll = jest.fn(() => Promise.resolve());
+    await renderRoom(engine, { onEndForAll });
+    await fireEvent.press(await screen.findByTestId("leave"));
+    await fireEvent.press(await screen.findByTestId("end-for-all"));
+    expect(onEndForAll).not.toHaveBeenCalled();
+
+    await screen.findByTestId("room-sheet");
+    await fireEvent.press(screen.getByTestId("end-for-all"));
     await waitFor(() => expect(onEndForAll).toHaveBeenCalledTimes(1));
   });
 
@@ -204,7 +109,7 @@ describe("the lesson room in the app", () => {
     const engine = fakeEngine("STUDENT", [peer("t", "Demo Teacher", { role: "HOST" })]);
     engine.unread = 2;
     await renderRoom(engine);
-    await fireEvent.press(await screen.findByTestId("open-chat"));
+    await openPanel("open-chat");
     await waitFor(() => expect(engine.markChatRead).toHaveBeenCalled());
 
     await fireEvent.changeText(screen.getByTestId("chat-input"), "Salom!");
@@ -220,7 +125,7 @@ describe("the lesson room in the app", () => {
       }),
     ]);
     await renderRoom(engine);
-    await fireEvent.press(await screen.findByTestId("open-people"));
+    await openPanel("open-people");
 
     await fireEvent.press(await screen.findByTestId("mute-all"));
     expect(engine.mutePeers).toHaveBeenCalledWith();
@@ -234,17 +139,15 @@ describe("the lesson room in the app", () => {
     expect(engine.setStage).toHaveBeenCalledWith({ focus: true });
   });
 
-  it("says so when the teacher shows a whiteboard the app cannot draw yet", async () => {
+  it("puts the file the teacher shows on the stage, with everyone still in sight", async () => {
     const engine = fakeEngine("STUDENT", [peer("t", "Demo Teacher", { role: "HOST" })]);
-    engine.currentStage = { ...engine.currentStage, board: true };
+    engine.currentStage = { ...engine.currentStage, material: shown({ view: "image" }) };
     await renderRoom(engine);
     await screen.findByTestId("call-room");
-    expect(screen.getByText(/whiteboard|file/i)).toBeTruthy();
-    // Nobody is hidden behind the notice: everyone is on the wall, the teacher too.
-    await fireEvent(screen.getByTestId("tile-wall"), "layout", {
-      nativeEvent: { layout: { x: 0, y: 0, width: 390, height: 520 } },
-    });
-    expect(await screen.findByTestId("tile-t")).toBeTruthy();
+    expect(screen.getByTestId("material-stage")).toBeTruthy();
+    expect(screen.getByTestId("material-title")).toHaveTextContent("Unit 3");
+    // Nobody is hidden behind the file: the teacher and you are in the strip beside it.
+    expect(screen.getByTestId("tile-t")).toBeTruthy();
     expect(screen.getByTestId("tile-self")).toBeTruthy();
   });
 

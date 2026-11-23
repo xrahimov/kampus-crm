@@ -1,10 +1,14 @@
 import {
+  FileText,
   Focus,
   Hand,
+  LayoutGrid,
   MessageSquare,
   Mic,
   MicOff,
+  MonitorUp,
   PhoneOff,
+  Presentation,
   Smile,
   Star,
   SwitchCamera,
@@ -13,7 +17,14 @@ import {
   VideoOff,
   X,
 } from "lucide-react-native";
-import { useEffect, useState, useSyncExternalStore, type ReactNode } from "react";
+import {
+  createContext,
+  useContext,
+  useEffect,
+  useState,
+  useSyncExternalStore,
+  type ReactNode,
+} from "react";
 import {
   KeyboardAvoidingView,
   Platform,
@@ -34,14 +45,22 @@ import { PACE_REACTIONS, REACTIONS } from "@kampus/lib/validation/video";
 import { CHAT_MAX_LENGTH, type CallEngine, type RemotePeer } from "@kampus/lib/video/call-engine";
 import { BOARD, MATERIAL, REACTION_EMOJI, roomView, SELF } from "@kampus/lib/video/room-view";
 
-import { gridColumns, room } from "./look";
-import { RemoteAudio } from "./platform";
+import { WhiteboardStage } from "./board";
+import { FilesPanel } from "./files-panel";
+import { controlBar, gridColumns, room } from "./look";
+import { MaterialStage } from "./material-stage";
+import { RemoteAudio, screenShare } from "./platform";
 import { Tile } from "./tile";
 
-type Panel = "people" | "chat" | "leave" | null;
+type Panel = "people" | "chat" | "tools" | "files" | "leave" | null;
 
 const GAP = space[2];
 const NOTICE_MS = 6000;
+/** How long after it appears a sheet starts to take presses. */
+const SHEET_ARM_MS = 350;
+
+/** The size of the bar's round buttons, set once for the whole bar. */
+const ControlSize = createContext(46);
 
 /**
  * The lesson room (A-207): a stage for whoever leads (a shared screen, the
@@ -119,6 +138,23 @@ export function CallScreen({
     return () => clearTimeout(timer);
   }, [loweredBy]);
 
+  // "Everyone sees your screen now" shows for a few seconds after a share starts.
+  const sharing = media.screen;
+  const [shareSeen, setShareSeen] = useState(false);
+  if (!sharing && shareSeen) setShareSeen(false);
+  useEffect(() => {
+    if (!sharing) return;
+    const timer = setTimeout(() => setShareSeen(true), NOTICE_MS * 2);
+    return () => clearTimeout(timer);
+  }, [sharing]);
+  const shareError = engine.shareError;
+  // Microphone, camera, reactions, chat, people and leave, plus what this person may also do.
+  // The seventh is the hand for a student and the tools for the teacher.
+  const bar = controlBar(
+    6 + (screenShare.available ? 1 : 0) + (isHost || isStudent ? 1 : 0),
+    width,
+  );
+
   const hasAudio = engine.localStream.getAudioTracks().length > 0;
   const hasCamera = engine.localStream.getVideoTracks().length > 0;
 
@@ -181,12 +217,24 @@ export function CallScreen({
   };
 
   const everyone = [SELF, ...peers.filter((p) => !hidden.has(p.id)).map((p) => p.id)];
-  // A file or the whiteboard on everyone's stage has no picture in the app yet: the
-  // people stay as they are and a line says what the teacher shows.
-  const stageElsewhere = stageKey === MATERIAL || stageKey === BOARD;
-  const stageTile = stageKey && !stageElsewhere ? stageKey : null;
+  // The whiteboard takes the stage like a person does, with everyone in the strip.
+  const stageBoard = stageKey === BOARD;
+  // So does a file the teacher shows (with the pen over it when the whiteboard is on too).
+  const stageMaterial = stageKey === MATERIAL ? stage.material : null;
+  const stageTile = stageKey && !stageMaterial && !stageBoard ? stageKey : null;
+  const hasStage = stageBoard || stageMaterial !== null || stageTile !== null;
   const others = everyone.filter((id) => id !== stageTile);
   const sideBySide = wide && width > height;
+
+  // A sheet comes up under the finger that opened it, and its lowest button ("End for
+  // everyone" among them) lies where that finger still is. The press that opened it must
+  // not reach it, so a sheet takes presses only a moment after it appears.
+  const [armedPanel, setArmedPanel] = useState<Panel>(null);
+  useEffect(() => {
+    const timer = setTimeout(() => setArmedPanel(panel), SHEET_ARM_MS);
+    return () => clearTimeout(timer);
+  }, [panel]);
+  const sheetArmed = armedPanel === panel;
 
   const leave = () => {
     if (onEndForAll) setPanel("leave");
@@ -213,6 +261,30 @@ export function CallScreen({
       />
     ) : panel === "chat" ? (
       <ChatPanel engine={engine} onClose={() => setPanel(null)} />
+    ) : panel === "tools" ? (
+      <PanelFrame title={tm("tools")} onClose={() => setPanel(null)}>
+        <View style={styles.leaveBody}>
+          <RoomButton
+            label={stage.board ? t("boardOff") : t("boardOn")}
+            icon={<Presentation size={18} color={room.ink} />}
+            onPress={() => {
+              engine.setStage({ board: !stage.board });
+              setPanel(null);
+            }}
+            testID="tool-board"
+          />
+          <RoomButton
+            label={tm("files.title")}
+            icon={<FileText size={18} color={room.ink} />}
+            onPress={() => setPanel("files")}
+            testID="tool-files"
+          />
+        </View>
+      </PanelFrame>
+    ) : panel === "files" ? (
+      <PanelFrame title={tm("files.title")} onClose={() => setPanel(null)}>
+        <FilesPanel engine={engine} onShown={() => setPanel(null)} />
+      </PanelFrame>
     ) : panel === "leave" ? (
       <PanelFrame title={t("endTitle")} onClose={() => setPanel(null)}>
         <View style={styles.leaveBody}>
@@ -289,16 +361,33 @@ export function CallScreen({
               : t("breakoutIn", { number: breakout.mine })}
           </Banner>
         ) : null}
-        {stageElsewhere ? <Banner>{tm("stageElsewhere")}</Banner> : null}
+        {sharing && !shareSeen ? (
+          <Banner onClose={() => setShareSeen(true)} testID="share-started">
+            {tm("shareStarted")}
+          </Banner>
+        ) : null}
+        {shareError ? (
+          <Banner onClose={() => engine.dismissShareError()} testID="share-failed">
+            {shareError.reason === "blocked" ? tm("shareBlocked") : tm("shareFailed")}
+          </Banner>
+        ) : null}
         {engine.noShow && isHost ? <Banner>{t("noShow")}</Banner> : null}
         {isStudent && engine.poll?.open ? <PollCard engine={engine} /> : null}
       </View>
 
       <View style={[styles.body, sideBySide && styles.row]}>
-        <View style={[styles.fill, sideBySide && stageTile ? styles.row : null]}>
-          {stageTile ? (
+        <View style={[styles.fill, sideBySide && hasStage ? styles.row : null]}>
+          {hasStage ? (
             <>
-              <View style={styles.fill}>{tile(stageTile, true)}</View>
+              <View style={styles.fill}>
+                {stageMaterial ? (
+                  <MaterialStage engine={engine} material={stageMaterial} />
+                ) : stageBoard ? (
+                  <WhiteboardStage engine={engine} />
+                ) : stageTile ? (
+                  tile(stageTile, true)
+                ) : null}
+              </View>
               {others.length > 0 ? (
                 <ScrollView
                   horizontal={!sideBySide}
@@ -338,76 +427,115 @@ export function CallScreen({
         </View>
       ) : null}
 
-      <View style={[styles.controls, { paddingBottom: Math.max(insets.bottom, space[3]) }]}>
-        <Control
-          label={media.audio ? t("mute") : t("unmute")}
-          off={!media.audio}
-          disabled={!hasAudio}
-          onPress={() => engine.setAudio(!media.audio)}
-          testID="toggle-mic"
+      <ControlSize.Provider value={bar.size}>
+        <View
+          style={[
+            styles.controls,
+            { gap: bar.gap, paddingBottom: Math.max(insets.bottom, space[3]) },
+          ]}
+          testID="room-controls"
         >
-          {media.audio ? (
-            <Mic size={22} color={room.ink} />
-          ) : (
-            <MicOff size={22} color={room.dangerInk} />
-          )}
-        </Control>
-        <Control
-          label={media.video ? t("cameraOff") : t("cameraOn")}
-          off={!media.video}
-          disabled={!hasCamera}
-          onPress={() => engine.setVideo(!media.video)}
-          testID="toggle-camera"
-        >
-          {media.video ? (
-            <Video size={22} color={room.ink} />
-          ) : (
-            <VideoOff size={22} color={room.dangerInk} />
-          )}
-        </Control>
-        {!isHost ? (
           <Control
-            label={media.hand ? t("lowerHand") : t("raiseHand")}
-            on={media.hand}
-            onPress={() => engine.setHand(!media.hand)}
-            testID="toggle-hand"
+            label={media.audio ? t("mute") : t("unmute")}
+            off={!media.audio}
+            disabled={!hasAudio}
+            onPress={() => engine.setAudio(!media.audio)}
+            testID="toggle-mic"
           >
-            <Hand size={22} color={media.hand ? room.activeInk : room.ink} />
+            {media.audio ? (
+              <Mic size={22} color={room.ink} />
+            ) : (
+              <MicOff size={22} color={room.dangerInk} />
+            )}
           </Control>
-        ) : null}
-        <Control
-          label={t("reactions")}
-          on={reactionsOpen}
-          onPress={() => setReactionsOpen((open) => !open)}
-          testID="open-reactions"
-        >
-          <Smile size={22} color={reactionsOpen ? room.activeInk : room.ink} />
-        </Control>
-        <Control
-          label={t("chat")}
-          on={panel === "chat"}
-          badge={panel === "chat" ? 0 : engine.unread}
-          onPress={() => setPanel((cur) => (cur === "chat" ? null : "chat"))}
-          testID="open-chat"
-        >
-          <MessageSquare size={22} color={panel === "chat" ? room.activeInk : room.ink} />
-        </Control>
-        <Control
-          label={t("people")}
-          on={panel === "people"}
-          badge={isStudent ? 0 : handQueue.filter((h) => h.id !== SELF).length}
-          onPress={() => setPanel((cur) => (cur === "people" ? null : "people"))}
-          testID="open-people"
-        >
-          <Users size={22} color={panel === "people" ? room.activeInk : room.ink} />
-        </Control>
-        <Control label={t("leave")} danger onPress={leave} testID="leave">
-          <PhoneOff size={22} color={room.dangerInk} />
-        </Control>
-      </View>
+          <Control
+            label={media.video ? t("cameraOff") : t("cameraOn")}
+            off={!media.video}
+            disabled={!hasCamera}
+            onPress={() => engine.setVideo(!media.video)}
+            testID="toggle-camera"
+          >
+            {media.video ? (
+              <Video size={22} color={room.ink} />
+            ) : (
+              <VideoOff size={22} color={room.dangerInk} />
+            )}
+          </Control>
+          {screenShare.available ? (
+            <Control
+              label={sharing ? t("stopSharing") : t("shareScreen")}
+              on={sharing}
+              onPress={() => void (sharing ? engine.stopScreen() : engine.shareScreen())}
+              testID="toggle-share"
+            >
+              <MonitorUp size={22} color={sharing ? room.activeInk : room.ink} />
+            </Control>
+          ) : null}
+          {!isHost ? (
+            <Control
+              label={media.hand ? t("lowerHand") : t("raiseHand")}
+              on={media.hand}
+              onPress={() => engine.setHand(!media.hand)}
+              testID="toggle-hand"
+            >
+              <Hand size={22} color={media.hand ? room.activeInk : room.ink} />
+            </Control>
+          ) : null}
+          <Control
+            label={t("reactions")}
+            on={reactionsOpen}
+            onPress={() => setReactionsOpen((open) => !open)}
+            testID="open-reactions"
+          >
+            <Smile size={22} color={reactionsOpen ? room.activeInk : room.ink} />
+          </Control>
+          <Control
+            label={t("chat")}
+            on={panel === "chat"}
+            badge={panel === "chat" ? 0 : engine.unread}
+            onPress={() => setPanel((cur) => (cur === "chat" ? null : "chat"))}
+            testID="open-chat"
+          >
+            <MessageSquare size={22} color={panel === "chat" ? room.activeInk : room.ink} />
+          </Control>
+          <Control
+            label={t("people")}
+            on={panel === "people"}
+            badge={isStudent ? 0 : handQueue.filter((h) => h.id !== SELF).length}
+            onPress={() => setPanel((cur) => (cur === "people" ? null : "people"))}
+            testID="open-people"
+          >
+            <Users size={22} color={panel === "people" ? room.activeInk : room.ink} />
+          </Control>
+          {isHost ? (
+            <Control
+              label={tm("tools")}
+              on={panel === "tools" || panel === "files" || stage.board || stage.material !== null}
+              onPress={() => setPanel((cur) => (cur === "tools" ? null : "tools"))}
+              testID="open-tools"
+            >
+              <LayoutGrid
+                size={22}
+                color={
+                  panel === "tools" || panel === "files" || stage.board || stage.material !== null
+                    ? room.activeInk
+                    : room.ink
+                }
+              />
+            </Control>
+          ) : null}
+          <Control label={t("leave")} danger onPress={leave} testID="leave">
+            <PhoneOff size={22} color={room.dangerInk} />
+          </Control>
+        </View>
+      </ControlSize.Provider>
 
       {panelBody && !sideBySide ? (
-        <View style={styles.sheetLayer} pointerEvents="box-none">
+        <View
+          style={styles.sheetLayer}
+          pointerEvents={sheetArmed ? "box-none" : "none"}
+          testID={sheetArmed ? "room-sheet" : "room-sheet-opening"}
+        >
           <Pressable
             style={styles.scrim}
             onPress={() => setPanel(null)}
@@ -415,9 +543,11 @@ export function CallScreen({
           />
           <KeyboardAvoidingView
             behavior={Platform.OS === "ios" ? "padding" : undefined}
-            style={[styles.sheet, { maxHeight: height * 0.72, paddingBottom: insets.bottom }]}
+            style={[styles.sheet, { maxHeight: height * 0.72 }]}
           >
-            {panelBody}
+            {/* The keyboard-avoiding view sets its own bottom padding, so the room for
+                the home indicator sits on a view of its own inside it. */}
+            <View style={[styles.sheetBody, { paddingBottom: insets.bottom }]}>{panelBody}</View>
           </KeyboardAvoidingView>
         </View>
       ) : null}
@@ -739,7 +869,7 @@ function Banner({
   );
 }
 
-/** A round button of the bar at the bottom: 52 points, the thumb's size. */
+/** A round button of the bar at the bottom; `ControlSize` says how large. */
 function Control({
   label,
   children,
@@ -763,6 +893,7 @@ function Control({
   badge?: number;
   testID?: string;
 }) {
+  const size = useContext(ControlSize);
   return (
     <Pressable
       accessibilityRole="button"
@@ -770,9 +901,11 @@ function Control({
       accessibilityState={{ disabled, selected: on }}
       disabled={disabled}
       onPress={onPress}
+      hitSlop={4}
       testID={testID}
       style={({ pressed }) => [
         styles.control,
+        { width: size, height: size },
         on && styles.controlOn,
         (off || danger) && styles.controlDanger,
         pressed && styles.pressed,
@@ -920,7 +1053,6 @@ const styles = StyleSheet.create({
   controls: {
     flexDirection: "row",
     justifyContent: "center",
-    gap: space[2],
     paddingTop: space[2],
     paddingHorizontal: space[2],
     borderTopWidth: StyleSheet.hairlineWidth,
@@ -979,6 +1111,7 @@ const styles = StyleSheet.create({
     overflow: "hidden",
     backgroundColor: room.surface,
   },
+  sheetBody: { flexShrink: 1, minHeight: 280 },
   panel: { flex: 1, borderRadius: radius.lg, backgroundColor: room.surface, minHeight: 240 },
   panelHead: {
     flexDirection: "row",

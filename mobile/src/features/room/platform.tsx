@@ -66,8 +66,20 @@ export function RemoteAudio({ stream }: { stream: MediaStream }) {
   return createElement("audio", { ref: attach, autoPlay: true, style: { display: "none" } });
 }
 
+/** What the phone's notice says while a lesson runs; a browser shows none. */
+export interface CallWords {
+  title: string;
+  text: string;
+  channel: string;
+}
+
 /** A browser picks its own output and keeps the tab awake while a call runs. */
 export const callAudio = {
-  start(): void {},
+  start(_words: CallWords): void {},
   stop(): void {},
+};
+
+/** A browser has its own picker for a screen, a window or a tab; the engine opens it. */
+export const screenShare: { available: boolean; open?: () => Promise<MediaStream> } = {
+  available: typeof navigator !== "undefined" && Boolean(navigator.mediaDevices?.getDisplayMedia),
 };

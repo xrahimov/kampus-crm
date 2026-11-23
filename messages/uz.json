@@ -6284,7 +6284,35 @@
       "openSettings": "Sozlamalarni ochish",
       "unavailable": "Bu qurilmada videodarsni ochib bo'lmaydi.",
       "peerFailed": "Bu ishtirokchi bilan bog'lanib bo'lmadi. Uning tarmog'i to'g'ridan-to'g'ri qo'ng'iroqlarni o'tkazmayotgan bo'lishi mumkin.",
-      "stageElsewhere": "O'qituvchi hammaga fayl yoki doskani ko'rsatyapti."
+      "shareStarted": "Endi hamma ekraningizni ko'rmoqda. Ko'rsatmoqchi bo'lgan narsangizni oching, to'xtatish uchun shu yerga qayting.",
+      "shareFailed": "Ekranni ko'rsatish boshlanmadi. Qayta urinib ko'ring.",
+      "shareBlocked": "Telefon Kampusga ekranni ko'rsatishga ruxsat bermadi. Qayta urinib ko'ring va telefon savolida «Boshlash» tugmasini bosing.",
+      "shareNotice": "Kampus ekraningizni ko'rsatmoqda",
+      "shareNoticeText": "Darsdagi hamma ekraningizni ko'rmoqda. To'xtatish uchun Kampusni oching.",
+      "shareChannel": "Ekranni ko'rsatish",
+      "callNotice": "Dars ketmoqda: {group}",
+      "callNoticeText": "Dars ochiq turganda mikrofon va kamera ishlab turadi. Darsga qaytish uchun bosing.",
+      "callChannel": "Ketayotgan darslar",
+      "tools": "Dars vositalari",
+      "material": {
+        "open": "Darsdan tashqarida ochish",
+        "failed": "Bu faylni dars ichida ochib bo'lmadi. Uni darsdan tashqarida oching.",
+        "linkText": "O'qituvchi shu havolani ko'rsatyapti. U darsdan tashqarida ochiladi.",
+        "fileText": "Bunday faylni dars ichida ko'rsatib bo'lmaydi. Uni darsdan tashqarida oching.",
+        "hostPlayHint": "Shu yerda ijro eting, to'xtating va o'tkazing: hammada xuddi shunday bo'ladi.",
+        "play": "Hamma uchun ijro etish",
+        "pause": "Hamma uchun to'xtatish",
+        "back10": "10 soniya orqaga",
+        "forward10": "10 soniya oldinga",
+        "jump": "Faylning boshqa joyiga o'tish"
+      },
+      "files": {
+        "title": "Hammaga fayl ko'rsatish",
+        "hint": "Dars yoki guruh materiallaridan birini tanlang. U hammaning ekranida ochiladi.",
+        "show": "Ko'rsatish",
+        "stop": "Ko'rsatishni to'xtatish",
+        "shown": "Hozir hammaning ekranida"
+      }
     },
     "permissions": {
       "camera": "Kampus kameradan videodarsda o'qituvchi va guruhdoshlaringiz sizni ko'rishi uchun foydalanadi.",

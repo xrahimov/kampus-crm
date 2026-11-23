@@ -1,0 +1,15 @@
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+  <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+  <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MICROPHONE" />
+  <uses-permission android:name="android.permission.FOREGROUND_SERVICE_CAMERA" />
+  <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK" />
+
+  <application>
+    <!-- Keeps a lesson going while the person looks at another app (A-208). -->
+    <service
+      android:name=".CallService"
+      android:exported="false"
+      android:foregroundServiceType="microphone|camera|mediaPlayback"
+      android:stopWithTask="true" />
+  </application>
+</manifest>

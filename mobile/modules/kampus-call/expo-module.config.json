@@ -1,0 +1,6 @@
+{
+  "platforms": ["android"],
+  "android": {
+    "modules": ["center.kampus.call.KampusCallModule"]
+  }
+}
