@@ -1,4 +1,12 @@
-import { createContext, useContext, useEffect, useRef, useState, type ReactNode } from "react";
+import {
+  createContext,
+  useContext,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type ReactNode,
+} from "react";
 import {
   ActivityIndicator,
   KeyboardAvoidingView,
@@ -74,9 +82,19 @@ export function Screen({
     set(Math.round(event.nativeEvent.layout.height));
   const top = header ? headerHeight : padTop ? insets.top : 0;
   const bottom = footer ? footerHeight : insets.bottom + bottomBar;
+  // On an iPhone the room under the header is the scroll view's own inset, not padding: the
+  // system then draws the refresh spinner below the header. As padding, the spinner sat behind
+  // the header and pulling down showed an empty gap.
+  const inset = Platform.OS === "ios" && scroll;
+  const room = useMemo(() => ({ top }), [top]);
+  const start = useMemo(() => ({ x: 0, y: -top }), [top]);
   const inner: StyleProp<ViewStyle> = [
     styles.column,
-    { paddingHorizontal: pad, paddingTop: pad + top, paddingBottom: pad + bottom },
+    {
+      paddingHorizontal: pad,
+      paddingTop: pad + (inset ? 0 : top),
+      paddingBottom: pad + bottom,
+    },
     contentStyle,
   ];
   return (
@@ -94,9 +112,13 @@ export function Screen({
                 <ScrollView
                   style={styles.fill}
                   contentContainerStyle={styles.grow}
+                  testID="screen-scroll"
                   keyboardShouldPersistTaps="handled"
                   // iOS: a field under the keyboard is scrolled into view.
                   automaticallyAdjustKeyboardInsets
+                  contentInset={inset ? room : undefined}
+                  // The page starts under the header, and goes back there when the header grows.
+                  contentOffset={inset ? start : undefined}
                   scrollIndicatorInsets={{ top, bottom: footer ? footerHeight : bottomBar }}
                   refreshControl={
                     onRefresh ? (
@@ -104,8 +126,8 @@ export function Screen({
                         refreshing={refreshing}
                         onRefresh={onRefresh}
                         tintColor={colors.ring}
-                        // The spinner shows below the glass header, not behind it.
-                        progressViewOffset={top}
+                        // Android: the spinner shows below the glass header, not behind it.
+                        progressViewOffset={inset ? undefined : top}
                       />
                     ) : undefined
                   }

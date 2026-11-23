@@ -51,10 +51,17 @@ export function GlassScope({ children }: { children: ReactNode }) {
  * The part of the screen that glass floats over. It comes before the glass in
  * the tree, and glass is never put inside it: a pane cannot blur itself.
  */
-export function Backdrop({ children, ...rest }: ViewProps) {
+export function Backdrop({ children, style, ...rest }: ViewProps) {
   const target = useContext(BackdropContext);
+  const { colors } = useTheme();
   return (
-    <BlurTargetView ref={target ?? undefined} {...rest}>
+    // The backdrop carries the page's colour itself. Android blurs only what this view draws
+    // and fills the rest with the window's own (light) background, which made a dark header grey.
+    <BlurTargetView
+      ref={target ?? undefined}
+      {...rest}
+      style={[{ backgroundColor: colors.background }, style]}
+    >
       <BackdropContext.Provider value={null}>{children}</BackdropContext.Provider>
     </BlurTargetView>
   );
@@ -137,8 +144,13 @@ export function Glass({
   const liquid = !solid && hasLiquidGlass();
   const blurs = !solid && canBlur() && (Platform.OS !== "android" || target !== null);
   const base = night ? "23, 35, 75" : dark ? "20, 26, 43" : "255, 255, 255";
-  // Over a blur the tint is thin; without one it carries the legibility alone.
-  const veil = solid ? 1 : blurs ? (night ? 0.26 : dark ? 0.34 : 0.46) : 0.94;
+  // Over a blur the tint is thin; without one it carries the legibility alone. Android's blur
+  // lays a tint of its own over the pane that grows with the strength (white at 0.44 of it,
+  // near-black at 0.69), so there both are lower: at full strength the pane read as solid.
+  const android = Platform.OS === "android";
+  const strength = android ? (darkPane ? 45 : 50) : night ? 60 : dark ? 80 : 90;
+  const thin = android ? (night ? 0.22 : dark ? 0.28 : 0.3) : night ? 0.26 : dark ? 0.34 : 0.46;
+  const veil = solid ? 1 : blurs ? thin : 0.94;
   const rim = darkPane ? "rgba(255, 255, 255, 0.14)" : "rgba(255, 255, 255, 0.75)";
   const line = night ? "rgba(255, 255, 255, 0.1)" : colors.border;
 
@@ -168,7 +180,7 @@ export function Glass({
         <>
           {blurs ? (
             <BlurView
-              intensity={night ? 60 : dark ? 80 : 90}
+              intensity={strength}
               tint={darkPane ? "dark" : "default"}
               blurTarget={target ?? undefined}
               blurMethod="dimezisBlurViewSdk31Plus"

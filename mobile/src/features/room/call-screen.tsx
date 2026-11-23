@@ -468,7 +468,12 @@ export function CallScreen({
             <Wall ids={everyone} render={(id, size) => tile(id, false, size)} />
           )}
         </View>
-        {panelBody && sideBySide ? <View style={styles.sidePanel}>{panelBody}</View> : null}
+        {panelBody && sideBySide ? (
+          // The chat's field stays above the keyboard on a tablet too.
+          <KeyboardAvoidingView behavior="padding" style={styles.sidePanel}>
+            {panelBody}
+          </KeyboardAvoidingView>
+        ) : null}
       </View>
 
       {reactionsOpen ? (
@@ -1028,7 +1033,8 @@ function RoomButton({
       ]}
     >
       {icon}
-      <Text variant="smallStrong" style={styles.ink} numberOfLines={2}>
+      {/* It may shrink, so a long label goes onto a second line instead of past the edge. */}
+      <Text variant="smallStrong" style={[styles.ink, styles.shrink]} numberOfLines={2}>
         {label}
       </Text>
     </Pressable>
@@ -1040,6 +1046,7 @@ const styles = StyleSheet.create({
   fill: { flex: 1 },
   row: { flexDirection: "row", gap: GAP },
   ink: { color: room.ink },
+  shrink: { flexShrink: 1 },
   inkMuted: { color: room.inkMuted },
   activeInk: { color: room.activeInk },
   bar: {
@@ -1148,7 +1155,15 @@ const styles = StyleSheet.create({
     borderTopRightRadius: 28,
     overflow: "hidden",
   },
-  panel: { flex: 1, borderRadius: radius.lg, backgroundColor: room.surface, minHeight: 240 },
+  // It grows to fill a side column and a tall sheet, and is never shorter than what is in it:
+  // with `flex: 1` a sheet took the least height and cut the last tool off at the screen's edge.
+  panel: {
+    flexGrow: 1,
+    flexShrink: 1,
+    borderRadius: radius.lg,
+    backgroundColor: room.surface,
+    minHeight: 240,
+  },
   panelHead: {
     flexDirection: "row",
     alignItems: "center",

@@ -2,6 +2,7 @@ import { Pressable, StyleSheet, View } from "react-native";
 
 import { radius, space, useTheme } from "@/lib/theme";
 
+import { Animated, useArrival } from "./motion";
 import { Text } from "./text";
 
 /** One of a few named things: each row is a radio button a thumb can hit. */
@@ -22,8 +23,15 @@ export function ChoiceList<T extends string>({
   testID?: string;
 }) {
   const { colors } = useTheme();
+  // It arrives with the cards around it, not ahead of them.
+  const arrival = useArrival();
   return (
-    <View style={styles.wrap} accessibilityRole="radiogroup" accessibilityLabel={label}>
+    <Animated.View
+      entering={arrival}
+      style={styles.wrap}
+      accessibilityRole="radiogroup"
+      accessibilityLabel={label}
+    >
       <Text variant="smallStrong">{label}</Text>
       <View style={[styles.list, { borderColor: error ? colors.destructive : colors.input }]}>
         {options.map((option, index) => {
@@ -67,7 +75,7 @@ export function ChoiceList<T extends string>({
           {error}
         </Text>
       ) : null}
-    </View>
+    </Animated.View>
   );
 }
 

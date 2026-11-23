@@ -45,7 +45,7 @@ able to work from an iPad or a phone.
 | In the lesson room: the teacher's polls and breakout rooms                                                       | Built, phone and tablet (A-211)                                                                    |
 | In the lesson room: a photo or file from the phone added to the lesson and shown                                 | Built, phone and tablet (A-214)                                                                    |
 | In the lesson room: saving the whiteboard                                                                        | Built, phone and tablet (A-222)                                                                    |
-| The look: glass bars and panes, smooth motion (iPhone, iPad and Android)                                         | Built (A-224); seen in a browser only, not yet on a phone                                          |
+| The look: glass bars and panes, smooth motion (iPhone, iPad and Android)                                         | Built (A-224, A-228); seen on the iPhone, iPad and Android simulators, not yet on a real phone     |
 | Student and parent: homework answered in the app (text, photo, file, voice); files open in the app               | Built, phone and tablet (A-212)                                                                    |
 | Student and parent: tests, materials with lesson recordings, the group chat, exercises                           | Built, phone and tablet (A-213)                                                                    |
 | Student and parent: the course with flashcards, the class stream, news, results, rating a lesson                 | Built, phone and tablet (A-215)                                                                    |
@@ -127,13 +127,19 @@ mobile/
   screen: the page is the backdrop, the header and the save bar float over it, and the page
   leaves room for them at the top and bottom. The staff tabs do it for the navigation bar and
   tell the screens how much of the bottom the bar covers (`BottomBarSpace`). Only things that
-  float are glass; cards, rows and the tablet's rail are solid.
+  float are glass; cards, rows and the tablet's rail are solid. Learned on the simulators
+  (A-228): `Backdrop` paints the page's colour itself, because Android blurs only what that view
+  draws and fills the rest with the window's light background (a dark header came out grey);
+  Android's blur brings a tint that grows with its strength, so the strength and the pane's own
+  veil are lower there; on an iPhone the room under the header is the scroll view's `contentInset`,
+  not padding, so the system's refresh spinner shows below the header.
 - **Motion (A-224).** `src/components/motion.tsx`, on `react-native-reanimated` (it was already
   in every build, the router brings it). `Press` is anything pressable: it sinks under the
   finger and springs back. `useArrival` gives cards the cascade in which they appear (the first
   two dozen; a long list is simply there). `SPRING` and `SPRING_FIRM` are the app's two springs.
-  The navigation's highlight slides (`nav.tsx`), a chosen place fades up (`tab-fade.tsx`), the
-  segmented choice's fill slides (`surface.tsx`). The library follows the device's "Reduce
+  The navigation's highlight slides (`nav.tsx`), a chosen place fades up (`tab-fade.tsx`: the
+  start of that motion is set when the place is left, never when it comes back, or it blinks;
+  and it starts pale, not empty), the segmented choice's fill slides (`surface.tsx`). The library follows the device's "Reduce
   motion" by itself. In a browser an arrival must use the library's own animation unchanged:
   with values of its own, the library leaves the element pinned out of the page's flow.
   Tests run with the library's resolver (`jest.resolver` in `package.json`).
@@ -251,7 +257,9 @@ mobile/
   shows a file that sits behind the session: a browser's picture or player cannot send the session,
   so the file is fetched first; a phone sends the session with its own request.
 - **A plain-http test build.** With `EXPO_PUBLIC_API_URL` starting with `http://` the Android build
-  allows plain http (for a server on the desk); every other build refuses it.
+  allows plain http (for a server on the desk); every other build refuses it. The address must be
+  set when `expo prebuild` runs, not only for the build after it: without it the manifest says
+  `usesCleartextTraffic="false"` and the app shows "No connection to Kampus".
 - **Shared code and its packages.** A file under `../src/lib` that the app imports may use only
   packages `mobile/` has installed too (today: `zod`). GitHub installs only `mobile/`'s packages for
   the app's checks, so anything else fails there first.
