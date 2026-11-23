@@ -80,10 +80,10 @@ public final class KampusBroadcastModule: Module {
     for name in [startedName, stoppedName] {
       CFNotificationCenterAddObserver(
         center, me,
-        { _, observer, name, _, _ in
-          guard let observer = observer, let name = name else { return }
+        { _, observer, posted, _, _ in
+          guard let observer = observer, let posted = posted else { return }
           let module = Unmanaged<KampusBroadcastModule>.fromOpaque(observer).takeUnretainedValue()
-          module.heard(name.rawValue as String)
+          module.heard(posted.rawValue as String)
         },
         name as CFString, nil, .deliverImmediately)
     }
