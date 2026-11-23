@@ -128,7 +128,8 @@ mobile/
   notifications. `src/features/room/ios-broadcast.ts` waits for "started" (or reads a closed sheet
   from the app coming back to the front) and only then asks the library for the screen's track.
   `scripts/check-ios-project.mjs` checks the generated project on any computer; GitHub runs it on
-  every change. The iPhone simulator cannot capture a screen, so the share itself can only be
+  every change. The app's workflow can also be started by hand with **ios_extension** ticked: a Mac
+  runner then compiles only the extension, in a few minutes. The iPhone simulator cannot capture a screen, so the share itself can only be
   tried on a real iPhone or iPad, which needs Apple's account (below).
 - **Whiteboard and shown files (A-209, A-210).** `board.tsx` draws the engine's strokes with
   `react-native-svg` and sends new ones; `material-stage.tsx` draws a shown file by its kind and
