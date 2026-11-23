@@ -800,3 +800,106 @@ export interface GroupGradebook {
     level: string | null;
   }>;
 }
+
+/* ----- A group's course plan, coins and tests on the teacher's side ----- */
+
+export type TopicReleaseMode = "lesson" | "now" | "date";
+
+export interface GroupPlanTopic {
+  id: string;
+  sortOrder: number;
+  title: string;
+  note: string | null;
+  status: "done" | "next" | "planned";
+  /** The lesson that covered it, when one did. */
+  lessonId: string | null;
+  lessonDate: string | null;
+  /** How many content blocks the topic carries. */
+  blocks: number;
+  /** When this group's students get the content. */
+  release: { mode: TopicReleaseMode; date: string | null };
+  /** Students of the group can open the content today. */
+  open: boolean;
+}
+
+export interface GroupPlan {
+  courseId: string;
+  courseName: string;
+  total: number;
+  done: number;
+  topics: GroupPlanTopic[];
+}
+
+export interface GroupProgress {
+  courseName: string;
+  students: Array<{
+    membershipId: string;
+    studentId: string;
+    fullName: string;
+    status: MembershipStatus;
+    percent: number | null;
+    topicsComplete: number;
+    topicsTotal: number;
+    exercisesDone: number;
+    exercisesTotal: number;
+    scorePercent: number | null;
+    attendancePercent: number | null;
+    homeworkDone: number;
+    homeworkSet: number;
+  }>;
+}
+
+export interface GroupCoinRow {
+  rank: number;
+  studentId: string;
+  membershipId: string;
+  fullName: string;
+  /** The student's balance across all their groups. */
+  balance: number;
+  /** Coins earned in this group. */
+  groupCoins: number;
+  lastComment: string | null;
+}
+
+export interface CoinReason {
+  id: string;
+  name: string;
+  maxCoins: number;
+  isActive: boolean;
+}
+
+export type TestStatus = "DRAFT" | "ACTIVE" | "CLOSED";
+
+export interface GroupTest {
+  id: string;
+  name: string;
+  subject: string;
+  timeLimitMinutes: number | null;
+  passPercent: number;
+  deadline: string | null;
+  status: TestStatus;
+  questionCount: number;
+  totalPoints: number;
+  attemptCount: number;
+  /** Average percent over all attempts; null without attempts. */
+  accuracy: number | null;
+}
+
+export interface TestAttempt {
+  id: string;
+  studentId: string;
+  studentName: string;
+  groupName: string | null;
+  score: number;
+  maxScore: number;
+  percent: number;
+  passed: boolean;
+  durationSeconds: number | null;
+  submittedAt: string;
+}
+
+export interface TestDetail extends GroupTest {
+  attempts: TestAttempt[];
+  /** Open members of the groups the test was given to. */
+  candidates: Array<{ studentId: string; fullName: string; groupId: string; groupName: string }>;
+}

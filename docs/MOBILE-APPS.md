@@ -10,9 +10,9 @@ answered in the app, files opened in the app), A-213 (a group's tests, materials
 exercises in the app), A-214 (the teacher's side of a group: answers with their files and a
 spoken reply, the group chat, materials added from the phone), A-215 (the student's course with
 flashcards, the class stream, news, results and badges, rating a lesson), A-216 (the student's
-schedule with booking, time zone, paying online, Telegram, invite code and certificates) and A-217
+schedule with booking, time zone, paying online, Telegram, invite code and certificates), A-217
 (the teacher's homework set and checked from the phone, the class stream, the gradebook and the
-notes).
+notes) and A-218 (the teacher's course plan, coins and tests of a group).
 
 Why React Native and not the site in a wrapper: kai's choice on 2026-11-23 ("rewrite it in react
 native"), with two requirements said the same day: one code base in the end, and teachers must be
@@ -26,7 +26,7 @@ able to work from an iPad or a phone.
 | Teacher: today, a lesson (attendance, grades, topic, homework, lesson room), groups, checking                    | Built, phone and tablet                                                                            |
 | Teacher: an answer's file and spoken answer in the app, a spoken reply; group chat; group materials              | Built, phone and tablet (A-214)                                                                    |
 | Teacher: a group's homework (set with a file, checked with rubric points), class stream, gradebook, notes        | Built, phone and tablet (A-217)                                                                    |
-| Teacher: a group's course plan, tests and coins                                                                  | Next                                                                                               |
+| Teacher: a group's course plan (when students get a topic), coins given, test results                            | Built, phone and tablet (A-218)                                                                    |
 | Student and parent: home, a group's page (lessons, marks, grades, payments), password                            | Built, phone and tablet                                                                            |
 | Pages the app does not have (staff)                                                                              | Open on the site in the phone's browser, already signed in (A-204); a student's side has none left |
 | Android app file                                                                                                 | Built by GitHub on every change; starts on an emulated phone                                       |
@@ -168,6 +168,11 @@ mobile/
   of a rubric. `features/shared/stream-post.tsx` draws a post for the student's and the teacher's
   stream; `group-stream-screen.tsx` adds the teacher's tools. A lesson's homework is always sent
   whole (`saveLessonHomework`): the server replaces what it has.
+- **A teacher's course plan, coins and tests (A-218).** The calls are in `src/api/staff-group.ts`
+  too. `group-plan-screen.tsx` reads `/groups/:id/syllabus` and `/groups/:id/progress` and saves
+  only a topic's release (`PUT /groups/:id/syllabus/:topicId/release`); `group-coins-screen.tsx`
+  gives coins through `POST /coins/give`; `group-tests-screen.tsx` only reads, and asks for a
+  test's results when its card is opened.
 - **The teacher's side of a group (A-214).** `src/api/group-pages.ts` holds the calls (behind the
   session): the group's chat and materials, storing a file (`uploadDocument`) and adding it
   (`addGroupFile`). `src/features/shared/` holds what the student's and the teacher's side draw the

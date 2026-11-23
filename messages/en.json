@@ -6395,6 +6395,14 @@
       "assignmentHint": "A project or essay for the whole group, not tied to one lesson.",
       "answers": "Answers",
       "hideAnswers": "Hide answers"
+    },
+    "coins": {
+      "given": "{count, plural, one {# coin} other {# coins}} given to {name}."
+    },
+    "tests": {
+      "results": "Results",
+      "hideResults": "Hide results",
+      "madeOnSite": "Tests are written and given to a group on the site, under Settings, Tests."
     }
   }
 }

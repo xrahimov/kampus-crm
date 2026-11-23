@@ -3,8 +3,11 @@ import {
   ChevronLeft,
   ChevronRight,
   ClipboardList,
+  Coins,
+  FileQuestion,
   FolderOpen,
   GraduationCap,
+  ListChecks,
   Megaphone,
   MessageSquare,
   StickyNote,
@@ -201,6 +204,29 @@ function GroupPages({ id }: { id: string }) {
       label: t("groups.detail.tabs.gradebook"),
       Icon: GraduationCap,
       pathname: "/staff/gradebook/[id]" as const,
+    },
+    {
+      key: "plan",
+      label: t("groups.detail.tabs.syllabus"),
+      Icon: ListChecks,
+      pathname: "/staff/plan/[id]" as const,
+    },
+    // Tests show to someone who may see them; a teacher may by default.
+    ...(can(me, "tests.view")
+      ? [
+          {
+            key: "tests",
+            label: t("groups.detail.tabs.tests"),
+            Icon: FileQuestion,
+            pathname: "/staff/tests/[id]" as const,
+          },
+        ]
+      : []),
+    {
+      key: "coins",
+      label: t("groups.detail.tabs.coins"),
+      Icon: Coins,
+      pathname: "/staff/coins/[id]" as const,
     },
     {
       key: "notes",

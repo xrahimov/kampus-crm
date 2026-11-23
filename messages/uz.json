@@ -6395,6 +6395,14 @@
       "assignmentHint": "Butun guruh uchun loyiha yoki insho, bitta darsga bog'lanmagan.",
       "answers": "Javoblar",
       "hideAnswers": "Javoblarni yashirish"
+    },
+    "coins": {
+      "given": "{name}ga {count} ta coin berildi."
+    },
+    "tests": {
+      "results": "Natijalar",
+      "hideResults": "Natijalarni yashirish",
+      "madeOnSite": "Testlar saytda tuziladi va guruhga beriladi: Sozlamalar, Testlar."
     }
   }
 }
