@@ -28,8 +28,10 @@ A-213 for a group's tests, materials, chat and exercises in the app, A-214 for t
 side of a group: answers with their files and a spoken reply, the group chat and materials added
 from the phone, A-215 for the student's course with flashcards, the class stream, news, results
 and rating a lesson, A-216 for the student's schedule with booking, time zone, paying online,
-Telegram, invite code and certificates, and A-217 for the teacher's homework set and checked from
-the phone, the class stream, the gradebook and the notes).
+Telegram, invite code and certificates, A-217 for the teacher's homework set and checked from
+the phone, the class stream, the gradebook and the notes, A-218 for the teacher's course plan,
+coins and tests of a group, and A-219 for a group's exams, knowledge by topic, comments on students
+and history).
 
 [docs/DEMO-GUIDE.md](docs/DEMO-GUIDE.md) is a script for showing the whole app to a centre's owner or
 its teachers, stop by stop, with the manual's own screenshots.

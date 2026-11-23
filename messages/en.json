@@ -1716,7 +1716,16 @@
         "supportTeachers": "Support teachers changed",
         "dayOff": "Day off given",
         "note": "Note added",
-        "dayOffRemove": "Day off undone"
+        "dayOffRemove": "Day off undone",
+        "release": "When students get a topic's content was changed",
+        "post": "Stream post written",
+        "streamUpdate": "Stream post changed",
+        "delete": "Stream post deleted",
+        "studentBook": "A student booked a lesson",
+        "studentMove": "A student moved a lesson",
+        "studentCancel": "A student cancelled a lesson",
+        "studentRebook": "A student booked a lesson again",
+        "offer": "A free seat was offered to the waiting list"
       }
     },
     "homework": {
@@ -6395,6 +6404,27 @@
       "assignmentHint": "A project or essay for the whole group, not tied to one lesson.",
       "answers": "Answers",
       "hideAnswers": "Hide answers"
+    },
+    "coins": {
+      "given": "{count, plural, one {# coin} other {# coins}} given to {name}."
+    },
+    "tests": {
+      "results": "Results",
+      "hideResults": "Hide results",
+      "madeOnSite": "Tests are written and given to a group on the site, under Settings, Tests."
+    },
+    "exams": {
+      "madeOnSite": "Exams are set up and graded on the site, under Exams."
+    },
+    "history": {
+      "latest": "The latest {count} changes are shown."
+    },
+    "comments": {
+      "everyone": "Everyone"
+    },
+    "pages": {
+      "more": "More pages",
+      "fewer": "Fewer pages"
     }
   }
 }

@@ -4,18 +4,32 @@ import { api, type PickedFile } from "@/lib/api";
 
 import { uploadDocument } from "./group-pages";
 import type {
+  CoinReason,
+  ExamResults,
+  GroupCoinRow,
+  GroupExam,
   GroupGradebook,
+  GroupHistoryRow,
   GroupHomework,
   GroupHomeworkTask,
+  GroupKnowledge,
   GroupNote,
+  GroupPlan,
+  GroupProgress,
+  GroupTest,
+  Page,
   RubricCriterion,
   StreamPost,
+  StudentComment,
+  TestDetail,
+  TopicReleaseMode,
 } from "./types";
 
 /*
- * The rest of a group's pages on the teacher's side (A-217): homework, the
- * class stream, the gradebook and the notes. The same calls the site's group
- * page makes, behind the session.
+ * The rest of a group's pages on the teacher's side: homework, the class
+ * stream, the gradebook and the notes (A-217), the course plan, coins and
+ * tests (A-218), exams, knowledge, comments and history (A-219). The same calls the site's group page makes, behind the
+ * session.
  */
 
 export const staffGroupKeys = {
@@ -23,6 +37,18 @@ export const staffGroupKeys = {
   stream: (groupId: string) => ["group", groupId, "stream"] as const,
   gradebook: (groupId: string) => ["group", groupId, "gradebook"] as const,
   notes: (groupId: string) => ["group", groupId, "notes"] as const,
+  plan: (groupId: string) => ["group", groupId, "plan"] as const,
+  progress: (groupId: string) => ["group", groupId, "progress"] as const,
+  coins: (groupId: string) => ["group", groupId, "coins"] as const,
+  coinReasons: ["coin-reasons"] as const,
+  tests: (groupId: string) => ["group", groupId, "tests"] as const,
+  exams: (groupId: string) => ["group", groupId, "exams"] as const,
+  examResults: (examId: string) => ["exam", examId, "results"] as const,
+  knowledge: (groupId: string, subject: string | null, testId: string | null) =>
+    ["group", groupId, "knowledge", subject, testId] as const,
+  comments: (groupId: string) => ["group", groupId, "comments"] as const,
+  history: (groupId: string) => ["group", groupId, "history"] as const,
+  test: (testId: string) => ["test", testId] as const,
 };
 
 /* ----- homework ----- */
@@ -153,4 +179,157 @@ export function useGroupNotes(groupId: string) {
 
 export function addGroupNote(groupId: string, text: string): Promise<GroupNote> {
   return api<GroupNote>(`/groups/${groupId}/notes`, { method: "POST", body: { text } });
+}
+
+/* ----- the course plan ----- */
+
+export function useGroupPlan(groupId: string) {
+  return useQuery({
+    queryKey: staffGroupKeys.plan(groupId),
+    queryFn: ({ signal }) => api<GroupPlan>(`/groups/${groupId}/syllabus`, { signal }),
+  });
+}
+
+/** Each student's way through the course. */
+export function useGroupProgress(groupId: string) {
+  return useQuery({
+    queryKey: staffGroupKeys.progress(groupId),
+    queryFn: ({ signal }) => api<GroupProgress>(`/groups/${groupId}/progress`, { signal }),
+  });
+}
+
+/** When this group's students may open a topic's content. */
+export function setTopicRelease(
+  groupId: string,
+  topicId: string,
+  release: { mode: TopicReleaseMode; date: string | null },
+): Promise<{ mode: TopicReleaseMode; date: string | null }> {
+  return api(`/groups/${groupId}/syllabus/${topicId}/release`, { method: "PUT", body: release });
+}
+
+/* ----- coins ----- */
+
+export function useGroupCoins(groupId: string) {
+  return useQuery({
+    queryKey: staffGroupKeys.coins(groupId),
+    queryFn: ({ signal }) => api<GroupCoinRow[]>(`/groups/${groupId}/coins`, { signal }),
+  });
+}
+
+/** The reasons coins can be given for; asked only for someone who may give. */
+export function useCoinReasons(enabled: boolean) {
+  return useQuery({
+    queryKey: staffGroupKeys.coinReasons,
+    queryFn: ({ signal }) => api<CoinReason[]>("/coin-reasons?active=1", { signal }),
+    enabled,
+  });
+}
+
+export function giveCoins(input: {
+  studentId: string;
+  groupId: string;
+  reasonId: string;
+  amount: number;
+  comment: string | null;
+}): Promise<unknown> {
+  return api<unknown>("/coins/give", { method: "POST", body: input });
+}
+
+/* ----- tests ----- */
+
+export function useGroupTests(groupId: string, enabled = true) {
+  return useQuery({
+    queryKey: staffGroupKeys.tests(groupId),
+    queryFn: ({ signal }) => api<GroupTest[]>(`/groups/${groupId}/tests`, { signal }),
+    enabled,
+  });
+}
+
+/** One test with everyone's submissions; asked when its results are opened. */
+export function useTestDetail(testId: string, enabled: boolean) {
+  return useQuery({
+    queryKey: staffGroupKeys.test(testId),
+    queryFn: ({ signal }) => api<TestDetail>(`/tests/${testId}`, { signal }),
+    enabled,
+  });
+}
+
+/* ----- exams ----- */
+
+/** The group's exams and the mock exams it takes part in. */
+export function useGroupExams(groupId: string, enabled = true) {
+  return useQuery({
+    queryKey: staffGroupKeys.exams(groupId),
+    queryFn: async ({ signal }) =>
+      (await api<{ items: GroupExam[] }>(`/groups/${groupId}/exams`, { signal })).items,
+    enabled,
+    // A centre may hide the exam schedule from teachers; asking again changes nothing.
+    retry: false,
+  });
+}
+
+/** One exam's grading sheet; asked when its results are opened. */
+export function useExamResults(examId: string, enabled: boolean) {
+  return useQuery({
+    queryKey: staffGroupKeys.examResults(examId),
+    queryFn: ({ signal }) => api<ExamResults>(`/exams/${examId}/results`, { signal }),
+    enabled,
+  });
+}
+
+/* ----- knowledge by topic ----- */
+
+export function useGroupKnowledge(groupId: string, subject: string | null, testId: string | null) {
+  return useQuery({
+    queryKey: staffGroupKeys.knowledge(groupId, subject, testId),
+    queryFn: ({ signal }) => {
+      const query = [
+        subject ? `subject=${encodeURIComponent(subject)}` : null,
+        testId ? `testId=${encodeURIComponent(testId)}` : null,
+      ]
+        .filter(Boolean)
+        .join("&");
+      return api<GroupKnowledge>(`/groups/${groupId}/knowledge${query ? `?${query}` : ""}`, {
+        signal,
+      });
+    },
+    // The table stays while another choice loads.
+    placeholderData: (old) => old,
+  });
+}
+
+/* ----- comments on students ----- */
+
+export function useGroupComments(groupId: string) {
+  return useQuery({
+    queryKey: staffGroupKeys.comments(groupId),
+    queryFn: ({ signal }) =>
+      api<StudentComment[]>(`/groups/${groupId}/student-comments`, { signal }),
+  });
+}
+
+export function addStudentComment(
+  groupId: string,
+  studentId: string,
+  text: string,
+): Promise<StudentComment> {
+  return api<StudentComment>(`/groups/${groupId}/student-comments`, {
+    method: "POST",
+    body: { studentId, text },
+  });
+}
+
+/* ----- history ----- */
+
+/** How many of the latest changes the app asks for (the most one page holds). */
+export const HISTORY_PAGE = 100;
+
+export function useGroupHistory(groupId: string) {
+  return useQuery({
+    queryKey: staffGroupKeys.history(groupId),
+    queryFn: ({ signal }) =>
+      api<Page<GroupHistoryRow>>(`/groups/${groupId}/history?pageSize=${HISTORY_PAGE}`, {
+        signal,
+      }),
+  });
 }

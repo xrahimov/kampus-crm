@@ -800,3 +800,185 @@ export interface GroupGradebook {
     level: string | null;
   }>;
 }
+
+/* ----- A group's course plan, coins and tests on the teacher's side ----- */
+
+export type TopicReleaseMode = "lesson" | "now" | "date";
+
+export interface GroupPlanTopic {
+  id: string;
+  sortOrder: number;
+  title: string;
+  note: string | null;
+  status: "done" | "next" | "planned";
+  /** The lesson that covered it, when one did. */
+  lessonId: string | null;
+  lessonDate: string | null;
+  /** How many content blocks the topic carries. */
+  blocks: number;
+  /** When this group's students get the content. */
+  release: { mode: TopicReleaseMode; date: string | null };
+  /** Students of the group can open the content today. */
+  open: boolean;
+}
+
+export interface GroupPlan {
+  courseId: string;
+  courseName: string;
+  total: number;
+  done: number;
+  topics: GroupPlanTopic[];
+}
+
+export interface GroupProgress {
+  courseName: string;
+  students: Array<{
+    membershipId: string;
+    studentId: string;
+    fullName: string;
+    status: MembershipStatus;
+    percent: number | null;
+    topicsComplete: number;
+    topicsTotal: number;
+    exercisesDone: number;
+    exercisesTotal: number;
+    scorePercent: number | null;
+    attendancePercent: number | null;
+    homeworkDone: number;
+    homeworkSet: number;
+  }>;
+}
+
+export interface GroupCoinRow {
+  rank: number;
+  studentId: string;
+  membershipId: string;
+  fullName: string;
+  /** The student's balance across all their groups. */
+  balance: number;
+  /** Coins earned in this group. */
+  groupCoins: number;
+  lastComment: string | null;
+}
+
+export interface CoinReason {
+  id: string;
+  name: string;
+  maxCoins: number;
+  isActive: boolean;
+}
+
+export type TestStatus = "DRAFT" | "ACTIVE" | "CLOSED";
+
+export interface GroupTest {
+  id: string;
+  name: string;
+  subject: string;
+  timeLimitMinutes: number | null;
+  passPercent: number;
+  deadline: string | null;
+  status: TestStatus;
+  questionCount: number;
+  totalPoints: number;
+  attemptCount: number;
+  /** Average percent over all attempts; null without attempts. */
+  accuracy: number | null;
+}
+
+export interface TestAttempt {
+  id: string;
+  studentId: string;
+  studentName: string;
+  groupName: string | null;
+  score: number;
+  maxScore: number;
+  percent: number;
+  passed: boolean;
+  durationSeconds: number | null;
+  submittedAt: string;
+}
+
+export interface TestDetail extends GroupTest {
+  attempts: TestAttempt[];
+  /** Open members of the groups the test was given to. */
+  candidates: Array<{ studentId: string; fullName: string; groupId: string; groupName: string }>;
+}
+
+/* ----- A group's exams, knowledge, comments and history (A-219) ----- */
+
+export type ExamStatus = "NOT_STARTED" | "FINISHED";
+
+export interface GroupExam {
+  id: string;
+  type: "GROUP" | "MOCK";
+  name: string;
+  isRetake: boolean;
+  date: string;
+  startTime: string;
+  endTime: string;
+  examinerName: string | null;
+  roomName: string | null;
+  passScore: number;
+  maxScore: number;
+  status: ExamStatus;
+  studentCount: number;
+  gradedCount: number;
+}
+
+export interface ExamResultRow {
+  studentId: string;
+  fullName: string;
+  groupName: string | null;
+  score: number | null;
+  isPresent: boolean;
+  comment: string | null;
+  /** The grading level the score falls in; null on a custom scale. */
+  level: string | null;
+  passed: boolean | null;
+}
+
+export interface ExamResults {
+  exam: GroupExam;
+  rows: ExamResultRow[];
+}
+
+export interface TopicStat {
+  subject: string;
+  topic: string;
+  questions: number;
+  answered: number;
+  correct: number;
+  /** Correct out of answered, in percent; null with no answers. */
+  accuracy: number | null;
+}
+
+export interface GroupKnowledge {
+  topics: TopicStat[];
+  tests: Array<{ id: string; name: string; subject: string }>;
+  subjects: string[];
+  attempts: number;
+  students: number;
+}
+
+export interface StudentComment {
+  id: string;
+  studentId: string;
+  studentName: string;
+  groupId: string | null;
+  groupName: string | null;
+  text: string;
+  authorName: string | null;
+  createdAt: string;
+}
+
+export interface GroupHistoryRow {
+  id: string;
+  /** "group.update", "group.finish" and the like. */
+  action: string;
+  /** The field that changed; empty for a change without one. */
+  field: string;
+  before: unknown;
+  after: unknown;
+  actorName: string | null;
+  at: string;
+}

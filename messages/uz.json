@@ -1716,7 +1716,16 @@
         "supportTeachers": "Support o'qituvchilar o'zgartirildi",
         "dayOff": "Dam berildi",
         "note": "Eslatma qo'shildi",
-        "dayOffRemove": "Dam olish kuni bekor qilindi"
+        "dayOffRemove": "Dam olish kuni bekor qilindi",
+        "release": "O'quvchilar mavzu materiallarini qachon olishi o'zgartirildi",
+        "post": "Lentaga yozuv qo'shildi",
+        "streamUpdate": "Lentadagi yozuv o'zgartirildi",
+        "delete": "Lentadagi yozuv o'chirildi",
+        "studentBook": "O'quvchi darsga yozildi",
+        "studentMove": "O'quvchi darsni ko'chirdi",
+        "studentCancel": "O'quvchi darsni bekor qildi",
+        "studentRebook": "O'quvchi darsga qayta yozildi",
+        "offer": "Bo'sh joy kutish ro'yxatiga taklif qilindi"
       }
     },
     "homework": {
@@ -6395,6 +6404,27 @@
       "assignmentHint": "Butun guruh uchun loyiha yoki insho, bitta darsga bog'lanmagan.",
       "answers": "Javoblar",
       "hideAnswers": "Javoblarni yashirish"
+    },
+    "coins": {
+      "given": "{name}ga {count} ta coin berildi."
+    },
+    "tests": {
+      "results": "Natijalar",
+      "hideResults": "Natijalarni yashirish",
+      "madeOnSite": "Testlar saytda tuziladi va guruhga beriladi: Sozlamalar, Testlar."
+    },
+    "exams": {
+      "madeOnSite": "Imtihonlar saytda, «Imtihonlar» bo'limida yaratiladi va baholanadi."
+    },
+    "history": {
+      "latest": "Oxirgi {count} ta o'zgarish ko'rsatilgan."
+    },
+    "comments": {
+      "everyone": "Hammasi"
+    },
+    "pages": {
+      "more": "Yana sahifalar",
+      "fewer": "Kamroq sahifa"
     }
   }
 }
