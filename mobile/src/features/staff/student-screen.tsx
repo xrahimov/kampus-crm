@@ -33,15 +33,22 @@ import {
   Screen,
 } from "@/components/surface";
 import { Text } from "@/components/text";
+import { useArchiveStudent } from "@/api/office-students";
+import { Sheet } from "@/components/sheet";
+import { PaymentSheet } from "@/features/office/payment-sheet";
+import { StudentFormSheet } from "@/features/office/student-form";
+import { StudentPayments } from "@/features/office/student-payments";
 import { PendingScreen } from "@/features/shared/pending-screen";
 import { WordChip } from "@/features/student/answer-parts";
 import { dayAsDate, weekdayAsDate } from "@/lib/days";
 import { errorText, useDate, useMoney, useTranslations } from "@/lib/i18n";
 import { useLayout } from "@/lib/layout";
+import { can, useMe } from "@/lib/session";
 import { space, useTheme } from "@/lib/theme";
 
 const SECTIONS = ["groups", "progress", "testResults", "comments"] as const;
-type Section = (typeof SECTIONS)[number];
+/** The office also has the student's payments (A-231). */
+type Section = (typeof SECTIONS)[number] | "payments";
 
 /**
  * One student on the teacher's side, in the app (A-220): who they are and how
@@ -53,6 +60,8 @@ export function StudentScreen() {
   const t = useTranslations();
   const { wide } = useLayout();
   const query = useStudent(id);
+  const me = useMe();
+  const office = me.view.current === "FULL";
   const [section, setSection] = useState<Section>("groups");
 
   const header = <Header back title={query.data?.fullName ?? t("students.title")} />;
@@ -76,11 +85,20 @@ export function StudentScreen() {
             testID={`student-tab-${key}`}
           />
         ))}
+        {office ? (
+          <WordChip
+            label={t("payments.log.title")}
+            chosen={section === "payments"}
+            onPress={() => setSection("payments")}
+            testID="student-tab-payments"
+          />
+        ) : null}
       </ScrollView>
       {section === "groups" ? <Groups student={student} /> : null}
       {section === "progress" ? <Progress id={id} /> : null}
       {section === "testResults" ? <Tests id={id} /> : null}
       {section === "comments" ? <Comments id={id} /> : null}
+      {section === "payments" ? <StudentPayments id={id} /> : null}
     </View>
   );
 
@@ -136,6 +154,13 @@ function PhoneLine({ name, phone, testID }: { name: string; phone: string; testI
 
 function Person({ student }: { student: StudentDetail }) {
   const t = useTranslations();
+  const me = useMe();
+  const [paying, setPaying] = useState(false);
+  const [editing, setEditing] = useState(false);
+  const [archiving, setArchiving] = useState(false);
+  const archive = useArchiveStudent(student.id);
+  const mayEdit = can(me, "students.update");
+  const mayArchive = can(me, "students.delete") && !student.isArchived;
   const tm = useTranslations("mobile.studentsPage");
   const formatDate = useDate();
   const money = useMoney();
@@ -197,7 +222,81 @@ function Person({ student }: { student: StudentDetail }) {
           </Text>
         ) : null}
         {student.note ? <Text>{student.note}</Text> : null}
+        {can(me, "payments.create") && !student.isArchived ? (
+          <Button
+            variant="saffron"
+            label={t("students.detail.pay")}
+            onPress={() => setPaying(true)}
+            testID="student-pay"
+          />
+        ) : null}
       </Card>
+      {mayEdit || mayArchive ? (
+        <View style={styles.officeActions}>
+          {mayEdit ? (
+            <Button
+              compact
+              variant="outline"
+              label={t("students.actions.edit")}
+              onPress={() => setEditing(true)}
+              testID="student-edit"
+            />
+          ) : null}
+          {mayEdit && student.isArchived ? (
+            <Button
+              compact
+              variant="outline"
+              label={t("students.actions.restore")}
+              loading={archive.isPending}
+              onPress={() => archive.mutate(false)}
+              testID="student-restore"
+            />
+          ) : null}
+          {mayArchive ? (
+            <Button
+              compact
+              variant="destructive"
+              label={t("students.actions.archive")}
+              onPress={() => setArchiving(true)}
+              testID="student-archive"
+            />
+          ) : null}
+        </View>
+      ) : null}
+      {archive.error ? (
+        <Notice tone="destructive" testID="student-archive-problem">
+          {errorText(t, archive.error)}
+        </Notice>
+      ) : null}
+      <PaymentSheet open={paying} onClose={() => setPaying(false)} student={student} />
+      <StudentFormSheet open={editing} onClose={() => setEditing(false)} student={student} />
+      <Sheet
+        open={archiving}
+        onClose={() => setArchiving(false)}
+        title={t("students.archiveTitle")}
+        testID="archive-sheet"
+        footer={
+          <View style={styles.officeActions}>
+            <Button
+              variant="outline"
+              label={t("common.cancel")}
+              onPress={() => setArchiving(false)}
+              style={styles.fill}
+              testID="archive-cancel"
+            />
+            <Button
+              variant="destructive"
+              label={t("students.actions.archive")}
+              loading={archive.isPending}
+              onPress={() => archive.mutate(true, { onSettled: () => setArchiving(false) })}
+              style={styles.fill}
+              testID="archive-confirm"
+            />
+          </View>
+        }
+      >
+        <Text>{t("students.archiveText", { name: student.fullName })}</Text>
+      </Sheet>
       <Card testID="student-parents">
         <Text variant="heading">{t("students.parents.title")}</Text>
         {student.parents.length === 0 ? (
@@ -584,6 +683,7 @@ function Comments({ id }: { id: string }) {
 }
 
 const styles = StyleSheet.create({
+  officeActions: { flexDirection: "row", flexWrap: "wrap", gap: space[2] },
   fill: { flex: 1 },
   column: { gap: space[4] },
   split: { flexDirection: "row", alignItems: "flex-start", gap: space[6] },

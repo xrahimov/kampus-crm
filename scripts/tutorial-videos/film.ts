@@ -76,8 +76,12 @@ export async function launch(
   format: Format = WIDE,
 ): Promise<Browser> {
   const executablePath = process.env.PLAYWRIGHT_CHROMIUM_PATH;
+  // On macOS a Chromium window cannot be narrower than 500 px, even headless: the phone's page
+  // came out 500 wide and ffmpeg refused the frames. The headless shell has no window and no
+  // such floor, so a narrow view is recorded with it.
+  const channel = view.width < 500 ? "chromium-headless-shell" : "chromium";
   return chromium.launch({
-    ...(executablePath ? { executablePath } : { channel: "chromium" }),
+    ...(executablePath ? { executablePath } : { channel }),
     args: [
       `--force-device-scale-factor=${format.scale}`,
       // The window is taller than the page by the browser's own bars; `fit` corrects the rest.

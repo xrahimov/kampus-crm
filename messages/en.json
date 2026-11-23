@@ -6447,7 +6447,13 @@
     "office": {
       "searchTitle": "Search",
       "searchLabel": "Name or phone number",
-      "searchHint": "Type at least two letters of a name or digits of a phone number. Students, groups and leads you may see are searched."
+      "searchHint": "Type at least two letters of a name or digits of a phone number. Students, groups and leads you may see are searched.",
+      "datePlaceholder": "dd.mm.yyyy",
+      "filters": "Filters",
+      "filtersSet": "Filters: {count}",
+      "clearFilters": "Clear",
+      "showResults": "Show",
+      "archivedOnly": "Archived students only"
     }
   }
 }

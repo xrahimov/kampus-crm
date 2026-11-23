@@ -1,0 +1,195 @@
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+
+import { api } from "@/lib/api";
+
+import { officeKeys } from "./office";
+import type { Page, StudentDetail } from "./types";
+
+/*
+ * Students on the office's side, in the app (A-231): what the forms choose
+ * from, a new student, a payment taken, and a student's payments. The same
+ * calls the site's Students pages and its Payment dialog make.
+ */
+
+export interface StudentOptions {
+  schools: Array<{ id: string; name: string }>;
+  sources: Array<{ id: string; name: string }>;
+  courses: Array<{ id: string; name: string; branchId: string }>;
+  groups: Array<{
+    id: string;
+    name: string;
+    branchId: string;
+    courseId: string;
+    teacherId: string | null;
+    teacherName: string | null;
+    time: string | null;
+    status: "ACTIVE" | "ARCHIVED" | "TRIAL" | "FROZEN";
+  }>;
+  teachers: Array<{ id: string; fullName: string }>;
+  paymentMethods: Array<{ id: string; name: string }>;
+}
+
+export interface PaymentOptions {
+  methods: Array<{ id: string; name: string }>;
+  printReceiptAfterPayment: boolean;
+  refundsEnabled: boolean;
+}
+
+/** What a payment into one group starts from: the balance, the price, the months it may be for. */
+export interface PaymentInfo {
+  membershipId: string;
+  balance: number;
+  monthlyPrice: number;
+  /** "YYYY-MM-01". */
+  suggestedMonth: string;
+  suggestedAmount: number;
+  nextPaymentDate: string | null;
+  months: string[];
+  groupName: string;
+  studentName: string;
+}
+
+export interface Payment {
+  id: string;
+  studentId: string;
+  studentName: string;
+  membershipId: string;
+  groupId: string;
+  groupName: string;
+  methodName: string | null;
+  amount: number;
+  bonus: number;
+  refunded: number;
+  effectiveMonth: string;
+  paidAt: string;
+  comment: string | null;
+  receivedByName: string | null;
+  createdAt: string;
+}
+
+export interface PaymentInput {
+  membershipId: string;
+  paymentMethodId: string;
+  amount: number;
+  effectiveMonth: string;
+  paidAt: string;
+  comment: string | null;
+}
+
+export interface NewStudentInput {
+  branchId: string;
+  fullName: string;
+  phone: string | null;
+  birthDate: string | null;
+  gender: "MALE" | "FEMALE";
+  note: string | null;
+  membership: { groupId: string; joinedAt: string; status: "ACTIVE" | "NEW" } | null;
+  parent: { fullName: string; phone: string } | null;
+}
+
+export const officeStudentKeys = {
+  options: ["students", "options"] as const,
+  paymentOptions: ["payments", "options"] as const,
+  paymentInfo: (membershipId: string) => ["payments", "info", membershipId] as const,
+  payments: (studentId: string) => ["payments", "student", studentId] as const,
+};
+
+/** Courses, groups, teachers and the rest the student forms and filters choose from. */
+export function useStudentOptions(enabled = true) {
+  return useQuery({
+    queryKey: officeStudentKeys.options,
+    queryFn: ({ signal }) => api<StudentOptions>("/students/options", { signal }),
+    enabled,
+    staleTime: 5 * 60 * 1000,
+  });
+}
+
+export function usePaymentOptions(enabled = true) {
+  return useQuery({
+    queryKey: officeStudentKeys.paymentOptions,
+    queryFn: ({ signal }) => api<PaymentOptions>("/payments/options", { signal }),
+    enabled,
+    staleTime: 5 * 60 * 1000,
+  });
+}
+
+export function usePaymentInfo(membershipId: string | null) {
+  return useQuery({
+    queryKey: officeStudentKeys.paymentInfo(membershipId ?? ""),
+    queryFn: ({ signal }) =>
+      api<PaymentInfo>(`/memberships/${membershipId}/payment-info`, { signal }),
+    enabled: membershipId !== null,
+  });
+}
+
+/** A student's payments, newest first. */
+export function useStudentPayments(studentId: string, enabled = true) {
+  return useQuery({
+    queryKey: officeStudentKeys.payments(studentId),
+    queryFn: ({ signal }) =>
+      api<Page<Payment>>(`/payments?studentId=${studentId}&pageSize=50`, { signal }),
+    enabled,
+  });
+}
+
+/** Takes a payment; balances, the student's page and the home's figures are asked for again. */
+export function useTakePayment() {
+  const client = useQueryClient();
+  return useMutation({
+    mutationFn: (input: PaymentInput) =>
+      api<Payment>("/payments", { method: "POST", body: { ...input, bonus: 0 } }),
+    onSuccess: () =>
+      Promise.all([
+        client.invalidateQueries({ queryKey: ["students"] }),
+        client.invalidateQueries({ queryKey: ["payments"] }),
+        client.invalidateQueries({ queryKey: ["office"] }),
+        client.invalidateQueries({ queryKey: officeKeys.unread }),
+      ]),
+  });
+}
+
+export function useCreateStudent() {
+  const client = useQueryClient();
+  return useMutation({
+    mutationFn: (input: NewStudentInput) =>
+      api<StudentDetail>("/students", { method: "POST", body: input }),
+    onSuccess: () =>
+      Promise.all([
+        client.invalidateQueries({ queryKey: ["students"] }),
+        client.invalidateQueries({ queryKey: ["office"] }),
+      ]),
+  });
+}
+
+export interface StudentChange {
+  fullName: string;
+  phone: string | null;
+  birthDate: string | null;
+  note: string | null;
+}
+
+/** Changes who the student is: the name, the phone, the day of birth, the note. */
+export function useUpdateStudent(id: string) {
+  const client = useQueryClient();
+  return useMutation({
+    mutationFn: (change: StudentChange) =>
+      api<StudentDetail>(`/students/${id}`, { method: "PATCH", body: change }),
+    onSuccess: () => client.invalidateQueries({ queryKey: ["students"] }),
+  });
+}
+
+/** Archives the student (they leave every group), or brings them back from the archive. */
+export function useArchiveStudent(id: string) {
+  const client = useQueryClient();
+  return useMutation({
+    mutationFn: (archive: boolean) =>
+      archive
+        ? api(`/students/${id}`, { method: "DELETE" })
+        : api<StudentDetail>(`/students/${id}/restore`, { method: "POST" }),
+    onSuccess: () =>
+      Promise.all([
+        client.invalidateQueries({ queryKey: ["students"] }),
+        client.invalidateQueries({ queryKey: ["office"] }),
+      ]),
+  });
+}

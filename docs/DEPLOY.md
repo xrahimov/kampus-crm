@@ -461,9 +461,14 @@ browser build:
 
 ```bash
 cd mobile && npm ci && npm run export:web && cd ..
-npm run build
+npx prisma generate && npm run build
 scripts/tutorial-videos/record-all.sh <out-folder> --app --voice
 ```
+
+The phone's page is narrower than a Chromium window may be on a Mac, so the
+recorder films it with Playwright's headless shell (it comes with
+`npx playwright install chromium`). If `PLAYWRIGHT_CHROMIUM_PATH` is set, point
+it at the headless shell there, not at the full browser.
 
 That writes `<out-folder>/<language>/app/01-sign-in.mp4` and
 `app/02-student.mp4` (1080x1920, upright). Copy each language's `app` folder

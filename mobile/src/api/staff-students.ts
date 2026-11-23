@@ -18,7 +18,7 @@ import type {
  */
 
 export const studentKeys = {
-  list: (q: string) => ["students", "list", q] as const,
+  list: (q: string, filters: StudentFilters = {}) => ["students", "list", q, filters] as const,
   one: (id: string) => ["students", id] as const,
   progress: (id: string) => ["students", id, "progress"] as const,
   tests: (id: string) => ["students", id, "tests"] as const,
@@ -28,16 +28,47 @@ export const studentKeys = {
 /** How many students one request brings. */
 export const STUDENTS_PAGE = 30;
 
+/** What the office narrows the list by (A-231), the site's filters over the list. */
+export interface StudentFilters {
+  paymentStatus?: "DUE_SOON" | "DEBTOR" | "NOT_DEBTOR" | "OVERPAID";
+  groupStatus?: "ACTIVE" | "NEW" | "FROZEN" | "LEFT_AFTER_TRIAL" | "NO_GROUP";
+  archived?: boolean;
+  courseId?: string;
+  groupId?: string;
+  teacherId?: string;
+}
+
+export const PAYMENT_STATUS_FILTERS = ["DUE_SOON", "DEBTOR", "NOT_DEBTOR", "OVERPAID"] as const;
+export const GROUP_STATUS_FILTERS = [
+  "ACTIVE",
+  "NEW",
+  "FROZEN",
+  "LEFT_AFTER_TRIAL",
+  "NO_GROUP",
+] as const;
+
+/** How many filters are set: the number on the Filters button. */
+export function countFilters(filters: StudentFilters): number {
+  return Object.values(filters).filter((value) => value !== undefined && value !== false).length;
+}
+
+function filterQuery(filters: StudentFilters): string {
+  return Object.entries(filters)
+    .filter(([, value]) => value !== undefined && value !== false)
+    .map(([key, value]) => `&${key}=${encodeURIComponent(String(value))}`)
+    .join("");
+}
+
 /** The students by name, a page at a time; `q` looks in names and phone numbers. */
-export function useStudents(q: string) {
+export function useStudents(q: string, filters: StudentFilters = {}) {
   return useInfiniteQuery({
-    queryKey: studentKeys.list(q),
+    queryKey: studentKeys.list(q, filters),
     initialPageParam: 1,
     queryFn: ({ pageParam, signal }) =>
       api<Page<StudentRow>>(
         `/students?sort=fullName:asc&pageSize=${STUDENTS_PAGE}&page=${pageParam}${
           q ? `&q=${encodeURIComponent(q)}` : ""
-        }`,
+        }${filterQuery(filters)}`,
         { signal },
       ),
     getNextPageParam: (last) =>
