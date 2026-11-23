@@ -244,11 +244,14 @@ describe("the centre's home", () => {
 
     await fireEvent.press(screen.getByTestId("kpi-activeLeads"));
     expect(mockOpenOnSite).toHaveBeenCalledWith("/en/leads");
-    // A filtered list is the site's for now: the app's list would show everyone.
     await fireEvent.press(screen.getByTestId("kpi-debtors"));
     expect(mockOpenOnSite).toHaveBeenLastCalledWith("/en/debts");
-    await fireEvent.press(screen.getByTestId("kpi-trial"));
-    expect(mockOpenOnSite).toHaveBeenLastCalledWith("/en/students?groupStatus=TRIAL");
+    // A figure about students opens the app's list with the site's filter already set (A-231).
+    await fireEvent.press(screen.getByTestId("kpi-remainingDebt"));
+    expect(mockPush).toHaveBeenLastCalledWith({
+      pathname: "/staff/students",
+      params: { paymentStatus: "DEBTOR" },
+    });
   });
 
   it("shows who is in which room, and asks again for another weekday", async () => {
@@ -364,12 +367,24 @@ describe("where a page of the site lives in the app", () => {
     expect(nativeRoute("/today")).toBe("/staff");
     expect(nativeRoute("/account/salary")).toBe("/staff/salary");
     expect(nativeRoute("/notifications")).toBe("/staff/notifications");
+    expect(nativeRoute("/students?paymentStatus=DEBTOR")).toEqual({
+      pathname: "/staff/students",
+      params: { paymentStatus: "DEBTOR" },
+    });
+    expect(nativeRoute("/students?archived=true")).toEqual({
+      pathname: "/staff/students",
+      params: { archived: "true" },
+    });
   });
 
   it("sends everything else to the site", () => {
     expect(nativeRoute("/leads")).toBeNull();
     expect(nativeRoute("/leads?boardId=b1&q=Ali")).toBeNull();
-    expect(nativeRoute("/students?paymentStatus=DEBTOR")).toBeNull();
+    // A students filter the app does not know stays the site's.
+    expect(nativeRoute("/students?schoolId=x")).toBeNull();
+    // A value the app's list does not know would show everyone: the site's too.
+    expect(nativeRoute("/students?groupStatus=TRIAL")).toBeNull();
+    expect(nativeRoute("/groups?status=ACTIVE")).toBeNull();
     expect(nativeRoute("/groups/g1/attendance")).toBeNull();
     expect(nativeRoute("/account")).toBeNull();
     expect(nativeRoute("/settings/general")).toBeNull();

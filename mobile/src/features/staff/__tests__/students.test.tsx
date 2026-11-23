@@ -25,7 +25,13 @@ jest.mock("expo-router", () => ({
   useLocalSearchParams: () => ({ id: "s1" }),
 }));
 jest.mock("@/lib/session", () => ({
-  useMe: () => ({ permissions: ["groups.view", "students.view"] }),
+  // A teacher: the teaching view, no office rights.
+  useMe: () => ({
+    permissions: ["groups.view", "students.view"],
+    view: { current: "TEACHING", canSwitch: false },
+    branches: [{ id: "b1", name: "Chilonzor" }],
+    activeBranch: { id: "b1", name: "Chilonzor" },
+  }),
   can: (me: { permissions: string[] } | null, permission: string) =>
     Boolean(me?.permissions.includes(permission)),
 }));

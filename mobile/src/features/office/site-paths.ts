@@ -1,6 +1,7 @@
 import { useRouter, type Href } from "expo-router";
 import { useState } from "react";
 
+import { GROUP_STATUS_FILTERS, PAYMENT_STATUS_FILTERS } from "@/api/staff-students";
 import { errorText, useLocaleChoice, useTranslations } from "@/lib/i18n";
 import { can, type Me } from "@/lib/session";
 import { openOnSite } from "@/lib/web";
@@ -20,8 +21,8 @@ export function hasHome(me: Me): boolean {
  */
 export function nativeRoute(path: string): Href | null {
   const [pathname = "", filter] = path.split("?");
-  // A filtered list ("/students?paymentStatus=DEBTOR") is the site's until the app can filter so.
-  if (filter) return null;
+  // The students list takes the site's filters (A-231); any other filtered list is the site's.
+  if (filter) return pathname === "/students" ? studentsRoute(filter) : null;
   const parts = pathname.split("/").filter(Boolean);
   const [first, id, ...rest] = parts;
   if (rest.length > 0) return null;
@@ -51,6 +52,34 @@ export function nativeRoute(path: string): Href | null {
     default:
       return null;
   }
+}
+
+/** The students filters the app's list takes, and the values it knows for each. */
+const STUDENT_FILTER_VALUES: Record<string, readonly string[] | null> = {
+  paymentStatus: PAYMENT_STATUS_FILTERS,
+  groupStatus: GROUP_STATUS_FILTERS,
+  archived: ["true"],
+  courseId: null,
+  groupId: null,
+  teacherId: null,
+};
+
+/**
+ * "/students?paymentStatus=DEBTOR" as the app's list with that filter. Null if
+ * the address asks for a filter or a value the app's list does not have: it
+ * would show everyone, so that address stays the site's.
+ */
+function studentsRoute(filter: string): Href | null {
+  const params: Record<string, string> = {};
+  for (const pair of filter.split("&")) {
+    const [key = "", raw = ""] = pair.split("=");
+    const value = decodeURIComponent(raw);
+    const known = STUDENT_FILTER_VALUES[key];
+    if (known === undefined || !value) return null;
+    if (known !== null && !known.includes(value)) return null;
+    params[key] = value;
+  }
+  return { pathname: "/staff/students", params };
 }
 
 /**

@@ -6447,7 +6447,13 @@
     "office": {
       "searchTitle": "Qidiruv",
       "searchLabel": "Ism yoki telefon raqami",
-      "searchHint": "Ismning kamida ikki harfini yoki raqamning ikki raqamini yozing. Sizga ochiq o'quvchilar, guruhlar va lidlar ichidan qidiriladi."
+      "searchHint": "Ismning kamida ikki harfini yoki raqamning ikki raqamini yozing. Sizga ochiq o'quvchilar, guruhlar va lidlar ichidan qidiriladi.",
+      "datePlaceholder": "kk.oo.yyyy",
+      "filters": "Filtrlar",
+      "filtersSet": "Filtrlar: {count}",
+      "clearFilters": "Tozalash",
+      "showResults": "Ko'rsatish",
+      "archivedOnly": "Faqat arxivdagi o'quvchilar"
     }
   }
 }

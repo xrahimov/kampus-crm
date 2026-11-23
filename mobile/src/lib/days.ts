@@ -41,3 +41,8 @@ export function weekdayOf(iso: string): number {
 export function weekdayAsDate(weekday: number): Date {
   return dayAsDate(`2024-01-${pad(weekday)}`);
 }
+
+/** Today's ISO day in the centre's zone (Tashkent, UTC+5, no summer time). */
+export function centreToday(): string {
+  return new Date(Date.now() + 5 * 3_600_000).toISOString().slice(0, 10);
+}
