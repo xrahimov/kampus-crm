@@ -6283,7 +6283,7 @@
     "openOnSite": "Kampusni saytda ochish",
     "groupOnSite": "Butun guruhni saytda ochish",
     "siteTitle": "Kampusning qolgan qismi",
-    "siteText": "O'quvchilar, to'lovlar, testlar va hisobotlar hozircha saytda. U kirilgan holda ochiladi.",
+    "siteText": "To'lovlar, lidlar, hisobotlar, sozlamalar va test tuzish hozircha saytda. U kirilgan holda ochiladi.",
     "version": "Kampus {version}",
     "room": {
       "denied": "Kampus kamera va mikrofondan foydalana olmayapti. Ko'rish va tinglash uchun kirishingiz mumkin. Sizni ko'rishlari va eshitishlari uchun telefon sozlamalarida ikkalasiga ruxsat bering.",
@@ -6433,6 +6433,11 @@
       "noneYet": "Hozircha o'quvchilar yo'q.",
       "call": "Qo'ng'iroq qilish",
       "noPhone": "Telefon raqami sizga ko'rsatilmaydi."
+    },
+    "announcements": {
+      "posted": "E'lon qilindi. Uni {count} ta o'quvchi ko'radi.",
+      "open": "E'lonlarni ochish",
+      "hint": "Guruhlaringizdan biriga e'lon: o'quvchilar sahifasida, Telegramda va xohlasangiz SMS orqali."
     }
   }
 }

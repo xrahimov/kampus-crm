@@ -31,7 +31,8 @@ and rating a lesson, A-216 for the student's schedule with booking, time zone, p
 Telegram, invite code and certificates, A-217 for the teacher's homework set and checked from
 the phone, the class stream, the gradebook and the notes, A-218 for the teacher's course plan,
 coins and tests of a group, A-219 for a group's exams, knowledge by topic, comments on students
-and history, and A-220 for Students on the teacher's side).
+and history, A-220 for Students on the teacher's side, and A-221 for
+announcements).
 
 [docs/DEMO-GUIDE.md](docs/DEMO-GUIDE.md) is a script for showing the whole app to a centre's owner or
 its teachers, stop by stop, with the manual's own screenshots.

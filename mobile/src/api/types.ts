@@ -1077,3 +1077,23 @@ export interface StudentTests {
   strongTopics: TopicStat[];
   attempts: StudentAttempt[];
 }
+
+/* ----- Announcements on the staff side (A-221) ----- */
+
+export interface Announcement {
+  id: string;
+  audience: "CENTRE" | "BRANCH" | "GROUP";
+  branchName: string | null;
+  groupId: string | null;
+  groupName: string | null;
+  title: string;
+  body: string;
+  sendSms: boolean;
+  /** How many students it was addressed to. */
+  recipients: number;
+  telegramQueued: number;
+  smsQueued: number;
+  reads: number;
+  createdAt: string;
+  createdByName: string | null;
+}
