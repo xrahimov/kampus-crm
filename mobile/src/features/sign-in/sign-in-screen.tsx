@@ -569,13 +569,13 @@ function PhoneCodeStep({
         </Text>
         <OpenBot botName={botName} botUrl={botUrl} />
       </View>
-      <View style={styles.pair}>
+      <View style={[styles.pair, styles.pairWrap]}>
         <Button
           variant="ghost"
           label={t("auth.startOver")}
           onPress={onStartOver}
           disabled={busy !== null}
-          style={styles.fill}
+          style={styles.grow}
         />
         <Button
           variant="ghost"
@@ -583,7 +583,7 @@ function PhoneCodeStep({
           onPress={resend}
           loading={busy === "resend"}
           disabled={busy !== null}
-          style={styles.fill}
+          style={styles.grow}
           testID="code-again"
         />
       </View>
@@ -823,6 +823,9 @@ const styles = StyleSheet.create({
   },
   code: { fontSize: 24, letterSpacing: 6, textAlign: "center" },
   pair: { flexDirection: "row", gap: space[2] },
+  // Two links side by side where both fit; a long one (Russian) drops under the other whole.
+  pairWrap: { flexWrap: "wrap", justifyContent: "center" },
+  grow: { flexGrow: 1 },
   locales: { flexDirection: "row", justifyContent: "center", gap: space[2] },
   locale: { minHeight: 44, paddingHorizontal: space[3], justifyContent: "center" },
   localeChosen: { textDecorationLine: "underline" },
