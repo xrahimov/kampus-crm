@@ -94,6 +94,14 @@ describe("a pane of glass", () => {
     const style = StyleSheet.flatten(screen.getByTestId("backdrop").props.style);
     expect(style.backgroundColor).toEqual(expect.any(String));
     expect(style.flex).toBe(1);
+    // Android reads what the backdrop's children draw, not the backdrop's own colour: the
+    // page's colour is painted by a view inside it, under everything else.
+    const page = screen.getByTestId("backdrop-page");
+    expect(page.parent).toBe(screen.getByTestId("backdrop"));
+    expect(StyleSheet.flatten(page.props.style)).toMatchObject({
+      position: "absolute",
+      backgroundColor: style.backgroundColor,
+    });
   });
 
   it("is thinner on Android, whose blur brings a tint of its own", async () => {

@@ -23,8 +23,10 @@ import {
   createContext,
   useContext,
   useEffect,
+  useRef,
   useState,
   useSyncExternalStore,
+  type ComponentRef,
   type ReactNode,
 } from "react";
 import {
@@ -468,12 +470,7 @@ export function CallScreen({
             <Wall ids={everyone} render={(id, size) => tile(id, false, size)} />
           )}
         </View>
-        {panelBody && sideBySide ? (
-          // The chat's field stays above the keyboard on a tablet too.
-          <KeyboardAvoidingView behavior="padding" style={styles.sidePanel}>
-            {panelBody}
-          </KeyboardAvoidingView>
-        ) : null}
+        {panelBody && sideBySide ? <SidePanel>{panelBody}</SidePanel> : null}
       </View>
 
       {reactionsOpen ? (
@@ -628,6 +625,34 @@ export function CallScreen({
           </KeyboardAvoidingView>
         </View>
       ) : null}
+    </View>
+  );
+}
+
+/**
+ * The panel beside the lesson on a tablet. The chat's field stays above the
+ * keyboard: the view that makes the room works out the keyboard's overlap from
+ * its place in its parent, not on the screen, so it is told how far down the
+ * screen it starts. Without that it made too little room, by the height of
+ * what is above the panel.
+ */
+function SidePanel({ children }: { children: ReactNode }) {
+  const frame = useRef<ComponentRef<typeof View>>(null);
+  const [fromTop, setFromTop] = useState(0);
+  return (
+    <View
+      ref={frame}
+      style={styles.sidePanel}
+      onLayout={() => frame.current?.measureInWindow((_x, y) => setFromTop(Math.round(y)))}
+    >
+      <KeyboardAvoidingView
+        behavior="padding"
+        keyboardVerticalOffset={fromTop}
+        style={styles.fill}
+        testID="room-side-panel"
+      >
+        {children}
+      </KeyboardAvoidingView>
     </View>
   );
 }

@@ -54,14 +54,14 @@ export function GlassScope({ children }: { children: ReactNode }) {
 export function Backdrop({ children, style, ...rest }: ViewProps) {
   const target = useContext(BackdropContext);
   const { colors } = useTheme();
+  const page = { backgroundColor: colors.background };
   return (
-    // The backdrop carries the page's colour itself. Android blurs only what this view draws
-    // and fills the rest with the window's own (light) background, which made a dark header grey.
-    <BlurTargetView
-      ref={target ?? undefined}
-      {...rest}
-      style={[{ backgroundColor: colors.background }, style]}
-    >
+    <BlurTargetView ref={target ?? undefined} {...rest} style={[page, style]}>
+      {/* The page's colour is painted by a view INSIDE the backdrop. Android blurs what the
+          backdrop's children draw and fills the rest with the window's own light background;
+          a colour on the backdrop itself is outside what it reads, and a dark header over an
+          empty part of the page came out grey. */}
+      <View style={[StyleSheet.absoluteFill, styles.untouched, page]} testID="backdrop-page" />
       <BackdropContext.Provider value={null}>{children}</BackdropContext.Provider>
     </BlurTargetView>
   );

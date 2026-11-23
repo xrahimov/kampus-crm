@@ -33,5 +33,14 @@ export interface TextProps extends NativeTextProps {
 
 export function Text({ variant = "body", tone = "foreground", style, ...rest }: TextProps) {
   const { colors } = useTheme();
-  return <NativeText {...rest} style={[VARIANTS[variant], { color: colors[tone] }, style]} />;
+  return (
+    <NativeText
+      // Android: lines are broken the plain way. Its balanced breaking can break a line when
+      // drawing where it did not when measuring, and the last word of a label is then lost
+      // ("Turn everyone's microphone" without "off").
+      textBreakStrategy="simple"
+      {...rest}
+      style={[VARIANTS[variant], { color: colors[tone] }, style]}
+    />
+  );
 }

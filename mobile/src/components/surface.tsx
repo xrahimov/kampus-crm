@@ -88,6 +88,7 @@ export function Screen({
   const inset = Platform.OS === "ios" && scroll;
   const room = useMemo(() => ({ top }), [top]);
   const start = useMemo(() => ({ x: 0, y: -top }), [top]);
+  const reload = useShownReload(refreshing, onRefresh);
   const inner: StyleProp<ViewStyle> = [
     styles.column,
     {
@@ -123,8 +124,8 @@ export function Screen({
                   refreshControl={
                     onRefresh ? (
                       <RefreshControl
-                        refreshing={refreshing}
-                        onRefresh={onRefresh}
+                        refreshing={reload.showing}
+                        onRefresh={reload.pull}
                         tintColor={colors.ring}
                         // Android: the spinner shows below the glass header, not behind it.
                         progressViewOffset={inset ? undefined : top}
@@ -160,6 +161,33 @@ export function Screen({
       </View>
     </GlassScope>
   );
+}
+
+/** The spinner of a pull stays at least this long: a quick server would hide it before it showed. */
+const RELOAD_SHOWN_MS = 700;
+
+/**
+ * The refresh spinner belongs to the person's pull. It shows from the pull
+ * until the page has reloaded, and never for less than a moment: against a
+ * fast server the reload was over before the spinner had appeared, and an
+ * iPhone showed an empty gap. A reload nobody asked for (the app coming back
+ * to the front) shows no spinner and does not move the page.
+ */
+function useShownReload(reloading: boolean, onRefresh: (() => void) | undefined) {
+  const [pulled, setPulled] = useState(false);
+  const since = useRef(0);
+  useEffect(() => {
+    if (!pulled || reloading) return undefined;
+    const left = Math.max(0, RELOAD_SHOWN_MS - (Date.now() - since.current));
+    const timer = setTimeout(() => setPulled(false), left);
+    return () => clearTimeout(timer);
+  }, [pulled, reloading]);
+  const pull = () => {
+    since.current = Date.now();
+    setPulled(true);
+    onRefresh?.();
+  };
+  return { showing: pulled, pull };
 }
 
 /** A flat card: a hairline border, no shadow, as on the site. */

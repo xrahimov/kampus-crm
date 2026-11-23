@@ -1,4 +1,5 @@
-import { screen } from "@testing-library/react-native";
+import { act, screen } from "@testing-library/react-native";
+import { useState } from "react";
 import { Platform, StyleSheet, Text, View } from "react-native";
 
 import { Screen } from "@/components/surface";
@@ -54,5 +55,55 @@ describe("the room under a floating header", () => {
     const offset = scroll.props.refreshControl.props.progressViewOffset as number;
     expect(offset).toBeGreaterThan(0);
     expect(columnPadding()).toBeGreaterThan(offset);
+  });
+});
+
+describe("the refresh spinner", () => {
+  beforeEach(() => jest.useFakeTimers());
+  afterEach(() => jest.useRealTimers());
+
+  const shown = () => screen.getByTestId("screen-scroll").props.refreshControl.props.refreshing;
+  const pull = () =>
+    act(async () => screen.getByTestId("screen-scroll").props.refreshControl.props.onRefresh());
+
+  it("shows for a pull and stays long enough to be seen, however quick the server", async () => {
+    const onRefresh = jest.fn();
+    await renderScreen(
+      <Screen onRefresh={onRefresh} refreshing={false}>
+        <Text>Page</Text>
+      </Screen>,
+    );
+    expect(shown()).toBe(false);
+    await pull();
+    expect(onRefresh).toHaveBeenCalledTimes(1);
+    expect(shown()).toBe(true);
+    await act(async () => jest.advanceTimersByTime(500));
+    expect(shown()).toBe(true);
+    await act(async () => jest.advanceTimersByTime(300));
+    expect(shown()).toBe(false);
+  });
+
+  it("stays while the page is still reloading, and does not show for a reload nobody pulled", async () => {
+    let reloading: (now: boolean) => Promise<void> = async () => undefined;
+    function Page() {
+      const [now, setNow] = useState(true);
+      reloading = (next) => act(async () => setNow(next));
+      return (
+        <Screen onRefresh={() => undefined} refreshing={now}>
+          <Text>Page</Text>
+        </Screen>
+      );
+    }
+    await renderScreen(<Page />);
+    // The app reloads by itself (it came back to the front): no spinner.
+    expect(shown()).toBe(false);
+    await reloading(false);
+    await pull();
+    await reloading(true);
+    await act(async () => jest.advanceTimersByTime(3000));
+    expect(shown()).toBe(true);
+    await reloading(false);
+    await act(async () => jest.advanceTimersByTime(10));
+    expect(shown()).toBe(false);
   });
 });
