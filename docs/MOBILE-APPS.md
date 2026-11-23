@@ -133,10 +133,14 @@ mobile/
   it (a colour on the backdrop itself is outside what the blur reads; a dark header came out
   grey twice). Android's blur brings a tint that grows with its strength, so the strength and
   the pane's own veil are lower there. On an iPhone the room under the header is the scroll
-  view's `contentInset`, not padding. The refresh spinner belongs to the person's pull
-  (`useShownReload` in `surface.tsx`): it shows from the pull until the page has reloaded and at
-  least 0.7 s, because against a quick server iOS ended it before it had appeared; a reload
-  nobody pulled shows no spinner.
+  view's `contentInset`, not padding. Reloading by pulling down: Android uses the
+  system's refresh control, moved below the header (`progressViewOffset`). An iPhone and iPad
+  do not: on the iOS 27 simulators the system's spinner drew nowhere under a floating header,
+  whatever was tried. There `Screen` measures the pull itself (`onScrollEndDrag`, 72 points)
+  and draws its own sign (`ReloadSign`: a small pane of glass under the header that comes in
+  with the pull and spins while the page reloads). On both the sign belongs to the person's
+  pull (`useShownReload`): it shows from the pull until the page has reloaded and at least
+  0.7 s; a reload nobody pulled shows none.
 - **Motion (A-224).** `src/components/motion.tsx`, on `react-native-reanimated` (it was already
   in every build, the router brings it). `Press` is anything pressable: it sinks under the
   finger and springs back. `useArrival` gives cards the cascade in which they appear (the first
@@ -187,9 +191,12 @@ mobile/
   while a text box had the cursor) and does not open a camera the device does not have: the iPhone
   simulator closes the app when asked ("Source type 1 not available"). The tests run as a real
   phone (`expo-device` in `jest.setup.js`).
-- **Text on Android.** `Text` (`src/components/text.tsx`) breaks lines the plain way
-  (`textBreakStrategy="simple"`): with Android's balanced breaking a label lost its last word
-  where the line fitted when measured and broke when drawn.
+- **Text on Android.** A label exactly as wide as its words can lose its last word on Android:
+  the line fits when measured and breaks when drawn, and the second line is outside the view
+  ("Turn everyone's microphone off" in the lesson's People panel, on a tablet). Letting the
+  label shrink and `textBreakStrategy="simple"` (still set in `src/components/text.tsx`) did not
+  help. A button that fills its row gives its label the room that is left (`flexGrow: 1`,
+  centred), as `RoomButton` in the lesson does.
 - **The keyboard.** Android draws the app edge to edge here, so the window does not shrink for the
   keyboard. `Screen` (`src/components/surface.tsx`), the chat thread and the lesson's side sheet
   sit in a `KeyboardAvoidingView` with `padding` on Android as well as iPhone; a new screen with

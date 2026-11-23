@@ -12,8 +12,8 @@ jest.mock("@react-native-async-storage/async-storage", () =>
 jest.mock("expo-localization", () => ({ getLocales: () => [{ languageCode: "en" }] }));
 
 /*
- * The page under a floating header (A-224): where the room for the header is
- * kept decides where the phone draws its refresh spinner.
+ * The page under a floating header (A-224, A-228): where the room for the
+ * header is kept, and the sign that the page is reloading after a pull.
  */
 
 const realOS = Platform.OS;
@@ -35,19 +35,18 @@ function columnPadding(): number {
 }
 
 describe("the room under a floating header", () => {
-  it("is the scroll view's own inset on an iPhone, so the spinner shows below the header", async () => {
+  it("is the scroll view's own inset on an iPhone, so the page rests right under the header", async () => {
     Platform.OS = "ios";
     await renderScreen(page);
     const scroll = screen.getByTestId("screen-scroll");
     const top = scroll.props.contentInset.top as number;
     expect(top).toBeGreaterThan(0);
     expect(scroll.props.contentOffset).toEqual({ x: 0, y: -top });
-    expect(scroll.props.refreshControl.props.progressViewOffset).toBeUndefined();
     // Only the page's own margin is left as padding.
     expect(columnPadding()).toBeLessThan(top);
   });
 
-  it("is padding on Android, with the spinner moved down by as much", async () => {
+  it("is padding on Android, with the system's spinner moved down by as much", async () => {
     Platform.OS = "android";
     await renderScreen(page);
     const scroll = screen.getByTestId("screen-scroll");
@@ -55,32 +54,75 @@ describe("the room under a floating header", () => {
     const offset = scroll.props.refreshControl.props.progressViewOffset as number;
     expect(offset).toBeGreaterThan(0);
     expect(columnPadding()).toBeGreaterThan(offset);
+    expect(screen.queryByTestId("screen-reloading")).toBeNull();
   });
 });
 
-describe("the refresh spinner", () => {
-  beforeEach(() => jest.useFakeTimers());
+/** The page is dragged down by this much below its resting place and let go. */
+async function dragAndLetGo(by: number) {
+  const scroll = screen.getByTestId("screen-scroll");
+  const rest = scroll.props.contentOffset.y as number;
+  const at = { nativeEvent: { contentOffset: { x: 0, y: rest - by } } };
+  await act(async () => {
+    scroll.props.onScroll(at);
+    scroll.props.onScrollEndDrag(at);
+  });
+}
+
+describe("the reload sign on an iPhone", () => {
+  beforeEach(() => {
+    Platform.OS = "ios";
+    jest.useFakeTimers();
+  });
   afterEach(() => jest.useRealTimers());
 
-  const shown = () => screen.getByTestId("screen-scroll").props.refreshControl.props.refreshing;
-  const pull = () =>
-    act(async () => screen.getByTestId("screen-scroll").props.refreshControl.props.onRefresh());
+  const spinning = () => screen.getByTestId("screen-reloading").props.animating;
 
-  it("shows for a pull and stays long enough to be seen, however quick the server", async () => {
+  it("is the app's own: the system's spinner is not used", async () => {
+    await renderScreen(page);
+    expect(screen.getByTestId("screen-scroll").props.refreshControl).toBeUndefined();
+    expect(spinning()).toBe(false);
+  });
+
+  it("is not there on a page with nothing to reload", async () => {
+    await renderScreen(
+      <Screen>
+        <Text>Page</Text>
+      </Screen>,
+    );
+    expect(screen.queryByTestId("screen-reloading")).toBeNull();
+    expect(screen.getByTestId("screen-scroll").props.onScrollEndDrag).toBeUndefined();
+  });
+
+  it("reloads when the page is pulled far enough and let go, not for a small tug", async () => {
     const onRefresh = jest.fn();
     await renderScreen(
       <Screen onRefresh={onRefresh} refreshing={false}>
         <Text>Page</Text>
       </Screen>,
     );
-    expect(shown()).toBe(false);
-    await pull();
+    await dragAndLetGo(30);
+    expect(onRefresh).not.toHaveBeenCalled();
+    expect(spinning()).toBe(false);
+    await dragAndLetGo(90);
     expect(onRefresh).toHaveBeenCalledTimes(1);
-    expect(shown()).toBe(true);
+    expect(spinning()).toBe(true);
+    // A second pull while it reloads does not start another one.
+    await dragAndLetGo(90);
+    expect(onRefresh).toHaveBeenCalledTimes(1);
+  });
+
+  it("stays long enough to be seen, however quick the server", async () => {
+    await renderScreen(
+      <Screen onRefresh={() => undefined} refreshing={false}>
+        <Text>Page</Text>
+      </Screen>,
+    );
+    await dragAndLetGo(90);
     await act(async () => jest.advanceTimersByTime(500));
-    expect(shown()).toBe(true);
+    expect(spinning()).toBe(true);
     await act(async () => jest.advanceTimersByTime(300));
-    expect(shown()).toBe(false);
+    expect(spinning()).toBe(false);
   });
 
   it("stays while the page is still reloading, and does not show for a reload nobody pulled", async () => {
@@ -95,15 +137,44 @@ describe("the refresh spinner", () => {
       );
     }
     await renderScreen(<Page />);
-    // The app reloads by itself (it came back to the front): no spinner.
-    expect(shown()).toBe(false);
+    // The app reloads by itself (it came back to the front): no sign.
+    expect(spinning()).toBe(false);
     await reloading(false);
-    await pull();
+    await dragAndLetGo(90);
     await reloading(true);
     await act(async () => jest.advanceTimersByTime(3000));
-    expect(shown()).toBe(true);
+    expect(spinning()).toBe(true);
     await reloading(false);
     await act(async () => jest.advanceTimersByTime(10));
+    expect(spinning()).toBe(false);
+  });
+});
+
+describe("the refresh spinner on Android", () => {
+  beforeEach(() => {
+    Platform.OS = "android";
+    jest.useFakeTimers();
+  });
+  afterEach(() => jest.useRealTimers());
+
+  const shown = () => screen.getByTestId("screen-scroll").props.refreshControl.props.refreshing;
+  const pull = () =>
+    act(async () => screen.getByTestId("screen-scroll").props.refreshControl.props.onRefresh());
+
+  it("shows for a pull and stays long enough to be seen", async () => {
+    const onRefresh = jest.fn();
+    await renderScreen(
+      <Screen onRefresh={onRefresh} refreshing={false}>
+        <Text>Page</Text>
+      </Screen>,
+    );
+    expect(shown()).toBe(false);
+    await pull();
+    expect(onRefresh).toHaveBeenCalledTimes(1);
+    expect(shown()).toBe(true);
+    await act(async () => jest.advanceTimersByTime(500));
+    expect(shown()).toBe(true);
+    await act(async () => jest.advanceTimersByTime(300));
     expect(shown()).toBe(false);
   });
 });

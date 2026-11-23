@@ -1057,11 +1057,17 @@ function RoomButton({
         (disabled || busy) && styles.disabled,
       ]}
     >
-      {icon}
-      {/* It may shrink, so a long label goes onto a second line instead of past the edge. */}
-      <Text variant="smallStrong" style={[styles.ink, styles.shrink]} numberOfLines={2}>
+      {icon ? <View style={styles.buttonIcon}>{icon}</View> : null}
+      {/*
+        The label takes the room that is left instead of hugging its words: a label exactly as
+        wide as its text lost its last word on an Android tablet ("Turn everyone's microphone").
+        It may still shrink, so a long one goes onto a second line instead of past the edge.
+      */}
+      <Text variant="smallStrong" style={[styles.ink, styles.buttonLabel]} numberOfLines={2}>
         {label}
       </Text>
+      {/* As much room on the other side as the icon takes, so the label stays in the middle. */}
+      {icon ? <View style={styles.buttonIcon} /> : null}
     </Pressable>
   );
 }
@@ -1071,7 +1077,8 @@ const styles = StyleSheet.create({
   fill: { flex: 1 },
   row: { flexDirection: "row", gap: GAP },
   ink: { color: room.ink },
-  shrink: { flexShrink: 1 },
+  buttonLabel: { flexGrow: 1, flexShrink: 1, textAlign: "center" },
+  buttonIcon: { width: 18, alignItems: "center" },
   inkMuted: { color: room.inkMuted },
   activeInk: { color: room.activeInk },
   bar: {

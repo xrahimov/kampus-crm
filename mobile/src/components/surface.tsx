@@ -17,10 +17,18 @@ import {
   StyleSheet,
   View,
   type LayoutChangeEvent,
+  type NativeScrollEvent,
+  type NativeSyntheticEvent,
   type StyleProp,
   type ViewStyle,
 } from "react-native";
-import { useAnimatedStyle, useSharedValue, withSpring } from "react-native-reanimated";
+import {
+  useAnimatedStyle,
+  useSharedValue,
+  withSpring,
+  withTiming,
+  type SharedValue,
+} from "react-native-reanimated";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { useLayout } from "@/lib/layout";
@@ -83,12 +91,24 @@ export function Screen({
   const top = header ? headerHeight : padTop ? insets.top : 0;
   const bottom = footer ? footerHeight : insets.bottom + bottomBar;
   // On an iPhone the room under the header is the scroll view's own inset, not padding: the
-  // system then draws the refresh spinner below the header. As padding, the spinner sat behind
-  // the header and pulling down showed an empty gap.
+  // page then rests right under the header and a pull down is measured from there.
   const inset = Platform.OS === "ios" && scroll;
   const room = useMemo(() => ({ top }), [top]);
   const start = useMemo(() => ({ x: 0, y: -top }), [top]);
   const reload = useShownReload(refreshing, onRefresh);
+  // An iPhone or iPad gets the app's own reload sign (below): the system's spinner did not draw
+  // under a floating header. Android keeps the system's, moved below the header.
+  const ownSign = inset && onRefresh !== undefined;
+  const pulledBy = useSharedValue(0);
+  const pulling = (event: NativeSyntheticEvent<NativeScrollEvent>) =>
+    pulledBy.set(Math.max(0, -(event.nativeEvent.contentOffset.y + top)));
+  const letGo = (event: NativeSyntheticEvent<NativeScrollEvent>) => {
+    const by = -(event.nativeEvent.contentOffset.y + top);
+    if (by >= PULL_TO_RELOAD && !reload.showing) {
+      tick();
+      reload.pull();
+    }
+  };
   const inner: StyleProp<ViewStyle> = [
     styles.column,
     {
@@ -121,14 +141,17 @@ export function Screen({
                   // The page starts under the header, and goes back there when the header grows.
                   contentOffset={inset ? start : undefined}
                   scrollIndicatorInsets={{ top, bottom: footer ? footerHeight : bottomBar }}
+                  onScroll={ownSign ? pulling : undefined}
+                  scrollEventThrottle={ownSign ? 16 : undefined}
+                  onScrollEndDrag={ownSign ? letGo : undefined}
                   refreshControl={
-                    onRefresh ? (
+                    onRefresh && !ownSign ? (
                       <RefreshControl
                         refreshing={reload.showing}
                         onRefresh={reload.pull}
                         tintColor={colors.ring}
-                        // Android: the spinner shows below the glass header, not behind it.
-                        progressViewOffset={inset ? undefined : top}
+                        // The spinner shows below the glass header, not behind it.
+                        progressViewOffset={top}
                       />
                     ) : undefined
                   }
@@ -158,20 +181,66 @@ export function Screen({
             {header}
           </View>
         ) : null}
+        {ownSign ? <ReloadSign top={top} pulledBy={pulledBy} reloading={reload.showing} /> : null}
       </View>
     </GlassScope>
   );
 }
 
-/** The spinner of a pull stays at least this long: a quick server would hide it before it showed. */
+/** How far the page is pulled down before letting go reloads it. */
+const PULL_TO_RELOAD = 72;
+
+/**
+ * The reload sign on an iPhone and iPad: a small pane of glass under the
+ * header. It comes in as the page is pulled down, spins from the moment the
+ * page is let go until it has reloaded, and fades out.
+ */
+function ReloadSign({
+  top,
+  pulledBy,
+  reloading,
+}: {
+  top: number;
+  pulledBy: SharedValue<number>;
+  reloading: boolean;
+}) {
+  const { colors } = useTheme();
+  const held = useSharedValue(0);
+  useEffect(() => {
+    held.set(withTiming(reloading ? 1 : 0, { duration: reloading ? 120 : 220 }));
+  }, [held, reloading]);
+  const look = useAnimatedStyle(() => {
+    const part = Math.max(held.get(), Math.min(1, pulledBy.get() / PULL_TO_RELOAD));
+    return {
+      opacity: part,
+      transform: [{ translateY: (part - 1) * 12 }, { scale: 0.7 + 0.3 * part }],
+    };
+  });
+  return (
+    <Animated.View style={[styles.reload, { top: top + space[2] }, look]}>
+      <Glass floating radius={RELOAD_SIGN / 2} style={styles.reloadPane}>
+        <ActivityIndicator
+          animating={reloading}
+          hidesWhenStopped={false}
+          color={colors.ring}
+          testID="screen-reloading"
+        />
+      </Glass>
+    </Animated.View>
+  );
+}
+
+const RELOAD_SIGN = 40;
+
+/** The sign of a pull stays at least this long: a quick server would hide it before it showed. */
 const RELOAD_SHOWN_MS = 700;
 
 /**
- * The refresh spinner belongs to the person's pull. It shows from the pull
- * until the page has reloaded, and never for less than a moment: against a
- * fast server the reload was over before the spinner had appeared, and an
- * iPhone showed an empty gap. A reload nobody asked for (the app coming back
- * to the front) shows no spinner and does not move the page.
+ * The reload sign belongs to the person's pull. It shows from the pull until
+ * the page has reloaded, and never for less than a moment: against a fast
+ * server the reload was over before the sign had appeared. A reload nobody
+ * asked for (the app coming back to the front) shows no sign and does not
+ * move the page.
  */
 function useShownReload(reloading: boolean, onRefresh: (() => void) | undefined) {
   const [pulled, setPulled] = useState(false);
@@ -456,6 +525,14 @@ const styles = StyleSheet.create({
   header: { position: "absolute", top: 0, left: 0, right: 0 },
   footer: { position: "absolute", left: 0, right: 0, bottom: 0, paddingTop: space[3] },
   footerColumn: { width: "100%", maxWidth: CONTENT_MAX_WIDTH, alignSelf: "center" },
+  // A sign, not a control: a touch goes to the page under it.
+  reload: { position: "absolute", left: 0, right: 0, alignItems: "center", pointerEvents: "none" },
+  reloadPane: {
+    width: RELOAD_SIGN,
+    height: RELOAD_SIGN,
+    alignItems: "center",
+    justifyContent: "center",
+  },
   card: { borderWidth: 1, borderRadius: radius.lg, padding: space[4], gap: space[3] },
   badge: {
     alignSelf: "flex-start",
