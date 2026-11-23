@@ -7,6 +7,11 @@
  *   TELEGRAM_LOGIN_FAKE=1 npm start
  *   npx tsx scripts/tutorial-videos/index.ts [en ru uz] [--only=sign-in,groups] [--out=dir] [--voice]
  *
+ * With `--app` it records the videos of the phone app instead (`app-scenes.ts`):
+ * upright, 1080×1920, from the app's browser build served at `VIDEO_APP_URL`
+ * (`cd mobile && npm run export:web && node scripts/serve-web.mjs <port> <server>`),
+ * written to `<out>/<language>/app/`.
+ *
  * Every video is 1920×1080: the page on top, the step's caption on a band
  * under it, and a `.srt` file with the same captions next to it. The scenes
  * (what is done on screen) are in `scenes.ts`, the captions of each language
@@ -27,8 +32,9 @@ import type { Page } from "@playwright/test";
 
 import { prepare, type Base } from "../help-screenshots";
 
+import { APP_BASE, APP_SCENES } from "./app-scenes";
 import { dress, SPOKEN } from "./dress";
-import { Film, launch, open } from "./film";
+import { APP_PHONE, Film, launch, open, UPRIGHT } from "./film";
 import { SCENES } from "./scenes";
 import { BASE, CEO, PASSWORD, TEACHER, type Shoot } from "./shoot";
 import { Voice } from "./voice";
@@ -40,6 +46,10 @@ const only = flag("only")?.split(",") ?? null;
 const OUT = path.resolve(flag("out") ?? "tutorial-videos");
 const VOICE_ONLY = argv.includes("--voice-only");
 const VOICED = VOICE_ONLY || argv.includes("--voice");
+/** `--app`: the videos of the phone app instead of the site's (A-229). */
+const APP = argv.includes("--app");
+/** What the app's browser build is told the phone's language is. */
+const LANGUAGE_TAG = { en: "en-US", ru: "ru-RU", uz: "uz-UZ" } as const;
 const chosen = argv.filter((a): a is Locale => ["en", "ru", "uz"].includes(a));
 const LOCALES: Locale[] = chosen.length > 0 ? chosen : ["en", "ru", "uz"];
 
@@ -86,13 +96,20 @@ async function quiet(page: Page) {
 
 async function main() {
   const failures: string[] = [];
-  const scenes = SCENES.filter((s) => !only || only.includes(s.id));
+  const all: ReadonlyArray<{ id: string; run(shoot: Shoot): Promise<void> }> = APP
+    ? APP_SCENES
+    : SCENES;
+  const scenes = all.filter((s) => !only || only.includes(s.id));
   for (const locale of LOCALES) {
     const label = labels(locale);
     const words = WORDS[locale];
+    const texts = (APP ? words.appVideos : words.videos) as Record<
+      string,
+      { title: string; note: string; steps: Record<string, string> }
+    >;
     /** The caption of a step with the app's own labels put in. */
-    const caption = (id: (typeof scenes)[number]["id"], step: string): string => {
-      const text = (words.videos[id].steps as Record<string, string>)[step];
+    const caption = (id: string, step: string): string => {
+      const text = texts[id]!.steps[step];
       if (!text) throw new Error(`no caption "${step}" for ${id} in ${locale}`);
       return text.replace(/\{([\w.]+)\}/g, (_, key: string) => label(key));
     };
@@ -101,7 +118,7 @@ async function main() {
       // Every sentence is fetched before the camera runs, so no video waits for the network.
       const made = await voice.ensure(
         scenes.flatMap((scene) =>
-          Object.keys(words.videos[scene.id].steps).map((step) => caption(scene.id, step)),
+          Object.keys(texts[scene.id]!.steps).map((step) => caption(scene.id, step)),
         ),
       );
       process.stdout.write(`  ${locale}: voice ready (${made} new sentences)\n`);
@@ -138,16 +155,26 @@ async function main() {
     await teacherContext.close();
 
     for (const scene of scenes) {
-      const number = String(SCENES.indexOf(scene) + 1).padStart(2, "0");
-      const text = words.videos[scene.id];
-      const name = `${number}-${scene.id}`;
-      const browser = await launch();
-      const film = new Film(mkdtempSync(path.join(os.tmpdir(), "kampus-film-")));
+      const number = String(all.indexOf(scene) + 1).padStart(2, "0");
+      const text = texts[scene.id]!;
+      // The app's videos go into a folder of their own beside the site's: `app/01-sign-in.mp4`.
+      const name = `${APP ? "app/" : ""}${number}-${scene.id}`;
+      const browser = APP ? await launch(APP_PHONE, [], UPRIGHT) : await launch();
+      const film = new Film(
+        mkdtempSync(path.join(os.tmpdir(), "kampus-film-")),
+        undefined,
+        APP ? UPRIGHT : undefined,
+      );
       // The step being filmed, named when a scene stops.
       let at = "start";
       try {
-        const [, page] = await open(browser);
+        const [, page] = APP
+          ? await open(browser, APP_PHONE, { locale: LANGUAGE_TAG[locale] }, true)
+          : await open(browser);
         await quiet(page);
+        // The app reads the pages of its own address (`APP_BASE`), not the site's.
+        const address = (pathname: string) =>
+          APP ? `${APP_BASE}${pathname}` : `${BASE}/${locale}${pathname}`;
         const shoot: Shoot = {
           locale,
           film,
@@ -156,7 +183,7 @@ async function main() {
           ceo,
           base,
           label,
-          url: (pathname) => `${BASE}/${locale}${pathname}`,
+          url: address,
           say: (step, work, extra) => {
             at = step;
             const sentence = caption(scene.id, step);
@@ -164,7 +191,7 @@ async function main() {
           },
           go: (pathname, target = page) =>
             film.offCamera(async () => {
-              await target.goto(`${BASE}/${locale}${pathname}`);
+              await target.goto(address(pathname));
               await target.waitForLoadState("networkidle").catch(() => undefined);
               await target.waitForTimeout(500);
             }),
@@ -173,7 +200,7 @@ async function main() {
         };
         await film.watch(page);
         await film.title({
-          index: `${words.series} · ${number}`,
+          index: `${APP ? words.appSeries : words.series} · ${number}`,
           title: text.title,
           note: text.note,
         });
@@ -186,7 +213,7 @@ async function main() {
         failures.push(what);
         process.stdout.write(`  FAILED ${what}\n`);
         // What the page looked like when the scene stopped, for whoever repairs it.
-        mkdirSync(path.join(OUT, locale), { recursive: true });
+        mkdirSync(path.dirname(path.join(OUT, locale, name)), { recursive: true });
         for (const [i, context] of browser.contexts().entries()) {
           await context
             .pages()[0]

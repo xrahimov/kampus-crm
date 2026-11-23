@@ -4,6 +4,8 @@ import { uz } from "./uz";
 
 export type Locale = "en" | "ru" | "uz";
 export type VideoId = keyof (typeof en)["videos"];
+/** The videos recorded in the phone app (A-229). */
+export type AppVideoId = keyof (typeof en)["appVideos"];
 
 /** Every language carries every video and every step: a missing caption is a type error. */
 export type Words = {
@@ -13,6 +15,14 @@ export type Words = {
       title: string;
       note: string;
       steps: Record<keyof (typeof en)["videos"][K]["steps"], string>;
+    };
+  };
+  appSeries: string;
+  appVideos: {
+    [K in AppVideoId]: {
+      title: string;
+      note: string;
+      steps: Record<keyof (typeof en)["appVideos"][K]["steps"], string>;
     };
   };
 };

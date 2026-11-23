@@ -26,9 +26,37 @@ import {
 /** The page as the viewer sees it, in CSS pixels, and the picture it becomes. */
 export const DESKTOP = { width: 1440, height: 720 } as const;
 export const PHONE = { width: 430, height: 720 } as const;
-const PICTURE = { width: 1920, height: 960 } as const;
-const BAND = 120;
-const SCALE = PICTURE.width / DESKTOP.width;
+/** The phone app's screen in the upright videos. */
+export const APP_PHONE = { width: 432, height: 672 } as const;
+
+/**
+ * The shape of a video: the picture the page becomes, the caption band under
+ * it, how much the browser's pixels are scaled up to get there, and the size
+ * of the caption's letters.
+ */
+export type Format = {
+  picture: { width: number; height: number };
+  band: number;
+  scale: number;
+  captionSize: number;
+};
+/** The site's videos: 1920×1080, to be watched on a computer or in the manual. */
+export const WIDE: Format = {
+  picture: { width: 1920, height: 960 },
+  band: 120,
+  scale: 1920 / DESKTOP.width,
+  captionSize: 38,
+};
+/**
+ * The phone app's videos: 1080×1920, upright like the phone they are watched
+ * on. The app's screen fills the width; the caption has room for four lines.
+ */
+export const UPRIGHT: Format = {
+  picture: { width: 1080, height: 1680 },
+  band: 240,
+  scale: 1080 / APP_PHONE.width,
+  captionSize: 44,
+};
 const FPS = 30;
 
 /** Samarkand palette of the app: the lapis of the sidebar, the turquoise of its active edge. */
@@ -42,12 +70,16 @@ export type View = { width: number; height: number };
  * frames come out at video size. `args` adds Chromium switches (the video
  * lesson needs a made-up camera).
  */
-export async function launch(view: View = DESKTOP, args: string[] = []): Promise<Browser> {
+export async function launch(
+  view: View = DESKTOP,
+  args: string[] = [],
+  format: Format = WIDE,
+): Promise<Browser> {
   const executablePath = process.env.PLAYWRIGHT_CHROMIUM_PATH;
   return chromium.launch({
     ...(executablePath ? { executablePath } : { channel: "chromium" }),
     args: [
-      `--force-device-scale-factor=${SCALE}`,
+      `--force-device-scale-factor=${format.scale}`,
       // The window is taller than the page by the browser's own bars; `fit` corrects the rest.
       `--window-size=${view.width},${view.height + 87}`,
       "--hide-scrollbars",
@@ -61,8 +93,11 @@ export async function open(
   browser: Browser,
   view: View = DESKTOP,
   options: Parameters<Browser["newContext"]>[0] = {},
+  /** The pointer is a finger's round mark, not a mouse's arrow (the phone app's videos). */
+  touch = false,
 ): Promise<[BrowserContext, Page]> {
   const context = await browser.newContext({ viewport: null, ...options });
+  if (touch) await context.addInitScript("window.__tutorialTouch = true;");
   await context.addInitScript(POINTER_SCRIPT);
   // No red spell-check line under what is typed: the system's checker (macOS) knows no Uzbek.
   // It is switched off on each field as it takes the cursor; the page's own root loses the attribute.
@@ -141,8 +176,14 @@ const POINTER_SCRIPT = String.raw`(() => {
     const last = pointer && pointer.style.transform;
     pointer = document.createElement("div");
     pointer.id = "tv-pointer";
-    pointer.innerHTML =
-      '<svg viewBox="0 0 24 24" width="26" height="26"><path d="M5 3l14 8.2-6.3 1.5 3.7 6.6-2.6 1.4-3.7-6.6L5 18.6z" fill="#111827" stroke="#fff" stroke-width="1.6" stroke-linejoin="round"/></svg>';
+    // A phone has no arrow: the videos of the app show where the finger is as a round mark.
+    if (window.__tutorialTouch) {
+      pointer.style.cssText =
+        "width: 30px; height: 30px; margin: -15px 0 0 -15px; border-radius: 50%; box-sizing: border-box;" +
+        "background: rgb(255 255 255 / .5); border: 2px solid rgb(27 36 82 / .6);";
+    } else
+      pointer.innerHTML =
+        '<svg viewBox="0 0 24 24" width="26" height="26"><path d="M5 3l14 8.2-6.3 1.5 3.7 6.6-2.6 1.4-3.7-6.6L5 18.6z" fill="#111827" stroke="#fff" stroke-width="1.6" stroke-linejoin="round"/></svg>';
     if (last) {
       pointer.style.transform = last;
       pointer.style.opacity = "1";
@@ -252,6 +293,8 @@ export class Film {
     /** How long a caption of this text has to stay, in seconds. */
     private readonly readTime: (text: string) => number = (text) =>
       Math.max(2.4, 1 + text.length / 16),
+    /** The shape of the video; the browser has to be launched with the same one. */
+    private readonly format: Format = WIDE,
   ) {
     rmSync(dir, { recursive: true, force: true });
     mkdirSync(dir, { recursive: true });
@@ -508,7 +551,7 @@ export class Film {
         display: grid; place-items: center; }
       .tiles { position: absolute; inset: 0; opacity: .08;
         background: repeating-conic-gradient(from 45deg, #fff 0 25%, transparent 0 50%) 0 0 / 96px 96px; }
-      main { position: relative; width: 980px; animation: rise .7s cubic-bezier(.2,.8,.2,1) both; }
+      main { position: relative; width: min(980px, 100vw - 56px); animation: rise .7s cubic-bezier(.2,.8,.2,1) both; }
       .brand { display: flex; align-items: center; gap: 12px; font-size: 22px; font-weight: 600; color: #cfd6f3; }
       .index { margin-top: 44px; font-size: 20px; font-weight: 600; letter-spacing: .04em; color: #5fd6cb; }
       h1 { margin: 10px 0 0; font-size: 62px; line-height: 1.08; font-weight: 700; letter-spacing: -.02em; }
@@ -517,6 +560,14 @@ export class Film {
         transform-origin: left; animation: grow .9s .25s cubic-bezier(.2,.8,.2,1) both; }
       @keyframes rise { from { opacity: 0; transform: translateY(18px) } }
       @keyframes grow { from { transform: scaleX(0) } }
+      /* The upright videos of the phone app: the same card on a phone's width. */
+      @media (max-width: 600px) {
+        .brand { font-size: 17px; }
+        .index { margin-top: 32px; font-size: 14px; }
+        h1 { font-size: 34px; }
+        .note { margin-top: 16px; font-size: 16px; }
+        .bar { margin-top: 28px; width: 64px; height: 5px; }
+      }
     </style>
     <div class="tiles"></div>
     <main>
@@ -574,8 +625,8 @@ export class Film {
           "-i",
           list,
           "-vf",
-          `fps=${FPS},scale=-2:${PICTURE.height}:flags=lanczos,` +
-            `pad=${PICTURE.width}:${PICTURE.height}:(ow-iw)/2:0:color=${BACKDROP}`,
+          `fps=${FPS},scale=-2:${this.format.picture.height}:flags=lanczos,` +
+            `pad=${this.format.picture.width}:${this.format.picture.height}:(ow-iw)/2:0:color=${BACKDROP}`,
           "-t",
           (segment.to - segment.from).toFixed(3),
           "-c:v",
@@ -592,7 +643,7 @@ export class Film {
       });
     const joined = path.join(this.dir, "parts.txt");
     writeFileSync(joined, parts.map((p) => `file '${p}'`).join("\n"));
-    const band = await captionBand(this.captions, total, this.dir);
+    const band = await captionBand(this.captions, total, this.dir, this.format);
     mkdirSync(path.dirname(out), { recursive: true });
     // The sound: silence all the way, and over it each sentence at the moment its caption appears.
     const spoken = this.captions.filter((c) => c.voice && c.to > c.from);
@@ -685,7 +736,12 @@ function onest(): string {
  * lines, smaller when a sentence is long), with the bare band between them.
  * Returns the list file ffmpeg reads.
  */
-async function captionBand(captions: Caption[], total: number, dir: string): Promise<string> {
+async function captionBand(
+  captions: Caption[],
+  total: number,
+  dir: string,
+  format: Format,
+): Promise<string> {
   const executablePath = process.env.PLAYWRIGHT_CHROMIUM_PATH;
   const browser = await chromium.launch(
     executablePath ? { executablePath } : { channel: "chromium" },
@@ -693,7 +749,7 @@ async function captionBand(captions: Caption[], total: number, dir: string): Pro
   const lines: string[] = [];
   try {
     const page = await browser.newPage({
-      viewport: { width: PICTURE.width, height: BAND },
+      viewport: { width: format.picture.width, height: format.band },
       deviceScaleFactor: 1,
     });
     const draw = async (text: string, file: string) => {
@@ -702,16 +758,19 @@ async function captionBand(captions: Caption[], total: number, dir: string): Pro
         html, body { margin: 0; height: 100%; }
         body { background: ${LAPIS}; color: #fff; display: grid; place-items: center; overflow: hidden;
           font-family: Onest, Inter, sans-serif; }
-        p { margin: 0; max-width: ${PICTURE.width - 160}px; text-align: center; font-size: 38px;
-          line-height: 1.24; font-weight: 500; text-wrap: balance; }
+        p { margin: 0; max-width: ${Math.round(format.picture.width * 0.916)}px; text-align: center;
+          font-size: ${format.captionSize}px; line-height: 1.24; font-weight: 500; text-wrap: balance; }
       </style><p>${esc(text)}</p>`);
-      await page.evaluate(async (room) => {
-        await document.fonts.ready;
-        const p = document.querySelector("p")!;
-        for (let size = 38; size > 24 && p.offsetHeight > room; size--) {
-          p.style.fontSize = `${size - 1}px`;
-        }
-      }, BAND - 16);
+      await page.evaluate(
+        async ([room, from]) => {
+          await document.fonts.ready;
+          const p = document.querySelector("p")!;
+          for (let size = from; size > 24 && p.offsetHeight > room; size--) {
+            p.style.fontSize = `${size - 1}px`;
+          }
+        },
+        [format.band - 16, format.captionSize] as const,
+      );
       await page.screenshot({ path: file });
     };
     const bare = path.join(dir, "band.png");

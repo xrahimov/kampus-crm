@@ -91,6 +91,19 @@ describe("the folder of how-to videos", () => {
       "app/01-sign-in.mp4",
       "app/02-student.mp4",
     ]);
+    // The recorder writes them under these names, in this order, in every language.
+    expect(APP_HELP_VIDEO_IDS.map((id) => id.slice("app-".length))).toEqual(
+      Object.keys(WORDS.en.appVideos),
+    );
+    for (const locale of HELP_VIDEO_LOCALES) {
+      for (const [id, video] of Object.entries(WORDS[locale].appVideos)) {
+        expect(video.title, `${locale} ${id}`).not.toBe("");
+        // An upright video's band holds four lines: about 160 characters.
+        for (const [step, text] of Object.entries(video.steps)) {
+          expect(text.length, `${locale} ${id} ${step}`).toBeLessThanOrEqual(170);
+        }
+      }
+    }
     // The app's video is its own file, not the site's of the same subject.
     expect((await helpVideoRange("en", "app-sign-in"))?.size).toBe(40);
     expect((await helpVideoRange("en", "sign-in"))?.size).toBe(100);

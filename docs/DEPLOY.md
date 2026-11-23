@@ -456,6 +456,20 @@ videos of that language and served from the same address under the names
 say there is nothing to install. A language whose file is missing simply shows
 no video row on the app's sign-in screen.
 
+They are recorded with the same recorder as the site's videos, from the app's
+browser build:
+
+```bash
+cd mobile && npm ci && npm run export:web && cd ..
+npm run build
+scripts/tutorial-videos/record-all.sh <out-folder> --app --voice
+```
+
+That writes `<out-folder>/<language>/app/01-sign-in.mp4` and
+`app/02-student.mp4` (1080x1920, upright). Copy each language's `app` folder
+into `help-videos/<language>/` on the server; nothing has to be restarted, the
+app finds a new file within a few minutes.
+
 The first time, the folder has to exist before the app starts with this
 version, or Docker creates it empty by itself (owned by root, which is fine).
 The folder is ignored by git and left out of the Docker build.

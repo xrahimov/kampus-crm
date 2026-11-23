@@ -9,7 +9,7 @@ async function signIn(page: Page, phone: string) {
   await page.goto("/en/login");
   await page.getByLabel("Phone number").fill(phone);
   await page.getByLabel("Password").fill(PASSWORD);
-  await page.getByRole("button", { name: "Sign in" }).click();
+  await page.getByRole("button", { name: "Sign in", exact: true }).click();
   await expect(page).toHaveURL(/\/en\/(dashboard|today)/);
 }
 

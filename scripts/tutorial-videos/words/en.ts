@@ -402,4 +402,53 @@ export const en = {
       },
     },
   },
+  /**
+   * The videos recorded in the phone app, for the app's own sign-in screen
+   * (A-229). Upright, with room for four lines of caption: up to about 160
+   * characters.
+   */
+  appSeries: "Kampus app how-to",
+  appVideos: {
+    "sign-in": {
+      title: "Signing in to the app",
+      note: "Install Kampus, sign in the first time with a code from Telegram, then with your password.",
+      steps: {
+        install: "Install the Kampus app on your phone or tablet and open it.",
+        door: "Teachers, administrators and managers choose “{mobile.doorStaff}”.",
+        phone:
+          "The first time, you sign in through Telegram. Type your phone number and press “{auth.getCode}”.",
+        bot: "In Telegram, open the bot named on the screen, press Start, then “Share my number”. This is needed only once.",
+        approve:
+          "A number the centre has on your card gets a code at once. An unknown number asks to be let in, and the centre’s staff approve it.",
+        code: "The bot sends you a six-digit code. Type it here and press “{auth.confirmCode}”.",
+        password:
+          "Kampus now offers you a password of your own. Type it twice and press “{auth.savePassword}”.",
+        inside:
+          "You are in. “{nav.today}” shows your lessons. The bar at the bottom opens your groups, homework to check and your students.",
+        again:
+          "From now on your phone number and password are enough. A Telegram code still works if you forget the password.",
+      },
+    },
+    student: {
+      title: "The app for students and parents",
+      note: "Install Kampus, sign in with a code from Telegram, and find lessons, homework, results and payments.",
+      steps: {
+        install: "Students and parents install the Kampus app on their phone and open it.",
+        door: "“{mobile.doorStudent}” is already chosen. Type the phone number the centre has for you.",
+        phone:
+          "The first time, press “{auth.getCode}”. In Telegram, press Start in the bot and share your number. This is needed only once.",
+        approve:
+          "If the centre does not have your number yet, the app asks who you are, and the centre’s staff approve you. The bot tells you when.",
+        code: "The bot sends a six-digit code. Type it and press “{auth.confirmCode}”.",
+        password: "A password can be chosen now or later. With it, the next sign-in needs no code.",
+        home: "Home shows your groups and the homework that is waiting. A lesson that is on right now is joined from here.",
+        group:
+          "A group’s page has the next lesson, the timetable, homework, materials and the chat with the teacher.",
+        homework: "Under homework you read the task and send your answer.",
+        results:
+          "Results show grades, exams and attendance, so parents always know how the child is doing.",
+        money: "The group’s page also shows what is paid and what is owed.",
+      },
+    },
+  },
 };

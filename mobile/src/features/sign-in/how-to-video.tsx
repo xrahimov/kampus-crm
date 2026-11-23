@@ -2,7 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useVideoPlayer, VideoView } from "expo-video";
 import { Play } from "lucide-react-native";
 import { useState } from "react";
-import { StyleSheet, View } from "react-native";
+import { StyleSheet, useWindowDimensions, View } from "react-native";
 
 import { Animated, Press, appear } from "@/components/motion";
 import { Text } from "@/components/text";
@@ -86,8 +86,15 @@ export function HowToVideo({ id }: { id: HowToVideoId }) {
   );
 }
 
+/**
+ * The app's videos are upright, like the phone they were recorded for: the
+ * player takes most of the screen's height and stands in the middle of the
+ * card; full screen is one press away in its own controls.
+ */
 function Player({ url, title }: { url: string; title: string }) {
   const player = useVideoPlayer(url, (made) => made.play());
+  const { height } = useWindowDimensions();
+  const tall = Math.round(Math.min(Math.max(height * 0.62, 320), 620));
   return (
     <VideoView
       player={player}
@@ -95,7 +102,7 @@ function Player({ url, title }: { url: string; title: string }) {
       contentFit="contain"
       allowsVideoFrameAnalysis={false}
       accessibilityLabel={title}
-      style={styles.video}
+      style={[styles.video, { height: tall, width: Math.round((tall * 9) / 16) }]}
       testID="how-to-video-player"
     />
   );
@@ -129,6 +136,6 @@ const styles = StyleSheet.create({
   },
   words: { flexShrink: 1 },
   note: { paddingHorizontal: space[4], paddingVertical: space[3] },
-  frame: { backgroundColor: "#000" },
-  video: { width: "100%", aspectRatio: 16 / 9 },
+  frame: { backgroundColor: "#000", alignItems: "center" },
+  video: { maxWidth: "100%" },
 });

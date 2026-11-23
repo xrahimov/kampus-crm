@@ -12,7 +12,7 @@ async function signIn(page: Page, phone: string, password: string) {
   await page.goto("/en/login");
   await page.getByLabel("Phone number").fill(phone);
   await page.getByLabel("Password").fill(password);
-  await page.getByRole("button", { name: "Sign in" }).click();
+  await page.getByRole("button", { name: "Sign in", exact: true }).click();
 }
 
 async function apiHeaders(page: Page) {

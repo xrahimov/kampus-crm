@@ -8,7 +8,7 @@ async function signIn(page: Page, phone: string) {
   await page.goto("/en/login");
   await page.getByLabel("Phone number").fill(phone);
   await page.getByLabel("Password").fill(PASSWORD);
-  await page.getByRole("button", { name: "Sign in" }).click();
+  await page.getByRole("button", { name: "Sign in", exact: true }).click();
   await expect(page).toHaveURL(/\/en\/(dashboard|groups|today)/);
 }
 
@@ -56,7 +56,7 @@ test.describe("help", () => {
       .toBe(320);
     // No video in Russian on this server, so the Russian page offers none.
     await page.goto("/ru/login");
-    await expect(page.getByRole("button", { name: "Войти" })).toBeVisible();
+    await expect(page.getByRole("button", { name: "Войти", exact: true })).toBeVisible();
     await expect(page.getByTestId("help-video")).toHaveCount(0);
 
     await signIn(page, CEO_PHONE);
