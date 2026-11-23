@@ -21,10 +21,21 @@ export function hasHome(me: Me): boolean {
  */
 export function nativeRoute(path: string): Href | null {
   const [pathname = "", filter] = path.split("?");
-  // The students list takes the site's filters (A-231); any other filtered list is the site's.
-  if (filter) return pathname === "/students" ? studentsRoute(filter) : null;
+  // The students list takes the site's filters (A-231) and the leads board a board and a
+  // search (A-232); any other filtered list is the site's.
+  if (filter) {
+    if (pathname === "/students") return studentsRoute(filter);
+    if (pathname === "/leads") return filteredRoute("/staff/leads", filter, LEAD_FILTER_VALUES);
+    return null;
+  }
   const parts = pathname.split("/").filter(Boolean);
   const [first, id, ...rest] = parts;
+  // Leads has pages of its own under it (A-232); its sources report stays the site's.
+  if (first === "leads") {
+    if (!id) return "/staff/leads";
+    if (rest.length > 0) return null;
+    return id === "calls" || id === "waitlist" || id === "inbox" ? `/staff/leads/${id}` : null;
+  }
   if (rest.length > 0) return null;
   if (first === "account") return id === "salary" ? "/staff/salary" : null;
   if (id) {
@@ -45,6 +56,10 @@ export function nativeRoute(path: string): Href | null {
       return "/staff/students";
     case "announcements":
       return "/staff/announcements";
+    case "absences":
+      return "/staff/absences";
+    case "join-requests":
+      return "/staff/join-requests";
     case "notifications":
       return "/staff/notifications";
     case "search":
@@ -64,22 +79,33 @@ const STUDENT_FILTER_VALUES: Record<string, readonly string[] | null> = {
   teacherId: null,
 };
 
+/** What the app's leads board takes from an address: the board and what is searched for. */
+const LEAD_FILTER_VALUES: Record<string, readonly string[] | null> = { boardId: null, q: null };
+
 /**
  * "/students?paymentStatus=DEBTOR" as the app's list with that filter. Null if
  * the address asks for a filter or a value the app's list does not have: it
  * would show everyone, so that address stays the site's.
  */
 function studentsRoute(filter: string): Href | null {
+  return filteredRoute("/staff/students", filter, STUDENT_FILTER_VALUES);
+}
+
+function filteredRoute(
+  pathname: "/staff/students" | "/staff/leads",
+  filter: string,
+  values: Record<string, readonly string[] | null>,
+): Href | null {
   const params: Record<string, string> = {};
   for (const pair of filter.split("&")) {
     const [key = "", raw = ""] = pair.split("=");
     const value = decodeURIComponent(raw);
-    const known = STUDENT_FILTER_VALUES[key];
+    const known = values[key];
     if (known === undefined || !value) return null;
     if (known !== null && !known.includes(value)) return null;
     params[key] = value;
   }
-  return { pathname: "/staff/students", params };
+  return { pathname, params };
 }
 
 /**

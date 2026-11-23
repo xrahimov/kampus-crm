@@ -13,15 +13,10 @@ import { Notice, Segmented } from "@/components/surface";
 import { Text } from "@/components/text";
 import { ApiError } from "@/lib/api";
 import { centreToday } from "@/lib/days";
+import { phoneOrNull } from "@/lib/form";
 import { errorText, useTranslations } from "@/lib/i18n";
 import { useMe } from "@/lib/session";
 import { space } from "@/lib/theme";
-
-/** A phone number as the server wants it, or null when the field is empty. */
-function phoneOrNull(text: string): string | null {
-  const bare = text.replace(/[\s()-]/g, "");
-  return bare === "" || bare === "+998" ? null : bare;
-}
 
 /**
  * "Add student" (A-231), the site's form with the parts a phone is used for:

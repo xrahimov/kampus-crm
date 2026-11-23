@@ -18,6 +18,7 @@ import {
   Search,
   Settings2,
   Sparkles,
+  UserRoundCheck,
   UserRoundX,
   Users,
   Wallet,
@@ -28,10 +29,11 @@ import { Pressable, StyleSheet, View } from "react-native";
 import { canViewModule, MODULES, type ModuleKey } from "@kampus/lib/rbac/permissions";
 
 import { useUnreadCount } from "@/api/office";
+import { useJoinRequests } from "@/api/office-follow-up";
 import { Badge, Card, Divider, Notice } from "@/components/surface";
 import { Text } from "@/components/text";
 import { useTranslations } from "@/lib/i18n";
-import { useMe } from "@/lib/session";
+import { can, useMe } from "@/lib/session";
 import { space, useTheme } from "@/lib/theme";
 
 import { nativeRoute, useOpenPath } from "./site-paths";
@@ -90,12 +92,17 @@ interface MenuRow {
  * one list, with the bell, the search and "My salary" on top. A page the app
  * has opens in the app; a page it does not have yet opens on the site, already
  * signed in, and carries the arrow that says so.
+ *
+ * "Sign-in requests" (A-232) is a banner on the site's Students and Staff
+ * pages; here it is a row, with the number of people waiting, for whoever may
+ * answer them.
  */
 export function Menu() {
   const t = useTranslations();
   const me = useMe();
   const { open, error } = useOpenPath();
   const unread = useUnreadCount();
+  const joins = useJoinRequests("PENDING", can(me, "students.create") || can(me, "staff.create"));
   // The dashboard is the centre's home: someone in the teaching view has the short menu first.
   const modules = MODULES.filter(
     (m) => canViewModule(me.permissions, m) && (m !== "dashboard" || me.view.current === "FULL"),
@@ -111,6 +118,17 @@ export function Menu() {
     { key: "search", label: t("mobile.office.searchTitle"), icon: Search, path: "/search" },
     ...(me.user.hasSalary
       ? [{ key: "salary", label: t("salary.title"), icon: Banknote, path: "/account/salary" }]
+      : []),
+    ...(joins.data && joins.data.doors.length > 0
+      ? [
+          {
+            key: "join-requests",
+            label: t("joinRequests.title"),
+            icon: UserRoundCheck,
+            path: "/join-requests",
+            count: joins.data.items.length,
+          },
+        ]
       : []),
     ...modules.map((m) => ({
       key: m,
@@ -152,7 +170,9 @@ function Row({ row, onPress }: { row: MenuRow; onPress: () => void }) {
         {row.label}
       </Text>
       {row.count ? (
-        <Badge tone="accent" label={row.count > 99 ? "99+" : String(row.count)} />
+        <View style={styles.count}>
+          <Badge tone="accent" label={row.count > 99 ? "99+" : String(row.count)} />
+        </View>
       ) : null}
       {onSite ? (
         <ExternalLink size={16} color={colors.mutedForeground} testID={`menu-${row.key}-site`} />
@@ -165,6 +185,7 @@ function Row({ row, onPress }: { row: MenuRow; onPress: () => void }) {
 
 const styles = StyleSheet.create({
   fill: { flex: 1 },
+  count: { alignSelf: "center" },
   wrap: { gap: space[2] },
   flush: { padding: 0, gap: 0, overflow: "hidden" },
   row: {

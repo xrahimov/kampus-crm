@@ -36,7 +36,8 @@ announcements, A-222 for the whiteboard saved from the app, A-223 for screen sha
 iPhone or iPad, A-224 for the glass look and smooth motion, A-229 for the app's sign-in screen:
 who approves a new account, its how-to video and the tiled wall, and A-230 for the office's side:
 the centre's home with its figures and charts, notifications, search, the menu of every page and
-"My salary", and A-231 for students on the office's side: filters, a new student, a payment taken). The site has the same glass on
+"My salary", A-231 for students on the office's side: filters, a new student, a payment taken, and A-232 for
+leads, the day's calls, the waiting list, the inbox, sign-in requests and absences). The site has the same glass on
 its top bar, menus, dialogs and the assistant's panel (A-225).
 
 [docs/DEMO-GUIDE.md](docs/DEMO-GUIDE.md) is a script for showing the whole app to a centre's owner or
