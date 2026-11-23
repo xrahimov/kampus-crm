@@ -49,12 +49,14 @@ export function DateField({
   value,
   onChange,
   error,
+  hint,
   testID,
 }: {
   label: string;
   value: string | null;
   onChange: (value: string | null) => void;
   error?: string | null;
+  hint?: string;
   testID?: string;
 }) {
   const t = useTranslations();
@@ -81,6 +83,7 @@ export function DateField({
       keyboardType="numbers-and-punctuation"
       maxLength={10}
       error={error ?? (unfinished ? t("validation.date") : null)}
+      hint={hint}
       testID={testID}
     />
   );

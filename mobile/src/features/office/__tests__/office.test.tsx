@@ -242,8 +242,9 @@ describe("the centre's home", () => {
     await fireEvent.press(screen.getByTestId("kpi-studentsInGroups"));
     expect(mockPush).toHaveBeenCalledWith("/staff/students");
 
+    // Leads have their board in the app (A-232).
     await fireEvent.press(screen.getByTestId("kpi-activeLeads"));
-    expect(mockOpenOnSite).toHaveBeenCalledWith("/en/leads");
+    expect(mockPush).toHaveBeenLastCalledWith("/staff/leads");
     await fireEvent.press(screen.getByTestId("kpi-debtors"));
     expect(mockOpenOnSite).toHaveBeenLastCalledWith("/en/debts");
     // A figure about students opens the app's list with the site's filter already set (A-231).
@@ -378,8 +379,9 @@ describe("where a page of the site lives in the app", () => {
   });
 
   it("sends everything else to the site", () => {
-    expect(nativeRoute("/leads")).toBeNull();
-    expect(nativeRoute("/leads?boardId=b1&q=Ali")).toBeNull();
+    expect(nativeRoute("/debts")).toBeNull();
+    // A leads filter the app's board does not have stays the site's.
+    expect(nativeRoute("/leads?teacherId=t1")).toBeNull();
     // A students filter the app does not know stays the site's.
     expect(nativeRoute("/students?schoolId=x")).toBeNull();
     // A value the app's list does not know would show everyone: the site's too.
@@ -444,9 +446,12 @@ describe("the bell's list", () => {
       params: { id: "s1" },
     });
 
-    // A lead has no page in the app yet: it opens on the site, and is not marked again.
+    // A lead opens its board in the app (A-232); one that was read is not marked again.
     await fireEvent.press(screen.getByTestId("notification-n2"));
-    expect(mockOpenOnSite).toHaveBeenCalledWith("/en/leads?boardId=b1");
+    expect(mockPush).toHaveBeenLastCalledWith({
+      pathname: "/staff/leads",
+      params: { boardId: "b1" },
+    });
     expect(calls("POST", "/notifications/read")).toHaveLength(1);
   });
 
@@ -499,8 +504,12 @@ describe("the search over everything", () => {
     });
     await fireEvent.press(screen.getByTestId("found-group-g1"));
     expect(mockPush).toHaveBeenCalledWith({ pathname: "/staff/group/[id]", params: { id: "g1" } });
+    // A lead opens its board with the name searched (A-232).
     await fireEvent.press(screen.getByTestId("found-lead-l1"));
-    expect(mockOpenOnSite).toHaveBeenCalledWith("/en/leads?boardId=b1&q=Alisher");
+    expect(mockPush).toHaveBeenLastCalledWith({
+      pathname: "/staff/leads",
+      params: { boardId: "b1", q: "Alisher" },
+    });
   });
 });
 
@@ -528,9 +537,9 @@ describe("the menu of every page", () => {
     // No right to them, no row.
     expect(screen.queryByTestId("menu-settings")).toBeNull();
     expect(screen.queryByTestId("menu-reports")).toBeNull();
-    // The app has students; leads and finance are the site's for now.
+    // The app has students and leads; finance is the site's for now.
     expect(screen.queryByTestId("menu-students-site", { includeHiddenElements: true })).toBeNull();
-    expect(screen.getByTestId("menu-leads-site", { includeHiddenElements: true })).toBeTruthy();
+    expect(screen.queryByTestId("menu-leads-site", { includeHiddenElements: true })).toBeNull();
     expect(screen.getByTestId("menu-finance-site", { includeHiddenElements: true })).toBeTruthy();
     await waitFor(() => expect(screen.getByTestId("menu-notifications")).toHaveTextContent(/1/));
 

@@ -40,6 +40,13 @@ export default function StaffLayout() {
       <Stack.Screen name="notifications" />
       <Stack.Screen name="search" />
       <Stack.Screen name="salary" />
+      <Stack.Screen name="leads/index" />
+      <Stack.Screen name="leads/calls" />
+      <Stack.Screen name="leads/waitlist" />
+      <Stack.Screen name="leads/inbox/index" />
+      <Stack.Screen name="leads/inbox/[id]" />
+      <Stack.Screen name="absences" />
+      <Stack.Screen name="join-requests" />
       {/* A lesson is left with its own button, not by a stray swipe from the edge. */}
       <Stack.Screen name="room/[id]" options={{ gestureEnabled: false, animation: "fade" }} />
     </Stack>
