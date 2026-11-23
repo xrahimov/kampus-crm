@@ -14,3 +14,13 @@ CLAUDE.md
 # Vendored skills are kept byte-identical to upstream
 .claude/skills/
 public/pdfjs
+
+# The phone app (A-203) formats itself
+# The phone app: its build output and generated native projects.
+mobile/dist
+mobile/.expo
+mobile/android
+mobile/ios
+mobile/node_modules
+mobile/package-lock.json
+mobile/assets

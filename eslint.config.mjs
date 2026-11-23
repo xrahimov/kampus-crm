@@ -27,6 +27,8 @@ const eslintConfig = defineConfig([
     "coverage/**",
     // The PDF reader's worker, copied from pdfjs-dist (scripts/copy-pdf-worker.mjs).
     "public/pdfjs/**",
+    // The phone app (A-203) is its own project with its own lint and typecheck.
+    "mobile/**",
   ]),
 ]);
 

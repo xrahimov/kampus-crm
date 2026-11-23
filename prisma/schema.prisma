@@ -225,6 +225,7 @@ model User {
   sessions        Session[]
   loginLogs       LoginLog[]
   loginChallenges LoginChallenge[]
+  webHandoffs     WebHandoff[]
   joinDecisions   JoinRequest[]
   auditLogs       AuditLog[]
 
@@ -351,6 +352,8 @@ model Session {
   createdAt      DateTime     @default(now())
   /// How this session was opened (A-180): Telegram-only can be switched on only from a Telegram session.
   signedInWith   SignInMethod @default(PASSWORD)
+  /// Opened by the phone app (A-203): lives 30 days from its last use instead of 12 hours.
+  app            Boolean      @default(false)
 
   user         User    @relation(fields: [userId], references: [id], onDelete: Cascade)
   activeBranch Branch? @relation(fields: [activeBranchId], references: [id], onDelete: SetNull)
@@ -403,6 +406,25 @@ model LoginChallenge {
   userAgent      String?
   expiresAt      DateTime
   createdAt      DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([expiresAt])
+}
+
+/// A one-time link that opens the site already signed in, asked for by the phone
+/// app for a page it does not have itself yet (A-204). Lives for a minute.
+model WebHandoff {
+  id             String    @id @default(cuid())
+  userId         String
+  tokenHash      String    @unique
+  /// Where on the site the link leads: a path, never another site.
+  path           String
+  activeBranchId String?
+  expiresAt      DateTime
+  usedAt         DateTime?
+  createdAt      DateTime  @default(now())
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 

@@ -2,6 +2,7 @@ import { cookies } from "next/headers";
 import type { NextResponse } from "next/server";
 
 import {
+  APP_SESSION_TTL_MS,
   CSRF_COOKIE,
   SESSION_COOKIE,
   SESSION_TOUCH_INTERVAL_MS,
@@ -21,6 +22,13 @@ export interface SessionRecord {
   lastSeenAt: Date;
   /** How the session was opened (A-180). */
   signedInWith: "PASSWORD" | "TELEGRAM";
+  /** Opened by the phone app (A-203): it lives longer and carries its token in a header. */
+  app: boolean;
+}
+
+/** How long a session lives after its last use: half a day in a browser, 30 days in the app. */
+export function sessionTtlMs(session: { app: boolean }): number {
+  return session.app ? APP_SESSION_TTL_MS : SESSION_TTL_MS;
 }
 
 export interface IssuedSession {
@@ -38,6 +46,7 @@ export async function createSession(
     ip?: string | null;
     userAgent?: string | null;
     signedInWith?: "PASSWORD" | "TELEGRAM";
+    app?: boolean;
   },
   now = new Date(),
 ): Promise<IssuedSession> {
@@ -51,9 +60,10 @@ export async function createSession(
       csrfSecret: csrfToken,
       ip: input.ip ?? null,
       userAgent: input.userAgent?.slice(0, 512) ?? null,
-      expiresAt: new Date(now.getTime() + SESSION_TTL_MS),
+      expiresAt: new Date(now.getTime() + sessionTtlMs({ app: input.app ?? false })),
       lastSeenAt: now,
       signedInWith: input.signedInWith ?? "PASSWORD",
+      app: input.app ?? false,
     },
   });
   return { token, csrfToken, session };
@@ -78,7 +88,7 @@ export async function findSessionByToken(
   if (now.getTime() - session.lastSeenAt.getTime() > SESSION_TOUCH_INTERVAL_MS) {
     return db.session.update({
       where: { id: session.id },
-      data: { lastSeenAt: now, expiresAt: new Date(now.getTime() + SESSION_TTL_MS) },
+      data: { lastSeenAt: now, expiresAt: new Date(now.getTime() + sessionTtlMs(session)) },
     });
   }
   return session;

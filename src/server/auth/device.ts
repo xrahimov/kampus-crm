@@ -5,6 +5,16 @@
 export function describeDevice(userAgent: string | null | undefined): string {
   if (!userAgent) return "—";
   const ua = userAgent;
+  // The phone app names itself "KampusApp/<version> (<system>; <model>)" (A-203).
+  if (/^KampusApp\//.test(ua)) {
+    return /iOS|iPhone|iPad/.test(ua)
+      ? /iPad/.test(ua)
+        ? "Kampus app · iPad"
+        : "Kampus app · iPhone"
+      : /Android/.test(ua)
+        ? "Kampus app · Android"
+        : "Kampus app";
+  }
   const browser = /Edg\//.test(ua)
     ? "Edge"
     : /OPR\/|Opera/.test(ua)

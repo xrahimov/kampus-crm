@@ -3,6 +3,7 @@ import type { z } from "zod";
 
 import { SESSION_COOKIE } from "@/lib/auth/constants";
 import type { Permission } from "@/lib/rbac/permissions";
+import { requestSessionToken } from "@/server/auth/app-client";
 import { resolveCurrentUser, type CurrentUser } from "@/server/auth/current-user";
 import { assertCsrf, MUTATING_METHODS } from "@/server/auth/csrf";
 import { AppError, isAppError } from "@/server/errors/app-error";
@@ -82,8 +83,9 @@ async function parseBody<TBody>(request: NextRequest, schema?: z.ZodType<TBody>)
 }
 
 /**
- * Wraps a route handler with: JSON body validation, session lookup, CSRF check
- * for mutating methods, optional permission check, and error → JSON mapping.
+ * Wraps a route handler with: JSON body validation, session lookup (cookie, or
+ * the phone app's Bearer header), CSRF check for mutating methods that came with
+ * a cookie, optional permission check, and error → JSON mapping.
  * Authenticated by default; pass `auth: false` for public endpoints.
  */
 export function route<TBody = undefined, TParams = Record<string, never>>(
@@ -105,7 +107,8 @@ export function route(
   return async (request: NextRequest, context: RouteParams<unknown>): Promise<Response> => {
     try {
       const ip = clientIp(request);
-      const token = request.cookies.get(SESSION_COOKIE)?.value ?? null;
+      // A browser's cookie, or the phone app's Bearer header (A-203).
+      const { token, fromHeader } = requestSessionToken(request, SESSION_COOKIE);
       const current = await resolveCurrentUser(token, ip);
 
       if (options.auth !== false) {
@@ -121,7 +124,8 @@ export function route(
         if (options.permission) authorize(current.actor, options.permission);
       }
 
-      if (MUTATING_METHODS.has(request.method) && !options.skipCsrf) {
+      // CSRF guards cookies; a token sent in a header cannot be forged by another site.
+      if (MUTATING_METHODS.has(request.method) && !options.skipCsrf && !fromHeader) {
         assertCsrf(request, current?.session.csrfSecret ?? null);
       }
 
