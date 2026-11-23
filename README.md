@@ -32,8 +32,8 @@ Telegram, invite code and certificates, A-217 for the teacher's homework set and
 the phone, the class stream, the gradebook and the notes, A-218 for the teacher's course plan,
 coins and tests of a group, A-219 for a group's exams, knowledge by topic, comments on students
 and history, A-220 for Students on the teacher's side, A-221 for
-announcements, A-222 for the whiteboard saved from the app, and A-223 for screen sharing from an
-iPhone or iPad).
+announcements, A-222 for the whiteboard saved from the app, A-223 for screen sharing from an
+iPhone or iPad, and A-224 for the glass look and smooth motion).
 
 [docs/DEMO-GUIDE.md](docs/DEMO-GUIDE.md) is a script for showing the whole app to a centre's owner or
 its teachers, stop by stop, with the manual's own screenshots.

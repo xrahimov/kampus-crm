@@ -1,4 +1,4 @@
-import type { ReactNode } from "react";
+import { createContext, useContext, useEffect, useRef, useState, type ReactNode } from "react";
 import {
   ActivityIndicator,
   KeyboardAvoidingView,
@@ -8,20 +8,38 @@ import {
   ScrollView,
   StyleSheet,
   View,
+  type LayoutChangeEvent,
   type StyleProp,
   type ViewStyle,
 } from "react-native";
+import { useAnimatedStyle, useSharedValue, withSpring } from "react-native-reanimated";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { useLayout } from "@/lib/layout";
 import { CONTENT_MAX_WIDTH, radius, space, useTheme, type Colors } from "@/lib/theme";
 
+import { Backdrop, Glass, GlassScope } from "./glass";
+import { Animated, Press, SPRING_FIRM, appear, tick, useArrival } from "./motion";
 import { Text } from "./text";
+
+/**
+ * How much of the bottom of a screen the floating navigation bar covers. The
+ * tabs set it; a screen pushed over them has no bar and gets 0.
+ */
+const BottomBarContext = createContext(0);
+export const BottomBarSpace = BottomBarContext.Provider;
+
+/** A first guess at a header's height, so the page does not jump when the real one is measured. */
+const HEADER_GUESS = 36 + 2 * space[3];
 
 /**
  * The page under every screen: the porcelain background, safe-area padding, a
  * column that stops growing on tablets, and pull-to-refresh when the screen
  * has something to reload.
+ *
+ * The header and the save bar are glass (A-224): they float over the page and
+ * the page scrolls beneath them, so the screen leaves that much room at the
+ * top and the bottom of what it scrolls.
  */
 export function Screen({
   children,
@@ -48,65 +66,77 @@ export function Screen({
   const { colors } = useTheme();
   const { wide } = useLayout();
   const insets = useSafeAreaInsets();
+  const bottomBar = useContext(BottomBarContext);
   const pad = wide ? space[8] : space[4];
+  const [headerHeight, setHeaderHeight] = useState(header ? insets.top + HEADER_GUESS : 0);
+  const [footerHeight, setFooterHeight] = useState(0);
+  const measure = (set: (height: number) => void) => (event: LayoutChangeEvent) =>
+    set(Math.round(event.nativeEvent.layout.height));
+  const top = header ? headerHeight : padTop ? insets.top : 0;
+  const bottom = footer ? footerHeight : insets.bottom + bottomBar;
   const inner: StyleProp<ViewStyle> = [
     styles.column,
-    { paddingHorizontal: pad, paddingTop: pad, paddingBottom: pad + (footer ? 0 : insets.bottom) },
+    { paddingHorizontal: pad, paddingTop: pad + top, paddingBottom: pad + bottom },
     contentStyle,
   ];
   return (
-    <View
-      style={[
-        styles.page,
-        { backgroundColor: colors.background, paddingTop: padTop ? insets.top : 0 },
-      ]}
-    >
-      {header}
-      <KeyboardAvoidingView
-        style={styles.fill}
-        // Android draws under the keyboard (edge to edge): the page gives up that room and the
-        // field being typed in stays in view. iOS moves the scrolling part by itself (below).
-        behavior={Platform.OS === "android" ? "padding" : undefined}
-      >
-        {scroll ? (
-          <ScrollView
-            style={styles.fill}
-            contentContainerStyle={styles.grow}
-            keyboardShouldPersistTaps="handled"
-            // iOS: a field under the keyboard is scrolled into view.
-            automaticallyAdjustKeyboardInsets
-            refreshControl={
-              onRefresh ? (
-                <RefreshControl
-                  refreshing={refreshing}
-                  onRefresh={onRefresh}
-                  tintColor={colors.ring}
-                />
-              ) : undefined
-            }
-          >
-            <View style={inner}>{children}</View>
-          </ScrollView>
-        ) : (
-          <View style={[styles.fill, inner]}>{children}</View>
-        )}
-        {footer ? (
-          <View
-            style={[
-              styles.footer,
-              {
-                backgroundColor: colors.card,
-                borderTopColor: colors.border,
-                paddingBottom: space[3] + insets.bottom,
-                paddingHorizontal: pad,
-              },
-            ]}
-          >
-            <View style={styles.footerColumn}>{footer}</View>
+    <GlassScope>
+      <View style={[styles.page, { backgroundColor: colors.background }]}>
+        <KeyboardAvoidingView
+          style={styles.fill}
+          // Android draws under the keyboard (edge to edge): the page gives up that room and the
+          // field being typed in stays in view. iOS moves the scrolling part by itself (below).
+          behavior={Platform.OS === "android" ? "padding" : undefined}
+        >
+          <View style={styles.fill}>
+            <Backdrop style={styles.fill}>
+              {scroll ? (
+                <ScrollView
+                  style={styles.fill}
+                  contentContainerStyle={styles.grow}
+                  keyboardShouldPersistTaps="handled"
+                  // iOS: a field under the keyboard is scrolled into view.
+                  automaticallyAdjustKeyboardInsets
+                  scrollIndicatorInsets={{ top, bottom: footer ? footerHeight : bottomBar }}
+                  refreshControl={
+                    onRefresh ? (
+                      <RefreshControl
+                        refreshing={refreshing}
+                        onRefresh={onRefresh}
+                        tintColor={colors.ring}
+                        // The spinner shows below the glass header, not behind it.
+                        progressViewOffset={top}
+                      />
+                    ) : undefined
+                  }
+                >
+                  <View style={inner}>{children}</View>
+                </ScrollView>
+              ) : (
+                <View style={[styles.fill, inner]}>{children}</View>
+              )}
+            </Backdrop>
+            {footer ? (
+              <Glass
+                edge="top"
+                onLayout={measure(setFooterHeight)}
+                style={[
+                  styles.footer,
+                  { paddingBottom: space[3] + insets.bottom, paddingHorizontal: pad },
+                ]}
+              >
+                <View style={styles.footerColumn}>{footer}</View>
+              </Glass>
+            ) : null}
+          </View>
+        </KeyboardAvoidingView>
+        {header ? (
+          <View style={styles.header} onLayout={measure(setHeaderHeight)}>
+            {header}
           </View>
         ) : null}
-      </KeyboardAvoidingView>
-    </View>
+      </View>
+    </GlassScope>
   );
 }
 
@@ -125,24 +155,28 @@ export function Card({
   accessibilityLabel?: string;
 }) {
   const { colors } = useTheme();
+  const arrival = useArrival();
   const look = [styles.card, { backgroundColor: colors.card, borderColor: colors.border }, style];
   if (!onPress) {
     return (
-      <View style={look} testID={testID}>
+      <Animated.View entering={arrival} style={look} testID={testID}>
         {children}
-      </View>
+      </Animated.View>
     );
   }
   return (
-    <Pressable
+    <Press
       onPress={onPress}
       testID={testID}
       accessibilityRole="button"
       accessibilityLabel={accessibilityLabel}
-      style={({ pressed }) => [look, pressed && { backgroundColor: colors.muted }]}
+      arrives
+      sink={0.985}
+      dim={0.18}
+      style={look}
     >
       {children}
-    </Pressable>
+    </Press>
   );
 }
 
@@ -201,7 +235,8 @@ export function Notice({
   const { colors, dark } = useTheme();
   const look = toneColors(colors, tone);
   return (
-    <View
+    <Animated.View
+      entering={appear}
       accessibilityRole="alert"
       testID={testID}
       style={[styles.notice, { backgroundColor: look.bg, borderColor: look.bg }]}
@@ -212,7 +247,7 @@ export function Notice({
       >
         {children}
       </Text>
-    </View>
+    </Animated.View>
   );
 }
 
@@ -284,7 +319,9 @@ export function Avatar({ name, size = 36 }: { name: string; size?: number }) {
   );
 }
 
-/** Two to four choices side by side; the chosen one is filled. */
+const SEGMENT_GAP = 3;
+
+/** Two to four choices side by side; the chosen one is filled, and the fill slides to a new choice. */
 export function Segmented<T extends string>({
   options,
   value,
@@ -297,12 +334,38 @@ export function Segmented<T extends string>({
   testID?: string;
 }) {
   const { colors } = useTheme();
+  const [width, setWidth] = useState(0);
+  const count = Math.max(options.length, 1);
+  const index = Math.max(
+    options.findIndex((option) => option.value === value),
+    0,
+  );
+  // Each choice is as wide as the others; the fill is one of them and moves by whole steps.
+  const step = width > 0 ? (width - 2 * SEGMENT_GAP + SEGMENT_GAP) / count : 0;
+  const at = useSharedValue(index * step);
+  const measured = useRef(false);
+  useEffect(() => {
+    // The first time the row is measured the fill is simply on the chosen one; after that it slides.
+    at.set(measured.current ? withSpring(index * step, SPRING_FIRM) : index * step);
+    measured.current = step > 0;
+  }, [at, index, step]);
+  const slide = useAnimatedStyle(() => ({ transform: [{ translateX: at.get() }] }));
   return (
     <View
       accessibilityRole="tablist"
       testID={testID}
+      onLayout={(event) => setWidth(event.nativeEvent.layout.width)}
       style={[styles.segmented, { backgroundColor: colors.secondary }]}
     >
+      {step > 0 ? (
+        <Animated.View
+          style={[
+            styles.segmentFill,
+            { width: step - SEGMENT_GAP, backgroundColor: colors.card, borderColor: colors.border },
+            slide,
+          ]}
+        />
+      ) : null}
       {options.map((option) => {
         const chosen = option.value === value;
         return (
@@ -310,11 +373,15 @@ export function Segmented<T extends string>({
             key={option.value}
             accessibilityRole="tab"
             accessibilityState={{ selected: chosen }}
-            onPress={() => onChange(option.value)}
+            onPress={() => {
+              if (!chosen) tick();
+              onChange(option.value);
+            }}
             testID={testID ? `${testID}-${option.value}` : undefined}
             style={[
               styles.segment,
-              chosen && { backgroundColor: colors.card, borderColor: colors.border },
+              // Until the row has been measured the chosen one is filled in place.
+              chosen && step === 0 && { backgroundColor: colors.card, borderColor: colors.border },
             ]}
           >
             <Text
@@ -336,7 +403,8 @@ const styles = StyleSheet.create({
   fill: { flex: 1 },
   grow: { flexGrow: 1 },
   column: { width: "100%", maxWidth: CONTENT_MAX_WIDTH, alignSelf: "center", gap: space[4] },
-  footer: { borderTopWidth: StyleSheet.hairlineWidth, paddingTop: space[3] },
+  header: { position: "absolute", top: 0, left: 0, right: 0 },
+  footer: { position: "absolute", left: 0, right: 0, bottom: 0, paddingTop: space[3] },
   footerColumn: { width: "100%", maxWidth: CONTENT_MAX_WIDTH, alignSelf: "center" },
   card: { borderWidth: 1, borderRadius: radius.lg, padding: space[4], gap: space[3] },
   badge: {
@@ -349,7 +417,20 @@ const styles = StyleSheet.create({
   center: { flex: 1, minHeight: 160, alignItems: "center", justifyContent: "center" },
   empty: { alignItems: "center", gap: space[2], paddingVertical: space[10] },
   centerText: { textAlign: "center" },
-  segmented: { flexDirection: "row", borderRadius: radius.md, padding: 3, gap: 3 },
+  segmented: {
+    flexDirection: "row",
+    borderRadius: radius.md,
+    padding: SEGMENT_GAP,
+    gap: SEGMENT_GAP,
+  },
+  segmentFill: {
+    position: "absolute",
+    top: SEGMENT_GAP,
+    bottom: SEGMENT_GAP,
+    left: SEGMENT_GAP,
+    borderRadius: radius.md - 3,
+    borderWidth: 1,
+  },
   segment: {
     flex: 1,
     minHeight: 38,

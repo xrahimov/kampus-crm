@@ -1,8 +1,9 @@
 import type { ReactNode } from "react";
-import { ActivityIndicator, Pressable, StyleSheet, View, type ViewStyle } from "react-native";
+import { ActivityIndicator, StyleSheet, View, type ViewStyle } from "react-native";
 
 import { radius, space, useTheme } from "@/lib/theme";
 
+import { Press } from "./motion";
 import { Text } from "./text";
 
 export type ButtonVariant = "primary" | "outline" | "ghost" | "destructive" | "saffron";
@@ -42,18 +43,17 @@ export function Button({
   }[variant];
   const off = disabled || loading;
   return (
-    <Pressable
+    <Press
       accessibilityRole="button"
       accessibilityState={{ disabled: off, busy: loading }}
       accessibilityLabel={label}
       disabled={off}
       onPress={onPress}
       testID={testID}
-      style={({ pressed }) => [
+      style={[
         styles.base,
         compact ? styles.compact : styles.regular,
         { backgroundColor: look.bg, borderColor: look.border },
-        pressed && styles.pressed,
         off && styles.off,
         style,
       ]}
@@ -70,7 +70,7 @@ export function Button({
       >
         {label}
       </Text>
-    </Pressable>
+    </Press>
   );
 }
 
@@ -86,6 +86,5 @@ const styles = StyleSheet.create({
   // 48 points: a comfortable target for a thumb on a moving bus.
   regular: { minHeight: 48, paddingHorizontal: space[5] },
   compact: { minHeight: 36, paddingHorizontal: space[3] },
-  pressed: { opacity: 0.8, transform: [{ scale: 0.985 }] },
   off: { opacity: 0.5 },
 });

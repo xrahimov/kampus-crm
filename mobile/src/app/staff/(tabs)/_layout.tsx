@@ -2,7 +2,12 @@ import { TabList, Tabs, TabSlot, TabTrigger } from "expo-router/ui";
 import { CalendarCheck, ClipboardCheck, Contact, Menu, Users } from "lucide-react-native";
 
 import { useCheckingQueue } from "@/api/hooks";
-import { NavItem, NavList } from "@/components/nav";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+
+import { Backdrop, GlassScope } from "@/components/glass";
+import { barSpace, NavItem, NavList } from "@/components/nav";
+import { BottomBarSpace } from "@/components/surface";
+import { renderTab } from "@/components/tab-fade";
 import { useTranslations } from "@/lib/i18n";
 import { useLayout } from "@/lib/layout";
 import { can, useMe } from "@/lib/session";
@@ -12,37 +17,56 @@ export default function StaffTabs() {
   const { wide } = useLayout();
   const me = useMe();
   const queue = useCheckingQueue(can(me, "groups.attendance.mark"));
+  const insets = useSafeAreaInsets();
+  // On a phone the bar is glass floating over the page (A-224): the page is its backdrop and
+  // every screen leaves room for it at the bottom. A tablet's rail stands beside the page.
   return (
-    <Tabs style={{ flex: 1, flexDirection: wide ? "row-reverse" : "column" }}>
-      <TabSlot style={{ flex: 1 }} />
-      <TabList asChild>
-        <NavList wide={wide}>
-          <TabTrigger name="today" href="/staff" asChild>
-            <NavItem wide={wide} icon={CalendarCheck} label={t("nav.today")} testID="nav-today" />
-          </TabTrigger>
-          <TabTrigger name="groups" href="/staff/groups" asChild>
-            <NavItem wide={wide} icon={Users} label={t("nav.groups")} testID="nav-groups" />
-          </TabTrigger>
-          <TabTrigger name="checking" href="/staff/checking" asChild>
-            <NavItem
-              wide={wide}
-              icon={ClipboardCheck}
-              label={t("nav.checking")}
-              count={queue.data?.total ?? 0}
-              testID="nav-checking"
-            />
-          </TabTrigger>
-          {/* The students a teacher may see; the office's rights decide who has the page. */}
-          {can(me, "students.view") ? (
-            <TabTrigger name="students" href="/staff/students" asChild>
-              <NavItem wide={wide} icon={Contact} label={t("nav.students")} testID="nav-students" />
-            </TabTrigger>
-          ) : null}
-          <TabTrigger name="more" href="/staff/more" asChild>
-            <NavItem wide={wide} icon={Menu} label={t("nav.more")} testID="nav-more" />
-          </TabTrigger>
-        </NavList>
-      </TabList>
-    </Tabs>
+    <GlassScope>
+      <BottomBarSpace value={wide ? 0 : barSpace(insets.bottom)}>
+        <Tabs style={{ flex: 1, flexDirection: wide ? "row-reverse" : "column" }}>
+          <Backdrop style={{ flex: 1 }}>
+            <TabSlot style={{ flex: 1 }} renderFn={renderTab} />
+          </Backdrop>
+          <TabList asChild>
+            <NavList wide={wide}>
+              <TabTrigger name="today" href="/staff" asChild>
+                <NavItem
+                  wide={wide}
+                  icon={CalendarCheck}
+                  label={t("nav.today")}
+                  testID="nav-today"
+                />
+              </TabTrigger>
+              <TabTrigger name="groups" href="/staff/groups" asChild>
+                <NavItem wide={wide} icon={Users} label={t("nav.groups")} testID="nav-groups" />
+              </TabTrigger>
+              <TabTrigger name="checking" href="/staff/checking" asChild>
+                <NavItem
+                  wide={wide}
+                  icon={ClipboardCheck}
+                  label={t("nav.checking")}
+                  count={queue.data?.total ?? 0}
+                  testID="nav-checking"
+                />
+              </TabTrigger>
+              {/* The students a teacher may see; the office's rights decide who has the page. */}
+              {can(me, "students.view") ? (
+                <TabTrigger name="students" href="/staff/students" asChild>
+                  <NavItem
+                    wide={wide}
+                    icon={Contact}
+                    label={t("nav.students")}
+                    testID="nav-students"
+                  />
+                </TabTrigger>
+              ) : null}
+              <TabTrigger name="more" href="/staff/more" asChild>
+                <NavItem wide={wide} icon={Menu} label={t("nav.more")} testID="nav-more" />
+              </TabTrigger>
+            </NavList>
+          </TabList>
+        </Tabs>
+      </BottomBarSpace>
+    </GlassScope>
   );
 }

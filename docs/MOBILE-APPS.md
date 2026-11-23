@@ -14,8 +14,8 @@ schedule with booking, time zone, paying online, Telegram, invite code and certi
 (the teacher's homework set and checked from the phone, the class stream, the gradebook and the
 notes), A-218 (the teacher's course plan, coins and tests of a group), A-219 (a group's exams, knowledge
 by topic, comments on students and history), A-220 (Students for teachers: the list and one
-student's page), A-221 (announcements), A-222 (the whiteboard saved from the app) and A-223
-(screen sharing from an iPhone or iPad).
+student's page), A-221 (announcements), A-222 (the whiteboard saved from the app), A-223
+(screen sharing from an iPhone or iPad) and A-224 (glass and smooth motion).
 
 Why React Native and not the site in a wrapper: kai's choice on 2026-11-23 ("rewrite it in react
 native"), with two requirements said the same day: one code base in the end, and teachers must be
@@ -45,6 +45,7 @@ able to work from an iPad or a phone.
 | In the lesson room: the teacher's polls and breakout rooms                                                       | Built, phone and tablet (A-211)                                                                    |
 | In the lesson room: a photo or file from the phone added to the lesson and shown                                 | Built, phone and tablet (A-214)                                                                    |
 | In the lesson room: saving the whiteboard                                                                        | Built, phone and tablet (A-222)                                                                    |
+| The look: glass bars and panes, smooth motion (iPhone, iPad and Android)                                         | Built (A-224); seen in a browser only, not yet on a phone                                          |
 | Student and parent: homework answered in the app (text, photo, file, voice); files open in the app               | Built, phone and tablet (A-212)                                                                    |
 | Student and parent: tests, materials with lesson recordings, the group chat, exercises                           | Built, phone and tablet (A-213)                                                                    |
 | Student and parent: the course with flashcards, the class stream, news, results, rating a lesson                 | Built, phone and tablet (A-215)                                                                    |
@@ -117,6 +118,25 @@ mobile/
   own foreground service lives in `modules/kampus-call` (an Expo module found by autolinking):
   `callAudio.start()` starts it when someone joins and `callAudio.stop()` ends it. On iOS a call
   keeps running by itself (the "audio" background mode).
+- **Glass (A-224).** `src/components/glass.tsx` has the one component, `Glass`. It draws
+  Apple's Liquid Glass on iOS 26 and later (`expo-glass-effect`), a blur on older iPhones and in
+  a browser (`expo-blur`), a blur on Android 12 and later, and a nearly solid pane where nothing
+  can be blurred; a device set to "Reduce transparency" gets a solid pane. Android can only blur
+  a part of the screen that is named: `GlassScope` holds the name, `Backdrop` is the page, and
+  glass inside the scope (never inside the backdrop) blurs it. `Screen` does this for every
+  screen: the page is the backdrop, the header and the save bar float over it, and the page
+  leaves room for them at the top and bottom. The staff tabs do it for the navigation bar and
+  tell the screens how much of the bottom the bar covers (`BottomBarSpace`). Only things that
+  float are glass; cards, rows and the tablet's rail are solid.
+- **Motion (A-224).** `src/components/motion.tsx`, on `react-native-reanimated` (it was already
+  in every build, the router brings it). `Press` is anything pressable: it sinks under the
+  finger and springs back. `useArrival` gives cards the cascade in which they appear (the first
+  two dozen; a long list is simply there). `SPRING` and `SPRING_FIRM` are the app's two springs.
+  The navigation's highlight slides (`nav.tsx`), a chosen place fades up (`tab-fade.tsx`), the
+  segmented choice's fill slides (`surface.tsx`). The library follows the device's "Reduce
+  motion" by itself. In a browser an arrival must use the library's own animation unchanged:
+  with values of its own, the library leaves the element pinned out of the page's flow.
+  Tests run with the library's resolver (`jest.resolver` in `package.json`).
 - **Screen sharing on iPhone and iPad (A-223).** iOS captures the screen in an app extension, a
   second small program inside the app. Its code is `plugins/broadcast/SampleHandler.swift`: it
   sends each frame as a JPEG through a socket in the app group's folder

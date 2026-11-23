@@ -7,7 +7,12 @@ export default function StudentLayout() {
   const { colors } = useTheme();
   return (
     <Stack
-      screenOptions={{ headerShown: false, contentStyle: { backgroundColor: colors.background } }}
+      screenOptions={{
+        headerShown: false,
+        contentStyle: { backgroundColor: colors.background },
+        // A pushed screen slides in from the right on Android as it does on an iPhone (A-224).
+        animation: "ios_from_right",
+      }}
     >
       <Stack.Screen name="index" />
       <Stack.Screen name="class/[token]" />

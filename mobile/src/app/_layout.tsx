@@ -77,6 +77,8 @@ function Navigation({ fontsReady }: { fontsReady: boolean }) {
         screenOptions={{
           headerShown: false,
           contentStyle: { backgroundColor: colors.background },
+          // Signing in or out changes the whole app: one side fades into the other (A-224).
+          animation: "fade",
         }}
       >
         {/* Each side of the app is open only to the people it is for (A-203). */}
@@ -90,9 +92,12 @@ function Navigation({ fontsReady }: { fontsReady: boolean }) {
           <Stack.Screen name="student" />
         </Stack.Protected>
         <Stack.Protected guard={state.status === "staff" || state.status === "student"}>
-          <Stack.Screen name="set-password" options={{ presentation: "modal" }} />
+          <Stack.Screen
+            name="set-password"
+            options={{ presentation: "modal", animation: "default" }}
+          />
           {/* A file opened inside the app: homework, materials (A-212). */}
-          <Stack.Screen name="file" />
+          <Stack.Screen name="file" options={{ animation: "ios_from_right" }} />
         </Stack.Protected>
         <Stack.Screen name="index" />
       </Stack>
