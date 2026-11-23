@@ -117,15 +117,21 @@ async function renderPanel() {
   return client;
 }
 
-beforeEach(() => {
-  fetchMock.mockReset();
-  // Everything the panel reads besides the day itself: no video, an empty month.
+/** The server: it takes (or refuses) marks and answers everything the panel reads. */
+function serve(put: () => Response) {
   fetchMock.mockImplementation(async (url: string, init?: RequestInit) => {
-    if (init?.method === "PUT") return answer(204);
-    if (url.includes("/video"))
+    if (init?.method === "PUT") return put();
+    if (url.includes("/video")) {
       return answer(200, { enabled: false, room: null, todayLesson: null });
+    }
+    if (url.includes("/today")) return answer(200, day);
     return answer(200, { month: "2026-11", lessons: [], members: [] });
   });
+}
+
+beforeEach(() => {
+  fetchMock.mockReset();
+  serve(() => answer(204));
   globalThis.fetch = fetchMock as unknown as typeof fetch;
 });
 
@@ -160,7 +166,7 @@ describe("marking a lesson", () => {
     });
   });
 
-  it("marks everyone still unmarked as present, and leaves the others as they are", async () => {
+  it("marks everyone still unmarked as present, even right after another tap", async () => {
     await renderPanel();
     await fireEvent.press(await screen.findByTestId("mark-EXCUSED-m-1"));
     await fireEvent.press(screen.getByTestId("all-present"));
@@ -174,14 +180,7 @@ describe("marking a lesson", () => {
   });
 
   it("goes back to what the server has and says so when the mark is refused", async () => {
-    fetchMock.mockImplementation(async (url: string, init?: RequestInit) => {
-      if (init?.method === "PUT") {
-        return answer(403, { error: { code: "FORBIDDEN", message: "errors.forbidden" } });
-      }
-      if (url.includes("/video"))
-        return answer(200, { enabled: false, room: null, todayLesson: null });
-      return answer(200, { month: "2026-11", lessons: [], members: [] });
-    });
+    serve(() => answer(403, { error: { code: "FORBIDDEN", message: "errors.forbidden" } }));
     await renderPanel();
     await fireEvent.press(await screen.findByTestId("mark-PRESENT-m-1"));
     expect(await screen.findByTestId("lesson-error")).toBeTruthy();

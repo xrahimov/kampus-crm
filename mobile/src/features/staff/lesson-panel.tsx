@@ -46,18 +46,11 @@ export function LessonPanel({
 
   const setStatus = (member: TodayMember, status: AttendanceStatus) => {
     setFailure(null);
-    // A second tap on the chosen mark clears it, as on the site.
-    const next = member.attendance === status ? "NOT_MARKED" : status;
-    mark.mutate([{ membershipId: member.membershipId, status: next }], { onError: fail });
+    mark.toggle(member.membershipId, status, fail);
   };
   const allPresent = () => {
     setFailure(null);
-    mark.mutate(
-      lesson.members
-        .filter((m) => m.attendance === "NOT_MARKED")
-        .map((m) => ({ membershipId: m.membershipId, status: "PRESENT" as const })),
-      { onError: fail },
-    );
+    mark.allPresent(fail);
   };
   const unmarked = lesson.members.some((m) => m.attendance === "NOT_MARKED");
 

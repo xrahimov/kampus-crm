@@ -110,35 +110,75 @@ export interface AttendanceMark {
   status: AttendanceStatus;
 }
 
-/** One tap on a name, or "All present": shown at once, sent behind it. */
+/** The lesson as the cache holds it this instant, ahead of the screen's next draw. */
+function cachedLesson(client: QueryClient, lessonId: string): TodayLesson | undefined {
+  for (const [, day] of client.getQueriesData<Today>({ queryKey: ["today"] })) {
+    const found = day?.lessons.find((l) => l.id === lessonId);
+    if (found) return found;
+  }
+  return undefined;
+}
+
+/**
+ * One tap on a name, or "All present". The mark is written to the cache in the
+ * same instant as the tap, before anything is sent, so two quick taps never
+ * work from a stale list: "All present" right after "Excused" leaves the
+ * excused student alone. A refusal puts back what the server last said.
+ */
 export function useMarkAttendance(lesson: { id: string; groupId: string; date: string }) {
   const client = useQueryClient();
-  return useMutation({
+  const mutation = useMutation({
     mutationFn: (marks: AttendanceMark[]) =>
       api<void>(`/lessons/${lesson.id}/attendance`, { method: "PUT", body: { marks } }),
-    onMutate: async (marks) => {
-      await client.cancelQueries({ queryKey: ["today"] });
-      const byMember = new Map(marks.map((m) => [m.membershipId, m.status]));
-      const before = patchLesson(client, lesson.id, (l) =>
-        recount({
-          ...l,
-          members: l.members.map((m) => {
-            const status = byMember.get(m.membershipId);
-            return status ? { ...m, attendance: status } : m;
-          }),
-        }),
-      );
-      return { before };
-    },
-    onError: (_error, _marks, context) => {
-      for (const [key, day] of context?.before ?? []) client.setQueryData(key, day);
-    },
     onSettled: () => {
       void client.invalidateQueries({
         queryKey: keys.month(lesson.groupId, lesson.date.slice(0, 7)),
       });
     },
   });
+
+  const send = (marks: AttendanceMark[], onError: (error: unknown) => void) => {
+    if (marks.length === 0) return;
+    // A reload already on its way would overwrite the mark with the old state.
+    void client.cancelQueries({ queryKey: ["today"] });
+    const byMember = new Map(marks.map((m) => [m.membershipId, m.status]));
+    patchLesson(client, lesson.id, (l) =>
+      recount({
+        ...l,
+        members: l.members.map((m) => {
+          const status = byMember.get(m.membershipId);
+          return status ? { ...m, attendance: status } : m;
+        }),
+      }),
+    );
+    mutation.mutate(marks, {
+      onError: (error) => {
+        // Other marks may have been made since; the server's list is the truth.
+        void client.invalidateQueries({ queryKey: ["today"] });
+        onError(error);
+      },
+    });
+  };
+
+  return {
+    /** One student's mark; the chosen mark again clears it, as on the site. */
+    toggle(membershipId: string, status: AttendanceStatus, onError: (error: unknown) => void) {
+      const now = cachedLesson(client, lesson.id)?.members.find(
+        (m) => m.membershipId === membershipId,
+      );
+      send([{ membershipId, status: now?.attendance === status ? "NOT_MARKED" : status }], onError);
+    },
+    /** Everyone still unmarked becomes present; marks already made stay. */
+    allPresent(onError: (error: unknown) => void) {
+      const members = cachedLesson(client, lesson.id)?.members ?? [];
+      send(
+        members
+          .filter((m) => m.attendance === "NOT_MARKED")
+          .map((m) => ({ membershipId: m.membershipId, status: "PRESENT" as const })),
+        onError,
+      );
+    },
+  };
 }
 
 /** The lesson's topic: typed, or the next one from the syllabus. */
