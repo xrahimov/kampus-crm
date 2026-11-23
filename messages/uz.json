@@ -6277,7 +6277,7 @@
     "siteText": "O'quvchilar, to'lovlar, testlar va hisobotlar hozircha saytda. U kirilgan holda ochiladi.",
     "version": "Kampus {version}",
     "myPage": "Sahifamni to'liq ochish",
-    "myPageHint": "Testlar, chat va materiallar hozircha sahifangizda ochiladi.",
+    "myPageHint": "Kurs, yangiliklar, jadval va onlayn toʻlov hozircha sahifangizda ochiladi.",
     "room": {
       "denied": "Kampus kamera va mikrofondan foydalana olmayapti. Ko'rish va tinglash uchun kirishingiz mumkin. Sizni ko'rishlari va eshitishlari uchun telefon sozlamalarida ikkalasiga ruxsat bering.",
       "partial": "Kampus qurilmalaringizning faqat bir qismidan foydalana olyapti. Baribir kirishingiz mumkin. Kamera ham, mikrofon ham ishlashi uchun telefon sozlamalarida ruxsat bering.",
@@ -6343,14 +6343,16 @@
       "openFile": "Faylni ochish",
       "openLink": "Havolani ochish",
       "play": "Tinglash",
-      "pause": "Pauza",
-      "exercises": "Sahifangizda {count, plural, one {# ta mashq} other {# ta mashq}}"
+      "pause": "Pauza"
     },
     "file": {
       "title": "Fayl",
       "failed": "Bu faylni ochib bo'lmadi.",
       "cannotShow": "Ilova bunday turdagi faylni ko'rsata olmaydi.",
       "openOutside": "Boshqa ilovada ochish"
+    },
+    "materials": {
+      "continueFrom": "{time} dan davom etish"
     }
   }
 }

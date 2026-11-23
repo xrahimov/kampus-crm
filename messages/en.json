@@ -6277,7 +6277,7 @@
     "siteText": "Students, payments, tests and reports are on the site for now. It opens already signed in.",
     "version": "Kampus {version}",
     "myPage": "Open my full page",
-    "myPageHint": "Tests, the chat and materials open on your page for now.",
+    "myPageHint": "The course, news, the schedule and paying online open on your page for now.",
     "room": {
       "denied": "Kampus has no access to the camera or the microphone. You can join to watch and listen. To be seen and heard, allow both in the phone's settings.",
       "partial": "Kampus has access to only part of your devices. You can still join. Allow the camera and the microphone in the phone's settings to use both.",
@@ -6343,14 +6343,16 @@
       "openFile": "Open the file",
       "openLink": "Open the link",
       "play": "Play",
-      "pause": "Pause",
-      "exercises": "{count, plural, one {# exercise} other {# exercises}} on your page"
+      "pause": "Pause"
     },
     "file": {
       "title": "File",
       "failed": "This file could not be opened.",
       "cannotShow": "The app cannot show this kind of file.",
       "openOutside": "Open with another app"
+    },
+    "materials": {
+      "continueFrom": "Continue from {time}"
     }
   }
 }

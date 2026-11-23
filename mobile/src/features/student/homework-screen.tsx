@@ -1,5 +1,13 @@
 import { useLocalSearchParams, useRouter } from "expo-router";
-import { Camera, ExternalLink, Image as ImageIcon, Paperclip, Send, X } from "lucide-react-native";
+import {
+  Camera,
+  ExternalLink,
+  Image as ImageIcon,
+  ListChecks,
+  Paperclip,
+  Send,
+  X,
+} from "lucide-react-native";
 import { useState } from "react";
 import { Linking, Pressable, StyleSheet, View } from "react-native";
 
@@ -26,11 +34,11 @@ import { VoiceRecorder } from "@/features/files/recorder";
 import { fileSource } from "@/features/room/file-source";
 import { ApiError, type PickedFile } from "@/lib/api";
 import { dayAsDate } from "@/lib/days";
-import { errorText, useDate, useLocaleChoice, useTranslations } from "@/lib/i18n";
+import { errorText, useDate, useTranslations } from "@/lib/i18n";
 import { radius, space, useTheme } from "@/lib/theme";
 import { materialView } from "@kampus/lib/video-material";
 
-import { openPersonalPage } from "./open-page";
+import { exerciseRoute } from "./exercise-screen";
 
 const STATUS_TONE: Record<"NONE" | "SUBMITTED" | "ACCEPTED" | "RETURNED", Tone> = {
   NONE: "neutral",
@@ -126,8 +134,8 @@ function HomeworkCard({
 }) {
   const t = useTranslations("portal.homework");
   const tm = useTranslations("mobile.homework");
+  const te = useTranslations("portal.exercises");
   const { colors } = useTheme();
-  const { locale } = useLocaleChoice();
   const router = useRouter();
   const formatDate = useDate();
   const [open, setOpen] = useState(startOpen);
@@ -265,14 +273,40 @@ function HomeworkCard({
       ) : null}
 
       {homework.exercises.length > 0 ? (
-        <Button
-          compact
-          variant="outline"
-          label={tm("exercises", { count: homework.exercises.length })}
-          icon={<ExternalLink size={16} color={colors.foreground} />}
-          onPress={() => void openPersonalPage(locale, token)}
-          testID="homework-exercises"
-        />
+        <View style={styles.block} testID="homework-exercises">
+          {homework.exercises.map((exercise) => (
+            <Pressable
+              key={exercise.id}
+              onPress={() => router.push(exerciseRoute(token, exercise))}
+              accessibilityRole="button"
+              accessibilityLabel={exercise.title}
+              style={[styles.exercise, { borderColor: colors.border }]}
+              testID={`homework-exercise-${exercise.id}`}
+            >
+              <ListChecks size={18} color={colors.primary} />
+              <View style={styles.fill}>
+                <Text numberOfLines={2}>{exercise.title}</Text>
+                <Text variant="small" tone="mutedForeground">
+                  {[
+                    te("items", { count: exercise.itemCount }),
+                    exercise.best
+                      ? te("best", {
+                          score: exercise.best.score,
+                          max: exercise.best.maxScore,
+                          percent: exercise.best.percent,
+                        })
+                      : null,
+                  ]
+                    .filter(Boolean)
+                    .join(", ")}
+                </Text>
+              </View>
+              <Text variant="smallStrong" tone="primary">
+                {exercise.best ? te("again") : te("start")}
+              </Text>
+            </Pressable>
+          ))}
+        </View>
       ) : null}
 
       {sent ? (
@@ -473,6 +507,16 @@ const styles = StyleSheet.create({
   answer: { gap: space[2], padding: space[3], borderRadius: radius.md },
   form: { gap: space[3] },
   note: { minHeight: 96 },
+  exercise: {
+    minHeight: 52,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: space[3],
+    paddingHorizontal: space[3],
+    paddingVertical: space[2],
+    borderWidth: StyleSheet.hairlineWidth,
+    borderRadius: radius.md,
+  },
   attached: {
     flexDirection: "row",
     alignItems: "center",

@@ -5,8 +5,9 @@ to the same server as the site (`/api/v1`), speaks the same three languages from
 files, and wears the same look. Decisions are recorded in [ASSUMPTIONS.md](ASSUMPTIONS.md) as A-203
 (sign-in), A-204 (opening the site from the app), A-205 (the app itself), A-207 (the lesson room
 inside the app), A-208 (screen sharing from Android and lessons behind other apps), A-209 (the
-whiteboard), A-210 (shown files), A-211 (the teacher's polls and breakout rooms) and A-212 (homework
-answered in the app, files opened in the app).
+whiteboard), A-210 (shown files), A-211 (the teacher's polls and breakout rooms), A-212 (homework
+answered in the app, files opened in the app) and A-213 (a group's tests, materials, chat and
+exercises in the app).
 
 Why React Native and not the site in a wrapper: kai's choice on 2026-11-23 ("rewrite it in react
 native"), with two requirements said the same day: one code base in the end, and teachers must be
@@ -30,7 +31,8 @@ able to work from an iPad or a phone.
 | In the lesson room: the teacher's polls and breakout rooms                                           | Built, phone and tablet (A-211)                                           |
 | In the lesson room: showing a file straight from the phone, saving the whiteboard                    | Next                                                                      |
 | Student and parent: homework answered in the app (text, photo, file, voice); files open in the app   | Built, phone and tablet (A-212)                                           |
-| Student and parent: exercises, tests, chat and materials inside the app                              | Next (today they open the personal page in the browser)                   |
+| Student and parent: tests, materials with lesson recordings, the group chat, exercises               | Built, phone and tablet (A-213)                                           |
+| Student and parent: the course, news, the stream, the schedule with booking, paying online           | Next (today they open the personal page in the browser)                   |
 | The office's pages: students, payments, leads, reports                                               | Later; on the site until then                                             |
 | The site running on the app's code                                                                   | Part by part, the student side first; wide tables, Excel and print last   |
 
@@ -112,6 +114,12 @@ mobile/
   `audio-clip.tsx` (`expo-audio`), `file-screen.tsx` (the `/file` route) with
   `pdf-document.native.tsx` and `pdf-document.tsx` (the web build: the browser's own viewer).
   `apiForm` in `src/lib/api.ts` sends a form with a file.
+- **A group's pages for students (A-213).** `src/api/portal.ts` holds the calls (the personal
+  link's token is the key, no session). `tests-screen.tsx` is the list, the run and the result;
+  `materials-screen.tsx` lists files, links and recordings and hands a recording to the file page
+  with its streaming copy and the place to continue from; `chat-screen.tsx` is the thread;
+  `exercise-screen.tsx` does one exercise; `answer-parts.tsx` holds the answer rows and word chips
+  that tests and exercises share.
 - **A plain-http test build.** With `EXPO_PUBLIC_API_URL` starting with `http://` the Android build
   allows plain http (for a server on the desk); every other build refuses it.
 - **Shared code and its packages.** A file under `../src/lib` that the app imports may use only

@@ -316,4 +316,32 @@ describe("a student's homework in the app", () => {
     // The earlier answer is in the field, ready to be corrected.
     expect(screen.getByTestId("homework-note").props.value).toBe("First try");
   });
+
+  it("lists a task's exercises with the best go and opens one inside the app", async () => {
+    serve([
+      homework({
+        exercises: [
+          { id: "e1", title: "Quick practice", itemCount: 7, attempts: 0, best: null },
+          {
+            id: "e2",
+            title: "Second round",
+            itemCount: 3,
+            attempts: 2,
+            best: { score: 2, maxScore: 3, percent: 67 },
+          },
+        ],
+      }),
+    ]);
+    await renderScreen();
+    await screen.findByTestId("homework-exercises");
+    expect(screen.getByText("7 items")).toBeTruthy();
+    expect(screen.getByText("Practise")).toBeTruthy();
+    expect(screen.getByText("3 items, Best: 2/3 (67 %)")).toBeTruthy();
+    expect(screen.getByText("Try again")).toBeTruthy();
+    await fireEvent.press(screen.getByTestId("homework-exercise-e2"));
+    expect(mockPush).toHaveBeenLastCalledWith({
+      pathname: "/student/exercise/[token]",
+      params: { token: "tok", exercise: "e2", title: "Second round" },
+    });
+  });
 });
