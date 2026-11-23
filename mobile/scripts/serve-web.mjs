@@ -31,7 +31,13 @@ http
           port: upstream.port || 80,
           path: url.pathname + url.search,
           method: req.method,
-          headers: { ...req.headers, host: upstream.host },
+          // The server compares a request's Origin with the host it was asked on (the
+          // lesson room's sync does), so it is told the address the browser used.
+          headers: {
+            ...req.headers,
+            host: upstream.host,
+            "x-forwarded-host": req.headers.host ?? upstream.host,
+          },
         },
         (answer) => {
           res.writeHead(answer.statusCode ?? 502, answer.headers);

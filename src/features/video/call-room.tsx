@@ -34,9 +34,10 @@ import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 
 import { ConfirmDialog } from "@/components/data/confirm-dialog";
 import { lessonLink } from "@/lib/lesson-link";
-import { PACE_REACTIONS, REACTIONS, type Reaction } from "@/lib/validation/video";
+import { PACE_REACTIONS, REACTIONS } from "@/lib/validation/video";
 import { cn } from "@/lib/utils";
 import { canAnnotate } from "@/lib/video-material";
+import { BOARD, MATERIAL, REACTION_EMOJI, roomView, SELF } from "@/lib/video/room-view";
 
 import { CHAT_MAX_LENGTH, isAndroidBrowser, type CallEngine, type RemotePeer } from "./call-engine";
 import { BreakoutPanel, breakoutCountdown } from "./breakout-panel";
@@ -49,7 +50,6 @@ import { CallRecorder, recordingMimeType, uploadBoard, uploadRecording } from ".
 import { VideoTile } from "./video-tile";
 import { Whiteboard } from "./whiteboard";
 
-const SELF = "self";
 type Panel = "people" | "chat" | "poll" | "lesson" | "breakout" | null;
 
 /** How long "Lesson link copied" stays on the screen. */
@@ -80,16 +80,7 @@ async function copyText(value: string): Promise<boolean> {
   }
 }
 
-/** How each reaction looks on a picture. */
-export const REACTION_EMOJI: Record<Reaction, string> = {
-  like: "👍",
-  clap: "👏",
-  heart: "❤️",
-  laugh: "😂",
-  wow: "😮",
-  slower: "🐢",
-  faster: "🐇",
-};
+export { REACTION_EMOJI };
 
 /**
  * The call screen: a stage for the teacher (or whoever shares a screen, or the
@@ -241,54 +232,28 @@ export function CallRoom({
   const hasAudio = engine.localStream.getAudioTracks().length > 0;
   const hasCamera = engine.localStream.getVideoTracks().length > 0 || media.screen;
 
-  const sharer = peers.find((p) => p.media?.screen)?.id ?? (media.screen ? SELF : null);
+  // Who is on the stage, who is hidden by focus mode and the hand queue: worked out in one
+  // place that the phone app's room uses too (A-207).
+  const { sharer, spotlightId, hidden, pinnedId, stageKey, handQueue } = roomView({
+    self,
+    peers,
+    media,
+    stage,
+    pinned,
+    handRaisedAt: engine.handRaisedAt,
+  });
   if (sharer !== sharerSeen) {
     // A screen share that starts wins over the person this viewer pinned earlier;
     // pinning someone after that still works.
     setSharerSeen(sharer);
     if (sharer && pinned && pinned !== sharer) setPinned(null);
   }
-  const host = peers.find((p) => p.role === "HOST")?.id ?? null;
-  // The teacher's spotlight, as a tile id here (the teacher may spotlight themselves).
-  const spotlightId =
-    stage.spotlight === self.participantId
-      ? SELF
-      : peers.some((p) => p.id === stage.spotlight)
-        ? stage.spotlight
-        : null;
-  // Focus mode: students see only the teacher, the spotlight, a shared screen and themselves.
-  const focusHides = (p: RemotePeer) =>
-    isStudent && stage.focus && p.role === "STUDENT" && p.id !== spotlightId && p.id !== sharer;
-  const hidden = new Set(peers.filter(focusHides).map((p) => p.id));
-  const pinnedId =
-    pinned && (pinned === SELF || peers.some((p) => p.id === pinned && !hidden.has(p.id)))
-      ? pinned
-      : null;
-  // Students watch the teacher; teachers and guests see everyone unless someone leads.
-  // A shared screen goes before the teacher's spotlight: it is what the lesson is about.
-  const stageId = pinnedId ?? sharer ?? spotlightId ?? (isStudent ? host : null) ?? null;
-  // The whiteboard takes the stage from everyone (A-155), and so does a material the teacher
-  // shows (A-183). With both on, the pen draws over the material's page; where a material
-  // cannot be drawn on (a video, a link), the whiteboard covers it until it is closed.
-  const BOARD = "board";
-  const MATERIAL = "material";
   const shown = stage.material;
   const penOverMaterial = shown !== null && canAnnotate(shown.view);
-  const stageKey =
-    shown && (!stage.board || penOverMaterial) ? MATERIAL : stage.board ? BOARD : stageId;
   // This person's shared screen is behind the whiteboard or a shown file (A-200).
   const shareCovered = media.screen && (stageKey === MATERIAL || stageKey === BOARD);
   const shareError = engine.shareError;
 
-  // Raised hands in the order they went up; this browser's own hand takes its place too.
-  const handQueue = [
-    ...peers
-      .filter((p) => p.media?.hand)
-      .map((p) => ({ id: p.id, name: p.displayName, at: p.handRaisedAt ?? p.joinedAt })),
-    ...(media.hand
-      ? [{ id: SELF, name: self.displayName, at: engine.handRaisedAt ?? new Date().toISOString() }]
-      : []),
-  ].sort((a, b) => a.at.localeCompare(b.at));
   const handPlace = (id: string) => handQueue.findIndex((h) => h.id === id) + 1;
 
   const statusText = (p: RemotePeer): string | null => {

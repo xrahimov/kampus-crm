@@ -14,6 +14,7 @@ jest.mock("@react-native-async-storage/async-storage", () =>
 );
 jest.mock("expo-localization", () => ({ getLocales: () => [{ languageCode: "en" }] }));
 jest.mock("expo-web-browser", () => ({ openBrowserAsync: jest.fn() }));
+jest.mock("expo-router", () => ({ useRouter: () => ({ push: jest.fn() }) }));
 
 const lesson: TodayLesson = {
   id: "lesson-1",

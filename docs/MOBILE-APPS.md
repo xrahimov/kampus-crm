@@ -3,7 +3,8 @@
 One React Native project in [`mobile/`](../mobile) that builds for Android, iOS and the web. It talks
 to the same server as the site (`/api/v1`), speaks the same three languages from the same message
 files, and wears the same look. Decisions are recorded in [ASSUMPTIONS.md](ASSUMPTIONS.md) as A-203
-(sign-in), A-204 (opening the site from the app) and A-205 (the app itself).
+(sign-in), A-204 (opening the site from the app), A-205 (the app itself) and A-207 (the lesson room
+inside the app).
 
 Why React Native and not the site in a wrapper: kai's choice on 2026-11-23 ("rewrite it in react
 native"), with two requirements said the same day: one code base in the end, and teachers must be
@@ -11,20 +12,21 @@ able to work from an iPad or a phone.
 
 ## Where it stands
 
-| Part                                                                                          | State                                                                     |
-| --------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------- |
-| Sign-in: phone and password, a code from Telegram, the waiting list, choosing a password      | Built                                                                     |
-| Teacher: today, a lesson (attendance, grades, topic, homework, lesson room), groups, checking | Built, phone and tablet                                                   |
-| Student and parent: home, a group's page (lessons, marks, grades, payments), password         | Built, phone and tablet                                                   |
-| Pages the app does not have                                                                   | Open on the site in the phone's browser, already signed in (A-204)        |
-| Android app file                                                                              | Built by GitHub on every change; starts on an emulated phone              |
-| iPhone and iPad build                                                                         | A manual GitHub job (simulator only); a real device needs Apple's account |
-| Google Play and App Store                                                                     | Not published: needs kai's accounts (below)                               |
-| Push notifications                                                                            | Next                                                                      |
-| The lesson room inside the app, with screen sharing on Android and iOS                        | Next (today it opens in the browser)                                      |
-| Answering homework, tests and chat inside the app                                             | Next (today they open the personal page in the browser)                   |
-| The office's pages: students, payments, leads, reports                                        | Later; on the site until then                                             |
-| The site running on the app's code                                                            | Part by part, the student side first; wide tables, Excel and print last   |
+| Part                                                                                                    | State                                                                     |
+| ------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------- |
+| Sign-in: phone and password, a code from Telegram, the waiting list, choosing a password                | Built                                                                     |
+| Teacher: today, a lesson (attendance, grades, topic, homework, lesson room), groups, checking           | Built, phone and tablet                                                   |
+| Student and parent: home, a group's page (lessons, marks, grades, payments), password                   | Built, phone and tablet                                                   |
+| Pages the app does not have                                                                             | Open on the site in the phone's browser, already signed in (A-204)        |
+| Android app file                                                                                        | Built by GitHub on every change; starts on an emulated phone              |
+| iPhone and iPad build                                                                                   | A manual GitHub job (simulator only); a real device needs Apple's account |
+| Google Play and App Store                                                                               | Not published: needs kai's accounts (below)                               |
+| Push notifications                                                                                      | Next                                                                      |
+| The lesson room inside the app: camera, microphone, chat, hands, reactions, the teacher's tools         | Built, phone and tablet (A-207)                                           |
+| In the lesson room: screen sharing from Android and iOS, whiteboard, shown files, polls, breakout rooms | Next (a teacher who needs them teaches from a computer)                   |
+| Answering homework, tests and chat inside the app                                                       | Next (today they open the personal page in the browser)                   |
+| The office's pages: students, payments, leads, reports                                                  | Later; on the site until then                                             |
+| The site running on the app's code                                                                      | Part by part, the student side first; wide tables, Excel and print last   |
 
 ## What kai needs to do
 
@@ -46,8 +48,8 @@ kept there (Play App Signing, App Store Connect).
 ```
 mobile/
   app.config.ts          name, identifier (center.kampus.app), icons, splash; native folders are generated from it
-  src/app/               the routes (expo-router): sign-in, staff/, student/, set-password
-  src/features/          the screens: sign-in, staff (today, lesson, groups, checking, more), student, shared
+  src/app/               the routes (expo-router): sign-in, staff/, student/, set-password, the lesson room
+  src/features/          the screens: sign-in, staff (today, lesson, groups, checking, more), student, room, shared
   src/components/        the few building blocks: Text, Button, Field, Card, Header, the navigation bar and rail
   src/api/               types of the server's answers and the data hooks (TanStack Query)
   src/lib/               the API client, session, languages, theme, layout (phone or tablet), days
@@ -68,7 +70,19 @@ mobile/
 - **Changes feel instant.** Attendance and grades are shown at once and sent behind; a refusal puts
   the screen back and shows the server's reason.
 - **The site from the app.** `openOnSite(path)` asks for a one-minute link and opens it in the
-  phone's browser (A-204). The lesson room uses it until the room is built into the app.
+  phone's browser (A-204), for pages the app does not have yet.
+- **The lesson room is the site's own (A-207).** The call engine (who is in the room, the
+  connections, chat, hands, the teacher's tools) and the rules for who is on the stage live in
+  `src/lib/video/` and are imported by the site and by the app, so both are in one room and a fix
+  lands in both. The app adds the drawing (`src/features/room/call-screen.tsx`, `tile.tsx`), the
+  waiting screen and joining (`room-flow.tsx`) and the one file that differs by device:
+  `platform.native.tsx` on phones (`react-native-webrtc` gives the engine the browser's names,
+  `RTCView` draws a picture, `react-native-incall-manager` chooses the loudspeaker and keeps the
+  screen awake) and `platform.tsx` in the web build. Camera and microphone wording for the phone's
+  permission question comes from the message files (`mobile.permissions`) through `app.config.ts`.
+- **Shared code and its packages.** A file under `../src/lib` that the app imports may use only
+  packages `mobile/` has installed too (today: `zod`). GitHub installs only `mobile/`'s packages for
+  the app's checks, so anything else fails there first.
 - **Native folders are generated.** `android/` and `ios/` are not in git; `npx expo prebuild` makes
   them from `app.config.ts`.
 
@@ -93,12 +107,17 @@ from `.env`. Choose **Staff** on the sign-in screen.
 `EXPO_PUBLIC_API_URL=http://10.0.2.2:3000` for the Android emulator. Without it the app talks to
 `https://kampus.center`.
 
+**The lesson room** needs a camera: a browser and a real phone have one, the Android emulator shows
+a moving test picture, the iOS simulator has none (people there join with the microphone only). To
+try a lesson alone, open the teacher in the app and a student's lesson link in a browser on the same
+server.
+
 **Checks:** `npm run typecheck`, `npm run lint`, `npm test`.
 
 ## Builds
 
-`.github/workflows/mobile.yml` runs when `mobile/`, the message files or the shared date helpers
-change:
+`.github/workflows/mobile.yml` runs when `mobile/`, the message files or the shared code under
+`src/lib` change:
 
 1. **Typecheck, lint, tests, web build.**
 2. **Android app file.** Generates the Android project and builds a release `.apk` for phones and

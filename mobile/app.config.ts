@@ -1,5 +1,9 @@
 import type { ConfigContext, ExpoConfig } from "expo/config";
 
+import en from "../messages/en.json";
+import ru from "../messages/ru.json";
+import uz from "../messages/uz.json";
+
 /*
  * The Kampus app for phones and tablets (A-203): one React Native project for
  * Android, iOS and the web. Native folders are generated from this file
@@ -11,6 +15,36 @@ import type { ConfigContext, ExpoConfig } from "expo/config";
  */
 /** Counts up with every build, so a newer file installs over an older one. */
 const BUILD = Number(process.env.APP_BUILD ?? "1");
+
+/** Why the app asks for the camera and the microphone, in the app's three languages. */
+const PERMISSIONS = {
+  en: (en as Messages).mobile.permissions,
+  ru: (ru as Messages).mobile.permissions,
+  uz: (uz as Messages).mobile.permissions,
+};
+interface Messages {
+  mobile: { permissions: { camera: string; microphone: string } };
+}
+/** Under `ios`, so the sentences reach the iPhone's question and stay out of Android's resources. */
+function iosWording(locale: keyof typeof PERMISSIONS): { ios: Record<string, string> } {
+  return {
+    ios: {
+      NSCameraUsageDescription: PERMISSIONS[locale].camera,
+      NSMicrophoneUsageDescription: PERMISSIONS[locale].microphone,
+    },
+  };
+}
+
+/*
+ * The release build is shrunk, and the shrinker stops at a class the WebRTC
+ * library names but does not ship (an optional video decoder). The library
+ * keeps everything it does ship by its own rules; the loudspeaker module is
+ * reached from JavaScript by name, so it is kept whole too.
+ */
+const SHRINKER_RULES = [
+  "-dontwarn org.webrtc.**",
+  "-keep class com.zxcpoiu.incallmanager.** { *; }",
+].join("\n");
 
 const LAPIS = "#17234b";
 const TURQUOISE = "#58d4d0";
@@ -35,7 +69,18 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     infoPlist: {
       ITSAppUsesNonExemptEncryption: false,
       CFBundleLocalizations: ["uz", "ru", "en"],
+      // The lesson room (A-207). The sentences are the English ones; `locales`
+      // below gives iOS the Uzbek and Russian wording.
+      NSCameraUsageDescription: PERMISSIONS.en.camera,
+      NSMicrophoneUsageDescription: PERMISSIONS.en.microphone,
+      // A lesson keeps its sound when the teacher looks at another app for a moment.
+      UIBackgroundModes: ["audio"],
     },
+  },
+  locales: {
+    en: iosWording("en"),
+    ru: iosWording("ru"),
+    uz: iosWording("uz"),
   },
   android: {
     package: "center.kampus.app",
@@ -46,6 +91,15 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
       monochromeImage: "./assets/android-icon-monochrome.png",
     },
     predictiveBackGestureEnabled: false,
+    // The lesson room (A-207): camera, microphone, the loudspeaker and headsets.
+    permissions: [
+      "android.permission.CAMERA",
+      "android.permission.RECORD_AUDIO",
+      "android.permission.MODIFY_AUDIO_SETTINGS",
+      "android.permission.ACCESS_NETWORK_STATE",
+      "android.permission.BLUETOOTH_CONNECT",
+      "android.permission.WAKE_LOCK",
+    ],
   },
   web: {
     output: "single",
@@ -61,6 +115,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     "expo-localization",
     "expo-font",
     "expo-web-browser",
+    ["expo-build-properties", { android: { extraProguardRules: SHRINKER_RULES } }],
     [
       "expo-splash-screen",
       {

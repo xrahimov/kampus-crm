@@ -1,20 +1,21 @@
 name: Mobile app
 
 # The Kampus app for phones and tablets (mobile/, A-203). It shares the site's
-# message files and a few pure helpers, so a change to those runs this too.
+# message files and the code under src/lib that both run (dates, the lesson
+# room's engine and its rules, A-207), so a change to those runs this too.
 on:
   push:
     branches: [main]
     paths:
       - "mobile/**"
       - "messages/**"
-      - "src/lib/dates.ts"
+      - "src/lib/**"
       - ".github/workflows/mobile.yml"
   pull_request:
     paths:
       - "mobile/**"
       - "messages/**"
-      - "src/lib/dates.ts"
+      - "src/lib/**"
       - ".github/workflows/mobile.yml"
   workflow_dispatch:
     inputs:

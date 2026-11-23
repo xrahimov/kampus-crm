@@ -7,7 +7,8 @@
       "@/*": ["./src/*"],
       "@/assets/*": ["./assets/*"],
       "@kampus/messages/*": ["../messages/*"],
-      "@kampus/lib/*": ["../src/lib/*"]
+      "@kampus/lib/*": ["../src/lib/*"],
+      "zod": ["./node_modules/zod"]
     },
     "types": ["jest"]
   },

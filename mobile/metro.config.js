@@ -1,6 +1,7 @@
-// The app shares the site's texts (../messages) and a few pure helpers
-// (../src/lib: dates and money), so Metro also watches those two folders. Only
-// files that import no package may be shared this way: a package asked for
+// The app shares the site's texts (../messages) and the code under ../src/lib
+// that both run: dates and money, and the lesson room's engine with its rules
+// (A-207). So Metro also watches those two folders. A shared file may import
+// only what this folder has installed too (today: zod): a package asked for
 // from up there is looked up in this folder's node_modules, never in the
 // site's (another React must not end up in the app).
 const path = require("node:path");

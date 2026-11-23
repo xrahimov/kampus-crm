@@ -1,3 +1,4 @@
+import { useRouter } from "expo-router";
 import { Check, Minus, Video, X } from "lucide-react-native";
 import { useState } from "react";
 import { Pressable, StyleSheet, TextInput, View } from "react-native";
@@ -17,10 +18,9 @@ import { Field } from "@/components/field";
 import { Avatar, Badge, Card, Divider, Notice, Segmented } from "@/components/surface";
 import { Text } from "@/components/text";
 import { monthOf } from "@/lib/days";
-import { errorText, useLocaleChoice, useMoney, useTranslations } from "@/lib/i18n";
+import { errorText, useMoney, useTranslations } from "@/lib/i18n";
 import { useLayout } from "@/lib/layout";
 import { font, radius, space, useTheme } from "@/lib/theme";
-import { openOnSite } from "@/lib/web";
 
 type Tab = "attendance" | "grades";
 
@@ -132,7 +132,7 @@ export function LessonPanel({
 /** Start the group's online lesson, or go into the one that is on. */
 function RoomCard({ lesson, canMark }: { lesson: TodayLesson; canMark: boolean }) {
   const t = useTranslations();
-  const { locale } = useLocaleChoice();
+  const router = useRouter();
   const { colors } = useTheme();
   const video = useGroupVideo(lesson.groupId);
   const start = useStartVideo(lesson.groupId);
@@ -147,7 +147,7 @@ function RoomCard({ lesson, canMark }: { lesson: TodayLesson; canMark: boolean }
     setOpening(true);
     try {
       const live = room ?? (await start.mutateAsync(lesson.id));
-      await openOnSite(`/${locale}/video/${live.id}`);
+      router.push({ pathname: "/staff/room/[id]", params: { id: live.id } });
     } catch (e) {
       setError(errorText(t, e));
     } finally {
