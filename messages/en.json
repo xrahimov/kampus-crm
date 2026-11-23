@@ -6277,7 +6277,7 @@
     "siteText": "Students, payments, tests and reports are on the site for now. It opens already signed in.",
     "version": "Kampus {version}",
     "myPage": "Open my full page",
-    "myPageHint": "The course, news, the schedule and paying online open on your page for now.",
+    "myPageHint": "The schedule and paying online open on your page for now.",
     "room": {
       "denied": "Kampus has no access to the camera or the microphone. You can join to watch and listen. To be seen and heard, allow both in the phone's settings.",
       "partial": "Kampus has access to only part of your devices. You can still join. Allow the camera and the microphone in the phone's settings to use both.",

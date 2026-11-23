@@ -16,6 +16,10 @@ export default function StudentLayout() {
       <Stack.Screen name="tests/[token]" />
       <Stack.Screen name="exercise/[token]" />
       <Stack.Screen name="chat/[token]" />
+      <Stack.Screen name="course/[token]" />
+      <Stack.Screen name="stream/[token]" />
+      <Stack.Screen name="news/[token]" />
+      <Stack.Screen name="results/[token]" />
       {/* A lesson is left with its own button, not by a stray swipe from the edge. */}
       <Stack.Screen name="room/[token]" options={{ gestureEnabled: false, animation: "fade" }} />
     </Stack>

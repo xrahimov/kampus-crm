@@ -7,8 +7,9 @@ files, and wears the same look. Decisions are recorded in [ASSUMPTIONS.md](ASSUM
 inside the app), A-208 (screen sharing from Android and lessons behind other apps), A-209 (the
 whiteboard), A-210 (shown files), A-211 (the teacher's polls and breakout rooms), A-212 (homework
 answered in the app, files opened in the app), A-213 (a group's tests, materials, chat and
-exercises in the app) and A-214 (the teacher's side of a group: answers with their files and a
-spoken reply, the group chat, materials added from the phone).
+exercises in the app), A-214 (the teacher's side of a group: answers with their files and a
+spoken reply, the group chat, materials added from the phone) and A-215 (the student's course with
+flashcards, the class stream, news, results and badges, rating a lesson).
 
 Why React Native and not the site in a wrapper: kai's choice on 2026-11-23 ("rewrite it in react
 native"), with two requirements said the same day: one code base in the end, and teachers must be
@@ -35,7 +36,8 @@ able to work from an iPad or a phone.
 | In the lesson room: saving the whiteboard                                                            | Next                                                                      |
 | Student and parent: homework answered in the app (text, photo, file, voice); files open in the app   | Built, phone and tablet (A-212)                                           |
 | Student and parent: tests, materials with lesson recordings, the group chat, exercises               | Built, phone and tablet (A-213)                                           |
-| Student and parent: the course, news, the stream, the schedule with booking, paying online           | Next (today they open the personal page in the browser)                   |
+| Student and parent: the course with flashcards, the class stream, news, results, rating a lesson     | Built, phone and tablet (A-215)                                           |
+| Student and parent: the schedule with booking, paying online, Telegram, the time zone                | Next (today they open the personal page in the browser)                   |
 | The office's pages: students, payments, leads, reports                                               | Later; on the site until then                                             |
 | The site running on the app's code                                                                   | Part by part, the student side first; wide tables, Excel and print last   |
 
@@ -123,6 +125,15 @@ mobile/
   with its streaming copy and the place to continue from; `chat-screen.tsx` is the thread;
   `exercise-screen.tsx` does one exercise; `answer-parts.tsx` holds the answer rows and word chips
   that tests and exercises share.
+- **The rest of a group's pages for students (A-215).** The calls sit with the others in
+  `src/api/portal.ts`. `course-screen.tsx` shows the progress, the topics and their blocks
+  (`ExerciseRows` in `exercise-rows.tsx` lists a topic's exercises the way a homework task does);
+  `vocab-card.tsx` runs the flashcards (a missed word goes to the end of the run);
+  `stream-screen.tsx` is the class stream (every change answers with the whole post, which
+  replaces the one in the cache); `news-screen.tsx` marks what was unread as read once;
+  `results-screen.tsx` shows the grade, badges, exams and tests; `lesson-rating.tsx` is the stars
+  under a lesson on the group's screen. `PendingScreen` (`src/features/shared/`) is the waiting
+  and try-again state these pages share.
 - **The teacher's side of a group (A-214).** `src/api/group-pages.ts` holds the calls (behind the
   session): the group's chat and materials, storing a file (`uploadDocument`) and adding it
   (`addGroupFile`). `src/features/shared/` holds what the student's and the teacher's side draw the
