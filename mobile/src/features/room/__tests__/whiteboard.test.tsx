@@ -15,6 +15,12 @@ jest.mock("react-native-incall-manager", () => ({
   setKeepScreenOn: jest.fn(),
 }));
 
+// A phone asks the drawn board for its picture, which is native code too.
+const mockPicture = jest.fn(async (..._board: unknown[]) => new Uint8Array([137, 80, 78, 71]));
+jest.mock("@/features/room/board-picture", () => ({
+  boardPicture: (...args: unknown[]) => mockPicture(...args),
+}));
+
 /*
  * The whiteboard in the app (A-209), over a stand-in for the call engine: who
  * may draw, what a finger sends, and the teacher's switches.
@@ -24,6 +30,23 @@ const layout = (width: number, height: number) => ({
   nativeEvent: { layout: { x: 0, y: 0, width, height } },
 });
 const touch = (x: number, y: number) => ({ nativeEvent: { locationX: x, locationY: y } });
+const LINE = {
+  id: "s1",
+  color: "#111827",
+  width: 4,
+  erase: false,
+  layer: "",
+  points: [
+    [0.1, 0.1],
+    [0.2, 0.2],
+  ] as [number, number][],
+  by: null,
+};
+const realFetch = globalThis.fetch;
+afterEach(() => {
+  globalThis.fetch = realFetch;
+  mockPicture.mockClear();
+});
 
 describe("the whiteboard in the app", () => {
   it("puts the board on a student's stage and tells them only the teacher draws", async () => {
@@ -127,5 +150,72 @@ describe("the whiteboard in the app", () => {
     await renderRoom(engine);
     await screen.findByTestId("call-room");
     expect(screen.queryByTestId("open-tools")).toBeNull();
+  });
+
+  it("saves the teacher's board as a picture under the lesson's materials (A-222)", async () => {
+    const fetchMock = jest.fn(async (..._call: [string, RequestInit?]) => ({
+      status: 201,
+      ok: true,
+      text: async () => JSON.stringify({ id: "m1", title: "Whiteboard", url: "/files/m1" }),
+    }));
+    globalThis.fetch = fetchMock as unknown as typeof fetch;
+    const engine = fakeEngine("HOST", [peer("a", "Aziza Karimova")]);
+    engine.strokes = [LINE];
+    engine.currentStage = { ...engine.currentStage, board: true };
+    await renderRoom(engine);
+    await screen.findByTestId("whiteboard");
+    expect(screen.queryByTestId("board-save-state")).toBeNull();
+
+    await fireEvent.press(screen.getByTestId("board-save"));
+    expect((await screen.findByTestId("board-save-state")).props.children).toBe(
+      "Saved under the group's materials",
+    );
+    // The picture is made from the board's own strokes and sent as it is.
+    expect(mockPicture).toHaveBeenCalledTimes(1);
+    expect(mockPicture.mock.calls[0]![1]).toEqual([LINE]);
+    const [url, init] = fetchMock.mock.calls[0]!;
+    expect(url).toMatch(/\/api\/v1\/video\/rooms\/room-1\/board$/);
+    expect(init?.method).toBe("POST");
+    expect((init?.headers as Record<string, string>)["Content-Type"]).toBe("image/png");
+    expect(Array.from(init?.body as unknown as Uint8Array)).toEqual([137, 80, 78, 71]);
+  });
+
+  it("saves nothing from an empty board", async () => {
+    const engine = fakeEngine("HOST", [peer("a", "Aziza Karimova")]);
+    engine.currentStage = { ...engine.currentStage, board: true };
+    await renderRoom(engine);
+    await screen.findByTestId("whiteboard");
+    // Nothing is drawn yet: the button waits.
+    expect(screen.getByTestId("board-save").props.accessibilityState?.disabled).toBe(true);
+    await fireEvent.press(screen.getByTestId("board-save"));
+    expect(mockPicture).not.toHaveBeenCalled();
+  });
+
+  it("says so when the board could not be saved", async () => {
+    const fetchMock = jest.fn(async (..._call: [string, RequestInit?]) => ({
+      status: 403,
+      ok: false,
+      text: async () =>
+        JSON.stringify({ error: { code: "FORBIDDEN", message: "errors.forbidden" } }),
+    }));
+    globalThis.fetch = fetchMock as unknown as typeof fetch;
+    const engine = fakeEngine("HOST", [peer("a", "Aziza Karimova")]);
+    engine.strokes = [LINE];
+    engine.currentStage = { ...engine.currentStage, board: true };
+    await renderRoom(engine);
+    await screen.findByTestId("whiteboard");
+    await fireEvent.press(screen.getByTestId("board-save"));
+    expect((await screen.findByTestId("board-save-state")).props.children).toBe("Could not save");
+  });
+
+  it("gives a student who may draw no way to save the board", async () => {
+    const engine = fakeEngine("STUDENT", [peer("t", "Demo Teacher", { role: "HOST" })]);
+    engine.strokes = [LINE];
+    engine.boardStudentsMayDraw = true;
+    engine.currentStage = { ...engine.currentStage, board: true };
+    await renderRoom(engine);
+    await screen.findByTestId("whiteboard");
+    expect(screen.getByTestId("board-eraser")).toBeTruthy();
+    expect(screen.queryByTestId("board-save")).toBeNull();
   });
 });

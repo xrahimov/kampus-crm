@@ -14,7 +14,7 @@ schedule with booking, time zone, paying online, Telegram, invite code and certi
 (the teacher's homework set and checked from the phone, the class stream, the gradebook and the
 notes), A-218 (the teacher's course plan, coins and tests of a group), A-219 (a group's exams, knowledge
 by topic, comments on students and history), A-220 (Students for teachers: the list and one
-student's page) and A-221 (announcements).
+student's page), A-221 (announcements) and A-222 (the whiteboard saved from the app).
 
 Why React Native and not the site in a wrapper: kai's choice on 2026-11-23 ("rewrite it in react
 native"), with two requirements said the same day: one code base in the end, and teachers must be
@@ -43,7 +43,7 @@ able to work from an iPad or a phone.
 | In the lesson room: sharing the screen; a lesson that keeps running behind other apps                            | Built for Android (A-208); iPhone and iPad sharing is next                                         |
 | In the lesson room: the teacher's polls and breakout rooms                                                       | Built, phone and tablet (A-211)                                                                    |
 | In the lesson room: a photo or file from the phone added to the lesson and shown                                 | Built, phone and tablet (A-214)                                                                    |
-| In the lesson room: saving the whiteboard                                                                        | Next                                                                                               |
+| In the lesson room: saving the whiteboard                                                                        | Built, phone and tablet (A-222)                                                                    |
 | Student and parent: homework answered in the app (text, photo, file, voice); files open in the app               | Built, phone and tablet (A-212)                                                                    |
 | Student and parent: tests, materials with lesson recordings, the group chat, exercises                           | Built, phone and tablet (A-213)                                                                    |
 | Student and parent: the course with flashcards, the class stream, news, results, rating a lesson                 | Built, phone and tablet (A-215)                                                                    |
@@ -190,6 +190,14 @@ mobile/
   for their data when opened. A call is `Linking.openURL("tel:…")`.
 - **Announcements (A-221).** `src/api/staff-announcements.ts` and `announcements-screen.tsx`, at
   `/staff/announcements`, opened from **More**. A new notice always has the audience `GROUP`.
+- **Saving the whiteboard (A-222).** The teacher's toolbar on the whiteboard has a save button
+  (`board-save` in `src/features/room/board.tsx`). The picture is a PNG of 1600 by 900 and goes
+  as plain bytes to `POST /video/rooms/:roomId/board`, the address the site uses, through
+  `apiBytes` in `src/lib/api.ts` (it travels the way a form does, so a phone can send it).
+  Who makes the picture differs: `board-picture.native.ts` asks the drawn board itself
+  (`toDataURL` of react-native-svg; an iPhone is asked in points, so the size is divided by the
+  screen's density), `board-picture.ts` paints the strokes on a canvas with the site's own
+  painter, which now lives in `src/lib/video/board-paint.ts`. Tests swap the picture maker out.
 - **The teacher's side of a group (A-214).** `src/api/group-pages.ts` holds the calls (behind the
   session): the group's chat and materials, storing a file (`uploadDocument`) and adding it
   (`addGroupFile`). `src/features/shared/` holds what the student's and the teacher's side draw the

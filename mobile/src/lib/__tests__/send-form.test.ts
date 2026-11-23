@@ -6,7 +6,11 @@ import type { FormAnswer } from "@/lib/send-form";
  * so photos, recordings and documents never left the phone).
  */
 
-type Send = (url: string, headers: Record<string, string>, form: FormData) => Promise<FormAnswer>;
+type Send = (
+  url: string,
+  headers: Record<string, string>,
+  body: FormData | Uint8Array,
+) => Promise<FormAnswer>;
 // The test setup swaps this module for the web's; here the phone's own is wanted.
 const { sendForm } = jest.requireActual<{ sendForm: Send }>("@/lib/send-form.native");
 
@@ -86,6 +90,23 @@ describe("posting a form from a phone", () => {
     expect(answer.status).toBe(201);
     expect(answer.ok).toBe(true);
     expect(await answer.text()).toBe('{"url":"/api/v1/files/documents/page.jpg"}');
+  });
+
+  it("sends a picture made in the app as its bytes, with the type it was given", async () => {
+    const png = new Uint8Array([137, 80, 78, 71]);
+    const sending = sendForm(
+      "https://kampus.test/api/v1/video/rooms/r1/board",
+      { "Content-Type": "image/png" },
+      png,
+    );
+    const request = FakeRequest.last!;
+    expect(fetchMock).not.toHaveBeenCalled();
+    expect(request.body).toBe(png);
+    expect(request.headers).toEqual({ "Content-Type": "image/png" });
+    request.status = 201;
+    request.responseText = "{}";
+    request.onload?.();
+    expect((await sending).ok).toBe(true);
   });
 
   it("hands a refusal over with its status and text", async () => {

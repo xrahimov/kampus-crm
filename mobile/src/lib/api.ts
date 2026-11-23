@@ -159,6 +159,28 @@ export async function apiForm<T>(
   return readAnswer<T>(response, token);
 }
 
+/**
+ * Sends a picture made in the app as its bytes (the saved whiteboard), with
+ * its content type. It goes the way a form does, so a phone can send it.
+ */
+export async function apiBytes<T>(
+  path: string,
+  bytes: Uint8Array,
+  contentType: string,
+): Promise<T> {
+  const headers = baseHeaders();
+  headers["Content-Type"] = contentType;
+  const token = sessionToken;
+  if (token) headers.Authorization = `Bearer ${token}`;
+  let response: FormAnswer;
+  try {
+    response = await sendForm(apiUrl(path), headers, bytes);
+  } catch {
+    throw new NetworkError();
+  }
+  return readAnswer<T>(response, token);
+}
+
 function baseHeaders(): Record<string, string> {
   const headers: Record<string, string> = {
     Accept: "application/json",
