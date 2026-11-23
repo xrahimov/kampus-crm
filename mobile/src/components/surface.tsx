@@ -65,6 +65,8 @@ export function Screen({
           style={styles.fill}
           contentContainerStyle={styles.grow}
           keyboardShouldPersistTaps="handled"
+          // iOS: a field under the keyboard is scrolled into view (Android resizes the window).
+          automaticallyAdjustKeyboardInsets
           refreshControl={
             onRefresh ? (
               <RefreshControl
@@ -153,11 +155,19 @@ function toneColors(colors: Colors, tone: Tone): { bg: string; ink: string } {
 }
 
 /** A short state word: "Live", "3 to check". */
-export function Badge({ label, tone = "neutral" }: { label: string; tone?: Tone }) {
+export function Badge({
+  label,
+  tone = "neutral",
+  testID,
+}: {
+  label: string;
+  tone?: Tone;
+  testID?: string;
+}) {
   const { colors, dark } = useTheme();
   const look = toneColors(colors, tone);
   return (
-    <View style={[styles.badge, { backgroundColor: look.bg }]}>
+    <View style={[styles.badge, { backgroundColor: look.bg }]} testID={testID}>
       <Text
         variant="smallStrong"
         style={{ color: tone === "warning" && dark ? colors.warning : look.ink }}

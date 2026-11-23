@@ -242,13 +242,26 @@ export async function deleteComment(
 
 /* ----- the student's page ----------------------------------------------------------------- */
 
+/**
+ * A post as the student's link gets it: its file is served through the link,
+ * not through the staff endpoint a student has no session for (A-215).
+ */
+function forPortal(token: string, post: StreamPostDto): StreamPostDto {
+  const url = post.attachmentUrl;
+  if (!url?.startsWith("/api/v1/files/")) return post;
+  return {
+    ...post,
+    attachmentUrl: `/api/v1/public/class/${encodeURIComponent(token)}/files/${url.slice("/api/v1/files/".length)}`,
+  };
+}
+
 export async function listPortalStream(
   token: string,
   db: DbClient = prisma,
 ): Promise<StreamPostDto[] | null> {
   const membership = await membershipByToken(db, token);
   if (!membership) return null;
-  return listFor(db, membership.group.id, membership.id);
+  return (await listFor(db, membership.group.id, membership.id)).map((p) => forPortal(token, p));
 }
 
 export async function addPortalComment(
@@ -268,7 +281,7 @@ export async function addPortalComment(
   await db.streamComment.create({
     data: { postId, membershipId: membership.id, body: input.body },
   });
-  return toDto((await loadPost(db, postId))!, membership.id);
+  return forPortal(token, toDto((await loadPost(db, postId))!, membership.id));
 }
 
 /** A student takes back their own comment. */
@@ -285,5 +298,5 @@ export async function deletePortalComment(
   });
   if (!row) throw AppError.notFound();
   await db.streamComment.delete({ where: { id: commentId } });
-  return toDto((await loadPost(db, row.postId))!, membership.id);
+  return forPortal(token, toDto((await loadPost(db, row.postId))!, membership.id));
 }

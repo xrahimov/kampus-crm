@@ -8,6 +8,7 @@ import { DEFAULT_ROLE_PERMISSIONS } from "@/lib/rbac/default-roles";
 import { prisma } from "@/server/db/prisma";
 import type { Actor } from "@/server/rbac/authorize";
 import { createGroup } from "@/server/services/groups/groups.service";
+import { portalFileAllowed } from "@/server/services/homework/homework.service";
 import { createBranch } from "@/server/services/settings/branches.service";
 import { createCourse } from "@/server/services/settings/courses.service";
 import {
@@ -208,5 +209,26 @@ describe("class stream (A-164)", () => {
     await deletePost(teacher, post!.id);
     expect(await listGroupStream(teacher, groupId)).toHaveLength(2);
     expect(await listPortalStream("not-a-real-token-at-all")).toBeNull();
+  });
+
+  it("serves a post's file to the group's students through their link", async () => {
+    const key = `documents/${"c".repeat(27)}${RUN}.pdf`;
+    const post = await createPost(teacher, groupId, {
+      body: "The word list",
+      attachmentUrl: `/api/v1/files/${key}`,
+    });
+    // Staff keep the stored address; a student gets one their link may open.
+    expect((await listGroupStream(teacher, groupId))[0]!.attachmentUrl).toBe(
+      `/api/v1/files/${key}`,
+    );
+    const theirs = `/api/v1/public/class/${anna.token}/files/${key}`;
+    expect((await listPortalStream(anna.token))![0]!.attachmentUrl).toBe(theirs);
+    expect((await addPortalComment(anna.token, post.id, { body: "Got it" }))!.attachmentUrl).toBe(
+      theirs,
+    );
+    expect(await portalFileAllowed(anna.token, key)).toBe(true);
+    expect(await portalFileAllowed(anna.token, `documents/${"d".repeat(32)}.pdf`)).toBe(false);
+    await deletePost(teacher, post.id);
+    expect(await portalFileAllowed(anna.token, key)).toBe(false);
   });
 });

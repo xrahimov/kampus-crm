@@ -1,16 +1,20 @@
 import { useLocalSearchParams, useRouter } from "expo-router";
 import {
+  Award,
+  BookOpen,
   ChevronRight,
   ClipboardCheck,
   ExternalLink,
   FolderOpen,
+  Megaphone,
   MessageCircle,
+  MessagesSquare,
   NotebookPen,
 } from "lucide-react-native";
 import { Pressable, StyleSheet, View } from "react-native";
 
 import { usePortal } from "@/api/hooks";
-import { usePortalChat } from "@/api/portal";
+import { usePortalChat, usePortalCourse, usePortalNews } from "@/api/portal";
 import type { AttendanceStatus, Portal } from "@/api/types";
 import { Button } from "@/components/button";
 import { Header } from "@/components/header";
@@ -21,6 +25,7 @@ import { errorText, useDate, useLocaleChoice, useMoney, useTranslations } from "
 import { useLayout } from "@/lib/layout";
 import { space, useTheme } from "@/lib/theme";
 
+import { LessonRating } from "./lesson-rating";
 import { openPersonalPage } from "./open-page";
 
 const ATTENDANCE_TONE: Record<AttendanceStatus, Tone> = {
@@ -32,9 +37,10 @@ const ATTENDANCE_TONE: Record<AttendanceStatus, Tone> = {
 
 /**
  * One group as the student sees it: the next lesson, how they are doing, each
- * past lesson with its mark and grade, and the payments. Homework, tests,
- * materials and the chat are pages of the app (A-212, A-213); the course, news,
- * the schedule and paying online open on the personal page for now.
+ * past lesson with its mark, grade and the student's own rating, and the
+ * payments. Homework, tests, the course, materials, the chat, the class
+ * stream, news and results are pages of the app (A-212, A-213, A-215); the
+ * schedule and paying online open on the personal page for now.
  */
 export function ClassScreen() {
   const { token } = useLocalSearchParams<{ token: string }>();
@@ -93,7 +99,7 @@ export function ClassScreen() {
   const lessons = (
     <View style={styles.block}>
       <Text variant="heading">{t("portal.tabs.lessons")}</Text>
-      <Lessons portal={portal} />
+      <Lessons portal={portal} token={token} />
     </View>
   );
 
@@ -119,42 +125,83 @@ export function ClassScreen() {
   );
 }
 
-/** The group's pages inside the app, one row each; the chat shows what is unread. */
+/**
+ * The group's pages inside the app, one row each. The chat and the news show
+ * what is unread; the course is listed once it has topics.
+ */
 function Pages({ token }: { token: string }) {
   const t = useTranslations();
   const { colors } = useTheme();
   const router = useRouter();
   const unread = usePortalChat(token).data?.unread ?? 0;
+  const unreadNews = (usePortalNews(token).data ?? []).filter((item) => !item.read).length;
+  const hasCourse = (usePortalCourse(token).data?.total ?? 0) > 0;
   const params = { token };
   const rows = [
     {
       id: "homework",
       label: t("portal.tabs.homework"),
       Icon: NotebookPen,
+      count: 0,
       open: () => router.push({ pathname: "/student/homework/[token]", params }),
     },
     {
       id: "tests",
       label: t("portal.tabs.tests"),
       Icon: ClipboardCheck,
+      count: 0,
       open: () => router.push({ pathname: "/student/tests/[token]", params }),
     },
+    ...(hasCourse
+      ? [
+          {
+            id: "course",
+            label: t("portal.tabs.course"),
+            Icon: BookOpen,
+            count: 0,
+            open: () => router.push({ pathname: "/student/course/[token]", params }),
+          },
+        ]
+      : []),
     {
       id: "materials",
       label: t("portal.tabs.materials"),
       Icon: FolderOpen,
+      count: 0,
       open: () => router.push({ pathname: "/student/materials/[token]", params }),
     },
     {
       id: "chat",
       label: t("portal.tabs.chat"),
       Icon: MessageCircle,
+      count: unread,
       open: () => router.push({ pathname: "/student/chat/[token]", params }),
     },
-  ] as const;
+    {
+      id: "stream",
+      label: t("portal.tabs.stream"),
+      Icon: MessagesSquare,
+      count: 0,
+      open: () => router.push({ pathname: "/student/stream/[token]", params }),
+    },
+    {
+      id: "news",
+      label: t("portal.tabs.announcements"),
+      Icon: Megaphone,
+      count: unreadNews,
+      open: () => router.push({ pathname: "/student/news/[token]", params }),
+    },
+    {
+      id: "results",
+      label: t("portal.tabs.results"),
+      Icon: Award,
+      count: 0,
+      open: () => router.push({ pathname: "/student/results/[token]", params }),
+    },
+  ];
   return (
     <Card style={styles.flush} testID="pages">
-      {rows.map(({ id, label, Icon, open }, index) => (
+      {rows.map(({ id, label, Icon, count, open }, index) => (
         <View key={id}>
           {index > 0 ? <Divider /> : null}
           <Pressable
@@ -168,7 +215,9 @@ function Pages({ token }: { token: string }) {
             <Text variant="bodyStrong" style={styles.fill}>
               {label}
             </Text>
-            {id === "chat" && unread > 0 ? <Badge tone="accent" label={String(unread)} /> : null}
+            {count > 0 ? (
+              <Badge tone="accent" label={String(count)} testID={`unread-${id}`} />
+            ) : null}
             <ChevronRight size={20} color={colors.mutedForeground} />
           </Pressable>
         </View>
@@ -285,7 +334,7 @@ function Money({ portal }: { portal: Portal }) {
   );
 }
 
-function Lessons({ portal }: { portal: Portal }) {
+function Lessons({ portal, token }: { portal: Portal; token: string }) {
   const t = useTranslations();
   const formatDate = useDate();
   if (portal.lessons.length === 0) {
@@ -329,6 +378,11 @@ function Lessons({ portal }: { portal: Portal }) {
                 {lesson.grade !== null ? <Text variant="figure">{lesson.grade}</Text> : null}
               </View>
             </View>
+            {lesson.canRate || lesson.rating ? (
+              <View style={styles.rating}>
+                <LessonRating token={token} lesson={lesson} />
+              </View>
+            ) : null}
           </View>
         );
       })}
@@ -361,5 +415,6 @@ const styles = StyleSheet.create({
     paddingVertical: space[3],
   },
   day: { width: 92 },
+  rating: { paddingHorizontal: space[4], paddingBottom: space[3] },
   marks: { alignItems: "flex-end", gap: space[1] },
 });

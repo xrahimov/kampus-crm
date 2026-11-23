@@ -239,6 +239,15 @@ export interface PortalLesson {
   grade: number | null;
   gradeComment: string | null;
   studentNote: string | null;
+  /** This student's rating of the lesson, when given (A-168). */
+  rating: LessonRating | null;
+  /** The lesson is over and the student was not absent, so they may rate it. */
+  canRate: boolean;
+}
+
+export interface LessonRating {
+  rating: number;
+  comment: string | null;
 }
 
 export interface Portal {
@@ -260,6 +269,25 @@ export interface Portal {
     }>;
   };
   packages: { purchased: number; used: number; lessonsLeft: number } | null;
+  exams: Array<{
+    id: string;
+    name: string;
+    date: string;
+    score: number | null;
+    maxScore: number;
+    passed: boolean | null;
+    level: string | null;
+    isPresent: boolean;
+  }>;
+  tests: Array<{
+    id: string;
+    testName: string;
+    subject: string;
+    score: number;
+    maxScore: number;
+    percent: number;
+    submittedAt: string;
+  }>;
 }
 
 /* ----- A student's homework (homework.service.ts, PortalHomeworkDto) ----- */
@@ -431,4 +459,145 @@ export interface PortalExerciseResult {
   items: Array<{ correct: boolean; points: number; max: number; key: string[] }>;
   best: ExerciseBest;
   attempts: number;
+}
+
+/* ----- News and the class stream (announcements.service.ts, stream.service.ts) ----- */
+
+export interface PortalAnnouncement {
+  id: string;
+  title: string;
+  body: string;
+  /** The group, branch or centre it was posted to. */
+  from: string;
+  createdAt: string;
+  read: boolean;
+}
+
+export interface StreamComment {
+  id: string;
+  body: string;
+  author: string;
+  byStaff: boolean;
+  /** The reader's own comment. */
+  mine: boolean;
+  createdAt: string;
+}
+
+export interface StreamPost {
+  id: string;
+  body: string;
+  attachmentUrl: string | null;
+  pinned: boolean;
+  /** The teacher closed comments on this post. */
+  locked: boolean;
+  author: string | null;
+  createdAt: string;
+  comments: StreamComment[];
+}
+
+/* ----- The course on the student's side (topic-content.service.ts, course-progress.service.ts) ----- */
+
+export interface TopicBlock {
+  id: string;
+  kind: "TEXT" | "VIDEO" | "FILE" | "LINK";
+  title: string;
+  body: string | null;
+  url: string | null;
+}
+
+export interface PortalTopic {
+  id: string;
+  sortOrder: number;
+  title: string;
+  open: boolean;
+  /** Blocks of an open topic; empty while locked. */
+  blocks: TopicBlock[];
+  /** The lesson that covered it, when one did. */
+  coveredOn: string | null;
+  /** The day a locked topic opens, when the teacher set one. */
+  opensOn: string | null;
+  exercises: PortalExerciseSummary[];
+}
+
+export interface PortalCourse {
+  courseName: string;
+  total: number;
+  open: number;
+  topics: PortalTopic[];
+}
+
+export interface CourseProgress {
+  /** Complete topics over all topics; null when the course has no syllabus. */
+  percent: number | null;
+  topicsTotal: number;
+  topicsComplete: number;
+  exercisesTotal: number;
+  exercisesDone: number;
+  scorePercent: number | null;
+  attendancePercent: number | null;
+  topics: Array<{
+    topicId: string;
+    exercisesTotal: number;
+    exercisesDone: number;
+    complete: boolean;
+  }>;
+}
+
+/* ----- Flashcards (vocab.service.ts) ----- */
+
+export interface VocabCard {
+  id: string;
+  term: string;
+  translation: string;
+  example: string | null;
+  topicTitle: string;
+}
+
+export interface PortalVocab {
+  /** Words of the topics open to the student. */
+  total: number;
+  learned: number;
+  /** Due now, including words never seen. */
+  due: number;
+  /** Days in a row practised. */
+  streak: number;
+  /** The next cards to practise, at most 20. */
+  cards: VocabCard[];
+}
+
+/* ----- Results (gradebook.service.ts, badges.service.ts) ----- */
+
+export type GradebookCategory = "lessons" | "homework" | "exercises" | "tests" | "exams";
+
+export interface PortalGradebook {
+  courseName: string;
+  categories: Array<{
+    key: GradebookCategory;
+    weight: number;
+    /** Mean of the category's items in percent; null without items. */
+    percent: number | null;
+  }>;
+  /** Weighted over the categories that have items; null when none has. */
+  final: number | null;
+  /** The level of the grading scale the final grade falls into. */
+  level: string | null;
+}
+
+export type BadgeCode =
+  | "firstHomework"
+  | "homework10"
+  | "streak10"
+  | "perfectMonth"
+  | "exercises10"
+  | "exerciseAce"
+  | "testAce"
+  | "coins100"
+  | "words50"
+  | "vocabStreak7";
+
+export interface PortalBadge {
+  code: BadgeCode;
+  /** When it was earned; null while it is still locked. */
+  earnedAt: string | null;
+  groupName: string | null;
 }
