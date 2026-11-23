@@ -52,7 +52,8 @@ describe("the bar of round buttons", () => {
     for (const width of [360, 375, 390]) {
       const { size, gap } = controlBar(8, width);
       expect(size).toBeGreaterThanOrEqual(38);
-      expect(8 * size + 7 * gap + 16).toBeLessThanOrEqual(width);
+      // 28: the glass pane keeps 8 points from each edge of the screen and has 6 of its own.
+      expect(8 * size + 7 * gap + 28).toBeLessThanOrEqual(width);
     }
   });
 });

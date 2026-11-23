@@ -11,6 +11,8 @@ import { useCheckingCount } from "./use-checking-count";
 /**
  * The teaching view on a phone (A-194): the four pages of a teacher's day sit
  * under the thumb, so the drawer is only needed for the rarely used rest.
+ * The bar is a rounded pane of glass that floats over the page, with a
+ * turquoise fill on the page you are on, as in the phone app (A-224, A-225).
  */
 export function TeachingTabBar({ permissions }: { permissions: string[] }) {
   const t = useTranslations("nav");
@@ -23,9 +25,9 @@ export function TeachingTabBar({ permissions }: { permissions: string[] }) {
     <nav
       aria-label={t("teachingBar")}
       data-testid="teaching-tab-bar"
-      className="fixed inset-x-0 bottom-0 z-30 border-t bg-background/95 pb-[env(safe-area-inset-bottom)] backdrop-blur lg:hidden print:hidden"
+      className="pointer-events-none fixed inset-x-3 bottom-[max(0.75rem,env(safe-area-inset-bottom))] z-30 lg:hidden print:hidden"
     >
-      <ul className="mx-auto grid max-w-md auto-cols-fr grid-flow-col">
+      <ul className="pointer-events-auto mx-auto grid max-w-md auto-cols-fr grid-flow-col rounded-full border glass p-1.5">
         {primary.map((module) => {
           const href = MODULE_PATH[module];
           const Icon = MODULE_ICON[module];
@@ -36,11 +38,12 @@ export function TeachingTabBar({ permissions }: { permissions: string[] }) {
                 href={href}
                 aria-current={active ? "page" : undefined}
                 className={cn(
-                  "relative flex h-14 flex-col items-center justify-center gap-0.5 text-[11px] transition-colors",
-                  "before:absolute before:top-0 before:h-[3px] before:w-8 before:rounded-b-full before:transition-colors",
+                  "press relative isolate flex h-13 flex-col items-center justify-center gap-0.5 rounded-full text-[11px]",
+                  // The fill of the page you are on grows in from the middle.
+                  "before:absolute before:inset-0 before:-z-10 before:rounded-full before:bg-accent before:transition-[opacity,scale] before:duration-300 before:ease-arrive",
                   active
-                    ? "font-medium text-foreground before:bg-ring"
-                    : "text-muted-foreground before:bg-transparent",
+                    ? "font-medium text-accent-foreground before:scale-100 before:opacity-100"
+                    : "text-muted-foreground before:scale-75 before:opacity-0",
                 )}
               >
                 <span className="relative">

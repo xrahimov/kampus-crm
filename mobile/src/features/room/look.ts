@@ -36,7 +36,8 @@ export const CONTROL_GAP = 8;
 const CONTROL_GAP_TIGHT = 4;
 const CONTROL_MAX = 46;
 const CONTROL_MIN = 38;
-const BAR_PADDING = 8;
+/** From the edge of the screen to the first button: the margin of the glass pane and its own padding. */
+const BAR_PADDING = 14;
 
 /**
  * How large the round buttons of the bar are when `count` of them share a

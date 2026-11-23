@@ -37,8 +37,11 @@ import {
   View,
   type LayoutChangeEvent,
 } from "react-native";
+import { FadeIn, SlideInDown } from "react-native-reanimated";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
+import { Glass } from "@/components/glass";
+import { Animated, Press } from "@/components/motion";
 import { Text } from "@/components/text";
 import { useTranslations } from "@/lib/i18n";
 import { useLayout } from "@/lib/layout";
@@ -488,98 +491,97 @@ export function CallScreen({
       ) : null}
 
       <ControlSize.Provider value={bar.size}>
-        <View
-          style={[
-            styles.controls,
-            { gap: bar.gap, paddingBottom: Math.max(insets.bottom, space[3]) },
-          ]}
-          testID="room-controls"
-        >
-          <Control
-            label={media.audio ? t("mute") : t("unmute")}
-            off={!media.audio}
-            disabled={!hasAudio}
-            onPress={() => engine.setAudio(!media.audio)}
-            testID="toggle-mic"
-          >
-            {media.audio ? (
-              <Mic size={22} color={room.ink} />
-            ) : (
-              <MicOff size={22} color={room.dangerInk} />
-            )}
-          </Control>
-          <Control
-            label={media.video ? t("cameraOff") : t("cameraOn")}
-            off={!media.video}
-            disabled={!hasCamera}
-            onPress={() => engine.setVideo(!media.video)}
-            testID="toggle-camera"
-          >
-            {media.video ? (
-              <Video size={22} color={room.ink} />
-            ) : (
-              <VideoOff size={22} color={room.dangerInk} />
-            )}
-          </Control>
-          {screenShare.available ? (
-            <Control
-              label={sharing ? t("stopSharing") : t("shareScreen")}
-              on={sharing}
-              onPress={() => void (sharing ? engine.stopScreen() : engine.shareScreen())}
-              testID="toggle-share"
-            >
-              <MonitorUp size={22} color={sharing ? room.activeInk : room.ink} />
-            </Control>
-          ) : null}
-          {!isHost ? (
-            <Control
-              label={media.hand ? t("lowerHand") : t("raiseHand")}
-              on={media.hand}
-              onPress={() => engine.setHand(!media.hand)}
-              testID="toggle-hand"
-            >
-              <Hand size={22} color={media.hand ? room.activeInk : room.ink} />
-            </Control>
-          ) : null}
-          <Control
-            label={t("reactions")}
-            on={reactionsOpen}
-            onPress={() => setReactionsOpen((open) => !open)}
-            testID="open-reactions"
-          >
-            <Smile size={22} color={reactionsOpen ? room.activeInk : room.ink} />
-          </Control>
-          <Control
-            label={t("chat")}
-            on={panel === "chat"}
-            badge={panel === "chat" ? 0 : engine.unread}
-            onPress={() => setPanel((cur) => (cur === "chat" ? null : "chat"))}
-            testID="open-chat"
-          >
-            <MessageSquare size={22} color={panel === "chat" ? room.activeInk : room.ink} />
-          </Control>
-          <Control
-            label={t("people")}
-            on={panel === "people"}
-            badge={isStudent ? 0 : handQueue.filter((h) => h.id !== SELF).length}
-            onPress={() => setPanel((cur) => (cur === "people" ? null : "people"))}
-            testID="open-people"
-          >
-            <Users size={22} color={panel === "people" ? room.activeInk : room.ink} />
-          </Control>
-          {isHost ? (
-            <Control
-              label={tm("tools")}
-              on={toolsOn}
-              onPress={() => setPanel((cur) => (cur === "tools" ? null : "tools"))}
-              testID="open-tools"
-            >
-              <LayoutGrid size={22} color={toolsOn ? room.activeInk : room.ink} />
-            </Control>
-          ) : null}
-          <Control label={t("leave")} danger onPress={leave} testID="leave">
-            <PhoneOff size={22} color={room.dangerInk} />
-          </Control>
+        {/* The lesson's buttons sit on one pane of glass that floats under the faces (A-224). */}
+        <View style={[styles.controlsDock, { paddingBottom: Math.max(insets.bottom, space[3]) }]}>
+          <Glass tone="night" floating radius={radius.full} style={styles.controlsPane}>
+            <View style={[styles.controls, { gap: bar.gap }]} testID="room-controls">
+              <Control
+                label={media.audio ? t("mute") : t("unmute")}
+                off={!media.audio}
+                disabled={!hasAudio}
+                onPress={() => engine.setAudio(!media.audio)}
+                testID="toggle-mic"
+              >
+                {media.audio ? (
+                  <Mic size={22} color={room.ink} />
+                ) : (
+                  <MicOff size={22} color={room.dangerInk} />
+                )}
+              </Control>
+              <Control
+                label={media.video ? t("cameraOff") : t("cameraOn")}
+                off={!media.video}
+                disabled={!hasCamera}
+                onPress={() => engine.setVideo(!media.video)}
+                testID="toggle-camera"
+              >
+                {media.video ? (
+                  <Video size={22} color={room.ink} />
+                ) : (
+                  <VideoOff size={22} color={room.dangerInk} />
+                )}
+              </Control>
+              {screenShare.available ? (
+                <Control
+                  label={sharing ? t("stopSharing") : t("shareScreen")}
+                  on={sharing}
+                  onPress={() => void (sharing ? engine.stopScreen() : engine.shareScreen())}
+                  testID="toggle-share"
+                >
+                  <MonitorUp size={22} color={sharing ? room.activeInk : room.ink} />
+                </Control>
+              ) : null}
+              {!isHost ? (
+                <Control
+                  label={media.hand ? t("lowerHand") : t("raiseHand")}
+                  on={media.hand}
+                  onPress={() => engine.setHand(!media.hand)}
+                  testID="toggle-hand"
+                >
+                  <Hand size={22} color={media.hand ? room.activeInk : room.ink} />
+                </Control>
+              ) : null}
+              <Control
+                label={t("reactions")}
+                on={reactionsOpen}
+                onPress={() => setReactionsOpen((open) => !open)}
+                testID="open-reactions"
+              >
+                <Smile size={22} color={reactionsOpen ? room.activeInk : room.ink} />
+              </Control>
+              <Control
+                label={t("chat")}
+                on={panel === "chat"}
+                badge={panel === "chat" ? 0 : engine.unread}
+                onPress={() => setPanel((cur) => (cur === "chat" ? null : "chat"))}
+                testID="open-chat"
+              >
+                <MessageSquare size={22} color={panel === "chat" ? room.activeInk : room.ink} />
+              </Control>
+              <Control
+                label={t("people")}
+                on={panel === "people"}
+                badge={isStudent ? 0 : handQueue.filter((h) => h.id !== SELF).length}
+                onPress={() => setPanel((cur) => (cur === "people" ? null : "people"))}
+                testID="open-people"
+              >
+                <Users size={22} color={panel === "people" ? room.activeInk : room.ink} />
+              </Control>
+              {isHost ? (
+                <Control
+                  label={tm("tools")}
+                  on={toolsOn}
+                  onPress={() => setPanel((cur) => (cur === "tools" ? null : "tools"))}
+                  testID="open-tools"
+                >
+                  <LayoutGrid size={22} color={toolsOn ? room.activeInk : room.ink} />
+                </Control>
+              ) : null}
+              <Control label={t("leave")} danger onPress={leave} testID="leave">
+                <PhoneOff size={22} color={room.dangerInk} />
+              </Control>
+            </View>
+          </Glass>
         </View>
       </ControlSize.Provider>
 
@@ -589,11 +591,13 @@ export function CallScreen({
           pointerEvents={sheetArmed ? "box-none" : "none"}
           testID={sheetArmed ? "room-sheet" : "room-sheet-opening"}
         >
-          <Pressable
-            style={styles.scrim}
-            onPress={() => setPanel(null)}
-            accessibilityLabel={t("dismiss")}
-          />
+          <Animated.View entering={FadeIn.duration(180)} style={styles.scrim}>
+            <Pressable
+              style={StyleSheet.absoluteFill}
+              onPress={() => setPanel(null)}
+              accessibilityLabel={t("dismiss")}
+            />
+          </Animated.View>
           <KeyboardAvoidingView
             // Android draws under the keyboard too (edge to edge), so both make room themselves.
             behavior="padding"
@@ -601,8 +605,10 @@ export function CallScreen({
           >
             {/* The keyboard-avoiding view sets its own bottom padding, so the room for
                 the home indicator sits on a view of its own inside it. A list gets
-                most of the sheet's height; with the keyboard up it gives that back. */}
-            <View
+                most of the sheet's height; with the keyboard up it gives that back.
+                The sheet is glass and slides up from the bottom edge (A-224). */}
+            <Animated.View
+              entering={SlideInDown.duration(300)}
               style={[
                 styles.sheetBody,
                 { paddingBottom: Math.max(insets.bottom, space[3]) },
@@ -611,8 +617,9 @@ export function CallScreen({
                   : null,
               ]}
             >
+              <Glass tone="night" style={StyleSheet.absoluteFill} />
               {panelBody}
-            </View>
+            </Animated.View>
           </KeyboardAvoidingView>
         </View>
       ) : null}
@@ -928,7 +935,7 @@ function Control({
 }) {
   const size = useContext(ControlSize);
   return (
-    <Pressable
+    <Press
       accessibilityRole="button"
       accessibilityLabel={label}
       accessibilityState={{ disabled, selected: on }}
@@ -936,12 +943,13 @@ function Control({
       onPress={onPress}
       hitSlop={4}
       testID={testID}
-      style={({ pressed }) => [
+      sink={0.88}
+      dim={0.2}
+      style={[
         styles.control,
         { width: size, height: size },
         on && styles.controlOn,
         (off || danger) && styles.controlDanger,
-        pressed && styles.pressed,
         disabled && styles.disabled,
       ]}
     >
@@ -951,7 +959,7 @@ function Control({
           <Text style={styles.badgeText}>{badge > 9 ? "9+" : String(badge)}</Text>
         </View>
       ) : null}
-    </Pressable>
+    </Press>
   );
 }
 
@@ -1083,14 +1091,9 @@ const styles = StyleSheet.create({
     backgroundColor: room.surface,
   },
   reactionEmoji: { fontSize: 24, lineHeight: 30 },
-  controls: {
-    flexDirection: "row",
-    justifyContent: "center",
-    paddingTop: space[2],
-    paddingHorizontal: space[2],
-    borderTopWidth: StyleSheet.hairlineWidth,
-    borderTopColor: room.border,
-  },
+  controlsDock: { alignItems: "center", paddingTop: space[2], paddingHorizontal: space[2] },
+  controlsPane: { borderRadius: radius.full },
+  controls: { flexDirection: "row", justifyContent: "center", padding: 6 },
   control: {
     width: 46,
     height: 46,
@@ -1137,14 +1140,14 @@ const styles = StyleSheet.create({
   },
   sheetLayer: { ...StyleSheet.absoluteFill, justifyContent: "flex-end" },
   scrim: { ...StyleSheet.absoluteFill, backgroundColor: room.scrim },
-  sheet: {
+  sheet: { minHeight: 280 },
+  sheetBody: {
+    flexShrink: 1,
     minHeight: 280,
-    borderTopLeftRadius: radius.xl,
-    borderTopRightRadius: radius.xl,
+    borderTopLeftRadius: 28,
+    borderTopRightRadius: 28,
     overflow: "hidden",
-    backgroundColor: room.surface,
   },
-  sheetBody: { flexShrink: 1, minHeight: 280 },
   panel: { flex: 1, borderRadius: radius.lg, backgroundColor: room.surface, minHeight: 240 },
   panelHead: {
     flexDirection: "row",

@@ -108,7 +108,7 @@ export async function AppShell({
         {/* The page is a porcelain sheet laid on the lapis frame: its corner by the sidebar is round (A-192). */}
         <header
           className={cn(
-            "app-header sticky top-0 z-40 border-b bg-background/90 backdrop-blur supports-[backdrop-filter]:bg-background/75 lg:before:pointer-events-none lg:before:absolute lg:before:top-0 lg:before:left-0 lg:before:size-5 lg:before:bg-[radial-gradient(circle_at_100%_100%,transparent_1.25rem,var(--sidebar)_calc(1.25rem+0.5px))]",
+            "app-header glass-bar sticky top-0 z-40 border-b lg:before:pointer-events-none lg:before:absolute lg:before:top-0 lg:before:left-0 lg:before:size-5 lg:before:bg-[radial-gradient(circle_at_100%_100%,transparent_1.25rem,var(--sidebar)_calc(1.25rem+0.5px))]",
             viewSwitch && "max-xl:pb-11",
           )}
         >
