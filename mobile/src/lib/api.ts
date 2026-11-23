@@ -89,12 +89,7 @@ export interface ApiInit {
 }
 
 export async function api<T>(path: string, init: ApiInit = {}): Promise<T> {
-  const headers: Record<string, string> = {
-    Accept: "application/json",
-    "x-kampus-app": APP_VERSION,
-  };
-  // A browser sets its own User-Agent and refuses another.
-  if (Platform.OS !== "web") headers["User-Agent"] = USER_AGENT;
+  const headers = baseHeaders();
   if (init.body !== undefined) headers["Content-Type"] = "application/json";
   const token = init.anonymous ? null : sessionToken;
   if (token) headers.Authorization = `Bearer ${token}`;
@@ -113,7 +108,72 @@ export async function api<T>(path: string, init: ApiInit = {}): Promise<T> {
     if (error instanceof Error && error.name === "AbortError") throw error;
     throw new NetworkError();
   }
+  return readAnswer<T>(response, token);
+}
 
+/** A file chosen, photographed or recorded on this device, ready to send. */
+export interface PickedFile {
+  /** Where the phone keeps it (file://…), or a browser's blob address. */
+  uri: string;
+  name: string;
+  /** Its content type, such as "image/jpeg". */
+  type: string;
+  size?: number | null;
+  /** The web build gets the browser's own file object. */
+  file?: Blob;
+}
+
+/**
+ * Sends a form with text fields and at most one file (an answer to homework, a
+ * material). The phone reads the file from its address while sending; nothing
+ * is loaded into memory first.
+ */
+export async function apiForm<T>(
+  path: string,
+  fields: Record<string, string>,
+  file: PickedFile | null,
+  init: Pick<ApiInit, "anonymous"> = {},
+): Promise<T> {
+  const headers = baseHeaders();
+  const token = init.anonymous ? null : sessionToken;
+  if (token) headers.Authorization = `Bearer ${token}`;
+  const form = new FormData();
+  for (const [name, value] of Object.entries(fields)) form.append(name, value);
+  if (file) {
+    if (Platform.OS === "web") {
+      const blob = file.file ?? (await (await fetch(file.uri)).blob());
+      form.append("file", new File([blob], file.name, { type: file.type }));
+    } else {
+      // React Native's own way to name a file on the device in a form.
+      form.append("file", { uri: file.uri, name: file.name, type: file.type } as unknown as Blob);
+    }
+  }
+  let response: Response;
+  try {
+    // No Content-Type here: the form sets it, with its boundary.
+    response = await fetch(apiUrl(path), {
+      method: "POST",
+      headers,
+      credentials: "omit",
+      body: form,
+    });
+  } catch {
+    throw new NetworkError();
+  }
+  return readAnswer<T>(response, token);
+}
+
+function baseHeaders(): Record<string, string> {
+  const headers: Record<string, string> = {
+    Accept: "application/json",
+    "x-kampus-app": APP_VERSION,
+  };
+  // A browser sets its own User-Agent and refuses another.
+  if (Platform.OS !== "web") headers["User-Agent"] = USER_AGENT;
+  return headers;
+}
+
+async function readAnswer<T>(response: Response, token: string | null): Promise<T> {
   if (response.status === 204) return undefined as T;
   const text = await response.text();
   let data: unknown = null;

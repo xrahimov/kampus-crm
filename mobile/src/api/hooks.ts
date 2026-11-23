@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient, type QueryClient } from "@tanstack/react-query";
 
-import { api } from "@/lib/api";
+import { api, apiForm, type PickedFile } from "@/lib/api";
 
 import type {
   AttendanceStatus,
@@ -9,6 +9,7 @@ import type {
   GroupVideo,
   MonthGrid,
   Portal,
+  PortalHomework,
   StudentHome,
   Page,
   Today,
@@ -296,5 +297,36 @@ export function usePortal(token: string) {
         signal,
         anonymous: true,
       }),
+  });
+}
+
+/** The homework of one membership, newest first, each with the student's own answer. */
+export function usePortalHomework(token: string) {
+  return useQuery({
+    queryKey: ["student", "homework", token],
+    queryFn: ({ signal }) =>
+      api<PortalHomework[]>(`/public/class/${encodeURIComponent(token)}/homework`, {
+        signal,
+        anonymous: true,
+      }),
+  });
+}
+
+/** Hands in an answer: a note, a file, or both. The lists that show homework are read again. */
+export function useSubmitHomework(token: string) {
+  const client = useQueryClient();
+  return useMutation({
+    mutationFn: (answer: { homeworkId: string; note: string; file: PickedFile | null }) =>
+      apiForm<void>(
+        `/public/class/${encodeURIComponent(token)}/homework/${answer.homeworkId}`,
+        { note: answer.note },
+        answer.file,
+        { anonymous: true },
+      ),
+    onSuccess: () =>
+      Promise.all([
+        client.invalidateQueries({ queryKey: ["student", "homework", token] }),
+        client.invalidateQueries({ queryKey: ["student", "home"] }),
+      ]),
   });
 }

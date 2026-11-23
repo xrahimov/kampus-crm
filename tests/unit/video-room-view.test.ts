@@ -1,7 +1,14 @@
 import { describe, expect, it } from "vitest";
 
 import type { StageDto } from "@/lib/video/dto";
-import { BOARD, MATERIAL, roomView, SELF, type RoomViewPeer } from "@/lib/video/room-view";
+import {
+  BOARD,
+  breakoutCountdown,
+  MATERIAL,
+  roomView,
+  SELF,
+  type RoomViewPeer,
+} from "@/lib/video/room-view";
 
 /* Who is on the stage of a lesson room: the rules the site and the phone app share (A-207). */
 
@@ -163,5 +170,22 @@ describe("the stage of a lesson room", () => {
       handRaisedAt: "2026-11-23T05:05:00.000Z",
     });
     expect(view.handQueue.map((h) => h.id)).toEqual(["b", SELF, "a"]);
+  });
+});
+
+describe("the countdown of breakout rooms", () => {
+  const now = new Date("2026-11-23T10:00:00Z").getTime();
+
+  it("reads as minutes and seconds", () => {
+    expect(breakoutCountdown("2026-11-23T10:04:05Z", now)).toBe("4:05");
+    expect(breakoutCountdown("2026-11-23T10:00:09Z", now)).toBe("0:09");
+  });
+
+  it("stops at zero once the time has passed", () => {
+    expect(breakoutCountdown("2026-11-23T09:59:00Z", now)).toBe("0:00");
+  });
+
+  it("is nothing for rooms the teacher closes by hand", () => {
+    expect(breakoutCountdown(null, now)).toBeNull();
   });
 });

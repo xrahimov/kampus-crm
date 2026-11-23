@@ -199,11 +199,4 @@ function RoomList({ engine }: { engine: CallEngine }) {
   );
 }
 
-/** Minutes and seconds until a breakout closes, re-rendered by the caller. */
-export function breakoutCountdown(endsAt: string | null, now = Date.now()): string | null {
-  if (!endsAt) return null;
-  const left = Math.max(0, Math.round((new Date(endsAt).getTime() - now) / 1000));
-  const m = Math.floor(left / 60);
-  const s = left % 60;
-  return `${m}:${String(s).padStart(2, "0")}`;
-}
+export { breakoutCountdown } from "@/lib/video/room-view";

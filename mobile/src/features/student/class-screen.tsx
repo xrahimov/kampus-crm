@@ -1,8 +1,16 @@
-import { useLocalSearchParams } from "expo-router";
-import { ExternalLink } from "lucide-react-native";
-import { StyleSheet, View } from "react-native";
+import { useLocalSearchParams, useRouter } from "expo-router";
+import {
+  ChevronRight,
+  ClipboardCheck,
+  ExternalLink,
+  FolderOpen,
+  MessageCircle,
+  NotebookPen,
+} from "lucide-react-native";
+import { Pressable, StyleSheet, View } from "react-native";
 
 import { usePortal } from "@/api/hooks";
+import { usePortalChat } from "@/api/portal";
 import type { AttendanceStatus, Portal } from "@/api/types";
 import { Button } from "@/components/button";
 import { Header } from "@/components/header";
@@ -24,8 +32,9 @@ const ATTENDANCE_TONE: Record<AttendanceStatus, Tone> = {
 
 /**
  * One group as the student sees it: the next lesson, how they are doing, each
- * past lesson with its mark and grade, and the payments. Answering homework,
- * tests, chat and the online lesson open on the personal page for now.
+ * past lesson with its mark and grade, and the payments. Homework, tests,
+ * materials and the chat are pages of the app (A-212, A-213); the course, news,
+ * the schedule and paying online open on the personal page for now.
  */
 export function ClassScreen() {
   const { token } = useLocalSearchParams<{ token: string }>();
@@ -67,6 +76,7 @@ export function ClassScreen() {
     <View style={styles.block}>
       <NextLesson portal={portal} />
       <Stats portal={portal} />
+      <Pages token={token} />
       <Button
         variant="outline"
         label={t("mobile.myPage")}
@@ -106,6 +116,64 @@ export function ClassScreen() {
         </>
       )}
     </Screen>
+  );
+}
+
+/** The group's pages inside the app, one row each; the chat shows what is unread. */
+function Pages({ token }: { token: string }) {
+  const t = useTranslations();
+  const { colors } = useTheme();
+  const router = useRouter();
+  const unread = usePortalChat(token).data?.unread ?? 0;
+  const params = { token };
+  const rows = [
+    {
+      id: "homework",
+      label: t("portal.tabs.homework"),
+      Icon: NotebookPen,
+      open: () => router.push({ pathname: "/student/homework/[token]", params }),
+    },
+    {
+      id: "tests",
+      label: t("portal.tabs.tests"),
+      Icon: ClipboardCheck,
+      open: () => router.push({ pathname: "/student/tests/[token]", params }),
+    },
+    {
+      id: "materials",
+      label: t("portal.tabs.materials"),
+      Icon: FolderOpen,
+      open: () => router.push({ pathname: "/student/materials/[token]", params }),
+    },
+    {
+      id: "chat",
+      label: t("portal.tabs.chat"),
+      Icon: MessageCircle,
+      open: () => router.push({ pathname: "/student/chat/[token]", params }),
+    },
+  ] as const;
+  return (
+    <Card style={styles.flush} testID="pages">
+      {rows.map(({ id, label, Icon, open }, index) => (
+        <View key={id}>
+          {index > 0 ? <Divider /> : null}
+          <Pressable
+            onPress={open}
+            accessibilityRole="button"
+            accessibilityLabel={label}
+            style={({ pressed }) => [styles.page, pressed && { backgroundColor: colors.muted }]}
+            testID={`open-${id}`}
+          >
+            <Icon size={20} color={colors.primary} />
+            <Text variant="bodyStrong" style={styles.fill}>
+              {label}
+            </Text>
+            {id === "chat" && unread > 0 ? <Badge tone="accent" label={String(unread)} /> : null}
+            <ChevronRight size={20} color={colors.mutedForeground} />
+          </Pressable>
+        </View>
+      ))}
+    </Card>
   );
 }
 
@@ -272,7 +340,15 @@ const styles = StyleSheet.create({
   fill: { flex: 1 },
   block: { gap: space[4] },
   split: { flexDirection: "row", alignItems: "flex-start", gap: space[6] },
-  flush: { padding: 0, gap: 0 },
+  flush: { padding: 0, gap: 0, overflow: "hidden" },
+  page: {
+    minHeight: 52,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: space[3],
+    paddingHorizontal: space[4],
+    paddingVertical: space[3],
+  },
   stats: { flexDirection: "row" },
   stat: { flex: 1, gap: 2 },
   line: { flexDirection: "row", alignItems: "center", gap: space[3] },

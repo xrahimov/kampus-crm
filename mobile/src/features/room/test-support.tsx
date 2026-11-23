@@ -5,7 +5,13 @@ import { CallScreen } from "@/features/room/call-screen";
 import { I18nProvider } from "@/lib/i18n";
 import { ThemeProvider } from "@/lib/theme";
 import type { CallEngine, RemotePeer } from "@kampus/lib/video/call-engine";
-import type { JoinDto, ShownMaterialDto, StageDto } from "@kampus/lib/video/dto";
+import type {
+  BreakoutDto,
+  JoinDto,
+  PollDto,
+  ShownMaterialDto,
+  StageDto,
+} from "@kampus/lib/video/dto";
 
 /*
  * What the lesson room's tests share: a stand-in for the call engine (everything
@@ -79,8 +85,10 @@ export function fakeEngine(role: JoinDto["role"], others: RemotePeer[]) {
     shareError: null as { reason: "blocked" | "unreadable" | "failed"; at: number } | null,
     notice: null as { text: string; name: string; at: number } | null,
     noShow: null,
-    poll: null,
-    breakout: { rooms: 0, endsAt: null, mine: null, everyone: null },
+    poll: null as PollDto | null,
+    pollPending: false,
+    pollUnseen: true,
+    breakout: { rooms: 0, endsAt: null, mine: null, everyone: null } as BreakoutDto,
     handRaisedAt: null as string | null,
     canSwitchCamera: false,
     currentStage: stage,
@@ -104,6 +112,13 @@ export function fakeEngine(role: JoinDto["role"], others: RemotePeer[]) {
     setStage: jest.fn(),
     react: jest.fn(),
     votePoll: jest.fn(),
+    openPoll: jest.fn(),
+    closePoll: jest.fn(),
+    markPollSeen: jest.fn(),
+    startBreakout: jest.fn(),
+    moveToRoom: jest.fn(),
+    endBreakout: jest.fn(),
+    sendNotice: jest.fn(),
     dismissNotice: jest.fn(),
     switchCamera: jest.fn(),
     boardVersion: 0,

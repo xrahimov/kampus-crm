@@ -2,7 +2,7 @@ import { Stack } from "expo-router";
 
 import { useTheme } from "@/lib/theme";
 
-/** The student's and parent's side: the home, and one screen per group. */
+/** The student's and parent's side: the home, one screen per group, and that group's pages. */
 export default function StudentLayout() {
   const { colors } = useTheme();
   return (
@@ -11,6 +11,11 @@ export default function StudentLayout() {
     >
       <Stack.Screen name="index" />
       <Stack.Screen name="class/[token]" />
+      <Stack.Screen name="homework/[token]" />
+      <Stack.Screen name="materials/[token]" />
+      <Stack.Screen name="tests/[token]" />
+      <Stack.Screen name="exercise/[token]" />
+      <Stack.Screen name="chat/[token]" />
       {/* A lesson is left with its own button, not by a stray swipe from the edge. */}
       <Stack.Screen name="room/[token]" options={{ gestureEnabled: false, animation: "fade" }} />
     </Stack>

@@ -64,3 +64,81 @@ jest.mock("expo-video", () => {
     VideoView: "VideoView",
   };
 });
+
+/*
+ * What a student uses to answer homework (A-212): the camera, the gallery and
+ * file pickers, and the recorder. A test decides what each hands back.
+ */
+jest.mock("expo-image-picker", () => ({
+  requestCameraPermissionsAsync: jest.fn(() => Promise.resolve({ granted: true })),
+  launchCameraAsync: jest.fn(() => Promise.resolve({ canceled: true, assets: null })),
+  launchImageLibraryAsync: jest.fn(() => Promise.resolve({ canceled: true, assets: null })),
+}));
+
+jest.mock("expo-document-picker", () => ({
+  getDocumentAsync: jest.fn(() => Promise.resolve({ canceled: true, assets: null })),
+}));
+
+jest.mock("expo-audio", () => {
+  const React = require("react");
+  /** The one recorder and the players made since the last reset; a test reads and drives them. */
+  const state = { recorder: null, players: [] };
+  function makeRecorder() {
+    const listeners = new Set();
+    const recorder = {
+      uri: null,
+      isRecording: false,
+      durationMillis: 0,
+      prepareToRecordAsync: jest.fn(() => Promise.resolve()),
+      record: jest.fn(() => {
+        recorder.isRecording = true;
+        listeners.forEach((listener) => listener());
+      }),
+      stop: jest.fn(() => {
+        recorder.isRecording = false;
+        recorder.uri = "file:///recordings/answer.m4a";
+        listeners.forEach((listener) => listener());
+        return Promise.resolve();
+      }),
+      subscribe(listener) {
+        listeners.add(listener);
+        return () => listeners.delete(listener);
+      },
+    };
+    return recorder;
+  }
+  return {
+    __state: state,
+    RecordingPresets: { HIGH_QUALITY: {} },
+    requestRecordingPermissionsAsync: jest.fn(() => Promise.resolve({ granted: true })),
+    setAudioModeAsync: jest.fn(() => Promise.resolve()),
+    useAudioRecorder() {
+      const ref = React.useRef(null);
+      if (!ref.current) {
+        ref.current = makeRecorder();
+        state.recorder = ref.current;
+      }
+      return ref.current;
+    },
+    useAudioRecorderState(recorder) {
+      const [, bump] = React.useReducer((n) => n + 1, 0);
+      React.useEffect(() => recorder.subscribe(bump), [recorder]);
+      return {
+        canRecord: true,
+        isRecording: recorder.isRecording,
+        durationMillis: recorder.durationMillis,
+      };
+    },
+    useAudioPlayer(source) {
+      const ref = React.useRef(null);
+      if (!ref.current) {
+        ref.current = { source, play: jest.fn(), pause: jest.fn(), seekTo: jest.fn() };
+        state.players.push(ref.current);
+      }
+      return ref.current;
+    },
+    useAudioPlayerStatus() {
+      return { playing: false, currentTime: 0, duration: 12 };
+    },
+  };
+});
