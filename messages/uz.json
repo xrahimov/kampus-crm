@@ -6258,7 +6258,7 @@
     "doorStaff": "Xodim",
     "language": "Til",
     "startLesson": "Darsni boshlash",
-    "roomHint": "Dars xonasi brauzerda ochiladi, qayta kirish shart emas.",
+    "roomHint": "Dars xonasini kamera va mikrofoningiz bilan ochadi.",
     "owes": "Qarzi {amount}",
     "grade": "baho",
     "students": "{count, plural, =0 {O'quvchi yo'q} other {# ta o'quvchi}}",
@@ -6277,6 +6277,18 @@
     "siteText": "O'quvchilar, to'lovlar, testlar va hisobotlar hozircha saytda. U kirilgan holda ochiladi.",
     "version": "Kampus {version}",
     "myPage": "Sahifamni to'liq ochish",
-    "myPageHint": "Uy vazifasiga javob, testlar, chat va onlayn dars hozircha sahifangizda ochiladi."
+    "myPageHint": "Uy vazifasiga javob, testlar, chat va onlayn dars hozircha sahifangizda ochiladi.",
+    "room": {
+      "denied": "Kampus kamera va mikrofondan foydalana olmayapti. Ko'rish va tinglash uchun kirishingiz mumkin. Sizni ko'rishlari va eshitishlari uchun telefon sozlamalarida ikkalasiga ruxsat bering.",
+      "partial": "Kampus qurilmalaringizning faqat bir qismidan foydalana olyapti. Baribir kirishingiz mumkin. Kamera ham, mikrofon ham ishlashi uchun telefon sozlamalarida ruxsat bering.",
+      "openSettings": "Sozlamalarni ochish",
+      "unavailable": "Bu qurilmada videodarsni ochib bo'lmaydi.",
+      "peerFailed": "Bu ishtirokchi bilan bog'lanib bo'lmadi. Uning tarmog'i to'g'ridan-to'g'ri qo'ng'iroqlarni o'tkazmayotgan bo'lishi mumkin.",
+      "stageElsewhere": "O'qituvchi hammaga fayl yoki doskani ko'rsatyapti."
+    },
+    "permissions": {
+      "camera": "Kampus kameradan videodarsda o'qituvchi va guruhdoshlaringiz sizni ko'rishi uchun foydalanadi.",
+      "microphone": "Kampus mikrofondan videodarsda o'qituvchi va guruhdoshlaringiz sizni eshitishi uchun foydalanadi."
+    }
   }
 }

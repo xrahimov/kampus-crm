@@ -162,7 +162,6 @@ function GroupCard({ group }: { group: StudentHomeGroup }) {
   const router = useRouter();
   const formatDate = useDate();
   const money = useMoney();
-  const { locale } = useLocaleChoice();
   const { colors } = useTheme();
   const next = group.nextLesson;
   return (
@@ -198,7 +197,9 @@ function GroupCard({ group }: { group: StudentHomeGroup }) {
         <Button
           label={`${t("studentApp.liveNow")}: ${t("studentApp.join")}`}
           icon={<Video size={18} color={colors.primaryForeground} />}
-          onPress={() => void openPersonalPage(locale, group.token)}
+          onPress={() =>
+            router.push({ pathname: "/student/room/[token]", params: { token: group.token } })
+          }
           testID="join-lesson"
         />
       ) : null}

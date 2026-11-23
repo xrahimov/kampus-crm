@@ -1,0 +1,1333 @@
+import {
+  BOARD_MAX_STROKES,
+  boardOpSchema,
+  NOTICE_MAX_LENGTH,
+  PACE_REACTIONS,
+  REACTIONS,
+  type BoardOp,
+  type BoardStroke,
+  type Reaction,
+  type SignalKind,
+  type VideoSyncInput,
+} from "../validation/video";
+import type {
+  BreakoutDto,
+  JoinDto,
+  PeerDto,
+  PollDto,
+  ShownMaterialDto,
+  StageDto,
+  SyncDto,
+} from "./dto";
+
+/*
+ * The browser side of a video lesson: one RTCPeerConnection per other
+ * participant (full mesh), with offers, answers and ICE candidates relayed
+ * through `/video/peers/:id/sync`, which this engine polls.
+ *
+ * To avoid offer collisions only one side of each pair ever offers: the peer
+ * whose id sorts first. The other side asks for an ICE restart with a
+ * "restart" message when its connection fails.
+ *
+ * The phone app runs this same file (A-207): there `react-native-webrtc`
+ * supplies RTCPeerConnection, MediaStream and `navigator.mediaDevices`. So
+ * this file imports by relative path only and touches nothing of the page
+ * (no `document`, no `window`); what a browser has and a phone lacks is asked
+ * for before it is used.
+ */
+
+export interface MediaState {
+  audio: boolean;
+  video: boolean;
+  screen: boolean;
+  /** Raised hand: "I want to say something". */
+  hand: boolean;
+}
+
+/** One line of the in-call chat; it lives only as long as the tab does. */
+export interface ChatMessage {
+  id: number;
+  /** null when this browser wrote it. */
+  from: string | null;
+  name: string;
+  text: string;
+  at: Date;
+}
+
+export const CHAT_MAX_LENGTH = 500;
+
+/** How long a reaction floats over a picture. */
+export const REACTION_SHOW_MS = 4000;
+/** How long a student's "slower" / "faster" counts in the teacher's tally. */
+export const PACE_WINDOW_MS = 60_000;
+
+/** A reaction shown on someone's picture; `from` is null for this browser's own. */
+export interface ShownReaction {
+  seq: number;
+  from: string | null;
+  reaction: Reaction;
+  at: number;
+}
+
+export interface RemotePeer {
+  id: string;
+  displayName: string;
+  role: PeerDto["role"];
+  joinedAt: string;
+  media: MediaState | null;
+  handRaisedAt: string | null;
+  stream: MediaStream;
+  connection: RTCPeerConnectionState;
+}
+
+export type CallStatus = "connecting" | "live" | "ended" | "gone" | "error";
+
+/**
+ * Why a screen share did not start (A-200): the browser or the computer refused
+ * ("blocked"), the chosen window or screen could not be captured ("unreadable"),
+ * or anything else ("failed").
+ */
+export type ShareFailure = "blocked" | "unreadable" | "failed";
+
+interface PeerLink {
+  info: PeerDto;
+  pc: RTCPeerConnection;
+  stream: MediaStream;
+  offerer: boolean;
+  pending: RTCIceCandidateInit[];
+  restartTimer: ReturnType<typeof setTimeout> | null;
+}
+
+interface OutgoingSignal {
+  to: string;
+  kind: SignalKind;
+  payload: unknown;
+}
+
+/** Where and how this engine runs, when it is not a page of the site itself. */
+export interface CallEngineOptions {
+  /**
+   * The server's address, for a client that is not served by it (the phone
+   * app); empty on the site, whose requests go to its own origin.
+   */
+  origin?: string;
+}
+
+const POLL_FAST_MS = 400;
+const POLL_MS = 1200;
+
+/** Upload budget per outgoing video stream, by how many people receive it. */
+export function videoBitrate(role: PeerDto["role"], receivers: number): number {
+  if (role === "HOST") return receivers <= 4 ? 900_000 : 600_000;
+  return Math.max(120_000, Math.min(400_000, Math.floor(1_500_000 / Math.max(1, receivers))));
+}
+
+/** A shared screen is captured no larger than this; bigger screens are scaled down by the browser. */
+export const SCREEN_MAX_WIDTH = 1920;
+export const SCREEN_MAX_HEIGHT = 1080;
+/** A shared screen changes less often than a face: ten pictures a second is plenty. */
+export const SCREEN_MAX_FRAMERATE = 15;
+
+/**
+ * How a shared screen is sent to each receiver (A-200). Whoever shares leads the
+ * lesson, so the budget does not depend on the role: a student's screen used to
+ * get a camera's 120-400 kbit/s, too little for text. Every receiver costs the
+ * sharer one more encoder and one more upload, so the picture gets smaller as
+ * the room grows: `scale` divides the captured height down to the target.
+ */
+export function screenSending(
+  receivers: number,
+  capturedHeight: number,
+): { maxBitrate: number; scale: number } {
+  const [height, maxBitrate] =
+    receivers <= 3 ? [1080, 1_500_000] : receivers <= 6 ? [900, 1_000_000] : [720, 700_000];
+  const scale = capturedHeight > height ? capturedHeight / height : 1;
+  return { maxBitrate, scale: Number(scale.toFixed(3)) };
+}
+
+/** A picker closed sooner than this was never shown: the browser or the computer refused. */
+const PICKER_MIN_MS = 800;
+
+/**
+ * Sorts a failed `getDisplayMedia` call (A-200). null means the person closed
+ * the browser's picker themselves, which is not an error. Browsers report both
+ * that and a refusal by the computer as NotAllowedError, so the wording Chrome
+ * uses ("denied by system") and the time it took tell them apart.
+ */
+export function shareFailure(error: unknown, elapsedMs: number): ShareFailure | null {
+  const name =
+    typeof error === "object" && error !== null && "name" in error ? String(error.name) : "";
+  const message =
+    typeof error === "object" && error !== null && "message" in error ? String(error.message) : "";
+  if (name === "NotAllowedError" || name === "SecurityError") {
+    return /denied by system/i.test(message) || elapsedMs < PICKER_MIN_MS ? "blocked" : null;
+  }
+  if (name === "NotReadableError" || name === "AbortError" || name === "NotFoundError") {
+    return "unreadable";
+  }
+  return "failed";
+}
+
+export class CallEngine {
+  readonly self: JoinDto;
+  status: CallStatus = "connecting";
+  private links = new Map<string, PeerLink>();
+  private outbox: OutgoingSignal[] = [];
+  private cursor = 0;
+  private timer: ReturnType<typeof setTimeout> | null = null;
+  private stopped = false;
+  private failures = 0;
+  private local: MediaStream;
+  private camera: MediaStreamTrack | null;
+  private screen: MediaStreamTrack | null = null;
+  /** True from the click on Share screen until the browser's picker closes. */
+  private choosingScreen = false;
+  /** Why the last screen share did not start; the room shows a notice until it is closed. */
+  shareError: { reason: ShareFailure; at: number } | null = null;
+  /** A problem this browser met, told to the server once so it lands in the server log. */
+  private issue: NonNullable<VideoSyncInput["issue"]> | null = null;
+  /** Video inputs the browser lists; more than one lets the camera switch (A-182). */
+  private cameraIds: string[] = [];
+  media: MediaState;
+  chat: ChatMessage[] = [];
+  /** Chat lines received while the panel was closed. */
+  unread = 0;
+  /** Set when the teacher switched this microphone off; the room shows a notice. */
+  mutedBy: { name: string; at: number } | null = null;
+  /** Set when the teacher lowered this hand; the room shows a notice. */
+  loweredBy: { name: string; at: number } | null = null;
+  /** The teacher's spotlight and focus mode, as the server last reported them. */
+  stage: StageDto = { spotlight: null, focus: false, board: false, material: null };
+  /** This browser's clock minus the server's, in milliseconds (A-183). */
+  private clockOffset = 0;
+  /**
+   * What the shown material looks like in this browser (its page canvas, picture
+   * or video), for the recorder to draw; set by the stage, null otherwise.
+   */
+  stageSurface: HTMLCanvasElement | HTMLImageElement | HTMLVideoElement | null = null;
+  /** The shared screen's sound mixed with the microphone, while a screen with sound is shared. */
+  private screenAudio: {
+    context: AudioContext;
+    mixed: MediaStreamTrack;
+    source: MediaStreamTrack;
+  } | null = null;
+  /** The teacher's own change, sent on every poll until the server reports it back. */
+  private stageDraft: StageDto | null = null;
+  /** When this browser's hand went up (server time), for its place in the queue. */
+  handRaisedAt: string | null = null;
+  /** Recent reactions, newest last. */
+  reactions: ShownReaction[] = [];
+  /** Latest "slower" / "faster" per student, for the teacher. */
+  private pace = new Map<string, { reaction: Reaction; at: number }>();
+  /** Whiteboard strokes in drawing order (A-155); `by` is null for this browser's own. */
+  board: Array<BoardStroke & { by: string | null }> = [];
+  /** Bumped on every board change so the canvas redraws. */
+  boardVersion = 0;
+  /** Whether students may draw; the teacher decides. */
+  boardStudentsMayDraw = false;
+  /** Peers that still need the board history (the teacher sends it after they appear). */
+  private boardNewcomers = new Set<string>();
+  /** The open poll, else the last closed one (A-153). */
+  poll: PollDto | null = null;
+  /** Breakout rooms as the server last reported them (A-156). */
+  breakout: BreakoutDto = { rooms: 0, endsAt: null, mine: null, everyone: null };
+  /** Set once the 1:1 student was marked absent for not joining (A-167); the teacher sees it. */
+  noShow: string | null = null;
+  /** The teacher's breakout change waiting for the next sync. */
+  private breakoutDraft: NonNullable<VideoSyncInput["breakout"]> | null = null;
+  /** The teacher's latest line to everyone, shown as a banner (A-156). */
+  notice: { text: string; name: string; at: number } | null = null;
+  /** Poll ids this browser has already been shown, for the "new poll" badge. */
+  private seenPolls = new Set<string>();
+  /** A poll action waiting for the next sync. */
+  private pollAction: NonNullable<VideoSyncInput["poll"]> | null = null;
+  private chatSeq = 0;
+  private reactionSeq = 0;
+
+  /** The address this participant's polls go to. */
+  private readonly syncUrl: string;
+
+  private listeners = new Set<() => void>();
+  /** Bumped on every change; the snapshot for useSyncExternalStore. */
+  version = 0;
+
+  constructor(self: JoinDto, local: MediaStream, options: CallEngineOptions = {}) {
+    this.self = self;
+    this.local = local;
+    this.syncUrl = `${options.origin ?? ""}/api/v1/video/peers/${self.participantId}/sync`;
+    this.camera = local.getVideoTracks()[0] ?? null;
+    this.media = {
+      audio: local.getAudioTracks().some((t) => t.enabled),
+      video: Boolean(this.camera?.enabled),
+      screen: false,
+      hand: false,
+    };
+    void this.listCameras();
+  }
+
+  private async listCameras(): Promise<void> {
+    if (!navigator.mediaDevices?.enumerateDevices) return;
+    try {
+      const devices = await navigator.mediaDevices.enumerateDevices();
+      this.cameraIds = devices.filter((d) => d.kind === "videoinput").map((d) => d.deviceId);
+      this.onChange();
+    } catch {
+      // No device list; the switch button stays away.
+    }
+  }
+
+  /** True with a camera in hand and another to switch to (front and back on a tablet). */
+  get canSwitchCamera(): boolean {
+    return this.camera !== null && this.cameraIds.length > 1 && !this.screen;
+  }
+
+  subscribe = (listener: () => void): (() => void) => {
+    this.listeners.add(listener);
+    return () => this.listeners.delete(listener);
+  };
+
+  getVersion = (): number => this.version;
+
+  private onChange(): void {
+    this.version += 1;
+    for (const l of this.listeners) l();
+  }
+
+  get localStream(): MediaStream {
+    return this.local;
+  }
+
+  peers(): RemotePeer[] {
+    return [...this.links.values()]
+      .map((l) => ({
+        id: l.info.id,
+        displayName: l.info.displayName,
+        role: l.info.role,
+        joinedAt: l.info.joinedAt,
+        media: l.info.media ? { hand: false, ...l.info.media } : null,
+        handRaisedAt: l.info.handRaisedAt ?? null,
+        stream: l.stream,
+        connection: l.pc.connectionState,
+      }))
+      .sort((a, b) => a.joinedAt.localeCompare(b.joinedAt));
+  }
+
+  start(): void {
+    void this.tick();
+  }
+
+  /* ----- local controls ------------------------------------------------------------------- */
+
+  setAudio(on: boolean): void {
+    for (const t of this.local.getAudioTracks()) t.enabled = on;
+    this.media = { ...this.media, audio: on && this.local.getAudioTracks().length > 0 };
+    this.changed(true);
+  }
+
+  setVideo(on: boolean): void {
+    if (this.camera) this.camera.enabled = on;
+    this.media = { ...this.media, video: on && Boolean(this.camera) };
+    this.changed(true);
+  }
+
+  setHand(on: boolean): void {
+    this.media = { ...this.media, hand: on };
+    this.changed(true);
+  }
+
+  /** Posts a chat line to everyone in the room (new arrivals do not see earlier lines). */
+  sendChat(text: string): void {
+    const clean = text.trim().slice(0, CHAT_MAX_LENGTH);
+    if (!clean) return;
+    const at = new Date();
+    this.chat.push({
+      id: ++this.chatSeq,
+      from: null,
+      name: this.self.displayName,
+      text: clean,
+      at,
+    });
+    for (const id of this.links.keys())
+      this.send(id, "chat", { text: clean, at: at.toISOString() });
+    this.onChange();
+  }
+
+  markChatRead(): void {
+    if (this.unread === 0) return;
+    this.unread = 0;
+    this.onChange();
+  }
+
+  /** Teacher only: asks one person, or everyone, to switch their microphone off. */
+  mutePeers(ids: string[] = [...this.links.keys()]): void {
+    if (this.self.role !== "HOST") return;
+    for (const id of ids) if (this.links.has(id)) this.send(id, "mute", null);
+  }
+
+  /** Teacher only: asks one person to lower their raised hand. */
+  lowerHand(id: string): void {
+    if (this.self.role !== "HOST" || !this.links.has(id)) return;
+    this.send(id, "lower", null);
+  }
+
+  /** Teacher only: puts one person (or nobody) on everyone's stage and switches focus mode. */
+  setStage(change: Partial<StageDto>): void {
+    if (this.self.role !== "HOST") return;
+    this.stageDraft = { ...(this.stageDraft ?? this.stage), ...change };
+    this.changed(true);
+  }
+
+  /** The stage as this browser should show it: the teacher's draft wins until confirmed. */
+  get currentStage(): StageDto {
+    return this.stageDraft ?? this.stage;
+  }
+
+  /* ----- a material on everyone's stage (A-183) ------------------------------------------- */
+
+  /** The stage tells the recorder what the shown material looks like here; null when it goes. */
+  setStageSurface(surface: HTMLCanvasElement | HTMLImageElement | HTMLVideoElement | null): void {
+    this.stageSurface = surface;
+  }
+
+  /** The server's clock as this browser reckons it, in milliseconds. */
+  serverNow(): number {
+    return Date.now() - this.clockOffset;
+  }
+
+  /** Teacher only: puts a lesson material on everyone's stage, from its first page or second. */
+  showMaterial(material: Pick<ShownMaterialDto, "id" | "title" | "kind" | "view" | "url">): void {
+    this.setStage({
+      // The pen starts off; the whiteboard's own drawing stays as it was.
+      board: false,
+      material: {
+        ...material,
+        page: 1,
+        playing: false,
+        position: 0,
+        at: new Date(this.serverNow()).toISOString(),
+      },
+    });
+  }
+
+  /** Teacher only: takes the material off everyone's stage. */
+  hideMaterial(): void {
+    if (!this.currentStage.material) return;
+    this.setStage({ material: null, board: false });
+  }
+
+  /** Teacher only: turns the shown material to a page for everyone. */
+  turnMaterialPage(page: number): void {
+    const shown = this.currentStage.material;
+    if (!shown || page < 1 || page === shown.page) return;
+    this.setStage({ material: { ...shown, page } });
+  }
+
+  /** Teacher only: play, pause or jump in the shown video or audio; everyone follows. */
+  setMaterialPlayback(playing: boolean, position: number): void {
+    const shown = this.currentStage.material;
+    if (!shown) return;
+    this.setStage({
+      material: {
+        ...shown,
+        playing,
+        position: Math.max(0, Number(position.toFixed(2))),
+        at: new Date(this.serverNow()).toISOString(),
+      },
+    });
+  }
+
+  /**
+   * Sends a reaction. Everyone sees ordinary ones on the sender's picture;
+   * "slower" and "faster" go only to the teacher and staff.
+   */
+  react(reaction: Reaction): void {
+    if (!REACTIONS.includes(reaction)) return;
+    const pace = PACE_REACTIONS.includes(reaction);
+    for (const link of this.links.values()) {
+      if (pace && link.info.role === "STUDENT") continue;
+      this.send(link.info.id, "react", { reaction });
+    }
+    this.pushReaction(null, reaction);
+  }
+
+  /* ----- breakout rooms (A-156) ----------------------------------------------------------- */
+
+  /** Teacher only: opens `rooms` sub-rooms for `minutes` (null = until closed) and seats people. */
+  startBreakout(
+    rooms: number,
+    minutes: number | null,
+    assign: Array<{ id: string; room: number | null }>,
+  ): void {
+    if (this.self.role !== "HOST") return;
+    this.breakoutDraft = { rooms, minutes, assign };
+    this.changed(true);
+  }
+
+  /** Teacher only: moves one person (possibly themselves) to a sub-room or back to the main room. */
+  moveToRoom(id: string, room: number | null): void {
+    if (this.self.role !== "HOST" || this.breakout.rooms === 0) return;
+    const draft = this.breakoutDraft ?? { rooms: this.breakout.rooms, assign: [] };
+    this.breakoutDraft = {
+      ...draft,
+      assign: [...draft.assign.filter((a) => a.id !== id), { id, room }],
+    };
+    this.changed(true);
+  }
+
+  /** Teacher only: closes the sub-rooms; everyone is back together. */
+  endBreakout(): void {
+    if (this.self.role !== "HOST") return;
+    this.breakoutDraft = { rooms: 0, assign: [] };
+    this.changed(true);
+  }
+
+  /** Teacher only: a line everyone sees, whichever room they are in. */
+  sendNotice(text: string): void {
+    if (this.self.role !== "HOST") return;
+    const clean = text.trim().slice(0, NOTICE_MAX_LENGTH);
+    if (!clean) return;
+    // `to` is ignored for notices: the server fans them out to everyone online.
+    this.send(this.self.participantId, "notice", { text: clean, name: this.self.displayName });
+    this.notice = { text: clean, name: this.self.displayName, at: Date.now() };
+    this.onChange();
+  }
+
+  dismissNotice(): void {
+    if (!this.notice) return;
+    this.notice = null;
+    this.onChange();
+  }
+
+  /* ----- whiteboard (A-155) --------------------------------------------------------------- */
+
+  /** Whether this browser may draw right now. */
+  get canDraw(): boolean {
+    return this.self.role !== "STUDENT" || this.boardStudentsMayDraw;
+  }
+
+  /** Adds a finished stroke of this browser and sends it to everyone. */
+  drawStroke(stroke: BoardStroke): void {
+    if (!this.canDraw) return;
+    this.applyBoard({ op: "stroke", stroke }, null);
+    this.broadcastBoard({ op: "stroke", stroke });
+  }
+
+  /** Removes this browser's latest stroke on a layer everywhere. */
+  undoStroke(layer = ""): void {
+    const mine = [...this.board].reverse().find((s) => s.by === null && s.layer === layer);
+    if (!mine) return;
+    this.applyBoard({ op: "undo", id: mine.id }, null);
+    this.broadcastBoard({ op: "undo", id: mine.id });
+  }
+
+  /** Teacher only: wipes one layer (the whiteboard, or the pen marks on one page) for everyone. */
+  clearBoard(layer = ""): void {
+    if (this.self.role !== "HOST") return;
+    this.applyBoard({ op: "clear", layer }, null);
+    this.broadcastBoard({ op: "clear", layer });
+  }
+
+  /** The strokes of one layer, in drawing order. */
+  boardLayer(layer: string): Array<BoardStroke & { by: string | null }> {
+    return this.board.filter((s) => s.layer === layer);
+  }
+
+  /** Teacher only: lets students draw, or stops them. */
+  setStudentsMayDraw(on: boolean): void {
+    if (this.self.role !== "HOST") return;
+    this.boardStudentsMayDraw = on;
+    this.broadcastBoard({ op: "allow", students: on });
+    this.onChange();
+  }
+
+  private broadcastBoard(op: BoardOp): void {
+    for (const id of this.links.keys()) this.send(id, "board", op);
+  }
+
+  private applyBoard(op: BoardOp, from: string | null): void {
+    if (op.op === "stroke") {
+      this.board = [...this.board, { ...op.stroke, by: from }].slice(-BOARD_MAX_STROKES);
+    } else if (op.op === "undo") {
+      // Only the stroke's author (or the teacher) may take it back.
+      const target = this.board.find((s) => s.id === op.id);
+      if (!target) return;
+      const fromHost = from !== null && this.links.get(from)?.info.role === "HOST";
+      if (target.by !== from && !fromHost && from !== null) return;
+      this.board = this.board.filter((s) => s.id !== op.id);
+    } else if (op.op === "clear") {
+      this.board = this.board.filter((s) => s.layer !== op.layer);
+    } else if (op.op === "sync") {
+      const known = new Set(this.board.map((s) => s.id));
+      const fresh = op.strokes.filter((s) => !known.has(s.id)).map((s) => ({ ...s, by: from }));
+      this.board = [...this.board, ...fresh].slice(-BOARD_MAX_STROKES);
+    } else if (op.op === "allow") {
+      this.boardStudentsMayDraw = op.students;
+    }
+    this.boardVersion += 1;
+    this.onChange();
+  }
+
+  /** The teacher's browser gives newcomers the board so far, in batches under the signal size. */
+  private sendBoardHistory(to: string): void {
+    if (this.self.role !== "HOST") return;
+    const strokes = this.board.map(({ by: _by, ...s }) => s);
+    const batches: BoardStroke[][] = [];
+    let batch: BoardStroke[] = [];
+    let size = 0;
+    for (const s of strokes) {
+      const weight = 20 + s.points.length * 14;
+      if (batch.length >= 50 || size + weight > 15_000) {
+        batches.push(batch);
+        batch = [];
+        size = 0;
+      }
+      batch.push(s);
+      size += weight;
+    }
+    batches.push(batch);
+    batches.forEach((b, i) =>
+      this.send(to, "board", { op: "sync", strokes: b, done: i === batches.length - 1 }),
+    );
+    this.send(to, "board", { op: "allow", students: this.boardStudentsMayDraw });
+  }
+
+  /** Teacher only: asks a question with 2-6 answers; any open poll closes. */
+  openPoll(question: string, options: string[]): void {
+    if (this.self.role !== "HOST") return;
+    this.pollAction = { action: "open", question, options };
+    this.changed(true);
+  }
+
+  /** Teacher only: closes the open poll, showing the results to everyone. */
+  closePoll(): void {
+    if (this.self.role !== "HOST" || !this.poll?.open) return;
+    this.pollAction = { action: "close", pollId: this.poll.id };
+    this.changed(true);
+  }
+
+  /** Student: answers the open poll (again to change the answer). */
+  votePoll(option: number): void {
+    if (this.self.role !== "STUDENT" || !this.poll?.open) return;
+    this.pollAction = { action: "vote", pollId: this.poll.id, option };
+    this.poll = { ...this.poll, myVote: option };
+    this.changed(true);
+  }
+
+  /** Whether a poll arrived that this browser has not shown yet. */
+  get pollUnseen(): boolean {
+    return Boolean(this.poll && !this.seenPolls.has(`${this.poll.id}:${this.poll.open}`));
+  }
+
+  markPollSeen(): void {
+    if (!this.poll || !this.pollUnseen) return;
+    this.seenPolls.add(`${this.poll.id}:${this.poll.open}`);
+    this.onChange();
+  }
+
+  /** Whether a poll action is still on its way to the server. */
+  get pollPending(): boolean {
+    return this.pollAction !== null;
+  }
+
+  /** Students' latest "slower" / "faster" in the last minute, for the teacher's tally. */
+  paceTally(now = Date.now()): { slower: number; faster: number } {
+    const tally = { slower: 0, faster: 0 };
+    for (const [from, v] of this.pace) {
+      if (now - v.at > PACE_WINDOW_MS || !this.links.has(from)) continue;
+      if (v.reaction === "slower") tally.slower += 1;
+      if (v.reaction === "faster") tally.faster += 1;
+    }
+    return tally;
+  }
+
+  /** Reactions still floating, newest per person. */
+  activeReactions(now = Date.now()): Map<string | null, ShownReaction> {
+    const shown = new Map<string | null, ShownReaction>();
+    for (const r of this.reactions) if (now - r.at < REACTION_SHOW_MS) shown.set(r.from, r);
+    return shown;
+  }
+
+  private pushReaction(from: string | null, reaction: Reaction): void {
+    const at = Date.now();
+    this.reactions = [
+      ...this.reactions.filter((r) => at - r.at < REACTION_SHOW_MS),
+      { seq: ++this.reactionSeq, from, reaction, at },
+    ].slice(-50);
+    if (from && PACE_REACTIONS.includes(reaction)) this.pace.set(from, { reaction, at });
+    // Redraw once the reaction has faded (and once the pace vote has expired).
+    setTimeout(() => this.onChange(), REACTION_SHOW_MS + 50);
+    if (from && PACE_REACTIONS.includes(reaction)) {
+      setTimeout(() => this.onChange(), PACE_WINDOW_MS + 50);
+    }
+    this.onChange();
+  }
+
+  /**
+   * Switches to the next camera (A-182): on a tablet or phone from the front camera to the
+   * back one, which stands in for screen sharing where the browser has none. The current
+   * camera is stopped first, since phones allow one open camera at a time.
+   */
+  async switchCamera(): Promise<void> {
+    if (!this.canSwitchCamera || !this.camera) return;
+    const currentId = this.camera.getSettings().deviceId ?? null;
+    const nextId = nextCameraId(this.cameraIds, currentId);
+    if (!nextId) return;
+    const wanted = this.media.video;
+    this.camera.stop();
+    let track: MediaStreamTrack | null = null;
+    for (const id of [nextId, currentId]) {
+      if (!id) continue;
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({
+          video: { ...cameraConstraints(this.self.role), deviceId: { exact: id } },
+        });
+        track = stream.getVideoTracks()[0] ?? null;
+        if (track) break;
+      } catch {
+        // Try the camera we had.
+      }
+    }
+    if (track) track.enabled = wanted;
+    this.camera = track;
+    await this.replaceVideo(track);
+    this.media = { ...this.media, video: wanted && track !== null };
+    this.changed(true);
+  }
+
+  /**
+   * Sends the screen instead of the camera until sharing stops. Where the browser
+   * can capture a tab's or the computer's sound (Chrome, Edge), that sound is sent
+   * too, mixed with the microphone (A-184). Closing the browser's picker is not an
+   * error; every other reason the share does not start is kept in `shareError`
+   * for the room to show (A-200).
+   */
+  async shareScreen(): Promise<void> {
+    if (this.screen || this.choosingScreen || !navigator.mediaDevices?.getDisplayMedia) return;
+    this.choosingScreen = true;
+    this.shareError = null;
+    const asked = Date.now();
+    let display: MediaStream;
+    try {
+      display = await openDisplay();
+    } catch (error) {
+      this.choosingScreen = false;
+      const reason = shareFailure(error, Date.now() - asked);
+      if (reason) this.failShare(reason, error);
+      else this.onChange();
+      return;
+    }
+    this.choosingScreen = false;
+    const track = display.getVideoTracks()[0];
+    if (!track || this.stopped) {
+      for (const t of display.getTracks()) t.stop();
+      if (!this.stopped) this.failShare("failed", new Error("no video track"));
+      return;
+    }
+    track.contentHint = "detail";
+    track.addEventListener("ended", () => void this.stopScreen());
+    this.screen = track;
+    const sent = await this.replaceVideo(track);
+    if (sent.links > 0 && sent.failed === sent.links) {
+      // Nobody would see it: give the camera back and say so.
+      for (const t of display.getAudioTracks()) t.stop();
+      await this.stopScreen();
+      this.failShare("failed", new Error("no connection took the screen"));
+      return;
+    }
+    if (sent.failed > 0) {
+      this.report("share", "partial", `${sent.failed} of ${sent.links} connections`);
+    }
+    const sound = display.getAudioTracks()[0];
+    if (sound) await this.startScreenAudio(sound);
+    this.media = { ...this.media, screen: true };
+    this.tuneBitrates();
+    // A whiteboard or a shown file would cover the screen on everyone's stage: the
+    // teacher's newest choice wins, so both step aside.
+    if (this.self.role === "HOST" && (this.currentStage.board || this.currentStage.material)) {
+      this.setStage({ board: false, material: null });
+    }
+    this.changed(true);
+  }
+
+  private failShare(reason: ShareFailure, error: unknown): void {
+    this.shareError = { reason, at: Date.now() };
+    const name =
+      typeof error === "object" && error !== null && "name" in error ? String(error.name) : "";
+    const message =
+      typeof error === "object" && error !== null && "message" in error
+        ? String(error.message)
+        : String(error);
+    this.report("share", reason, `${name}: ${message}`);
+    this.changed(true);
+  }
+
+  dismissShareError(): void {
+    if (!this.shareError) return;
+    this.shareError = null;
+    this.onChange();
+  }
+
+  /** Queues one line for the server log; a newer problem replaces an unsent older one. */
+  private report(kind: "share", reason: string, detail: string): void {
+    this.issue = { kind, reason: reason.slice(0, 40), detail: detail.slice(0, 200) };
+  }
+
+  async stopScreen(): Promise<void> {
+    if (!this.screen) return;
+    this.screen.stop();
+    this.screen = null;
+    await this.stopScreenAudio();
+    await this.replaceVideo(this.camera);
+    this.media = { ...this.media, screen: false };
+    this.tuneBitrates();
+    this.changed(true);
+  }
+
+  /** The shared screen's own sound, for the recorder; null when none is shared. */
+  get screenAudioTrack(): MediaStreamTrack | null {
+    return this.screenAudio?.source ?? null;
+  }
+
+  /** The audio track peers get: the microphone, or the microphone mixed with a shared screen's sound. */
+  private outgoingAudio(): MediaStreamTrack | null {
+    return this.screenAudio?.mixed ?? this.local.getAudioTracks()[0] ?? null;
+  }
+
+  /**
+   * Mixes the shared screen's sound with the microphone into one track and sends
+   * that. The microphone switch keeps working: a switched-off microphone is
+   * silent in the mix while the screen's sound goes on.
+   */
+  private async startScreenAudio(source: MediaStreamTrack): Promise<void> {
+    try {
+      const context = new AudioContext();
+      const mix = context.createMediaStreamDestination();
+      const microphone = this.local.getAudioTracks()[0];
+      if (microphone) context.createMediaStreamSource(new MediaStream([microphone])).connect(mix);
+      context.createMediaStreamSource(new MediaStream([source])).connect(mix);
+      // Not awaited: a browser that holds the context back never settles this promise.
+      if (context.state === "suspended") void context.resume().catch(() => undefined);
+      const mixed = mix.stream.getAudioTracks()[0];
+      if (!mixed) {
+        void context.close().catch(() => undefined);
+        source.stop();
+        return;
+      }
+      this.screenAudio = { context, mixed, source };
+      await this.replaceAudio(mixed);
+    } catch {
+      // No mixing in this browser: the screen goes without its sound, the microphone as before.
+      source.stop();
+      this.screenAudio = null;
+    }
+  }
+
+  private async stopScreenAudio(): Promise<void> {
+    const sound = this.screenAudio;
+    if (!sound) return;
+    this.screenAudio = null;
+    await this.replaceAudio(this.local.getAudioTracks()[0] ?? null);
+    sound.source.stop();
+    sound.mixed.stop();
+    void sound.context.close().catch(() => undefined);
+  }
+
+  private async replaceAudio(track: MediaStreamTrack | null): Promise<void> {
+    await Promise.all(
+      [...this.links.values()].map((l) => {
+        const sender = l.pc
+          .getTransceivers()
+          .find((t) => t.receiver.track.kind === "audio" && t.sender)?.sender;
+        return sender?.replaceTrack(track).catch(() => undefined);
+      }),
+    );
+  }
+
+  get screenTrack(): MediaStreamTrack | null {
+    return this.screen;
+  }
+
+  /**
+   * Swaps the outgoing picture on every connection. Returns how many connections
+   * had a video sender and how many of those refused the new track.
+   */
+  private async replaceVideo(
+    track: MediaStreamTrack | null,
+  ): Promise<{ links: number; failed: number }> {
+    const current = this.local.getVideoTracks()[0];
+    if (current && current !== track) this.local.removeTrack(current);
+    if (track && !this.local.getVideoTracks().includes(track)) this.local.addTrack(track);
+    const results = await Promise.all(
+      [...this.links.values()].map(async (l) => {
+        const sender = l.pc
+          .getTransceivers()
+          .find((t) => t.receiver.track.kind === "video" && t.sender)?.sender;
+        // No sender yet: the connection is still being set up and takes the track from `local`.
+        if (!sender) return null;
+        try {
+          await sender.replaceTrack(track);
+          return true;
+        } catch {
+          return false;
+        }
+      }),
+    );
+    return {
+      links: results.filter((r) => r !== null).length,
+      failed: results.filter((r) => r === false).length,
+    };
+  }
+
+  /** Leaves the call: tells the server at once (survives the page closing) and closes links. */
+  leave(): void {
+    if (this.stopped) return;
+    this.stopped = true;
+    if (this.timer) clearTimeout(this.timer);
+    void fetch(this.syncUrl, {
+      method: "POST",
+      keepalive: true,
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ secret: this.self.secret, leave: true }),
+    }).catch(() => undefined);
+    this.teardown();
+  }
+
+  private teardown(): void {
+    for (const id of [...this.links.keys()]) this.dropPeer(id);
+    for (const t of this.local.getTracks()) t.stop();
+    this.screen?.stop();
+    if (this.screenAudio) {
+      this.screenAudio.source.stop();
+      this.screenAudio.mixed.stop();
+      void this.screenAudio.context.close().catch(() => undefined);
+      this.screenAudio = null;
+    }
+    this.stageSurface = null;
+  }
+
+  /* ----- polling -------------------------------------------------------------------------- */
+
+  private changed(soon = false): void {
+    this.onChange();
+    if (soon) this.schedule(POLL_FAST_MS);
+  }
+
+  private schedule(ms: number): void {
+    if (this.stopped) return;
+    if (this.timer) clearTimeout(this.timer);
+    this.timer = setTimeout(() => void this.tick(), ms);
+  }
+
+  private async tick(): Promise<void> {
+    if (this.stopped) return;
+    this.timer = null;
+    const signals = this.outbox.splice(0, 100);
+    const sentIssue = this.issue;
+    const sentStage = this.stageDraft;
+    const sentPoll = this.pollAction;
+    const sentBreakout = this.breakoutDraft;
+    let result: SyncDto;
+    try {
+      const response = await fetch(this.syncUrl, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Accept: "application/json" },
+        body: JSON.stringify({
+          secret: this.self.secret,
+          after: this.cursor,
+          signals,
+          state: this.media,
+          ...(sentStage ? { room: sentStage } : {}),
+          ...(sentIssue ? { issue: sentIssue } : {}),
+          ...(sentPoll ? { poll: sentPoll } : {}),
+          ...(sentBreakout ? { breakout: sentBreakout } : {}),
+        }),
+      });
+      if (response.status === 403 || response.status === 404) {
+        this.finish("gone");
+        return;
+      }
+      if (!response.ok) throw new Error(String(response.status));
+      result = (await response.json()) as SyncDto;
+      this.failures = 0;
+    } catch {
+      // Network blip: put the messages back and retry, giving up after about a minute.
+      this.outbox.unshift(...signals);
+      this.failures += 1;
+      if (this.failures > 40) {
+        this.finish("error");
+        return;
+      }
+      this.schedule(Math.min(5000, POLL_MS * this.failures));
+      return;
+    }
+
+    if (result.status !== "LIVE") {
+      this.finish(result.status === "ENDED" ? "ended" : "gone");
+      return;
+    }
+    if (this.status === "connecting") this.status = "live";
+    if (sentIssue && this.issue === sentIssue) this.issue = null;
+    const serverNow = Date.parse(result.now);
+    if (Number.isFinite(serverNow)) this.clockOffset = Date.now() - serverNow;
+    this.stage = result.stage;
+    // The server applied the change this poll carried (or dropped a spotlight on someone gone).
+    if (sentStage && this.stageDraft === sentStage) this.stageDraft = null;
+    if (sentPoll && this.pollAction === sentPoll) this.pollAction = null;
+    if (sentBreakout && this.breakoutDraft === sentBreakout) this.breakoutDraft = null;
+    this.breakout = result.breakout;
+    this.noShow = result.noShow;
+    // A vote still on its way keeps showing as chosen.
+    this.poll =
+      result.poll && this.pollAction?.action === "vote" && this.pollAction.pollId === result.poll.id
+        ? { ...result.poll, myVote: this.pollAction.option }
+        : result.poll;
+    this.handRaisedAt = result.handRaisedAt;
+
+    this.reconcile(result.peers);
+    for (const s of result.signals) {
+      this.cursor = Math.max(this.cursor, s.id);
+      await this.handleSignal(s.from, s.kind as SignalKind, s.payload);
+    }
+    this.onChange();
+    this.schedule(this.outbox.length > 0 || result.signals.length > 0 ? POLL_FAST_MS : POLL_MS);
+  }
+
+  private finish(status: CallStatus): void {
+    this.status = status;
+    this.stopped = true;
+    if (this.timer) clearTimeout(this.timer);
+    this.teardown();
+    this.onChange();
+  }
+
+  /* ----- peer connections ----------------------------------------------------------------- */
+
+  private reconcile(peers: PeerDto[]): void {
+    const seen = new Set(peers.map((p) => p.id));
+    for (const id of [...this.links.keys()]) if (!seen.has(id)) this.dropPeer(id);
+    for (const p of peers) {
+      const link = this.links.get(p.id);
+      if (link) link.info = p;
+      else {
+        this.addPeer(p);
+        if (this.self.role === "HOST" && (this.board.length > 0 || this.boardStudentsMayDraw)) {
+          this.boardNewcomers.add(p.id);
+        }
+      }
+    }
+    for (const id of this.boardNewcomers) {
+      if (this.links.has(id)) this.sendBoardHistory(id);
+      this.boardNewcomers.delete(id);
+    }
+    this.tuneBitrates();
+  }
+
+  private send(to: string, kind: SignalKind, payload: unknown): void {
+    this.outbox.push({ to, kind, payload });
+    this.schedule(POLL_FAST_MS);
+  }
+
+  private addPeer(info: PeerDto): PeerLink {
+    const pc = new RTCPeerConnection({ iceServers: this.self.iceServers });
+    const link: PeerLink = {
+      info,
+      pc,
+      stream: new MediaStream(),
+      offerer: this.self.participantId < info.id,
+      pending: [],
+      restartTimer: null,
+    };
+    this.links.set(info.id, link);
+
+    pc.onicecandidate = (e) => {
+      if (e.candidate) this.send(info.id, "candidate", e.candidate.toJSON());
+    };
+    pc.ontrack = (e) => {
+      for (const old of link.stream.getTracks().filter((t) => t.kind === e.track.kind)) {
+        link.stream.removeTrack(old);
+      }
+      link.stream.addTrack(e.track);
+      this.onChange();
+    };
+    pc.onconnectionstatechange = () => {
+      if (pc.connectionState === "failed") this.recover(link);
+      if (pc.connectionState === "connected") this.tuneBitrates();
+      this.onChange();
+    };
+
+    if (link.offerer) {
+      for (const kind of ["audio", "video"] as const) {
+        const track =
+          kind === "audio" ? this.outgoingAudio() : (this.local.getVideoTracks()[0] ?? null);
+        if (track) pc.addTransceiver(track, { direction: "sendrecv", streams: [this.local] });
+        else pc.addTransceiver(kind, { direction: "sendrecv" });
+      }
+      pc.onnegotiationneeded = () => void this.makeOffer(link);
+    }
+    return link;
+  }
+
+  private async makeOffer(link: PeerLink, iceRestart = false): Promise<void> {
+    try {
+      const offer = await link.pc.createOffer({ iceRestart });
+      await link.pc.setLocalDescription(offer);
+      this.send(link.info.id, "offer", link.pc.localDescription?.toJSON());
+    } catch {
+      // The connection was closed meanwhile.
+    }
+  }
+
+  /** A failed connection gets one ICE restart every few seconds while both stay in the room. */
+  private recover(link: PeerLink): void {
+    if (link.restartTimer) return;
+    link.restartTimer = setTimeout(() => {
+      link.restartTimer = null;
+      if (link.pc.connectionState !== "failed" || !this.links.has(link.info.id)) return;
+      if (link.offerer) void this.makeOffer(link, true);
+      else this.send(link.info.id, "restart", null);
+    }, 2000);
+  }
+
+  private dropPeer(id: string): void {
+    const link = this.links.get(id);
+    if (!link) return;
+    if (link.restartTimer) clearTimeout(link.restartTimer);
+    link.pc.close();
+    this.links.delete(id);
+  }
+
+  private async handleSignal(from: string, kind: SignalKind, payload: unknown): Promise<void> {
+    if (kind === "notice") {
+      // Only the teacher may send a notice (the server enforces it), and it reaches people in
+      // other breakout rooms too, who have no link to the teacher right now.
+      const body = payload as { text?: unknown; name?: unknown } | null;
+      if (typeof body?.text !== "string" || !body.text.trim()) return;
+      const clean = body.text.slice(0, NOTICE_MAX_LENGTH);
+      const name =
+        typeof body.name === "string" && body.name
+          ? body.name
+          : (this.links.get(from)?.info.displayName ?? "");
+      this.notice = { text: clean, name, at: Date.now() };
+      this.chat.push({ id: ++this.chatSeq, from, name, text: clean, at: new Date() });
+      this.unread += 1;
+      return;
+    }
+    const link = this.links.get(from);
+    if (!link) return;
+    const pc = link.pc;
+    try {
+      if (kind === "offer" && !link.offerer) {
+        await pc.setRemoteDescription(payload as RTCSessionDescriptionInit);
+        for (const t of pc.getTransceivers()) {
+          const k = t.receiver.track.kind;
+          const track =
+            k === "audio" ? (this.outgoingAudio() ?? undefined) : this.local.getVideoTracks()[0];
+          if (track && t.sender.track !== track) await t.sender.replaceTrack(track);
+          t.direction = "sendrecv";
+        }
+        await pc.setLocalDescription(await pc.createAnswer());
+        this.send(from, "answer", pc.localDescription?.toJSON());
+        await this.flushCandidates(link);
+      } else if (kind === "answer" && link.offerer) {
+        if (pc.signalingState !== "have-local-offer") return;
+        await pc.setRemoteDescription(payload as RTCSessionDescriptionInit);
+        await this.flushCandidates(link);
+      } else if (kind === "candidate") {
+        if (pc.remoteDescription) await pc.addIceCandidate(payload as RTCIceCandidateInit);
+        else link.pending.push(payload as RTCIceCandidateInit);
+      } else if (kind === "restart" && link.offerer) {
+        await this.makeOffer(link, true);
+      } else if (kind === "chat") {
+        const { text, at } = payload as { text: string; at: string };
+        if (typeof text !== "string" || !text.trim()) return;
+        this.chat.push({
+          id: ++this.chatSeq,
+          from: from,
+          name: link.info.displayName,
+          text: text.slice(0, CHAT_MAX_LENGTH),
+          at: new Date(at ?? Date.now()),
+        });
+        this.unread += 1;
+      } else if (kind === "lower" && link.info.role === "HOST" && this.self.role !== "HOST") {
+        if (this.media.hand) {
+          this.loweredBy = { name: link.info.displayName, at: Date.now() };
+          this.setHand(false);
+        }
+      } else if (kind === "board") {
+        const parsed = boardOpSchema.safeParse(payload);
+        if (!parsed.success) return;
+        const op = parsed.data;
+        // Only the teacher clears the board, lets students draw or sends history.
+        if (
+          (op.op === "clear" || op.op === "allow" || op.op === "sync") &&
+          link.info.role !== "HOST"
+        ) {
+          return;
+        }
+        this.applyBoard(op, from);
+      } else if (kind === "react") {
+        const reaction = (payload as { reaction?: unknown } | null)?.reaction;
+        if (typeof reaction !== "string" || !REACTIONS.includes(reaction as Reaction)) return;
+        // Pace votes are for the teacher; a student's browser ignores them.
+        if (PACE_REACTIONS.includes(reaction as Reaction) && this.self.role === "STUDENT") return;
+        this.pushReaction(from, reaction as Reaction);
+      } else if (kind === "mute" && link.info.role === "HOST" && this.self.role !== "HOST") {
+        // Only the teacher's request counts (the server also drops others').
+        if (this.media.audio) {
+          this.mutedBy = { name: link.info.displayName, at: Date.now() };
+          this.setAudio(false);
+        }
+      }
+    } catch {
+      // A stale or malformed message; the connection recovers through a restart if needed.
+    }
+  }
+
+  private async flushCandidates(link: PeerLink): Promise<void> {
+    const pending = link.pending.splice(0);
+    for (const c of pending) await link.pc.addIceCandidate(c).catch(() => undefined);
+  }
+
+  /**
+   * Every browser uploads one copy per receiver, so the budget shrinks as the room grows.
+   * A shared screen gets its own budget and is scaled down for bigger rooms (A-200).
+   */
+  private tuneBitrates(): void {
+    const receivers = this.links.size;
+    const screen = this.screen
+      ? screenSending(receivers, this.screen.getSettings().height ?? SCREEN_MAX_HEIGHT)
+      : null;
+    const maxBitrate = screen?.maxBitrate ?? videoBitrate(this.self.role, receivers);
+    const scale = screen?.scale ?? 1;
+    const maxFramerate = screen ? SCREEN_MAX_FRAMERATE : undefined;
+    for (const link of this.links.values()) {
+      for (const t of link.pc.getTransceivers()) {
+        if (t.receiver.track.kind !== "video" || !t.sender) continue;
+        const params = t.sender.getParameters();
+        const encoding = params.encodings?.[0];
+        if (!encoding) continue;
+        if (
+          encoding.maxBitrate === maxBitrate &&
+          Math.abs((encoding.scaleResolutionDownBy ?? 1) - scale) < 0.01 &&
+          (encoding.maxFramerate ?? undefined) === maxFramerate
+        ) {
+          continue;
+        }
+        encoding.maxBitrate = maxBitrate;
+        encoding.scaleResolutionDownBy = scale;
+        if (maxFramerate === undefined) {
+          delete encoding.maxFramerate;
+          // On a phone the value sits behind a setter that `delete` does not reach; null clears it.
+          if (encoding.maxFramerate != null) {
+            (encoding as { maxFramerate?: number | null }).maxFramerate = null;
+          }
+        } else {
+          encoding.maxFramerate = maxFramerate;
+        }
+        void t.sender.setParameters(params).catch(() => undefined);
+      }
+    }
+  }
+}
+
+/** Camera and microphone for the lobby; whatever the browser allows, possibly nothing. */
+export async function openLocalMedia(
+  role: PeerDto["role"],
+  want: { audio: boolean; video: boolean },
+): Promise<{ stream: MediaStream; denied: boolean }> {
+  const stream = new MediaStream();
+  if (!navigator.mediaDevices?.getUserMedia) return { stream, denied: true };
+  const video = cameraConstraints(role);
+  const audio: MediaTrackConstraints = { echoCancellation: true, noiseSuppression: true };
+  let denied = false;
+  for (const [kind, constraints] of [
+    ["audio", audio],
+    ["video", video],
+  ] as const) {
+    try {
+      const s = await navigator.mediaDevices.getUserMedia({ [kind]: constraints });
+      for (const t of s.getTracks()) {
+        t.enabled = want[kind];
+        stream.addTrack(t);
+      }
+    } catch {
+      denied = true;
+    }
+  }
+  return { stream, denied };
+}
+
+/** The camera picture each role sends: students small, teachers sharper. */
+export function cameraConstraints(role: PeerDto["role"]): MediaTrackConstraints {
+  return role === "STUDENT"
+    ? { width: { ideal: 480 }, height: { ideal: 360 }, frameRate: { ideal: 15, max: 20 } }
+    : { width: { ideal: 960 }, height: { ideal: 540 }, frameRate: { ideal: 24, max: 30 } };
+}
+
+/** The camera after the current one in the browser's list, wrapping around; null with one camera. */
+export function nextCameraId(ids: readonly string[], currentId: string | null): string | null {
+  if (ids.length < 2) return null;
+  const at = currentId ? ids.indexOf(currentId) : -1;
+  return ids[(at + 1) % ids.length] ?? null;
+}
+
+/**
+ * What the browser's screen picker is asked for (A-200):
+ * - no larger than 1920x1080: a Retina screen (2880x1800 and more) used to go out at
+ *   full size, five times the pixels for every receiver's encoder;
+ * - never this tab itself, whose picture and sound are the lesson (a mirror in a
+ *   mirror, and everyone's voice sent back to them);
+ * - the computer's whole sound only where the browser can leave this tab's own sound
+ *   out of it (`restrictOwnAudio`), else only a shared tab's sound: without that
+ *   everyone would hear themselves a moment later.
+ * Browsers ignore the members they do not know.
+ */
+export function displayOptions(): DisplayMediaStreamOptions {
+  const sound = screenAudioSupported();
+  const supported = (navigator.mediaDevices.getSupportedConstraints?.() ?? {}) as Record<
+    string,
+    boolean | undefined
+  >;
+  const ownSoundLeftOut = Boolean(supported.restrictOwnAudio);
+  return {
+    video: {
+      width: { max: SCREEN_MAX_WIDTH },
+      height: { max: SCREEN_MAX_HEIGHT },
+      frameRate: { ideal: 10, max: SCREEN_MAX_FRAMERATE },
+    },
+    audio: sound ? ({ restrictOwnAudio: true } as MediaTrackConstraints) : false,
+    selfBrowserSurface: "exclude",
+    surfaceSwitching: "include",
+    systemAudio: sound && ownSoundLeftOut ? "include" : "exclude",
+  } as DisplayMediaStreamOptions;
+}
+
+/** Opens the browser's screen picker; a browser that rejects the options gets the plainest request. */
+async function openDisplay(): Promise<MediaStream> {
+  try {
+    return await navigator.mediaDevices.getDisplayMedia(displayOptions());
+  } catch (error) {
+    const name =
+      typeof error === "object" && error !== null && "name" in error ? String(error.name) : "";
+    if (name !== "TypeError" && name !== "OverconstrainedError") throw error;
+    return navigator.mediaDevices.getDisplayMedia({ video: true });
+  }
+}
+
+/**
+ * Whether this is a browser on Android. None of them offers screen capture to a
+ * web page, whichever version (checked 2026-11: Chrome 157, Samsung Internet 31,
+ * Firefox 160), so the room words its notice for them (A-200).
+ */
+export function isAndroidBrowser(userAgent: string): boolean {
+  return /Android/i.test(userAgent);
+}
+
+/**
+ * Whether to ask for the screen's sound when sharing. Only Chromium browsers
+ * capture it, and asking elsewhere can make the request fail, so the request is
+ * made only where `navigator.userAgentData` exists (Chrome, Edge, Opera).
+ */
+export function screenAudioSupported(): boolean {
+  return typeof navigator !== "undefined" && "userAgentData" in navigator;
+}

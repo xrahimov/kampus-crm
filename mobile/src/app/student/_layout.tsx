@@ -11,6 +11,8 @@ export default function StudentLayout() {
     >
       <Stack.Screen name="index" />
       <Stack.Screen name="class/[token]" />
+      {/* A lesson is left with its own button, not by a stray swipe from the edge. */}
+      <Stack.Screen name="room/[token]" options={{ gestureEnabled: false, animation: "fade" }} />
     </Stack>
   );
 }

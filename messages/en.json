@@ -6258,7 +6258,7 @@
     "doorStaff": "Staff",
     "language": "Language",
     "startLesson": "Start the lesson",
-    "roomHint": "The lesson room opens in your browser, already signed in.",
+    "roomHint": "Opens the lesson room with your camera and microphone.",
     "owes": "Owes {amount}",
     "grade": "grade",
     "students": "{count, plural, =0 {No students} one {# student} other {# students}}",
@@ -6277,6 +6277,18 @@
     "siteText": "Students, payments, tests and reports are on the site for now. It opens already signed in.",
     "version": "Kampus {version}",
     "myPage": "Open my full page",
-    "myPageHint": "Answering homework, tests, the chat and the online lesson open on your page for now."
+    "myPageHint": "Answering homework, tests, the chat and the online lesson open on your page for now.",
+    "room": {
+      "denied": "Kampus has no access to the camera or the microphone. You can join to watch and listen. To be seen and heard, allow both in the phone's settings.",
+      "partial": "Kampus has access to only part of your devices. You can still join. Allow the camera and the microphone in the phone's settings to use both.",
+      "openSettings": "Open settings",
+      "unavailable": "This device cannot open a video lesson.",
+      "peerFailed": "Could not connect to this person. Their network may block direct calls.",
+      "stageElsewhere": "The teacher is showing a file or the whiteboard to everyone."
+    },
+    "permissions": {
+      "camera": "Kampus uses the camera so that your teacher and classmates see you in a video lesson.",
+      "microphone": "Kampus uses the microphone so that your teacher and classmates hear you in a video lesson."
+    }
   }
 }

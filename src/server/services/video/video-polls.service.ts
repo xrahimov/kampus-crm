@@ -1,4 +1,5 @@
 import type { VideoPeerRole } from "@/generated/prisma/client";
+import type { PollDto } from "@/lib/video/dto";
 import type { VideoSyncInput } from "@/lib/validation/video";
 import type { DbClient } from "@/server/db/prisma";
 
@@ -12,19 +13,7 @@ import type { DbClient } from "@/server/db/prisma";
  * stay with the call and show on the group page under the last video lesson.
  */
 
-export interface PollDto {
-  id: string;
-  question: string;
-  options: string[];
-  open: boolean;
-  /** This browser's answer (students), or null. */
-  myVote: number | null;
-  /** Answers per option; null for a student while the poll is open. */
-  counts: number[] | null;
-  total: number;
-  /** Who answered what, for the teacher and staff only. */
-  voters: Array<{ name: string; option: number }> | null;
-}
+export type { PollDto } from "@/lib/video/dto";
 
 /** A closed poll's result, as the group page shows it. */
 export interface PollResultDto {
