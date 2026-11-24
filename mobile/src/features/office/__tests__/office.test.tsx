@@ -235,6 +235,7 @@ describe("the centre's home", () => {
   });
 
   it("opens a figure's page in the app where the app has it, on the site where not", async () => {
+    mockMe = me(["dashboard.view", "students.view", "groups.view", "reports.view"]);
     serve({ "GET /dashboard/kpis": KPIS, "GET /dashboard/schedule": ROOMS });
     await renderScreen(<HomeScreen />);
     await screen.findByTestId("home-kpis");
@@ -245,8 +246,12 @@ describe("the centre's home", () => {
     // Leads have their board in the app (A-232).
     await fireEvent.press(screen.getByTestId("kpi-activeLeads"));
     expect(mockPush).toHaveBeenLastCalledWith("/staff/leads");
+    // So have the debtors (A-236).
     await fireEvent.press(screen.getByTestId("kpi-debtors"));
-    expect(mockOpenOnSite).toHaveBeenLastCalledWith("/en/debts");
+    expect(mockPush).toHaveBeenLastCalledWith("/staff/debts");
+    // The reports are still the site's.
+    await fireEvent.press(screen.getByTestId("kpi-leftThisMonth"));
+    expect(mockOpenOnSite).toHaveBeenLastCalledWith("/en/reports/churn");
     // A figure about students opens the app's list with the site's filter already set (A-231).
     await fireEvent.press(screen.getByTestId("kpi-remainingDebt"));
     expect(mockPush).toHaveBeenLastCalledWith({
@@ -414,6 +419,13 @@ describe("where a page of the site lives in the app", () => {
     expect(nativeRoute("/today")).toBe("/staff");
     expect(nativeRoute("/account/salary")).toBe("/staff/salary");
     expect(nativeRoute("/notifications")).toBe("/staff/notifications");
+    // The debtors and the cash desk (A-236), the debtors with a notification's filter.
+    expect(nativeRoute("/debts")).toBe("/staff/debts");
+    expect(nativeRoute("/cashdesk")).toBe("/staff/cashdesk");
+    expect(nativeRoute("/debts?branchId=b1&status=NEEDS_CALL")).toEqual({
+      pathname: "/staff/debts",
+      params: { branchId: "b1", status: "NEEDS_CALL" },
+    });
     expect(nativeRoute("/students?paymentStatus=DEBTOR")).toEqual({
       pathname: "/staff/students",
       params: { paymentStatus: "DEBTOR" },
@@ -425,7 +437,11 @@ describe("where a page of the site lives in the app", () => {
   });
 
   it("sends everything else to the site", () => {
-    expect(nativeRoute("/debts")).toBeNull();
+    expect(nativeRoute("/finance")).toBeNull();
+    // A day close's sheet to print is the site's page.
+    expect(nativeRoute("/cashdesk/c1")).toBeNull();
+    // A debtors filter the app's list does not have stays the site's.
+    expect(nativeRoute("/debts?status=SOMETHING")).toBeNull();
     // A leads filter the app's board does not have stays the site's.
     expect(nativeRoute("/leads?teacherId=t1")).toBeNull();
     // A students filter the app does not know stays the site's.

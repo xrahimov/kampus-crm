@@ -6473,6 +6473,9 @@
       "firstSignIn": "The first sign-in is with a code from Telegram. The person chooses their own password then.",
       "colorChoice": "Colour {number}",
       "moreSettings": "The other settings open on the site."
+    },
+    "money": {
+      "sortBy": "Sort by"
     }
   }
 }

@@ -1,6 +1,7 @@
 import { useRouter, type Href } from "expo-router";
 import { useState } from "react";
 
+import { DEBT_FILTERS } from "@/api/office-money";
 import { GROUP_STATUS_FILTERS, PAYMENT_STATUS_FILTERS } from "@/api/staff-students";
 import { errorText, useLocaleChoice, useTranslations } from "@/lib/i18n";
 import { can, type Me } from "@/lib/session";
@@ -21,11 +22,14 @@ export function hasHome(me: Me): boolean {
  */
 export function nativeRoute(path: string): Href | null {
   const [pathname = "", filter] = path.split("?");
-  // The students list takes the site's filters (A-231) and the leads board a board and a
-  // search (A-232); any other filtered list is the site's.
+  // The students list takes the site's filters (A-231), the leads board a board and a search
+  // (A-232) and the debtors a status, a branch and a search (A-236); any other filtered list
+  // is the site's.
   if (filter) {
     if (pathname === "/students") return studentsRoute(filter);
     if (pathname === "/leads") return filteredRoute("/staff/leads", filter, LEAD_FILTER_VALUES);
+    // The debtors a notification points at (A-236): "to call in this branch", one student.
+    if (pathname === "/debts") return filteredRoute("/staff/debts", filter, DEBT_FILTER_VALUES);
     return null;
   }
   const parts = pathname.split("/").filter(Boolean);
@@ -67,6 +71,10 @@ export function nativeRoute(path: string): Href | null {
       return "/staff/teachers";
     case "exams":
       return "/staff/exams";
+    case "debts":
+      return "/staff/debts";
+    case "cashdesk":
+      return "/staff/cashdesk";
     case "students":
       return "/staff/students";
     case "announcements":
@@ -97,6 +105,13 @@ const STUDENT_FILTER_VALUES: Record<string, readonly string[] | null> = {
 /** What the app's leads board takes from an address: the board and what is searched for. */
 const LEAD_FILTER_VALUES: Record<string, readonly string[] | null> = { boardId: null, q: null };
 
+/** What the app's debtors list takes from an address. */
+const DEBT_FILTER_VALUES: Record<string, readonly string[] | null> = {
+  status: DEBT_FILTERS,
+  branchId: null,
+  q: null,
+};
+
 /**
  * "/students?paymentStatus=DEBTOR" as the app's list with that filter. Null if
  * the address asks for a filter or a value the app's list does not have: it
@@ -107,7 +122,7 @@ function studentsRoute(filter: string): Href | null {
 }
 
 function filteredRoute(
-  pathname: "/staff/students" | "/staff/leads",
+  pathname: "/staff/students" | "/staff/leads" | "/staff/debts",
   filter: string,
   values: Record<string, readonly string[] | null>,
 ): Href | null {
