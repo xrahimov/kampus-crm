@@ -66,7 +66,9 @@ able to work from an iPad or a phone.
 | Office: settings, step 1: Days off, Schools, SMS templates, Receipt settings with its sample, Coin settings with the reasons (A-242)                                                                                         | Built, phone and tablet                                                                                                  |
 | Office: settings, step 2: General settings in five tabs: Center settings, Branches, Payment methods, Grading systems, Auto SMS settings (A-243)                                                                              | Built, phone and tablet                                                                                                  |
 | Office: settings, step 3: Staff (search, role chips, archive, the staff form with roles) and Roles (the permission ticks) (A-244)                                                                                            | Built, phone and tablet; Excel export and import of staff stay on the site                                               |
-| The office's other pages: the other 12 settings sections, the manual, the assistant                                                                                                                                          | Next, part 6c steps 4 and 5 and part 6d; they open on the site until then                                                |
+| Office: settings, step 4a: Login log, Action log, Sent SMS, Calls and Payments, each with the site's filters and Show more (A-246)                                                                                           | Built, phone and tablet; the Excel file and receipts open on the site                                                    |
+| Office: settings, step 4b: Bot notifications (add and remove a Telegram recipient) and Forms (add, change, delete, share the link) (A-247)                                                                                   | Built, phone and tablet                                                                                                  |
+| The office's other pages: the other 5 settings sections, the manual, the assistant                                                                                                                                           | Next, part 6c step 5 and part 6d; they open on the site until then                                                       |
 | The site running on the app's code                                                                                                                                                                                           | Part by part, the student side first; wide tables, Excel and print last                                                  |
 
 ## What kai needs to do
@@ -213,7 +215,27 @@ mobile/
   form opened from a menu comes after the menu has left. So a screen may close one sheet and open
   the next in the same press, and a test waits for the second with `findByTestId`. A sheet
   inside an open sheet (a `Select` in a form) does not wait. Android is left as it was.
-  Next free number: A-246.
+- **Settings, step 4a (A-246).** The five lists that only show: `login-log-screen.tsx`,
+  `action-log-screen.tsx`, `sms-log-screen.tsx`, `calls-screen.tsx` and
+  `payments-log-screen.tsx`, with `api/office-logs.ts`. `log-parts.tsx` has what they share:
+  `useLogDays` and `DayFilters` (From and To, empty at first), `useLogSearch` and `SearchField`,
+  and `LogBody`, which draws waiting, the error with **Try again**, the empty words, the rows
+  and **Show more**. Every list is one `useLog` (an infinite query, thirty rows a page; the
+  filters go into the address only when set). The logs live under `settings/logs/…`, so
+  `nativeRoute` knows that one three-part path. `useLogActors` asks `GET /logs/actors`, the one
+  call made for the app here; on "not found" it answers an empty list and the screens leave the
+  choice out. The payments log's key starts with `payments`, so a payment taken or a fiscal
+  receipt sent again asks for it anew.
+- **Settings, step 4b (A-247).** `bot-screen.tsx` and `forms-screen.tsx` with
+  `api/office-forms-bot.ts`. A form's address is `API_ORIGIN` + `/<language>/forms/<slug>`;
+  it goes to `Share.share` and `Linking.openURL` (no clipboard package in the app). `slugify`
+  is the site's, copied. The form sheet takes its columns and sources from `useLeadOptions`.
+- **Small repairs from run 16 (A-248).** `isTaken(error, field)` in `lib/form.ts` tells a
+  "this value is taken" refusal from the others; the three sheets that put a student into a
+  group say "This student is already in the group." with it. `GroupScreen` builds its page
+  links, facts, month and students apart: on a phone someone with `groups.update` gets links
+  (with **Manage students** first), facts, month, students; everyone else and every tablet
+  keep the old order. Next free number: A-249.
 - **Finance and payroll (A-237).** `src/features/finance/` and `src/api/office-finance.ts`.
   `FinanceScreen` is the site's Finance page; `EntriesScreen` the entries of a kind or of a
   category (`entries-routes.tsx` reads which from the address), with `EntrySheet`, the site's one

@@ -17,7 +17,7 @@ export function hasHome(me: Me): boolean {
   return me.view.current === "FULL" && can(me, "dashboard.view");
 }
 
-/** The site's Settings sections the app has, by the last part of their path (A-234, A-242). */
+/** The site's Settings sections the app has, by the last part of their path (A-234, A-242, A-246, A-247). */
 const NATIVE_SETTINGS = new Set([
   "courses",
   "rooms",
@@ -29,7 +29,14 @@ const NATIVE_SETTINGS = new Set([
   "general",
   "staff",
   "roles",
+  "payments",
+  "calls",
+  "forms",
+  "bot",
 ]);
+
+/** The logs under Settings the app has (A-246): "/settings/logs/sms". */
+const NATIVE_LOGS = new Set(["logins", "actions", "sms"]);
 
 /**
  * Where a page of the site lives in the app, if the app has it. `path` is the
@@ -59,6 +66,9 @@ export function nativeRoute(path: string): Href | null {
   // Settings (A-234, A-242): its list of sections, and the ones the app has. The rest are the site's.
   if (first === "settings") {
     if (!id) return "/staff/settings";
+    if (id === "logs" && rest.length === 1 && NATIVE_LOGS.has(rest[0]!)) {
+      return `/staff/settings/logs/${rest[0]}` as Href;
+    }
     if (rest.length > 0) return null;
     return NATIVE_SETTINGS.has(id) ? (`/staff/settings/${id}` as Href) : null;
   }

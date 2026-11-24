@@ -744,6 +744,38 @@ describe("the students of a group", () => {
     });
   });
 
+  it("says so when the student is, or once was, in the group (A-248)", async () => {
+    serve({
+      ...members(),
+      "GET /students": {
+        items: [{ id: "s9", fullName: "Jasur Aliev", phone: "+998905556677", groups: [] }],
+        page: 1,
+        pageSize: 8,
+        total: 1,
+      },
+      "POST /groups/g1/members": answer(400, {
+        error: {
+          code: "VALIDATION",
+          message: "errors.validation",
+          fields: { studentId: ["validation.duplicate"] },
+        },
+      }),
+    });
+    await renderScreen(<MembersScreen />);
+    await fireEvent.press(await screen.findByTestId("members-add"));
+    await fireEvent.changeText(await screen.findByTestId("member-search"), "Jas");
+    await fireEvent.press(await screen.findByTestId("member-found-s9"));
+    await fireEvent.press(screen.getByTestId("member-add-save"));
+    // The picked student stays, with the reason under their name.
+    expect(await screen.findByTestId("member-picked-problem")).toHaveTextContent(
+      "This student is already in the group.",
+    );
+    expect(screen.getByTestId("member-picked")).toHaveTextContent(/Jasur Aliev/);
+    // Picking someone else takes the reason away.
+    await fireEvent.press(screen.getByTestId("member-unpick"));
+    expect(screen.queryByText("This student is already in the group.")).toBeNull();
+  });
+
   it("adds a new student straight into the group", async () => {
     serve({ ...members(), "POST /groups/g1/members": member({ id: "m9" }) });
     await renderScreen(<MembersScreen />);
@@ -765,7 +797,7 @@ describe("the students of a group", () => {
     await fireEvent.press(await screen.findByTestId("members-activate"));
     await fireEvent.press(await screen.findByTestId("members-activate-sheet-confirm"));
     expect(await screen.findByTestId("members-activated")).toHaveTextContent(
-      "1 students activated.",
+      "1 student activated.",
     );
   });
 
@@ -817,6 +849,32 @@ describe("Add to a group on a student's page", () => {
       note: null,
       status: "ACTIVE",
     });
+  });
+});
+
+describe("Add to a group the student once left (A-248)", () => {
+  it("names the reason under the group", async () => {
+    serve({
+      "GET /students/options": STUDENT_OPTIONS,
+      "POST /groups/g2/members": answer(400, {
+        error: {
+          code: "VALIDATION",
+          message: "errors.validation",
+          fields: { studentId: ["validation.duplicate"] },
+        },
+      }),
+    });
+    await renderScreen(
+      <StudentToGroupSheet
+        open
+        onClose={jest.fn()}
+        student={{ id: "s1", fullName: "Sardor Karimov", groups: [] }}
+      />,
+    );
+    await fireEvent.press(await screen.findByTestId("to-group-group"));
+    await fireEvent.press(await screen.findByTestId("to-group-group-option-g2"));
+    await fireEvent.press(screen.getByTestId("to-group-save"));
+    expect(await screen.findByText("This student is already in the group.")).toBeOnTheScreen();
   });
 });
 

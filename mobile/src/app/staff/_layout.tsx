@@ -81,6 +81,13 @@ export default function StaffLayout() {
       <Stack.Screen name="settings/sms" />
       <Stack.Screen name="settings/receipt" />
       <Stack.Screen name="settings/coins" />
+      <Stack.Screen name="settings/payments" />
+      <Stack.Screen name="settings/calls" />
+      <Stack.Screen name="settings/forms" />
+      <Stack.Screen name="settings/bot" />
+      <Stack.Screen name="settings/logs/logins" />
+      <Stack.Screen name="settings/logs/actions" />
+      <Stack.Screen name="settings/logs/sms" />
       {/* A lesson is left with its own button, not by a stray swipe from the edge. */}
       <Stack.Screen name="room/[id]" options={{ gestureEnabled: false, animation: "fade" }} />
     </Stack>
