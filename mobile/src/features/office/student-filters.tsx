@@ -32,7 +32,7 @@ export function filtersFromParams(
     filters.groupStatus = group as StudentFilters["groupStatus"];
   }
   if (one("archived") === "true") filters.archived = true;
-  for (const key of ["courseId", "groupId", "teacherId"] as const) {
+  for (const key of ["courseId", "schoolId", "groupId", "teacherId"] as const) {
     const value = one(key);
     if (value) filters[key] = value;
   }
@@ -41,7 +41,8 @@ export function filtersFromParams(
 
 /**
  * The site's filters over the students list (A-231), in one sheet: payment
- * status, status in the group, course, group, teacher, and the archive.
+ * status, status in the group, course, group, teacher, school (A-265, where
+ * the centre has schools), and the archive.
  * Nothing changes in the list until **Show** is pressed.
  */
 export function StudentFilterSheet({
@@ -151,6 +152,16 @@ export function StudentFilterSheet({
           options={(options.data?.teachers ?? []).map((p) => ({ value: p.id, label: p.fullName }))}
           testID="filter-teacher"
         />
+        {(options.data?.schools ?? []).length > 0 ? (
+          <Select
+            label={tf("school")}
+            value={draft.schoolId ?? null}
+            onChange={(v) => set({ schoolId: v ?? undefined })}
+            clearLabel={tf("all")}
+            options={(options.data?.schools ?? []).map((x) => ({ value: x.id, label: x.name }))}
+            testID="filter-school"
+          />
+        ) : null}
         <Check
           label={tm("archivedOnly")}
           value={draft.archived === true}

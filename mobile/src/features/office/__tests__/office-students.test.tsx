@@ -76,6 +76,8 @@ function serve(routes: Routes) {
     if (!key) return answer(404, { error: { code: "errors.notFound" } });
     const route = routes[key];
     const body = typeof route === "function" ? (route as (url: string) => unknown)(url) : route;
+    // A route may answer with a refusal of its own.
+    if (body && typeof body === "object" && "ok" in body && "text" in body) return body as Response;
     return answer(body === undefined ? 204 : 200, body);
   });
 }
@@ -150,6 +152,16 @@ const OPTIONS: StudentOptions = {
   ],
   teachers: [{ id: "t1", fullName: "Jasur Aliyev" }],
   paymentMethods: [{ id: "pm1", name: "Cash" }],
+};
+
+/** A centre that keeps schools and where its students came from. */
+const FULL_OPTIONS: StudentOptions = {
+  ...OPTIONS,
+  schools: [
+    { id: "sc1", name: "School 12" },
+    { id: "sc2", name: "Lyceum 3" },
+  ],
+  sources: [{ id: "so1", name: "Instagram" }],
 };
 
 const PAY_OPTIONS: PaymentOptions = {
@@ -271,7 +283,18 @@ describe("the students list for the office", () => {
       photoUrl: null,
       gender: "MALE",
       note: null,
-      membership: { groupId: "g1", joinedAt: "2026-11-01", status: "ACTIVE" },
+      password: null,
+      sourceId: null,
+      schoolId: null,
+      referredById: null,
+      timeZone: null,
+      membership: {
+        groupId: "g1",
+        joinedAt: "2026-11-01",
+        status: "ACTIVE",
+        customPrice: null,
+        billingFrom: null,
+      },
       parent: { fullName: "Karim aka", phone: "+998907778899" },
     });
     await waitFor(() =>
@@ -280,6 +303,100 @@ describe("the students list for the office", () => {
         params: { id: "s9" },
       }),
     );
+  });
+
+  it("adds a student with the rest of the site's form (A-265)", async () => {
+    serve({
+      "GET /students": (url: string) =>
+        page(/[?&]q=Bob/.test(url) ? [student({ id: "s2", fullName: "Bobur Aliyev" })] : []),
+      "GET /students/options": FULL_OPTIONS,
+      "POST /students": student({ id: "s9", fullName: "Sardor Karimov" }),
+    });
+    await renderScreen(<StudentsScreen />);
+    await screen.findByTestId("students-count");
+    await fireEvent.press(screen.getByTestId("student-add"));
+    await fireEvent.changeText(await screen.findByTestId("student-name"), "Sardor Karimov");
+    await fireEvent.press(screen.getByTestId("student-gender-FEMALE"));
+    await fireEvent.changeText(screen.getByTestId("student-password"), "sinov-parol-17");
+    await fireEvent.press(await screen.findByTestId("student-source"));
+    await fireEvent.press(await screen.findByTestId("student-source-option-so1"));
+    // Who brought them: found by name, picked, and can be taken off again.
+    await fireEvent.changeText(screen.getByTestId("student-referred-search"), "Bob");
+    await fireEvent.press(await screen.findByTestId("student-referred-found-s2"));
+    expect(screen.getByTestId("student-referred-picked")).toHaveTextContent(/Bobur Aliyev/);
+    await fireEvent.changeText(screen.getByTestId("student-zone-search"), "berlin");
+    await fireEvent.press(screen.getByTestId("student-zone-pick-Europe/Berlin"));
+    // How they join, from when they are charged and their own price show with a group only.
+    expect(screen.queryByTestId("student-join-as")).toBeNull();
+    await fireEvent.press(screen.getByTestId("student-group"));
+    await fireEvent.press(await screen.findByTestId("student-group-option-g1"));
+    await fireEvent.press(screen.getByTestId("student-join-as"));
+    await fireEvent.press(await screen.findByTestId("student-join-as-option-TRIAL"));
+    await fireEvent.changeText(screen.getByTestId("student-billing"), "01.12.2026");
+    expect(screen.queryByTestId("student-price")).toBeNull();
+    await fireEvent.press(screen.getByTestId("student-own-price"));
+    await fireEvent.changeText(screen.getByTestId("student-price"), "350 000");
+    await fireEvent.press(screen.getByTestId("student-school"));
+    await fireEvent.press(await screen.findByTestId("student-school-option-sc1"));
+    await fireEvent.press(screen.getByTestId("student-save"));
+
+    await waitFor(() => expect(calls("POST", "/students")).toHaveLength(1));
+    expect(sentBody(calls("POST", "/students")[0]![1])).toMatchObject({
+      fullName: "Sardor Karimov",
+      gender: "FEMALE",
+      password: "sinov-parol-17",
+      sourceId: "so1",
+      schoolId: "sc1",
+      referredById: "s2",
+      timeZone: "Europe/Berlin",
+      membership: {
+        groupId: "g1",
+        status: "TRIAL",
+        customPrice: 350000,
+        billingFrom: "2026-12-01",
+      },
+      parent: null,
+    });
+  });
+
+  it("shows the server's word on a password that is too short", async () => {
+    serve({
+      "GET /students": page([]),
+      "GET /students/options": OPTIONS,
+      "POST /students": () =>
+        answer(422, {
+          error: {
+            code: "VALIDATION",
+            message: "errors.validation",
+            fields: { password: ["validation.passwordMin"] },
+          },
+        }),
+    });
+    await renderScreen(<StudentsScreen />);
+    await screen.findByTestId("students-count");
+    await fireEvent.press(screen.getByTestId("student-add"));
+    await fireEvent.changeText(await screen.findByTestId("student-name"), "Sardor Karimov");
+    // A centre without sources or schools is not asked for them.
+    expect(screen.queryByTestId("student-source")).toBeNull();
+    expect(screen.queryByTestId("student-school")).toBeNull();
+    await fireEvent.changeText(screen.getByTestId("student-password"), "abc");
+    await fireEvent.press(screen.getByTestId("student-save"));
+    expect(await screen.findByText("At least 8 characters.")).toBeTruthy();
+  });
+
+  it("narrows the list by school where the centre has schools (A-265)", async () => {
+    serve({ "GET /students": page([student()]), "GET /students/options": FULL_OPTIONS });
+    await renderScreen(<StudentsScreen />);
+    await screen.findByTestId("student-s1");
+    await fireEvent.press(screen.getByTestId("students-filters"));
+    await fireEvent.press(await screen.findByTestId("filter-school"));
+    await fireEvent.press(await screen.findByTestId("filter-school-option-sc2"));
+    await fireEvent.press(screen.getByTestId("filters-apply"));
+    await waitFor(() =>
+      expect(calls("GET", "/students").some(([url]) => url.includes("schoolId=sc2"))).toBe(true),
+    );
+    expect(screen.getByTestId("students-filters")).toHaveTextContent("Filters: 1");
+    expect(filtersFromParams({ schoolId: "sc1" })).toEqual({ schoolId: "sc1" });
   });
 
   it("offers the site's imports to whoever may do what each one does", async () => {
@@ -451,8 +568,50 @@ describe("the office's actions on a student", () => {
       fullName: "Ali Valiyev Jr",
       phone: "+998901112233",
       birthDate: "2012-03-05",
+      gender: "MALE",
       photoUrl: null,
       note: "Allergy",
+      schoolId: null,
+      timeZone: null,
+    });
+  });
+
+  it("changes boy or girl, the time zone and the school too (A-265)", async () => {
+    serve({
+      "GET /students/s1": student({ gender: "FEMALE", timeZone: "Europe/Berlin", schoolId: "sc1" }),
+      "GET /students/options": FULL_OPTIONS,
+      "PATCH /students/s1": student(),
+    });
+    await renderScreen(<StudentScreen />);
+    await fireEvent.press(await screen.findByTestId("student-edit"));
+    // What the student has is shown; the parts of a new student are not.
+    expect(await screen.findByTestId("student-zone-picked")).toHaveTextContent(/Europe\/Berlin/);
+    await waitFor(() =>
+      expect(screen.getByTestId("student-school")).toHaveTextContent(/School 12/),
+    );
+    expect(screen.queryByTestId("student-password")).toBeNull();
+    expect(screen.queryByTestId("student-source")).toBeNull();
+    expect(screen.queryByTestId("student-referred-search")).toBeNull();
+
+    await fireEvent.press(screen.getByTestId("student-zone-clear"));
+    await fireEvent.changeText(screen.getByTestId("student-zone-search"), "nowhere at all");
+    expect(screen.getByTestId("student-zone-none")).toBeTruthy();
+    await fireEvent.changeText(screen.getByTestId("student-zone-search"), "new york");
+    await fireEvent.press(screen.getByTestId("student-zone-pick-America/New_York"));
+    await fireEvent.press(screen.getByTestId("student-school"));
+    await fireEvent.press(await screen.findByTestId("student-school-option-sc2"));
+    await fireEvent.press(screen.getByTestId("student-gender-MALE"));
+    await fireEvent.press(screen.getByTestId("student-save"));
+    await waitFor(() => expect(calls("PATCH", "/students/s1")).toHaveLength(1));
+    expect(sentBody(calls("PATCH", "/students/s1")[0]![1])).toEqual({
+      fullName: "Ali Valiyev",
+      phone: "+998901112233",
+      birthDate: null,
+      gender: "MALE",
+      photoUrl: null,
+      note: null,
+      schoolId: "sc2",
+      timeZone: "America/New_York",
     });
   });
 

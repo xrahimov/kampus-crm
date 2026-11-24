@@ -1,56 +1,23 @@
 import { useLocalSearchParams } from "expo-router";
-import {
-  Award,
-  BookOpenText,
-  CalendarCheck,
-  Coins,
-  Dumbbell,
-  Flame,
-  Medal,
-  Sparkles,
-  Target,
-  Trophy,
-} from "lucide-react-native";
 import * as WebBrowser from "expo-web-browser";
 import { Linking, Platform, Share, StyleSheet, View } from "react-native";
 
 import { usePortal } from "@/api/hooks";
 import { usePortalBadges, usePortalGradebook } from "@/api/portal";
 import { usePortalCertificates } from "@/api/portal-own";
-import type {
-  BadgeCode,
-  Portal,
-  PortalBadge,
-  PortalCertificate,
-  PortalGradebook,
-} from "@/api/types";
+import type { Portal, PortalCertificate, PortalGradebook } from "@/api/types";
 import { Button } from "@/components/button";
 import { Header } from "@/components/header";
 import { Badge, Card, Divider, Screen, type Tone } from "@/components/surface";
 import { Text } from "@/components/text";
+import { BadgeTiles } from "@/features/badges/badge-tiles";
 import { PendingScreen } from "@/features/shared/pending-screen";
 import { dayAsDate } from "@/lib/days";
 import { useDate, useTranslations } from "@/lib/i18n";
 import { useLayout } from "@/lib/layout";
-import { radius, space, useTheme } from "@/lib/theme";
+import { space } from "@/lib/theme";
 
 import { Meter } from "./meter";
-
-/** A month counts as perfect from this many lessons (the server's `PERFECT_MONTH_LESSONS`). */
-const PERFECT_MONTH_LESSONS = 8;
-
-const BADGE_ICON: Record<BadgeCode, typeof Award> = {
-  firstHomework: Award,
-  homework10: Medal,
-  streak10: Flame,
-  perfectMonth: CalendarCheck,
-  exercises10: Dumbbell,
-  exerciseAce: Target,
-  testAce: Trophy,
-  coins100: Coins,
-  words50: BookOpenText,
-  vocabStreak7: Sparkles,
-};
 
 /**
  * How the student is doing, in the app (A-215): the grade in the course part
@@ -77,7 +44,7 @@ export function ResultsScreen() {
     void certificates.refetch();
   };
   const grade = gradebook.data ? <Gradebook data={gradebook.data} /> : null;
-  const earned = badges.data ? <Badges badges={badges.data} /> : null;
+  const earned = badges.data ? <BadgeTiles badges={badges.data} title={t("badges.title")} /> : null;
   const taken = (
     <>
       {certificates.data && certificates.data.length > 0 ? (
@@ -142,55 +109,6 @@ function Gradebook({ data }: { data: PortalGradebook }) {
       <Text variant="small" tone="mutedForeground">
         {t("hint")}
       </Text>
-    </Card>
-  );
-}
-
-function Badges({ badges }: { badges: PortalBadge[] }) {
-  const t = useTranslations("badges");
-  const formatDate = useDate();
-  const { colors } = useTheme();
-  const earned = badges.filter((b) => b.earnedAt).length;
-  return (
-    <Card testID="badges">
-      <Text variant="heading">{t("title")}</Text>
-      <Text variant="small" tone="mutedForeground" testID="badges-count">
-        {t("count", { earned, total: badges.length })}
-      </Text>
-      <View style={styles.tiles}>
-        {badges.map((badge) => {
-          const Icon = BADGE_ICON[badge.code];
-          const done = badge.earnedAt !== null;
-          return (
-            <View
-              key={badge.code}
-              style={[
-                styles.tile,
-                {
-                  borderColor: done ? colors.ring : colors.border,
-                  backgroundColor: done ? colors.accent : colors.card,
-                },
-              ]}
-              accessibilityState={{ checked: done }}
-              testID={done ? `badge-earned-${badge.code}` : `badge-locked-${badge.code}`}
-            >
-              <Icon size={22} color={done ? colors.ring : colors.mutedForeground} />
-              <View style={styles.fill}>
-                <Text variant="smallStrong" tone={done ? "accentForeground" : "foreground"}>
-                  {t(`items.${badge.code}.name`)}
-                </Text>
-                <Text variant="small" tone={done ? "accentForeground" : "mutedForeground"}>
-                  {done
-                    ? t("earned", {
-                        date: formatDate(new Date(badge.earnedAt!), { dateStyle: "medium" }),
-                      })
-                    : t(`items.${badge.code}.hint`, { count: PERFECT_MONTH_LESSONS })}
-                </Text>
-              </View>
-            </View>
-          );
-        })}
-      </View>
     </Card>
   );
 }
@@ -341,13 +259,4 @@ const styles = StyleSheet.create({
   column: { flex: 1, gap: space[4] },
   line: { flexDirection: "row", alignItems: "center", gap: space[3] },
   rows: { gap: space[3] },
-  tiles: { gap: space[2] },
-  tile: {
-    flexDirection: "row",
-    alignItems: "flex-start",
-    gap: space[3],
-    padding: space[3],
-    borderWidth: 1,
-    borderRadius: radius.md,
-  },
 });

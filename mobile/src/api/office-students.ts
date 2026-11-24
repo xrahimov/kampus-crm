@@ -86,7 +86,21 @@ export interface NewStudentInput {
   gender: "MALE" | "FEMALE";
   photoUrl: string | null;
   note: string | null;
-  membership: { groupId: string; joinedAt: string; status: "ACTIVE" | "NEW" } | null;
+  /** The student's own sign-in to the app (A-06); null leaves them without one. */
+  password: string | null;
+  sourceId: string | null;
+  schoolId: string | null;
+  referredById: string | null;
+  timeZone: string | null;
+  membership: {
+    groupId: string;
+    joinedAt: string;
+    status: "NEW" | "TRIAL" | "ACTIVE";
+    /** The student's own monthly price in this group; null for the course's. */
+    customPrice: number | null;
+    /** The day charging starts, when it is not the day of joining. */
+    billingFrom: string | null;
+  } | null;
   parent: { fullName: string; phone: string } | null;
 }
 
@@ -224,11 +238,14 @@ export interface StudentChange {
   fullName: string;
   phone: string | null;
   birthDate: string | null;
+  gender: "MALE" | "FEMALE";
   photoUrl: string | null;
   note: string | null;
+  schoolId: string | null;
+  timeZone: string | null;
 }
 
-/** Changes who the student is: the name, the phone, the day of birth, the photo, the note. */
+/** Changes who the student is: the name, the phone, the day of birth, the photo, the note, the school, the zone. */
 export function useUpdateStudent(id: string) {
   const client = useQueryClient();
   return useMutation({

@@ -1,6 +1,6 @@
 import { useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "expo-router";
-import { Check, Link2, Minus, Paperclip, Video, X } from "lucide-react-native";
+import { Check, Link2, Minus, Paperclip, ScanLine, Video, X } from "lucide-react-native";
 import { useState } from "react";
 import { Pressable, StyleSheet, TextInput, View } from "react-native";
 
@@ -44,6 +44,9 @@ export function LessonPanel({
   canSeeBalances: boolean;
 }) {
   const t = useTranslations();
+  const router = useRouter();
+  const { colors } = useTheme();
+  const { wide } = useLayout();
   const [tab, setTab] = useState<Tab>("attendance");
   const [failure, setFailure] = useState<string | null>(null);
   const mark = useMarkAttendance(lesson);
@@ -94,7 +97,8 @@ export function LessonPanel({
             <Text
               variant="small"
               tone="mutedForeground"
-              style={styles.fill}
+              // On a phone the count has a line to itself and the two buttons sit under it.
+              style={wide ? styles.fill : styles.whole}
               testID="attendance-summary"
             >
               {t("today.attendance.summary", {
@@ -103,6 +107,26 @@ export function LessonPanel({
                 present: lesson.present,
               })}
             </Text>
+            {canMark ? (
+              // The students show their badges at the door and are marked present (A-264).
+              <Button
+                compact
+                variant="ghost"
+                label={t("today.scan.button")}
+                icon={<ScanLine size={16} color={colors.foreground} />}
+                onPress={() =>
+                  router.push({
+                    pathname: "/staff/scan",
+                    params: {
+                      lesson: lesson.id,
+                      group: lesson.groupName,
+                      time: `${lesson.startTime}–${lesson.endTime}`,
+                    },
+                  })
+                }
+                testID="scan-badges"
+              />
+            ) : null}
             {canMark && unmarked ? (
               <Button
                 compact
@@ -543,10 +567,13 @@ const styles = StyleSheet.create({
   panel: { gap: space[4] },
   fill: { flex: 1 },
   flush: { padding: 0, gap: 0 },
+  whole: { width: "100%" },
   rosterHead: {
     flexDirection: "row",
+    flexWrap: "wrap",
     alignItems: "center",
-    gap: space[3],
+    columnGap: space[3],
+    rowGap: space[1],
     paddingHorizontal: space[4],
     paddingVertical: space[3],
     minHeight: 60,

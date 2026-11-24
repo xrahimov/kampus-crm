@@ -5,6 +5,7 @@ import { StyleSheet, View } from "react-native";
 import { useCreateStudent, useStudentOptions, useUpdateStudent } from "@/api/office-students";
 import type { StudentDetail } from "@/api/types";
 import { Button } from "@/components/button";
+import { Check } from "@/components/check";
 import { DateField } from "@/components/date-field";
 import { Field } from "@/components/field";
 import { Select } from "@/components/select";
@@ -12,6 +13,11 @@ import { Sheet } from "@/components/sheet";
 import { Notice, Segmented } from "@/components/surface";
 import { Text } from "@/components/text";
 import { PhotoField } from "@/features/files/photo-field";
+import {
+  StudentPickField,
+  TimeZoneField,
+  type PickedStudent,
+} from "@/features/office/student-form-parts";
 import { ApiError } from "@/lib/api";
 import { centreToday } from "@/lib/days";
 import { phoneOrNull } from "@/lib/form";
@@ -19,15 +25,21 @@ import { errorText, useTranslations } from "@/lib/i18n";
 import { useMe } from "@/lib/session";
 import { space } from "@/lib/theme";
 
+/** How a student joins the group chosen on the form, the site's three. */
+const JOIN_STATUSES = ["NEW", "TRIAL", "ACTIVE"] as const;
+
 /**
- * "Add student" (A-231), the site's form with the parts a phone is used for:
- * the photo (A-255), the name, the phone, the day of birth, the group to join
- * and a parent's phone. The rest of the profile (school, source, the app password) is set on
- * the site for now. The new student's page opens when it is saved.
+ * "Add student" (A-231), the whole of the site's form since A-265: the photo
+ * (A-255), the name, the phone, the day of birth, the password of the
+ * student's own sign-in, where they came from and who brought them, the time
+ * zone of a student abroad, the group to join (as what, at which price,
+ * charged from when), a parent's phone and the school. The new student's page
+ * opens when it is saved.
  *
  * With `student` it is "Edit student": the photo, the name, the phone, the day
- * of birth and the note of someone who is already there. Groups and parents have their
- * own places on the student's page.
+ * of birth, boy or girl, the note, the time zone and the school of someone who
+ * is already there, as on the site. Groups and parents have their own places
+ * on the student's page.
  */
 export function StudentFormSheet({
   open,
@@ -42,7 +54,7 @@ export function StudentFormSheet({
   const tf = useTranslations("students.form");
   const me = useMe();
   const router = useRouter();
-  const options = useStudentOptions(open && !student);
+  const options = useStudentOptions(open);
   const add = useCreateStudent();
   const change = useUpdateStudent(student?.id ?? "");
   const create = student ? change : add;
@@ -58,6 +70,15 @@ export function StudentFormSheet({
   const [parentPhone, setParentPhone] = useState("+998");
   const [note, setNote] = useState("");
   const [photoUrl, setPhotoUrl] = useState<string | null>(null);
+  const [password, setPassword] = useState("");
+  const [sourceId, setSourceId] = useState<string | null>(null);
+  const [schoolId, setSchoolId] = useState<string | null>(null);
+  const [referredBy, setReferredBy] = useState<PickedStudent | null>(null);
+  const [timeZone, setTimeZone] = useState<string | null>(null);
+  const [joinAs, setJoinAs] = useState<(typeof JOIN_STATUSES)[number]>("ACTIVE");
+  const [ownPrice, setOwnPrice] = useState(false);
+  const [price, setPrice] = useState("");
+  const [billingFrom, setBillingFrom] = useState<string | null>(null);
   // A photo on its way holds Save: the form would otherwise be saved without it.
   const [sendingPhoto, setSendingPhoto] = useState(false);
   const [missing, setMissing] = useState(false);
@@ -69,7 +90,16 @@ export function StudentFormSheet({
       setFullName(student?.fullName ?? "");
       setPhone(student?.phone ?? "+998");
       setBirthDate(student?.birthDate?.slice(0, 10) ?? null);
-      setGender("MALE");
+      setGender(student?.gender ?? "MALE");
+      setPassword("");
+      setSourceId(null);
+      setSchoolId(student?.schoolId ?? null);
+      setReferredBy(null);
+      setTimeZone(student?.timeZone ?? null);
+      setJoinAs("ACTIVE");
+      setOwnPrice(false);
+      setPrice("");
+      setBillingFrom(null);
       setGroupId(null);
       setJoinedAt(centreToday());
       setParentName("");
@@ -108,8 +138,11 @@ export function StudentFormSheet({
           fullName: fullName.trim(),
           phone: phoneOrNull(phone),
           birthDate,
+          gender,
           photoUrl,
           note: note.trim() || null,
+          schoolId,
+          timeZone,
         },
         { onSuccess: onClose },
       );
@@ -124,7 +157,21 @@ export function StudentFormSheet({
         gender,
         photoUrl,
         note: note.trim() || null,
-        membership: groupId && joinedAt ? { groupId, joinedAt, status: "ACTIVE" } : null,
+        password: password || null,
+        sourceId,
+        schoolId,
+        referredById: referredBy?.id ?? null,
+        timeZone,
+        membership:
+          groupId && joinedAt
+            ? {
+                groupId,
+                joinedAt,
+                status: joinAs,
+                customPrice: ownPrice && price ? Number(price) : null,
+                billingFrom,
+              }
+            : null,
         parent: parent ? { fullName: parentName.trim(), phone: parent } : null,
       },
       {
@@ -201,20 +248,53 @@ export function StudentFormSheet({
           error={fieldError("birthDate")}
           testID="student-birth"
         />
+        <View style={styles.block}>
+          <Text variant="smallStrong">{tf("gender")}</Text>
+          <Segmented
+            value={gender}
+            onChange={setGender}
+            options={[
+              { value: "MALE", label: t("students.genders.MALE") },
+              { value: "FEMALE", label: t("students.genders.FEMALE") },
+            ]}
+            testID="student-gender"
+          />
+        </View>
         {student ? null : (
           <>
-            <View style={styles.block}>
-              <Text variant="smallStrong">{tf("gender")}</Text>
-              <Segmented
-                value={gender}
-                onChange={setGender}
-                options={[
-                  { value: "MALE", label: t("students.genders.MALE") },
-                  { value: "FEMALE", label: t("students.genders.FEMALE") },
-                ]}
-                testID="student-gender"
+            <Field
+              label={tf("password")}
+              value={password}
+              onChangeText={setPassword}
+              secureTextEntry
+              autoCapitalize="none"
+              autoCorrect={false}
+              autoComplete="new-password"
+              maxLength={128}
+              hint={tf("passwordHint")}
+              error={fieldError("password")}
+              testID="student-password"
+            />
+            {(options.data?.sources ?? []).length > 0 ? (
+              <Select
+                label={tf("source")}
+                value={sourceId}
+                onChange={setSourceId}
+                clearLabel={t("leads.contact.none")}
+                placeholder={tf("sourcePlaceholder")}
+                options={(options.data?.sources ?? []).map((x) => ({ value: x.id, label: x.name }))}
+                error={fieldError("sourceId")}
+                testID="student-source"
               />
-            </View>
+            ) : null}
+            <StudentPickField
+              label={tf("referredBy")}
+              value={referredBy}
+              onChange={setReferredBy}
+              active={open}
+              error={fieldError("referredById")}
+              testID="student-referred"
+            />
             <Text variant="heading">{tf("groupSection")}</Text>
             <Select
               label={tf("group")}
@@ -240,6 +320,45 @@ export function StudentFormSheet({
                 }
                 testID="student-joined"
               />
+            ) : null}
+            {groupId ? (
+              <>
+                <Select
+                  label={tf("status")}
+                  value={joinAs}
+                  onChange={(v) => setJoinAs(v ?? "ACTIVE")}
+                  options={JOIN_STATUSES.map((key) => ({
+                    value: key,
+                    label: t(`groups.memberStatuses.${key}`),
+                  }))}
+                  error={fieldError("membership.status")}
+                  testID="student-join-as"
+                />
+                <DateField
+                  label={tf("billingFrom")}
+                  value={billingFrom}
+                  onChange={setBillingFrom}
+                  hint={t("groups.members.billingFromHint")}
+                  error={fieldError("membership.billingFrom")}
+                  testID="student-billing"
+                />
+                <Check
+                  label={t("groups.members.customPriceToggle")}
+                  value={ownPrice}
+                  onChange={setOwnPrice}
+                  testID="student-own-price"
+                />
+                {ownPrice ? (
+                  <Field
+                    label={t("groups.members.customPrice")}
+                    value={price}
+                    onChangeText={(text) => setPrice(text.replace(/\D/g, "").slice(0, 13))}
+                    keyboardType="number-pad"
+                    error={fieldError("membership.customPrice")}
+                    testID="student-price"
+                  />
+                ) : null}
+              </>
             ) : null}
             <Text variant="heading">{tf("parentSection")}</Text>
             <Field
@@ -267,6 +386,26 @@ export function StudentFormSheet({
             ) : null}
           </>
         )}
+        <TimeZoneField
+          label={tf("timeZone")}
+          hint={tf("timeZoneHint")}
+          value={timeZone}
+          onChange={setTimeZone}
+          error={fieldError("timeZone")}
+          testID="student-zone"
+        />
+        {(options.data?.schools ?? []).length > 0 ? (
+          <Select
+            label={tf("school")}
+            value={schoolId}
+            onChange={setSchoolId}
+            clearLabel={t("leads.contact.none")}
+            placeholder={tf("schoolPlaceholder")}
+            options={(options.data?.schools ?? []).map((x) => ({ value: x.id, label: x.name }))}
+            error={fieldError("schoolId")}
+            testID="student-school"
+          />
+        ) : null}
         <Field
           label={tf("note")}
           value={note}

@@ -4,6 +4,7 @@ import { api } from "@/lib/api";
 
 import type {
   Page,
+  PortalBadge,
   StudentComment,
   StudentDetail,
   StudentProgress,
@@ -21,6 +22,7 @@ export const studentKeys = {
   list: (q: string, filters: StudentFilters = {}) => ["students", "list", q, filters] as const,
   one: (id: string) => ["students", id] as const,
   progress: (id: string) => ["students", id, "progress"] as const,
+  badges: (id: string) => ["students", id, "badges"] as const,
   tests: (id: string) => ["students", id, "tests"] as const,
   comments: (id: string) => ["students", id, "comments"] as const,
 };
@@ -34,6 +36,7 @@ export interface StudentFilters {
   groupStatus?: "ACTIVE" | "NEW" | "FROZEN" | "LEFT_AFTER_TRIAL" | "NO_GROUP";
   archived?: boolean;
   courseId?: string;
+  schoolId?: string;
   groupId?: string;
   teacherId?: string;
 }
@@ -90,6 +93,14 @@ export function useStudentProgress(id: string, enabled: boolean) {
     queryKey: studentKeys.progress(id),
     queryFn: ({ signal }) => api<StudentProgress>(`/students/${id}/progress`, { signal }),
     enabled,
+  });
+}
+
+/** Every badge of the catalogue for this student, earned or still locked (A-163, in the app A-264). */
+export function useStudentBadges(id: string) {
+  return useQuery({
+    queryKey: studentKeys.badges(id),
+    queryFn: ({ signal }) => api<PortalBadge[]>(`/students/${id}/badges`, { signal }),
   });
 }
 

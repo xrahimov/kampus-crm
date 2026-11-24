@@ -8,6 +8,7 @@ import {
   addCommentOnStudent,
   studentKeys,
   useStudent,
+  useStudentBadges,
   useStudentComments,
   useStudentProgress,
   useStudentTests,
@@ -44,6 +45,7 @@ import { AccessCard, FieldSheet, ParentsCard, PhoneLine } from "@/features/offic
 import { StudentCalls, StudentHistory, StudentSms } from "@/features/office/student-record";
 import { PaymentSheet } from "@/features/office/payment-sheet";
 import { StudentFormSheet } from "@/features/office/student-form";
+import { BadgeTiles } from "@/features/badges/badge-tiles";
 import { StudentToGroupSheet } from "@/features/groups/student-to-group";
 import { StudentPayments } from "@/features/office/student-payments";
 import { PendingScreen } from "@/features/shared/pending-screen";
@@ -494,6 +496,7 @@ function Progress({ id }: { id: string }) {
   const tp = useTranslations("students.progress");
   const formatDate = useDate();
   const query = useStudentProgress(id, true);
+  const badges = useStudentBadges(id);
   if (query.isLoading) return <Loading />;
   if (!query.data) return <Notice tone="destructive">{errorText(t, query.error)}</Notice>;
   const data: StudentProgress = query.data;
@@ -568,6 +571,9 @@ function Progress({ id }: { id: string }) {
           ))}
         </Card>
       )}
+      {badges.data && badges.data.length > 0 ? (
+        <BadgeTiles badges={badges.data} title={tp("badges")} withGroup testID="earned-badges" />
+      ) : null}
       <Text variant="heading">{tp("exams")}</Text>
       {data.exams.length === 0 ? (
         <Text tone="mutedForeground">{tp("noExams")}</Text>

@@ -356,6 +356,39 @@ describe("one student on the teacher's side", () => {
     expect(screen.getByTestId("tests-attempt-a1")).toHaveTextContent(/100%/);
   });
 
+  it("shows the badges with the progress: earned ones with their day and group", async () => {
+    serve({
+      "GET /students/s1": DETAIL,
+      "GET /students/s1/progress": PROGRESS,
+      "GET /students/s1/badges": [
+        { code: "firstHomework", earnedAt: "2026-11-03T08:00:00.000Z", groupName: "GE-Morning A1" },
+        { code: "streak10", earnedAt: null, groupName: null },
+      ],
+    });
+    await renderScreen(<StudentScreen />);
+    await screen.findByTestId("student-person");
+    expect(calls("GET", "/students/s1/badges")).toHaveLength(0);
+    await fireEvent.press(screen.getByTestId("student-tab-progress"));
+    expect(await screen.findByTestId("earned-badges-count")).toHaveTextContent("1 of 2 earned");
+    expect(screen.getByTestId("badge-earned-firstHomework")).toHaveTextContent(
+      /Earned Nov 3, 2026, GE-Morning A1/,
+    );
+    expect(screen.getByTestId("badge-locked-streak10")).toBeTruthy();
+  });
+
+  it("leaves the badges out when the server lists none", async () => {
+    serve({
+      "GET /students/s1": DETAIL,
+      "GET /students/s1/progress": PROGRESS,
+      "GET /students/s1/badges": [],
+    });
+    await renderScreen(<StudentScreen />);
+    await fireEvent.press(await screen.findByTestId("student-tab-progress"));
+    await screen.findByTestId("progress-attendance");
+    await waitFor(() => expect(calls("GET", "/students/s1/badges")).toHaveLength(1));
+    expect(screen.queryByTestId("earned-badges")).toBeNull();
+  });
+
   it("reads the notes about the student and adds one", async () => {
     serve({
       "GET /students/s1": DETAIL,

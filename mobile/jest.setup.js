@@ -79,6 +79,16 @@ jest.mock("expo-document-picker", () => ({
   getDocumentAsync: jest.fn(() => Promise.resolve({ canceled: true, assets: null })),
 }));
 
+// The camera that reads badges (A-264): a tag a test can hand a code to, and a
+// permission a test sets with `useCameraPermissions.mockReturnValue`.
+jest.mock("expo-camera", () => {
+  const granted = { granted: true, canAskAgain: true, status: "granted", expires: "never" };
+  return {
+    CameraView: "CameraView",
+    useCameraPermissions: jest.fn(() => [granted, jest.fn(async () => granted), jest.fn()]),
+  };
+});
+
 // The tests run as on a real phone: the simulator has no camera, and the app does not open one there.
 jest.mock("expo-device", () => ({ ...jest.requireActual("expo-device"), isDevice: true }));
 

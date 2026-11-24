@@ -6329,7 +6329,7 @@
       "breakoutVisiting": "You are visiting room {number}."
     },
     "permissions": {
-      "camera": "Kampus uses the camera so that your teacher and classmates see you in a video lesson, and to photograph homework.",
+      "camera": "Kampus uses the camera so that your teacher and classmates see you in a video lesson, to photograph homework, and to read students' badges.",
       "microphone": "Kampus uses the microphone so that your teacher and classmates hear you in a video lesson, and to record a spoken answer.",
       "photos": "Kampus opens your photos only when you choose one to send with homework."
     },
@@ -6496,6 +6496,11 @@
     },
     "topics": {
       "unsaved": "Not saved yet. Press Save to keep the changes to the list."
+    },
+    "scan": {
+      "denied": "The camera was not allowed. Allow it for Kampus in the device's settings, or type the code below.",
+      "noCamera": "The camera could not be opened on this device. Use a hand scanner or type the code below.",
+      "send": "Mark present"
     },
     "catalog": {
       "changeHours": "Change hours",
