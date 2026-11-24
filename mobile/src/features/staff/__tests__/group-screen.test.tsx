@@ -1,4 +1,4 @@
-import { screen } from "@testing-library/react-native";
+import { fireEvent, screen } from "@testing-library/react-native";
 
 import type { Group, MonthGrid } from "@/api/types";
 import { GroupScreen } from "@/features/staff/group-screen";
@@ -44,6 +44,7 @@ jest.mock("@/lib/web", () => ({ openOnSite: jest.fn(async () => undefined) }));
 const fetchMock = jest.fn<Promise<Response>, [url: string, init?: RequestInit]>();
 const realFetch = globalThis.fetch;
 
+let mockBilling: Group["billingMode"] = "MONTHLY";
 const GROUP: Group = {
   id: "g1",
   branchId: "b1",
@@ -112,10 +113,11 @@ const MONTH: MonthGrid = {
 
 beforeEach(() => {
   mockWide = false;
+  mockBilling = "MONTHLY";
   fetchMock.mockReset();
   fetchMock.mockImplementation(async (url) => {
     const path = url.split("?")[0]!;
-    if (path.endsWith("/groups/g1")) return answer(200, GROUP);
+    if (path.endsWith("/groups/g1")) return answer(200, { ...GROUP, billingMode: mockBilling });
     if (path.endsWith("/groups/g1/lessons")) return answer(200, MONTH);
     if (path.endsWith("/groups/g1/day-off")) return answer(200, []);
     if (path.endsWith("/groups/g1/chat")) return answer(200, { messages: [], unread: 0 });
@@ -171,5 +173,26 @@ describe("a group's page on a tablet", () => {
     await screen.findByTestId("member-m1");
     expect(screen.queryByTestId("open-members")).toBeNull();
     expect(screen.getByTestId("group-members")).toBeOnTheScreen();
+  });
+});
+
+describe("a group's other pages", () => {
+  it("have Discounts for every group, and Packages only where lessons are sold by the package", async () => {
+    mockPermissions = ["groups.view", "groups.attendance.mark"];
+    await renderScreen(<GroupScreen />);
+    await screen.findByTestId("member-m1");
+    await fireEvent.press(screen.getByTestId("pages-more"));
+    expect(screen.getByTestId("open-discounts")).toBeTruthy();
+    expect(screen.queryByTestId("open-packages")).toBeNull();
+  });
+
+  it("have Packages in a group that sells them", async () => {
+    mockBilling = "PACKAGES";
+    mockPermissions = ["groups.view", "groups.attendance.mark"];
+    await renderScreen(<GroupScreen />);
+    await screen.findByTestId("member-m1");
+    await fireEvent.press(screen.getByTestId("pages-more"));
+    expect(screen.getByTestId("open-discounts")).toBeTruthy();
+    expect(screen.getByTestId("open-packages")).toBeTruthy();
   });
 });

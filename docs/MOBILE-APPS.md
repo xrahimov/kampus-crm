@@ -73,7 +73,8 @@ able to work from an iPad or a phone.
 | Office: settings, step 5c: Import from SOFF CRM (choose a file on the device, see how it is read, preview, import) (A-251)                                                                                                   | Built, phone and tablet; every settings section is now in the app                                                        |
 | Office: Help, the manual with its how-to videos: search, articles by role, pictures that enlarge, videos (A-252)                                                                                                             | Built, phone and tablet; needs the server update                                                                         |
 | Office: the assistant: Summary (figures and a conclusion for yesterday, today, 7 days) and Ask (the conversation), the button on Home (A-253)                                                                                | Built, phone and tablet; needs the server update                                                                         |
-| What the site has and the app does not yet: group packages and discounts, Excel files, leads boards and columns, a person's photo                                                                                            | Next; they open on the site until then                                                                                   |
+| Office: a group's Discounts (give one, end one) and, in a package group, Packages (offers, students' lessons, sell a package, packages sold) (A-254)                                                                         | Built, phone and tablet; no server update needed                                                                         |
+| What the site has and the app does not yet: Excel files, leads boards and columns, a person's photo                                                                                                                          | Next; they open on the site until then                                                                                   |
 | The site running on the app's code                                                                                                                                                                                           | Part by part, the student side first; wide tables, Excel and print last                                                  |
 
 ## What kai needs to do
@@ -277,7 +278,14 @@ mobile/
   screen's footer with `footerField`, and the page follows a new line with the `end()` of
   `Screen`'s `scrollRef`. `summary-seen.ts` remembers per person the day the summary was last on
   the screen; `HeaderActions` shows the dot from it.
-  Next free number: A-254.
+- **A group's discounts and packages (A-254).** `features/groups/discounts-screen.tsx` and
+  `packages-screen.tsx`, with `src/api/office-group-money.ts`. Both are pages of a group
+  (`/staff/discounts/[id]`, `/staff/packages/[id]`) listed by `GroupPages` in
+  `features/staff/group-screen.tsx`; Packages only where `billingMode` is `PACKAGES`. A form asks
+  for the group's students (and the ways to pay) when it is first opened. `Fact` and `Facts` in
+  `group-money-parts.tsx` are a table's columns as they read on a phone: the name of a figure
+  above the figure, several in a row that wraps.
+  Next free number: A-255.
 - **Finance and payroll (A-237).** `src/features/finance/` and `src/api/office-finance.ts`.
   `FinanceScreen` is the site's Finance page; `EntriesScreen` the entries of a kind or of a
   category (`entries-routes.tsx` reads which from the address), with `EntrySheet`, the site's one
