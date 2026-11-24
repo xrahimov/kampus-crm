@@ -1,5 +1,5 @@
 import { X } from "lucide-react-native";
-import { useEffect, useState, type ReactNode } from "react";
+import { useEffect, useLayoutEffect, useState, type ReactNode } from "react";
 import {
   KeyboardAvoidingView,
   Modal,
@@ -21,6 +21,49 @@ import { Animated, Press, SPRING_FIRM } from "./motion";
 import { Text } from "./text";
 
 const OUT_MS = 180;
+/** How long a sheet waits for iOS to say its window is gone before it goes on without the word. */
+const DISMISS_MS = 250;
+
+/*
+ * An iPhone or iPad shows one window over a screen at a time. A sheet asked
+ * for while another is still on its way out (a form opened from a menu, a
+ * question asked from a form) was refused by iOS and never appeared. So the
+ * sheets that are leaving are counted, and a sheet that opens waits until
+ * none is: the menu slides away, then the form comes. A sheet inside an open
+ * sheet (a list to pick from in a form) is over that sheet and does not wait.
+ * Android stacks its windows and needs none of this.
+ */
+const HOLDS = Platform.OS === "ios";
+let leaving = 0;
+const waiting = new Set<() => void>();
+
+function left() {
+  leaving = Math.max(0, leaving - 1);
+  if (leaving === 0) for (const go of [...waiting]) go();
+}
+
+/** Calls `go` once no sheet is on its way out: right after this render when none is. */
+function whenClear(go: () => void): () => void {
+  let live = true;
+  const run = () => {
+    waiting.delete(run);
+    if (!live) return;
+    live = false;
+    go();
+  };
+  if (leaving === 0) queueMicrotask(run);
+  else waiting.add(run);
+  return () => {
+    live = false;
+    waiting.delete(run);
+  };
+}
+
+/**
+ * Where a sheet is: not there, there, sliding away, or slid away with its
+ * window still being taken down (iOS).
+ */
+type Stage = "closed" | "open" | "sliding" | "hiding";
 
 /**
  * Something asked over the page: a list to pick from, a short form, a
@@ -51,29 +94,52 @@ export function Sheet({
   const { colors } = useTheme();
   const { wide, height } = useLayout();
   const insets = useSafeAreaInsets();
-  // The window stays until the sheet has slid away.
-  const [mounted, setMounted] = useState(open);
+  const [stage, setStage] = useState<Stage>("closed");
   const shown = useSharedValue(0);
-  if (open && !mounted) setMounted(true);
+  if (!open && stage === "open") setStage("sliding");
+  // Asked for again before it had left: it comes back.
+  if (open && stage === "sliding") setStage("open");
+  const away = stage === "sliding" || stage === "hiding";
+  // Counted before any sheet of the same render decides to open (their effects come later).
+  useLayoutEffect(() => {
+    if (!away || !HOLDS) return undefined;
+    leaving += 1;
+    return left;
+  }, [away]);
+  const wanted = open && stage === "closed";
   useEffect(() => {
-    if (open) {
+    if (!wanted) return undefined;
+    return whenClear(() => setStage("open"));
+  }, [wanted]);
+  useEffect(() => {
+    if (stage === "open") {
       shown.set(withSpring(1, SPRING_FIRM));
       return undefined;
     }
-    shown.set(withTiming(0, { duration: OUT_MS }));
-    const gone = setTimeout(() => setMounted(false), OUT_MS);
-    return () => clearTimeout(gone);
-  }, [open, shown]);
+    if (stage === "sliding") {
+      // The window stays until the sheet has slid away.
+      shown.set(withTiming(0, { duration: OUT_MS }));
+      const gone = setTimeout(() => setStage(HOLDS ? "hiding" : "closed"), OUT_MS);
+      return () => clearTimeout(gone);
+    }
+    if (stage === "hiding") {
+      // iOS says when the window is gone (onDismiss below); this is for when it does not.
+      const gone = setTimeout(() => setStage("closed"), DISMISS_MS);
+      return () => clearTimeout(gone);
+    }
+    return undefined;
+  }, [stage, shown]);
   const dim = useAnimatedStyle(() => ({ opacity: shown.get() }));
   const rise = useAnimatedStyle(() =>
     wide
       ? { opacity: shown.get(), transform: [{ scale: 0.96 + 0.04 * shown.get() }] }
       : { transform: [{ translateY: (1 - shown.get()) * height * 0.6 }] },
   );
-  if (!mounted) return null;
+  if (stage === "closed") return null;
   return (
     <Modal
-      visible
+      visible={stage !== "hiding"}
+      onDismiss={() => setStage((now) => (now === "hiding" ? "closed" : now))}
       transparent
       statusBarTranslucent
       navigationBarTranslucent

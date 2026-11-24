@@ -300,14 +300,14 @@ describe("a group's tests in the app", () => {
     await fireEvent.press(await screen.findByTestId("test-start"));
     await screen.findByTestId("test-clock");
     expect(screen.getByText("English, 0 of 2 answered")).toBeTruthy();
-    await fireEvent.press(screen.getByTestId("test-option-0-1"));
+    await fireEvent.press(await screen.findByTestId("test-option-0-1"));
     expect(screen.getByText("English, 1 of 2 answered")).toBeTruthy();
 
     await fireEvent.press(screen.getByTestId("test-hand-in"));
     expect(screen.getByText("One question has no answer. Hand in anyway?")).toBeTruthy();
     expect(calls("POST", "/tests/t1")).toHaveLength(0);
     await fireEvent.press(screen.getByTestId("test-confirm-cancel"));
-    await fireEvent.press(screen.getByTestId("test-option-1-1"));
+    await fireEvent.press(await screen.findByTestId("test-option-1-1"));
     await fireEvent.press(screen.getByTestId("test-hand-in"));
     await fireEvent.press(screen.getByTestId("test-confirm-hand-in"));
 
@@ -328,7 +328,7 @@ describe("a group's tests in the app", () => {
     await act(async () => {
       await jest.advanceTimersByTimeAsync(0);
     });
-    await fireEvent.press(screen.getByTestId("test-option-0-0"));
+    await fireEvent.press(await screen.findByTestId("test-option-0-0"));
     await act(async () => {
       await jest.advanceTimersByTimeAsync(3000);
     });
@@ -382,9 +382,9 @@ describe("a self-check exercise in the app", () => {
   it("sends each kind of answer the way the server reads it, then shows what went wrong", async () => {
     await renderScreen(<ExerciseScreen />);
     await fireEvent.press(await screen.findByTestId("exercise-option-0-1"));
-    await fireEvent.press(screen.getByTestId("exercise-option-1-2"));
-    await fireEvent.press(screen.getByTestId("exercise-option-1-0"));
-    await fireEvent.press(screen.getByTestId("exercise-option-2-0"));
+    await fireEvent.press(await screen.findByTestId("exercise-option-1-2"));
+    await fireEvent.press(await screen.findByTestId("exercise-option-1-0"));
+    await fireEvent.press(await screen.findByTestId("exercise-option-2-0"));
     await fireEvent.changeText(screen.getByTestId("exercise-gap-3-1"), "for");
     await fireEvent.changeText(screen.getByTestId("exercise-gap-3-0"), "has");
     await fireEvent.press(screen.getByTestId("exercise-match-4-0-1"));

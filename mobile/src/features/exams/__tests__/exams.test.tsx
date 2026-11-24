@@ -297,7 +297,7 @@ describe("the exam form", () => {
     await screen.findByTestId("exam-room-option-r1");
     // The other branch's hall is not offered for this group.
     expect(screen.queryByTestId("exam-room-option-r2")).toBeNull();
-    await fireEvent.press(screen.getByTestId("exam-room-option-r1"));
+    await fireEvent.press(await screen.findByTestId("exam-room-option-r1"));
     await fireEvent.changeText(screen.getByTestId("exam-pass"), "7,5");
     await fireEvent.changeText(screen.getByTestId("exam-max"), "10");
     await fireEvent.press(screen.getByTestId("exam-save"));

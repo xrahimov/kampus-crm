@@ -377,7 +377,7 @@ describe("a lead's card", () => {
     await fireEvent.press(screen.getByTestId("trial-group"));
     await screen.findByTestId("trial-group-option-g1");
     expect(screen.queryByTestId("trial-group-option-g9")).toBeNull();
-    await fireEvent.press(screen.getByTestId("trial-group-option-g1"));
+    await fireEvent.press(await screen.findByTestId("trial-group-option-g1"));
     await fireEvent.changeText(screen.getByTestId("trial-day"), "26.11.2026");
     await fireEvent.changeText(screen.getByTestId("trial-note"), "Shy, sit in front");
     await fireEvent.press(screen.getByTestId("trial-save"));
@@ -615,7 +615,7 @@ describe("the waiting list", () => {
     await screen.findByTestId("waitlist-enrol-group-option-g1");
     expect(screen.queryByTestId("waitlist-enrol-group-option-g2")).toBeNull();
     expect(screen.queryByTestId("waitlist-enrol-group-option-g3")).toBeNull();
-    await fireEvent.press(screen.getByTestId("waitlist-enrol-group-option-g1"));
+    await fireEvent.press(await screen.findByTestId("waitlist-enrol-group-option-g1"));
     await fireEvent.changeText(screen.getByTestId("waitlist-enrol-day"), "01.12.2026");
     await fireEvent.press(screen.getByTestId("waitlist-enrol-save"));
     await waitFor(() => expect(calls("POST", "/waitlist/w1/enrol")).toHaveLength(1));

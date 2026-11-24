@@ -204,7 +204,7 @@ describe("sign-in requests", () => {
     await fireEvent.press(await screen.findByTestId("join-role"));
     await screen.findByTestId("join-role-option-TEACHER");
     expect(screen.queryByTestId("join-role-option-OLD")).toBeNull();
-    await fireEvent.press(screen.getByTestId("join-role-option-TEACHER"));
+    await fireEvent.press(await screen.findByTestId("join-role-option-TEACHER"));
     await fireEvent.press(screen.getByTestId("join-approve-save"));
     await waitFor(() => expect(calls("POST", "/join-requests/j1/approve")).toHaveLength(1));
     expect(sentBody(calls("POST", "/join-requests/j1/approve")[0]![1])).toEqual({

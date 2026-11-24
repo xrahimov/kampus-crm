@@ -70,7 +70,7 @@ describe("a poll from the app", () => {
     for (let i = 0; i < 4; i += 1) await fireEvent.press(screen.getByTestId("poll-add-option"));
     expect(screen.getByTestId("poll-option-input-5")).toBeTruthy();
     expect(screen.queryByTestId("poll-add-option")).toBeNull();
-    await fireEvent.press(screen.getByTestId("poll-remove-option-5"));
+    await fireEvent.press(await screen.findByTestId("poll-remove-option-5"));
     expect(screen.queryByTestId("poll-option-input-5")).toBeNull();
   });
 
@@ -107,7 +107,7 @@ describe("a poll from the app", () => {
     await renderRoom(engine);
     await screen.findByTestId("poll-card");
     expect(screen.getByTestId("poll-hint")).toHaveTextContent(/Tap an answer/);
-    await fireEvent.press(screen.getByTestId("poll-option-1"));
+    await fireEvent.press(await screen.findByTestId("poll-option-1"));
     expect(engine.votePoll).toHaveBeenCalledWith(1);
     await act(async () => {
       engine.change(() => {

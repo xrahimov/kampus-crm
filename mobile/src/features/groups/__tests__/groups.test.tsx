@@ -275,7 +275,7 @@ describe("the group form", () => {
     // Only the courses of the group's branch are offered.
     await screen.findByTestId("group-course-option-c1");
     expect(screen.queryByTestId("group-course-option-c9")).toBeNull();
-    await fireEvent.press(screen.getByTestId("group-course-option-c1"));
+    await fireEvent.press(await screen.findByTestId("group-course-option-c1"));
     await fireEvent.changeText(screen.getByTestId("group-start"), "1800");
     await fireEvent.changeText(screen.getByTestId("group-end"), "19:30");
     await fireEvent.press(screen.getByTestId("group-room"));
@@ -284,7 +284,7 @@ describe("the group form", () => {
     await fireEvent.press(screen.getByTestId("group-teacher-0"));
     await screen.findByTestId("group-teacher-0-option-t2");
     expect(screen.queryByTestId("group-teacher-0-option-t9")).toBeNull();
-    await fireEvent.press(screen.getByTestId("group-teacher-0-option-t2"));
+    await fireEvent.press(await screen.findByTestId("group-teacher-0-option-t2"));
     await fireEvent.changeText(screen.getByTestId("group-share-0"), "35");
     await fireEvent.changeText(screen.getByTestId("group-start-date"), "01122026");
     await fireEvent.press(screen.getByTestId("group-save"));
@@ -531,7 +531,7 @@ describe("a group for the office", () => {
     await screen.findByTestId("change-teacher-to-option-t2");
     expect(screen.queryByTestId("change-teacher-to-option-t1")).toBeNull();
     expect(screen.queryByTestId("change-teacher-to-option-t9")).toBeNull();
-    await fireEvent.press(screen.getByTestId("change-teacher-to-option-t2"));
+    await fireEvent.press(await screen.findByTestId("change-teacher-to-option-t2"));
     await fireEvent.press(screen.getByTestId("change-teacher-save"));
     await waitFor(() => expect(calls("POST", "/change-teacher")).toHaveLength(1));
     expect(sentBody(calls("POST", "/change-teacher")[0]![1])).toEqual({
@@ -567,7 +567,7 @@ describe("a group for the office", () => {
     await fireEvent.press(await screen.findByTestId("move-branch-to"));
     await screen.findByTestId("move-branch-to-option-b2");
     expect(screen.queryByTestId("move-branch-to-option-b1")).toBeNull();
-    await fireEvent.press(screen.getByTestId("move-branch-to-option-b2"));
+    await fireEvent.press(await screen.findByTestId("move-branch-to-option-b2"));
     await fireEvent.press(screen.getByTestId("move-branch-save"));
     await waitFor(() => expect(calls("POST", "/move-branch")).toHaveLength(1));
     expect(sentBody(calls("POST", "/move-branch")[0]![1])).toEqual({ branchId: "b2" });
@@ -658,7 +658,7 @@ describe("the students of a group", () => {
     await screen.findByTestId("member-remove-reason-pick-option-lr1");
     expect(screen.queryByTestId("member-remove-reason-pick-option-lr2")).toBeNull();
     expect(screen.queryByTestId("member-remove-reason-pick-option-lr3")).toBeNull();
-    await fireEvent.press(screen.getByTestId("member-remove-reason-pick-option-lr1"));
+    await fireEvent.press(await screen.findByTestId("member-remove-reason-pick-option-lr1"));
     await fireEvent.press(screen.getByTestId("member-remove-save"));
     await waitFor(() => expect(calls("POST", "/memberships/m1/remove")).toHaveLength(1));
     expect(sentBody(calls("POST", "/memberships/m1/remove")[0]![1])).toEqual({
@@ -680,7 +680,7 @@ describe("the students of a group", () => {
     await screen.findByTestId("member-transfer-group-option-g2");
     expect(screen.queryByTestId("member-transfer-group-option-g1")).toBeNull();
     expect(screen.queryByTestId("member-transfer-group-option-g3")).toBeNull();
-    await fireEvent.press(screen.getByTestId("member-transfer-group-option-g2"));
+    await fireEvent.press(await screen.findByTestId("member-transfer-group-option-g2"));
     await fireEvent.changeText(screen.getByTestId("member-transfer-date"), "01.12.2026");
     await fireEvent.changeText(
       screen.getByTestId("member-transfer-reason"),
@@ -805,7 +805,7 @@ describe("Add to a group on a student's page", () => {
     await screen.findByTestId("to-group-group-option-g2");
     expect(screen.queryByTestId("to-group-group-option-g1")).toBeNull();
     expect(screen.queryByTestId("to-group-group-option-g3")).toBeNull();
-    await fireEvent.press(screen.getByTestId("to-group-group-option-g2"));
+    await fireEvent.press(await screen.findByTestId("to-group-group-option-g2"));
     await fireEvent.changeText(screen.getByTestId("to-group-joined"), "25.11.2026");
     await fireEvent.press(screen.getByTestId("to-group-save"));
     await waitFor(() => expect(calls("POST", "/groups/g2/members")).toHaveLength(1));
