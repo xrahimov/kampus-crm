@@ -40,7 +40,7 @@ the centre's home with its figures and charts, notifications, search, the menu o
 leads, the day's calls, the waiting list, the inbox, sign-in requests and absences, A-233 for
 groups on the office's side: new group, times, teachers, days off, the students of a group and the
 timetable, A-234 for teachers, the Settings list, courses and rooms, A-235 for exams with
-their grading sheet, A-236 for debtors and the cash desk, A-237 for finance and payroll, A-238 for seven of the ten reports, and A-239 for the last three: graduates, staff attendance and coins). The site has the same glass on
+their grading sheet, A-236 for debtors and the cash desk, A-237 for finance and payroll, A-238 for seven of the ten reports, A-239 for the last three: graduates, staff attendance and coins, and A-240 for the rest of a student's page: SMS, calls, history, parents, family and app sign-in). The site has the same glass on
 its top bar, menus, dialogs and the assistant's panel (A-225).
 
 [docs/DEMO-GUIDE.md](docs/DEMO-GUIDE.md) is a script for showing the whole app to a centre's owner or

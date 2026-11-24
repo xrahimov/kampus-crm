@@ -6437,7 +6437,8 @@
       "none": "No student matches.",
       "noneYet": "No students yet.",
       "call": "Call",
-      "noPhone": "The phone number is not shown to you."
+      "noPhone": "The phone number is not shown to you.",
+      "shareLink": "Share link"
     },
     "announcements": {
       "posted": "Posted. {count, plural, =0 {No student} one {# student} other {# students}} will see it.",
