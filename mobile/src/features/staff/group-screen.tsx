@@ -1,6 +1,7 @@
 import { useFocusEffect, useLocalSearchParams, useRouter } from "expo-router";
 import {
   Award,
+  BadgePercent,
   ChartNoAxesColumn,
   ChevronDown,
   ChevronLeft,
@@ -16,6 +17,7 @@ import {
   Megaphone,
   MessageSquare,
   MessageSquareText,
+  Package,
   StickyNote,
   UsersRound,
 } from "lucide-react-native";
@@ -81,7 +83,9 @@ export function GroupScreen() {
   // On a phone the office meets what the group is, and the way to its students,
   // before the month of lessons; a teacher meets the lessons first (A-248).
   const officeFirst = !wide && mayManage;
-  const pages = <GroupPages id={id} students={officeFirst} />;
+  const pages = (
+    <GroupPages id={id} students={officeFirst} packages={group.data?.billingMode === "PACKAGES"} />
+  );
   const facts = group.data ? <GroupOffice group={group.data} /> : null;
 
   const lessons = (
@@ -210,7 +214,16 @@ export function GroupScreen() {
 const FIRST_PAGES = 6;
 
 /** The group's other pages, each a screen of its own (A-214, A-217 to A-219). */
-function GroupPages({ id, students = false }: { id: string; students?: boolean }) {
+function GroupPages({
+  id,
+  students = false,
+  packages = false,
+}: {
+  id: string;
+  students?: boolean;
+  /** The group sells lessons by the package (A-178): it has the Packages page. */
+  packages?: boolean;
+}) {
   const t = useTranslations();
   const router = useRouter();
   const { colors } = useTheme();
@@ -314,6 +327,23 @@ function GroupPages({ id, students = false }: { id: string; students?: boolean }
             label: t("groups.detail.tabs.exams"),
             Icon: Award,
             pathname: "/staff/exams/[id]" as const,
+          },
+        ]
+      : []),
+    // Discounts and, where the group sells them, lesson packages (A-254), where the site has them.
+    {
+      key: "discounts",
+      label: t("groups.detail.tabs.discounts"),
+      Icon: BadgePercent,
+      pathname: "/staff/discounts/[id]" as const,
+    },
+    ...(packages
+      ? [
+          {
+            key: "packages",
+            label: t("groups.detail.tabs.packages"),
+            Icon: Package,
+            pathname: "/staff/packages/[id]" as const,
           },
         ]
       : []),
