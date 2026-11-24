@@ -1,11 +1,9 @@
-import { leaveReasonSchema } from "@/lib/validation/reports";
+import { leaveReasonUpdateSchema } from "@/lib/validation/reports";
 import { json, route } from "@/server/http/handler";
 import { deleteLeaveReason, updateLeaveReason } from "@/server/services/reports/churn.service";
 
-const patchSchema = leaveReasonSchema.partial();
-
-export const PATCH = route<typeof patchSchema._output, { id: string }>(
-  { permission: "settings.catalog", body: patchSchema },
+export const PATCH = route<typeof leaveReasonUpdateSchema._output, { id: string }>(
+  { permission: "settings.catalog", body: leaveReasonUpdateSchema },
   async ({ current, body, params }) =>
     json(await updateLeaveReason(current.actor, params.id, body)),
 );

@@ -249,9 +249,9 @@ describe("the centre's home", () => {
     // So have the debtors (A-236).
     await fireEvent.press(screen.getByTestId("kpi-debtors"));
     expect(mockPush).toHaveBeenLastCalledWith("/staff/debts");
-    // The reports are still the site's.
+    // And the reports (A-238): who left opens the Left students report.
     await fireEvent.press(screen.getByTestId("kpi-leftThisMonth"));
-    expect(mockOpenOnSite).toHaveBeenLastCalledWith("/en/reports/churn");
+    expect(mockPush).toHaveBeenLastCalledWith("/staff/reports/churn");
     // A figure about students opens the app's list with the site's filter already set (A-231).
     await fireEvent.press(screen.getByTestId("kpi-remainingDebt"));
     expect(mockPush).toHaveBeenLastCalledWith({
@@ -451,7 +451,10 @@ describe("where a page of the site lives in the app", () => {
   });
 
   it("sends everything else to the site", () => {
-    expect(nativeRoute("/reports")).toBeNull();
+    expect(nativeRoute("/assistant")).toBeNull();
+    // Three reports are still the site's (A-238), and so is a report's Excel file.
+    expect(nativeRoute("/reports/coins")).toBeNull();
+    expect(nativeRoute("/reports/payments/export.xlsx")).toBeNull();
     // Finance has no such page, and a payroll month is a month.
     expect(nativeRoute("/finance/taxes")).toBeNull();
     expect(nativeRoute("/finance/salary-detail/2026-13-01")).toBeNull();
@@ -639,11 +642,13 @@ describe("the menu of every page", () => {
     // No right to them, no row.
     expect(screen.queryByTestId("menu-settings")).toBeNull();
     expect(screen.queryByTestId("menu-exams")).toBeNull();
-    // The app has students, leads and finance (A-237); the reports are the site's for now.
+    // The app has students, leads, finance (A-237) and reports (A-238); the assistant is the
+    // site's for now.
     expect(screen.queryByTestId("menu-students-site", { includeHiddenElements: true })).toBeNull();
     expect(screen.queryByTestId("menu-leads-site", { includeHiddenElements: true })).toBeNull();
     expect(screen.queryByTestId("menu-finance-site", { includeHiddenElements: true })).toBeNull();
-    expect(screen.getByTestId("menu-reports-site", { includeHiddenElements: true })).toBeTruthy();
+    expect(screen.queryByTestId("menu-reports-site", { includeHiddenElements: true })).toBeNull();
+    expect(screen.getByTestId("menu-assistant-site", { includeHiddenElements: true })).toBeTruthy();
     await waitFor(() => expect(screen.getByTestId("menu-notifications")).toHaveTextContent(/1/));
 
     await fireEvent.press(screen.getByTestId("menu-salary"));
@@ -651,7 +656,9 @@ describe("the menu of every page", () => {
     await fireEvent.press(screen.getByTestId("menu-finance"));
     expect(mockPush).toHaveBeenLastCalledWith("/staff/finance");
     await fireEvent.press(screen.getByTestId("menu-reports"));
-    expect(mockOpenOnSite).toHaveBeenCalledWith("/en/reports");
+    expect(mockPush).toHaveBeenLastCalledWith("/staff/reports");
+    await fireEvent.press(screen.getByTestId("menu-assistant"));
+    expect(mockOpenOnSite).toHaveBeenCalledWith("/en/assistant");
   });
 
   it("leaves the home and the salary out for a teacher without them", async () => {

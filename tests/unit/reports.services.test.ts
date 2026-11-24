@@ -6,6 +6,7 @@
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 
 import { DEFAULT_ROLE_PERMISSIONS } from "@/lib/rbac/default-roles";
+import { leaveReasonUpdateSchema } from "@/lib/validation/reports";
 import { buildWorkbook, readFirstSheet } from "@/server/excel/workbook";
 import { prisma } from "@/server/db/prisma";
 import type { Actor } from "@/server/rbac/authorize";
@@ -22,6 +23,7 @@ import {
   getChurnReport,
   createLeaveReason,
   deleteLeaveReason,
+  getChurnOptions,
   listLeaveReasons,
   updateLeaveReason,
 } from "@/server/services/reports/churn.service";
@@ -357,6 +359,41 @@ describe("churn report and leave reasons", () => {
     ).rejects.toMatchObject({ code: "FORBIDDEN" });
     await deleteLeaveReason(ceo, reason.id);
     expect((await listLeaveReasons(ceo)).some((r) => r.id === reason.id)).toBe(false);
+  });
+
+  it("changes only what was sent of a reason: a Transfer reason switched off stays one", async () => {
+    // What the route reads from the switch of a reason, and from a new name.
+    expect(leaveReasonUpdateSchema.parse({ isActive: false })).toEqual({ isActive: false });
+    expect(leaveReasonUpdateSchema.parse({ name: " Time " })).toEqual({ name: "Time" });
+    expect(leaveReasonUpdateSchema.safeParse({ name: " " }).success).toBe(false);
+    const reason = await createLeaveReason(ceo, {
+      name: `${TAG} Far`,
+      kind: "TRANSFER",
+      isActive: true,
+    });
+    const off = await updateLeaveReason(
+      ceo,
+      reason.id,
+      leaveReasonUpdateSchema.parse({ isActive: false }),
+    );
+    expect(off).toMatchObject({ name: `${TAG} Far`, kind: "TRANSFER", isActive: false });
+    await deleteLeaveReason(ceo, reason.id);
+  });
+
+  it("offers the report's filters the courses and groups of a branch, and the teachers", async () => {
+    const options = await getChurnOptions(ceo, branchA);
+    expect(options.courses).toEqual([{ id: courseA, name: `${TAG} English` }]);
+    expect(options.groups.map((g) => g.id).sort()).toEqual([groupA, groupB].sort());
+    expect(options.teachers).toContainEqual({ id: teacher.userId, name: `${TAG} Teacher` });
+    expect(options.teachers.some((t) => t.id === ceo.userId)).toBe(false);
+    // Without a branch: everything the person may see.
+    const all = await getChurnOptions(ceo);
+    expect(all.groups.length).toBeGreaterThanOrEqual(options.groups.length);
+    expect(all.courses.some((c) => c.id === courseA)).toBe(true);
+    // A branch that is not the person's, and someone without the reports.
+    await expect(getChurnOptions(teacher, "not-mine")).rejects.toMatchObject({ code: "FORBIDDEN" });
+    const noReports = { ...teacher, permissions: ["groups.view"] };
+    await expect(getChurnOptions(noReports, branchA)).rejects.toMatchObject({ code: "FORBIDDEN" });
   });
 
   it("counts who left this month, why, who removed them and the transfers", async () => {
