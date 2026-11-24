@@ -36,6 +36,7 @@ import {
 } from "@/components/surface";
 import { Text } from "@/components/text";
 import { ExcelButton } from "@/features/files/excel-button";
+import { ImportButton } from "@/features/files/import-button";
 import { centreToday, dayAsDate } from "@/lib/days";
 import { fieldErrorOf, isTaken, phoneOrNull } from "@/lib/form";
 import { errorText, useDate, useMoney, useTranslations } from "@/lib/i18n";
@@ -274,6 +275,17 @@ export function MembersScreen() {
         params={{ archived: removed ? "true" : null }}
         testID="members-excel"
       />
+      {editable && !removed ? (
+        <ImportButton
+          label={t("groups.members.importExcel")}
+          kind={{
+            id: "members-import",
+            title: t("groups.members.importExcel"),
+            templatePath: "/groups/import-template.xlsx",
+            importPath: `/groups/${id}/members/import`,
+          }}
+        />
+      ) : null}
 
       {group.data ? (
         <AddMemberSheet open={adding} onClose={() => setAdding(false)} group={group.data} />

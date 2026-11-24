@@ -272,6 +272,19 @@ describe("the Groups tab", () => {
     await renderScreen(<GroupsTab />);
     expect(await screen.findByText("Nothing found.")).toBeOnTheScreen();
     expect(screen.queryByTestId("groups-add")).toBeNull();
+    expect(screen.queryByTestId("groups-import-open")).toBeNull();
+  });
+
+  it("opens the site's import of groups from a sheet for someone who may add them", async () => {
+    serve({ "GET /groups": page([]), "GET /groups/options": OPTIONS });
+    await renderScreen(<GroupsTab />);
+    await fireEvent.press(await screen.findByTestId("groups-import-open"));
+    expect(await screen.findByText("Import groups")).toBeOnTheScreen();
+    await fireEvent.press(screen.getByTestId("groups-import-template"));
+    expect(mockSaveFile).toHaveBeenLastCalledWith(
+      "/groups/import-groups-template.xlsx?locale=en",
+      "template.xlsx",
+    );
   });
 });
 
@@ -637,6 +650,15 @@ describe("the students of a group", () => {
       "/groups/g1/export.xlsx?locale=en",
       "kampus.xlsx",
     );
+    // Students added from a sheet (A-257): the site's "Add from Excel".
+    expect(screen.getByTestId("members-import-open")).toHaveTextContent("Add from Excel");
+    await fireEvent.press(screen.getByTestId("members-import-open"));
+    await fireEvent.press(await screen.findByTestId("members-import-template"));
+    expect(mockSaveFile).toHaveBeenLastCalledWith(
+      "/groups/import-template.xlsx?locale=en",
+      "template.xlsx",
+    );
+    await fireEvent.press(screen.getByTestId("members-import-close"));
     await fireEvent.changeText(screen.getByTestId("members-search"), "lol");
     expect(screen.queryByTestId("member-row-m1")).toBeNull();
     expect(screen.getByTestId("member-row-m2")).toBeOnTheScreen();

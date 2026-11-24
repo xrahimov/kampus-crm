@@ -24,9 +24,11 @@ async function filledTemplate(page: Page, dialogTestId: string, rows: unknown[][
   const workbook = new ExcelJS.Workbook();
   await workbook.xlsx.load(Buffer.from(await template.body()) as unknown as ExcelJS.Buffer);
   const sheet = workbook.worksheets[0]!;
+  // What the example row says about its first column, before it is replaced.
+  const example = String(sheet.getRow(2).getCell(1).value);
   sheet.spliceRows(2, 1);
   for (const row of rows) sheet.addRow(row);
-  return { dialog, sheet, buffer: Buffer.from(await workbook.xlsx.writeBuffer()) };
+  return { dialog, sheet, example, buffer: Buffer.from(await workbook.xlsx.writeBuffer()) };
 }
 
 test.describe("archived students and payment history import (A-142)", () => {
@@ -45,6 +47,8 @@ test.describe("archived students and payment history import (A-142)", () => {
       [name, "", "", "2025-09-01", "2026-03-15", "Moved away", "e2e"],
     ]);
     expect(archived.sheet.getRow(1).getCell(5).value).toBe("Left on");
+    // The example row names what goes in the cell, not the message's key (A-257).
+    expect(archived.example).toBe("<client name>");
     await archived.dialog
       .getByTestId("import-file")
       .setInputFiles({ name: "archived.xlsx", mimeType: XLSX, buffer: archived.buffer });

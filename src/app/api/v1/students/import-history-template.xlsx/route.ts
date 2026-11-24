@@ -7,12 +7,12 @@ export const GET = route({ permission: "payments.create" }, async ({ request }) 
   const t = await exportTranslator(request);
   return templateResponse(t, t("excel.files.historyTemplate"), HISTORY_IMPORT_COLUMNS, {
     studentId: "",
-    fullName: t("excel.example.fullName"),
+    fullName: t.raw("excel.example.fullName"),
     phone: "+998901234567",
-    group: t("excel.example.group"),
+    group: t.raw("excel.example.group"),
     amount: 500000,
     paidAt: "2026-02-10",
-    method: t("excel.example.method"),
+    method: t.raw("excel.example.method"),
     comment: "",
   });
 });

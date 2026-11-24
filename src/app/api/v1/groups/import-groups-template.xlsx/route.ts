@@ -6,13 +6,13 @@ import { GROUP_IMPORT_COLUMNS } from "@/server/services/imports/catalog-import.s
 export const GET = route({ permission: "groups.create" }, async ({ request }) => {
   const t = await exportTranslator(request);
   return templateResponse(t, t("excel.files.groupsTemplate"), GROUP_IMPORT_COLUMNS, {
-    name: t("excel.example.group"),
-    course: t("excel.example.course"),
-    teacher: t("excel.example.teacher"),
-    weekdays: t("excel.example.days"),
+    name: t.raw("excel.example.group"),
+    course: t.raw("excel.example.course"),
+    teacher: t.raw("excel.example.teacher"),
+    weekdays: t.raw("excel.example.days"),
     startTime: "18:00",
     endTime: "19:30",
-    room: t("excel.example.room"),
+    room: t.raw("excel.example.room"),
     startDate: new Date().toISOString().slice(0, 10),
     endDate: "",
     status: "ACTIVE",

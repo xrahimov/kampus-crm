@@ -11,6 +11,7 @@ import { ActionRow } from "@/components/rows";
 import { Sheet } from "@/components/sheet";
 import { Badge, Card, Divider, EmptyState, Screen } from "@/components/surface";
 import { Text } from "@/components/text";
+import { ImportButton } from "@/features/files/import-button";
 import { PendingScreen } from "@/features/shared/pending-screen";
 import { errorText, useMoney, useTranslations } from "@/lib/i18n";
 import { useLayout } from "@/lib/layout";
@@ -78,6 +79,18 @@ export function CoursesScreen() {
             </View>
           ))}
         </View>
+      )}
+      {archived ? null : (
+        <ImportButton
+          kind={{
+            id: "courses-import",
+            title: t("excel.importTitles.courses"),
+            description: t("excel.hints.courses"),
+            templatePath: "/courses/import-template.xlsx",
+            importPath: "/courses/import",
+            toBranch: true,
+          }}
+        />
       )}
 
       <Sheet

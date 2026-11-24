@@ -11,6 +11,7 @@ import { Select } from "@/components/select";
 import { Sheet } from "@/components/sheet";
 import { Card, EmptyState, Notice, Screen } from "@/components/surface";
 import { Text } from "@/components/text";
+import { ImportButton } from "@/features/files/import-button";
 import { PendingScreen } from "@/features/shared/pending-screen";
 import { fieldErrorOf, hasFieldErrors } from "@/lib/form";
 import { errorText, useTranslations } from "@/lib/i18n";
@@ -88,6 +89,16 @@ export function RoomsScreen() {
           ))}
         </View>
       )}
+      <ImportButton
+        kind={{
+          id: "rooms-import",
+          title: t("excel.importTitles.rooms"),
+          description: t("excel.hints.rooms"),
+          templatePath: "/rooms/import-template.xlsx",
+          importPath: "/rooms/import",
+          toBranch: true,
+        }}
+      />
       <RoomFormSheet
         key={shown === "new" ? "new" : shown.id}
         open={form !== null}

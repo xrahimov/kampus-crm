@@ -11,6 +11,7 @@ import { Header } from "@/components/header";
 import { Avatar, Badge, Card, Divider, EmptyState, Screen } from "@/components/surface";
 import { Text } from "@/components/text";
 import { ExcelButton } from "@/features/files/excel-button";
+import { ImportMenu, type ImportKind } from "@/features/files/import-button";
 import { filtersFromParams, StudentFilterSheet } from "@/features/office/student-filters";
 import { StudentFormSheet } from "@/features/office/student-form";
 import { PendingScreen } from "@/features/shared/pending-screen";
@@ -73,6 +74,54 @@ export function StudentsScreen() {
   );
   if (!query.data) return <PendingScreen header={header} query={query} />;
   const rows = query.data.pages.flatMap((page) => page.items);
+  // The site's "Import" menu: each import shows to whoever may do what it does.
+  const mayAdd = can(me, "students.create");
+  const mayPay = can(me, "payments.create");
+  const imports: ImportKind[] = [
+    mayAdd && {
+      id: "students-import-new",
+      title: t("students.importExcel"),
+      templatePath: "/students/import-template.xlsx",
+      importPath: "/students/import",
+      toBranch: true,
+    },
+    mayPay &&
+      !filters.archived && {
+        id: "students-import-balances",
+        title: t("students.importBalances"),
+        description: t("students.importBalancesHint"),
+        templatePath: "/students/import-balances-template.xlsx",
+        importPath: "/students/import-balances",
+        toBranch: true,
+        preview: true,
+      },
+    can(me, "students.update") && {
+      id: "students-import-parents",
+      title: t("students.importParents"),
+      description: t("excel.hints.parents"),
+      templatePath: "/students/import-parents-template.xlsx",
+      importPath: "/students/import-parents",
+      toBranch: true,
+    },
+    mayAdd && {
+      id: "students-import-archived",
+      title: t("students.importArchived"),
+      description: t("students.importArchivedHint"),
+      templatePath: "/students/import-archived-template.xlsx",
+      importPath: "/students/import-archived",
+      toBranch: true,
+      preview: true,
+    },
+    mayPay && {
+      id: "students-import-history",
+      title: t("students.importHistory"),
+      description: t("students.importHistoryHint"),
+      templatePath: "/students/import-history-template.xlsx",
+      importPath: "/students/import-history",
+      toBranch: true,
+      preview: true,
+    },
+  ].filter((kind) => kind !== false);
   const total = query.data.pages[0]?.total ?? 0;
 
   return (
@@ -146,6 +195,9 @@ export function StudentsScreen() {
           params={{ sort: "fullName:asc", q, ...filters }}
           testID="students-excel"
         />
+      ) : null}
+      {office ? (
+        <ImportMenu label={t("students.importMenu")} kinds={imports} testID="students-import" />
       ) : null}
       <StudentFilterSheet
         open={choosing}

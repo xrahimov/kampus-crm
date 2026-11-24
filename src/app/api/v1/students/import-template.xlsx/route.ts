@@ -6,9 +6,9 @@ import { STUDENT_IMPORT_COLUMNS } from "@/server/services/students/import.servic
 export const GET = route({ permission: "students.create" }, async ({ request }) => {
   const t = await exportTranslator(request);
   return templateResponse(t, t("excel.files.studentsTemplate"), STUDENT_IMPORT_COLUMNS, {
-    fullName: t("excel.example.fullName"),
+    fullName: t.raw("excel.example.fullName"),
     phone: "+998901234567",
-    gender: t("excel.example.gender"),
+    gender: t.raw("excel.example.gender"),
     birthDate: "2010-05-20",
     note: "",
   });

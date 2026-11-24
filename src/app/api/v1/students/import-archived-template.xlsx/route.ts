@@ -6,12 +6,12 @@ import { ARCHIVED_IMPORT_COLUMNS } from "@/server/services/students/history-impo
 export const GET = route({ permission: "students.create" }, async ({ request }) => {
   const t = await exportTranslator(request);
   return templateResponse(t, t("excel.files.archivedTemplate"), ARCHIVED_IMPORT_COLUMNS, {
-    fullName: t("excel.example.fullName"),
+    fullName: t.raw("excel.example.fullName"),
     phone: "+998901234567",
-    group: t("excel.example.group"),
+    group: t.raw("excel.example.group"),
     joinedAt: "2025-09-01",
     leftAt: "2026-03-15",
-    reason: t("excel.example.leaveReason"),
+    reason: t.raw("excel.example.leaveReason"),
     note: "",
   });
 });
