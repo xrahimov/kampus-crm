@@ -44,6 +44,9 @@ export default function StaffLayout() {
       <Stack.Screen name="reports/payments" />
       <Stack.Screen name="reports/student-payments" />
       <Stack.Screen name="reports/churn" />
+      <Stack.Screen name="reports/graduates" />
+      <Stack.Screen name="reports/staff-attendance" />
+      <Stack.Screen name="reports/coins" />
       <Stack.Screen name="reports/leads" />
       <Stack.Screen name="reports/referrals" />
       <Stack.Screen name="reports/students" />

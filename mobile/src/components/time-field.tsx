@@ -33,12 +33,15 @@ export function TimeField({
   label,
   value,
   onChange,
+  onText,
   error,
   testID,
 }: {
   label: string;
   value: string | null;
   onChange: (value: string | null) => void;
+  /** What is in the field as text: a form where the time may be left empty tells empty from unfinished by it. */
+  onText?: (text: string) => void;
   error?: string | null;
   testID?: string;
 }) {
@@ -58,6 +61,7 @@ export function TimeField({
       onChangeText={(text) => {
         const next = withColon(text);
         setTyped(next);
+        onText?.(next);
         const time = typedToTime(next);
         setSeen(time);
         onChange(time);

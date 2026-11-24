@@ -6477,6 +6477,11 @@
     "money": {
       "sortBy": "Saralash",
       "excelOnSite": "Excel fayli saytda"
+    },
+    "reports": {
+      "certificateOnSite": "{number} sertifikatini ochish",
+      "band": "0 dan 9 gacha ball kiriting, masalan 6.5.",
+      "endAfterStart": "Ish kunining oxiri boshlanishidan keyin bo'lishi kerak."
     }
   }
 }

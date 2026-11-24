@@ -6477,6 +6477,11 @@
     "money": {
       "sortBy": "Sort by",
       "excelOnSite": "Excel file on the site"
+    },
+    "reports": {
+      "certificateOnSite": "Open certificate {number}",
+      "band": "Enter a band from 0 to 9 in halves, such as 6.5.",
+      "endAfterStart": "The end of the day must be after its start."
     }
   }
 }

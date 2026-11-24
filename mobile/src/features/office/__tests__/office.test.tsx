@@ -452,8 +452,8 @@ describe("where a page of the site lives in the app", () => {
 
   it("sends everything else to the site", () => {
     expect(nativeRoute("/assistant")).toBeNull();
-    // Three reports are still the site's (A-238), and so is a report's Excel file.
-    expect(nativeRoute("/reports/coins")).toBeNull();
+    // A report's Excel file is the site's, and so is a report the site does not have.
+    expect(nativeRoute("/reports/taxes")).toBeNull();
     expect(nativeRoute("/reports/payments/export.xlsx")).toBeNull();
     // Finance has no such page, and a payroll month is a month.
     expect(nativeRoute("/finance/taxes")).toBeNull();

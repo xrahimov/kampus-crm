@@ -173,10 +173,24 @@ export async function takePhoto(): Promise<Picked> {
   });
 }
 
-export async function choosePhoto(): Promise<Picked> {
+/**
+ * A small square picture (a product in the marketplace): the phone lets the
+ * person crop it, and it goes out light, since the server takes pictures of
+ * up to 2 MB there.
+ */
+const SMALL_SQUARE = {
+  ...PHOTO,
+  quality: 0.5,
+  allowsEditing: true,
+  aspect: [1, 1],
+} satisfies ImagePicker.ImagePickerOptions;
+
+export async function choosePhoto(options: { smallSquare?: boolean } = {}): Promise<Picked> {
   await keyboardAway();
   // The phone's own picker hands over only the chosen photo; no access to the gallery is asked.
-  const result = await ImagePicker.launchImageLibraryAsync(PHOTO);
+  const result = await ImagePicker.launchImageLibraryAsync(
+    options.smallSquare ? SMALL_SQUARE : PHOTO,
+  );
   const asset = result.canceled ? null : result.assets[0];
   if (!asset) return { kind: "none" };
   return checkFile({
