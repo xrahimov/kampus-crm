@@ -4,6 +4,7 @@ import {
   CalendarOff,
   ChevronRight,
   Flag,
+  ListOrdered,
   Trash2,
   UserRoundCog,
   UsersRound,
@@ -12,6 +13,7 @@ import {
 import { useState } from "react";
 import { Pressable, StyleSheet, View } from "react-native";
 
+import type { WaitlistOffer } from "@/api/group-lessons";
 import {
   GROUP_TEACHER_ROLES,
   SHARE_TYPES,
@@ -39,6 +41,7 @@ import { can, useMe } from "@/lib/session";
 import { space, useTheme } from "@/lib/theme";
 
 import { GroupFormSheet } from "./group-form";
+import { OfferSeatsSheet } from "./group-lesson-parts";
 
 export const GROUP_STATUS_TONE: Record<Group["status"], Tone> = {
   ACTIVE: "success",
@@ -57,6 +60,7 @@ type Open =
   | "support"
   | "changeTeacher"
   | "dayOff"
+  | "offerSeats"
   | "move"
   | "finish"
   | "archive"
@@ -78,6 +82,7 @@ export function GroupOffice({ group }: { group: Group }) {
   const router = useRouter();
   const [open, setOpen] = useState<Open>(null);
   const [removing, setRemoving] = useState<GroupDayOff | null>(null);
+  const [offered, setOffered] = useState<WaitlistOffer | null>(null);
   const archived = group.status === "ARCHIVED";
   const mayUpdate = can(me, "groups.update");
   const mayDelete = can(me, "groups.delete");
@@ -114,6 +119,13 @@ export function GroupOffice({ group }: { group: Group }) {
       { key: "support", label: td("supportTeachers"), icon: UsersRound, show: editable },
       { key: "changeTeacher", label: td("changeTeacher"), icon: UserRoundCog, show: editable },
       { key: "dayOff", label: td("dayOff"), icon: CalendarOff, show: editable },
+      {
+        // Free seats go to the people waiting for the course (A-262).
+        key: "offerSeats",
+        label: t("groups.actions.offerSeats"),
+        icon: ListOrdered,
+        show: editable && can(me, "leads.view") && can(me, "leads.update"),
+      },
       {
         key: "move",
         label: t("groups.actions.moveBranch"),
@@ -247,6 +259,11 @@ export function GroupOffice({ group }: { group: Group }) {
           </View>
         ) : null}
       </Card>
+      {offered ? (
+        <Notice tone="success" testID="group-seats-offered">
+          {t("groups.waitlist.done", { ...offered })}
+        </Notice>
+      ) : null}
 
       <GroupFormSheet
         open={open === "edit" || open === "schedule"}
@@ -265,6 +282,7 @@ export function GroupOffice({ group }: { group: Group }) {
                 destructive={row.key === "archive"}
                 onPress={() => {
                   action.reset();
+                  if (row.key === "offerSeats") setOffered(null);
                   setOpen(row.key);
                 }}
                 testID={`group-do-${row.key}`}
@@ -276,6 +294,12 @@ export function GroupOffice({ group }: { group: Group }) {
       <SupportTeachersSheet open={open === "support"} onClose={close} group={group} />
       <ChangeTeacherSheet open={open === "changeTeacher"} onClose={close} group={group} />
       <DayOffSheet open={open === "dayOff"} onClose={close} group={group} />
+      <OfferSeatsSheet
+        open={open === "offerSeats"}
+        onClose={close}
+        groupId={group.id}
+        onDone={setOffered}
+      />
       <MoveBranchSheet open={open === "move"} onClose={close} group={group} />
       <Confirm
         open={open === "finish"}

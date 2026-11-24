@@ -1,3 +1,4 @@
+import { useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "expo-router";
 import { useState } from "react";
 import { StyleSheet, View } from "react-native";
@@ -31,6 +32,7 @@ export function PasswordScreen({
   const t = useTranslations();
   const router = useRouter();
   const { state, refreshMe } = useSession();
+  const client = useQueryClient();
   const [current, setCurrent] = useState("");
   const [next, setNext] = useState("");
   const [again, setAgain] = useState("");
@@ -64,7 +66,11 @@ export function PasswordScreen({
       } else {
         await api("/auth/set-password", { method: "POST", body: { newPassword: next } });
       }
-      if (state.status === "staff") await refreshMe();
+      if (state.status === "staff") {
+        await refreshMe();
+        // "My account" shows when the password was changed, and the other devices are signed out.
+        void client.invalidateQueries({ queryKey: ["account"] });
+      }
       leave();
     } catch (e) {
       const fields = e instanceof ApiError ? e.fields : undefined;

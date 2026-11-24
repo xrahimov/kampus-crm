@@ -1,6 +1,6 @@
 import { useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "expo-router";
-import { Check, Minus, Paperclip, Video, X } from "lucide-react-native";
+import { Check, Link2, Minus, Paperclip, Video, X } from "lucide-react-native";
 import { useState } from "react";
 import { Pressable, StyleSheet, TextInput, View } from "react-native";
 
@@ -24,6 +24,7 @@ import { errorText, useDate, useMoney, useTranslations } from "@/lib/i18n";
 import { useLayout } from "@/lib/layout";
 import { font, radius, space, useTheme } from "@/lib/theme";
 
+import { LessonExtras } from "./lesson-extras";
 import { TaskForm, type TaskDraft } from "./task-form";
 
 type Tab = "attendance" | "grades";
@@ -129,6 +130,7 @@ export function LessonPanel({
       )}
 
       <HomeworkCard key={`hw-${lesson.id}`} lesson={lesson} canMark={canMark} />
+      <LessonExtras lesson={lesson} canMark={canMark} />
     </View>
   );
 }
@@ -178,6 +180,20 @@ function RoomCard({ lesson, canMark }: { lesson: TodayLesson; canMark: boolean }
         />
       </View>
       {error ? <Notice tone="destructive">{error}</Notice> : null}
+      {canMark ? (
+        // Each student's own link to the room, for the one who lost theirs (A-262).
+        <Button
+          compact
+          variant="ghost"
+          label={t("video.card.links")}
+          icon={<Link2 size={16} color={colors.foreground} />}
+          onPress={() =>
+            router.push({ pathname: "/staff/links/[id]", params: { id: lesson.groupId } })
+          }
+          style={styles.links}
+          testID="room-links"
+        />
+      ) : null}
     </Card>
   );
 }
@@ -564,6 +580,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
   },
   roomRow: { flexDirection: "row", alignItems: "center", gap: space[3] },
+  links: { alignSelf: "flex-start", marginLeft: -space[2] },
   suggest: { flexDirection: "row", alignItems: "center", gap: space[2] },
   actions: { flexDirection: "row", justifyContent: "flex-end", gap: space[2] },
   start: { alignSelf: "flex-start" },

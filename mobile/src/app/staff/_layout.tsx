@@ -32,6 +32,7 @@ export default function StaffLayout() {
       <Stack.Screen name="coins/[id]" />
       <Stack.Screen name="discounts/[id]" />
       <Stack.Screen name="packages/[id]" />
+      <Stack.Screen name="links/[id]" />
       <Stack.Screen name="tests/[id]" />
       <Stack.Screen name="exams/[id]" />
       <Stack.Screen name="exams/index" />
@@ -61,6 +62,7 @@ export default function StaffLayout() {
       <Stack.Screen name="notifications" />
       <Stack.Screen name="search" />
       <Stack.Screen name="salary" />
+      <Stack.Screen name="account" />
       <Stack.Screen name="leads/index" />
       <Stack.Screen name="leads/calls" />
       <Stack.Screen name="leads/waitlist" />

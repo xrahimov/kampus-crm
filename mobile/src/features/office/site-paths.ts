@@ -128,7 +128,11 @@ export function nativeRoute(path: string): Href | null {
     return report ? `/staff/reports/${report}` : null;
   }
   if (rest.length > 0) return null;
-  if (first === "account") return id === "salary" ? "/staff/salary" : null;
+  // My account (A-261), and the person's own salary under it.
+  if (first === "account") {
+    if (!id) return "/staff/account" as Href;
+    return id === "salary" ? "/staff/salary" : null;
+  }
   if (id) {
     if (first === "students") return { pathname: "/staff/student/[id]", params: { id } };
     if (first === "groups") return { pathname: "/staff/group/[id]", params: { id } };

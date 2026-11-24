@@ -6483,6 +6483,17 @@
       "excelAttendance": "Davomat Excelda",
       "excelGrades": "Baholar Excelda"
     },
+    "lessons": {
+      "noPlanTopic": "Rejadagi mavzusiz",
+      "extraAdded": "Qo'shimcha dars {date} kuniga qo'shildi.",
+      "endAfterStart": "Dars boshlanganidan keyin tugashi kerak.",
+      "linksHint": "Har bir o'quvchining o'z havolasi bor, u shu guruhning barcha darslari uchun bir xil. Havola boshqa odamga berilgan bo'lsa, yangisini yarating: eskisi ishlamay qoladi.",
+      "unshared": "Bu qurilmada ulashish oynasi ochilmadi. Nusxa olish uchun havolani bosib turing.",
+      "shareLinkOf": "{name} havolasini ulashish",
+      "shareAll": "Barcha havolalarni ulashish",
+      "newLinkText": "Eski havola shu zahoti ishlamay qoladi. O'quvchiga yangisini yuboring.",
+      "newLink": "Yangi havola yaratish"
+    },
     "catalog": {
       "changeHours": "Soatlarni o'zgartirish",
       "firstSignIn": "Birinchi kirish Telegram kodi bilan bo'ladi. Shundan keyin xodim parolini o'zi tanlaydi.",

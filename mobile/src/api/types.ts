@@ -146,11 +146,18 @@ export interface GridLesson {
   startTime: string;
   endTime: string;
   topic: string | null;
+  /** The topic of the course plan the lesson covers (A-137). */
+  courseTopicId: string | null;
   courseTopicTitle: string | null;
+  /** A link the teacher put on the lesson. */
+  attachmentUrl: string | null;
   isExtra: boolean;
   attendance: Record<string, { status: AttendanceStatus; comment: string | null }>;
   grades: Record<string, { score: number; comment: string | null }>;
+  /** The teacher's note to the students about the lesson (A-168). */
   studentNote: string | null;
+  /** What the students thought of the lesson (A-168). */
+  rating: { average: number | null; count: number };
 }
 
 export interface GridMember {
