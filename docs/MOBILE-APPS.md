@@ -75,7 +75,8 @@ able to work from an iPad or a phone.
 | Office: the assistant: Summary (figures and a conclusion for yesterday, today, 7 days) and Ask (the conversation), the button on Home (A-253)                                                                                | Built, phone and tablet; needs the server update                                                                         |
 | Office: a group's Discounts (give one, end one) and, in a package group, Packages (offers, students' lessons, sell a package, packages sold) (A-254)                                                                         | Built, phone and tablet; no server update needed                                                                         |
 | Office: a person's photo: chosen in the staff and student forms, shown in the lists, on a teacher's and a student's page and on More (A-255)                                                                                 | Built, phone and tablet; no server update needed                                                                         |
-| What the site has and the app does not yet: Excel files, leads boards and columns                                                                                                                                            | Next; they open on the site until then                                                                                   |
+| Office: the site's Excel files: every list, report, the payroll and the payments log as a file on the phone (A-256)                                                                                                          | Built, phone and tablet; no server update needed                                                                         |
+| What the site has and the app does not yet: importing from an Excel file, leads boards and columns                                                                                                                           | Next; they open on the site until then                                                                                   |
 | The site running on the app's code                                                                                                                                                                                           | Part by part, the student side first; wide tables, Excel and print last                                                  |
 
 ## What kai needs to do
@@ -161,7 +162,7 @@ mobile/
   typed days, asked for only when both are days in the right order), `Kpis`, `Section`, `Pair`,
   `CountBars` (a name, a count and a bar to scale), `SeriesBars` (one to three series over time,
   the pressed step read out under the plot; `series3` in the theme is its third colour), `Stats`
-  and `Rows` (a table row as a card), and `ExcelOnSite`. The Left students filters come from
+  and `Rows` (a table row as a card), and `ReportExcel` (A-256). The Left students filters come from
   `GET /reports/churn/options`, the one call made for the app: `useChurnOptions` does not retry.
 - **The last three reports (A-239).** `graduates-report.tsx` (`api/office-graduates.ts`),
   `staff-attendance-report.tsx` (`api/office-staff-attendance.ts`) and `coins-report.tsx` with
@@ -292,15 +293,21 @@ mobile/
   Save meanwhile. `Avatar` in `components/surface.tsx` takes `photo` and falls back to the initials.
   `lib/file-source.ts` and `lib/local-file.ts` are where `fileSource` and `useLocalFile` live now;
   `features/room/file-source.ts` and `features/files/local-file.ts` re-export them.
-  Next free number: A-256.
+- **Excel files (A-256).** `features/files/excel-button.tsx`: `ExcelButton` takes the call under
+  /api/v1 and the list's filters, and `excelPath` makes the address the way the site's Excel link
+  does. `lib/save-file.native.ts` fetches the file with `react-native-blob-util` into the cache
+  and hands it to the phone (`open.file`: a preview on iOS, the reading app on Android, after a
+  copy to Downloads with `media.copyToMediaStore`); `lib/save-file.ts` is the browser build's
+  download; `lib/save-file-parts.ts` reads the file's name and the server's refusal. A screen's
+  test mocks `@/lib/save-file` and checks the path it was asked for.
+  Next free number: A-257.
 - **Finance and payroll (A-237).** `src/features/finance/` and `src/api/office-finance.ts`.
   `FinanceScreen` is the site's Finance page; `EntriesScreen` the entries of a kind or of a
   category (`entries-routes.tsx` reads which from the address), with `EntrySheet`, the site's one
   form for every money row; `PayrollScreen` a month's payroll. `period.tsx` has the year and month
   fields the three share. The sums on the Finance page's cards come from `GET /finance/totals`,
   the one call made for the app: `useFinanceTotals` does not retry, and the cards show without sums
-  when the server answers "not found". `useOpenSite` (site-paths.ts) opens a page on the site even
-  where the app has it, for the payroll's Excel file.
+  when the server answers "not found". The payroll's Excel file comes to the phone (A-256).
 - **Debts and the cash desk (A-236).** `src/features/money/` and `src/api/office-money.ts`.
   `DebtsScreen` is the site's Debtors page with `DebtContactSheet` and `DebtHistorySheet`;
   `CashDeskScreen` the site's Cash desk page with `CloseDaySheet`. The debts list reads `status`,

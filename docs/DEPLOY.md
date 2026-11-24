@@ -204,6 +204,9 @@ A-201) has no migration and no setting. Two things to know after it:
   on an `https` address (the live site is one). Nothing on the server switches it
   on or off; a person can switch it off for the site in the browser.
 
+Excel files on the phone (A-256): the app asks for the same export files the site's Excel buttons
+link to. No server update, no migration, no setting.
+
 A person's photo in the app (A-255) uses the calls the site's own photo field uses (`POST
 /api/v1/uploads`, `photoUrl` on a teacher and a student): no server update, no migration, no setting.
 
