@@ -472,7 +472,7 @@ describe("where a page of the site lives in the app", () => {
     expect(nativeRoute("/groups?status=ACTIVE")).toBeNull();
     expect(nativeRoute("/groups/g1/attendance")).toBeNull();
     expect(nativeRoute("/account")).toBeNull();
-    expect(nativeRoute("/settings/general")).toBeNull();
+    expect(nativeRoute("/settings/integrations")).toBeNull();
   });
 
   it("gives the home to the office, not to the teaching view", () => {
