@@ -204,6 +204,11 @@ A-201) has no migration and no setting. Two things to know after it:
   on an `https` address (the live site is one). Nothing on the server switches it
   on or off; a person can switch it off for the site in the browser.
 
+The assistant in the app (A-253) needs the server update: one new read-only call,
+`GET /api/v1/assistant`, tells the app who is asking and whether the centre has a key. No
+migration, no setting; the conversation and the summary use the calls the site already has. Until
+the server is updated the app's Assistant page shows an error with **Try again**.
+
 The manual in the app (A-252) needs the server update: the server answers the manual to the app
 through two new read-only calls, `GET /api/v1/help` and `GET /api/v1/help/search`. No migration,
 no setting. The pictures are the site's own files under `/help/<language>/` and the videos the

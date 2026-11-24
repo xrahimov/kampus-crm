@@ -72,7 +72,8 @@ able to work from an iPad or a phone.
 | Office: settings, step 5b: Tests and the question bank, a test's page with its results and Enter result (A-250)                                                                                                              | Built, phone and tablet                                                                                                  |
 | Office: settings, step 5c: Import from SOFF CRM (choose a file on the device, see how it is read, preview, import) (A-251)                                                                                                   | Built, phone and tablet; every settings section is now in the app                                                        |
 | Office: Help, the manual with its how-to videos: search, articles by role, pictures that enlarge, videos (A-252)                                                                                                             | Built, phone and tablet; needs the server update                                                                         |
-| The office's other pages: the assistant                                                                                                                                                                                      | Next, part 6d; it opens on the site until then                                                                           |
+| Office: the assistant: Summary (figures and a conclusion for yesterday, today, 7 days) and Ask (the conversation), the button on Home (A-253)                                                                                | Built, phone and tablet; needs the server update                                                                         |
+| What the site has and the app does not yet: group packages and discounts, Excel files, leads boards and columns, a person's photo                                                                                            | Next; they open on the site until then                                                                                   |
 | The site running on the app's code                                                                                                                                                                                           | Part by part, the student side first; wide tables, Excel and print last                                                  |
 
 ## What kai needs to do
@@ -267,7 +268,16 @@ mobile/
   `VideoCard`. An article is opened at a section with `articleRoute(slug, section)`; it measures
   where its sections start and asks `Screen` to go there through `scrollRef`. In a screen test
   draw one screen per test: an `unmount()` that is not awaited leaves the next render hanging.
-  Next free number: A-253.
+- **The assistant (A-253).** `src/features/assistant/` and `src/api/office-assistant.ts`.
+  `AssistantScreen` has the two tabs; `?tab=summary` opens it on the summary. `BriefingPanel`
+  asks `POST /assistant/briefing` for the figures first and, when the answer says `pending`, a
+  second time for the model's conclusion. `assistant-store.ts` keeps one conversation outside
+  React for as long as the app runs, per signed-in person; `forgetAssistantChat()` empties it in a
+  test. `Conversation` and `QuestionBar` are the thread and the box to write in; the box is the
+  screen's footer with `footerField`, and the page follows a new line with the `end()` of
+  `Screen`'s `scrollRef`. `summary-seen.ts` remembers per person the day the summary was last on
+  the screen; `HeaderActions` shows the dot from it.
+  Next free number: A-254.
 - **Finance and payroll (A-237).** `src/features/finance/` and `src/api/office-finance.ts`.
   `FinanceScreen` is the site's Finance page; `EntriesScreen` the entries of a kind or of a
   category (`entries-routes.tsx` reads which from the address), with `EntrySheet`, the site's one
