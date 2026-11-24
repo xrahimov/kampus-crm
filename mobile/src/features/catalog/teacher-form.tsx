@@ -10,9 +10,14 @@ import {
   type Gender,
   type SalaryMethod,
   type Staff,
-  type TeacherInput,
   type TeacherKind,
 } from "@/api/office-catalog";
+import {
+  useSaveStaff,
+  useStaffSignOutEverywhere,
+  type RoleRow,
+  type StaffInput,
+} from "@/api/office-staff";
 import { Button } from "@/components/button";
 import { Check } from "@/components/check";
 import { Chip } from "@/components/chip";
@@ -20,7 +25,7 @@ import { DateField } from "@/components/date-field";
 import { Field } from "@/components/field";
 import { Select } from "@/components/select";
 import { Sheet } from "@/components/sheet";
-import { Notice, Segmented } from "@/components/surface";
+import { Badge, Notice, Segmented } from "@/components/surface";
 import { Text } from "@/components/text";
 import { centreToday } from "@/lib/days";
 import { fieldErrorOf, hasFieldErrors, phoneOrNull } from "@/lib/form";
@@ -35,12 +40,14 @@ interface FormState {
   birthDate: string | null;
   hireDate: string | null;
   branchIds: string[];
+  /** Only the staff form shows them; a teacher's role is fixed by the list they are in. */
+  roleCodes: string[];
   salaryMethod: SalaryMethod;
   amount: string;
   signInCode: "OFF" | "TELEGRAM";
 }
 
-function emptyForm(branchId: string | null): FormState {
+function emptyForm(branchId: string | null, method: SalaryMethod): FormState {
   return {
     fullName: "",
     phone: "+998",
@@ -48,14 +55,15 @@ function emptyForm(branchId: string | null): FormState {
     birthDate: null,
     hireDate: centreToday(),
     branchIds: branchId ? [branchId] : [],
-    salaryMethod: "PERCENT",
+    roleCodes: [],
+    salaryMethod: method,
     amount: "",
     signInCode: "OFF",
   };
 }
 
-function formOf(person: Staff): FormState {
-  const salaryMethod = person.salaryMethod ?? "PERCENT";
+function formOf(person: Staff, method: SalaryMethod): FormState {
+  const salaryMethod = person.salaryMethod ?? method;
   const amount = person[SALARY_AMOUNT_FIELD[salaryMethod]];
   return {
     fullName: person.fullName,
@@ -64,6 +72,7 @@ function formOf(person: Staff): FormState {
     birthDate: person.birthDate,
     hireDate: person.hireDate,
     branchIds: person.branches.map((b) => b.id),
+    roleCodes: person.roles.map((r) => r.code),
     salaryMethod,
     amount: amount === null ? "" : String(amount),
     signInCode: person.signInCode,
@@ -81,6 +90,10 @@ function typedAmount(text: string): number | null {
  * A new teacher or a change to one (A-234): the site's form without its photo
  * and its password. A new person's first sign-in is with a code from Telegram
  * and they choose their own password; nobody types one for them here.
+ *
+ * With `staff` it is the site's staff form (A-244): the same fields and the
+ * person's roles, saved through the staff calls. Someone changing their own
+ * card sees their roles and cannot change them.
  */
 export function TeacherFormSheet({
   open,
@@ -88,6 +101,8 @@ export function TeacherFormSheet({
   kind,
   person,
   onSaved,
+  staff,
+  onArchive,
 }: {
   open: boolean;
   onClose: () => void;
@@ -95,23 +110,35 @@ export function TeacherFormSheet({
   kind: TeacherKind;
   person?: Staff;
   onSaved?: (saved: Staff) => void;
+  /** The staff form: the centre's roles to choose from. */
+  staff?: { roles: RoleRow[] };
+  /** Shows **Archive** under Save for an existing person. */
+  onArchive?: () => void;
 }) {
   const t = useTranslations();
   const tf = useTranslations("staff.form");
   const me = useMe();
   const { colors } = useTheme();
-  const save = useSaveTeacher(kind, person?.id ?? null);
-  const signOut = useSignOutEverywhere(person?.id ?? "");
+  const saveTeacher = useSaveTeacher(kind, person?.id ?? null);
+  const saveStaff = useSaveStaff(person?.id ?? null);
+  const save = staff ? saveStaff : saveTeacher;
+  const signOutTeacher = useSignOutEverywhere(person?.id ?? "");
+  const signOutStaff = useStaffSignOutEverywhere(person?.id ?? "");
+  const signOut = staff ? signOutStaff : signOutTeacher;
+  // The site's own starting point: a teacher by percent, other staff by the month.
+  const method: SalaryMethod = staff ? "MONTHLY" : "PERCENT";
+  const id = staff ? "staff" : "teacher";
+  const isSelf = person !== undefined && person.id === me.user.id;
   const defaultBranch = me.activeBranch?.id ?? me.branches[0]?.id ?? null;
   const [form, setForm] = useState<FormState>(() =>
-    person ? formOf(person) : emptyForm(defaultBranch),
+    person ? formOf(person, method) : emptyForm(defaultBranch, method),
   );
   const [missing, setMissing] = useState(false);
   const [wasOpen, setWasOpen] = useState(open);
   if (open !== wasOpen) {
     setWasOpen(open);
     if (open) {
-      setForm(person ? formOf(person) : emptyForm(defaultBranch));
+      setForm(person ? formOf(person, method) : emptyForm(defaultBranch, method));
       setMissing(false);
       save.reset();
       signOut.reset();
@@ -129,13 +156,27 @@ export function TeacherFormSheet({
     ...(person?.branches ?? []).filter((b) => !me.branches.some((mine) => mine.id === b.id)),
   ];
 
+  /* The roles to choose from: the active ones, and any the person already holds. */
+  const roles = (staff?.roles ?? []).filter(
+    (role) => role.isActive || form.roleCodes.includes(role.code),
+  );
+  const rolesMissing = staff !== undefined && !isSelf && form.roleCodes.length === 0;
+  const roleName = (role: { code: string; name: string }) =>
+    t.has(`roles.${role.code}`) ? t(`roles.${role.code}`) : role.name;
+
   const submit = () => {
     const phone = phoneOrNull(form.phone);
-    if (!form.fullName.trim() || !phone || form.branchIds.length === 0 || amountWrong) {
+    if (
+      !form.fullName.trim() ||
+      !phone ||
+      form.branchIds.length === 0 ||
+      amountWrong ||
+      rolesMissing
+    ) {
       setMissing(true);
       return;
     }
-    const input: TeacherInput = {
+    const input: StaffInput = {
       fullName: form.fullName.trim(),
       phone,
       gender: form.gender,
@@ -152,6 +193,7 @@ export function TeacherFormSheet({
     };
     // The code switch only exists for someone the bot can reach.
     if (person?.telegramLinked) input.signInCode = form.signInCode;
+    if (staff && !isSelf) input.roleCodes = form.roleCodes;
     save.mutate(input, {
       onSuccess: (saved) => {
         onClose();
@@ -164,20 +206,32 @@ export function TeacherFormSheet({
     <Sheet
       open={open}
       onClose={onClose}
-      title={person ? tf("editTeacher") : tf("addTeacher")}
-      testID="teacher-form"
+      title={
+        staff ? tf(person ? "editStaff" : "addStaff") : tf(person ? "editTeacher" : "addTeacher")
+      }
+      testID={`${id}-form`}
       footer={
-        <Button
-          label={t("common.save")}
-          loading={save.isPending}
-          onPress={submit}
-          testID="teacher-save"
-        />
+        <View style={styles.footer}>
+          <Button
+            label={t("common.save")}
+            loading={save.isPending}
+            onPress={submit}
+            testID={`${id}-save`}
+          />
+          {person && onArchive && !isSelf ? (
+            <Button
+              variant="ghost"
+              label={t("common.archive")}
+              onPress={onArchive}
+              testID={`${id}-archive`}
+            />
+          ) : null}
+        </View>
       }
     >
       <View style={styles.form}>
         {save.error && !hasFieldErrors(save.error) ? (
-          <Notice tone="destructive" testID="teacher-problem">
+          <Notice tone="destructive" testID={`${id}-problem`}>
             {errorText(t, save.error)}
           </Notice>
         ) : null}
@@ -188,7 +242,7 @@ export function TeacherFormSheet({
           maxLength={120}
           autoCorrect={false}
           error={fieldError("fullName") ?? required(!form.fullName.trim())}
-          testID="teacher-name"
+          testID={`${id}-name`}
         />
         <Field
           label={tf("phone")}
@@ -196,7 +250,7 @@ export function TeacherFormSheet({
           onChangeText={(phone) => set({ phone })}
           keyboardType="phone-pad"
           error={fieldError("phone") ?? required(!phoneOrNull(form.phone))}
-          testID="teacher-phone"
+          testID={`${id}-phone`}
         />
         <View style={styles.pair}>
           <View style={styles.fill}>
@@ -205,7 +259,7 @@ export function TeacherFormSheet({
               value={form.birthDate}
               onChange={(birthDate) => set({ birthDate })}
               error={fieldError("birthDate")}
-              testID="teacher-birth"
+              testID={`${id}-birth`}
             />
           </View>
           <View style={styles.fill}>
@@ -214,7 +268,7 @@ export function TeacherFormSheet({
               value={form.hireDate}
               onChange={(hireDate) => set({ hireDate })}
               error={fieldError("hireDate")}
-              testID="teacher-hired"
+              testID={`${id}-hired`}
             />
           </View>
         </View>
@@ -236,7 +290,7 @@ export function TeacherFormSheet({
                           : [...form.branchIds, branch.id],
                       })
                     }
-                    testID={`teacher-branch-${branch.id}`}
+                    testID={`${id}-branch-${branch.id}`}
                   />
                 );
               })}
@@ -248,16 +302,58 @@ export function TeacherFormSheet({
             ) : null}
           </View>
         ) : null}
+        {staff ? (
+          <View style={styles.block} testID="staff-roles">
+            <Text variant="smallStrong">{tf("roles")}</Text>
+            <View style={styles.chips}>
+              {isSelf
+                ? (person?.roles ?? []).map((role) => (
+                    <Badge key={role.code} label={roleName(role)} />
+                  ))
+                : roles.map((role) => {
+                    const on = form.roleCodes.includes(role.code);
+                    return (
+                      <Chip
+                        key={role.code}
+                        label={roleName(role)}
+                        on={on}
+                        onPress={() =>
+                          set({
+                            roleCodes: on
+                              ? form.roleCodes.filter((code) => code !== role.code)
+                              : [...form.roleCodes, role.code],
+                          })
+                        }
+                        testID={`staff-role-${role.code}`}
+                      />
+                    );
+                  })}
+            </View>
+            {isSelf ? (
+              <Text variant="small" tone="mutedForeground" testID="staff-own-roles">
+                {tf("ownRolesLocked")}
+              </Text>
+            ) : (fieldError("roleCodes") ?? (missing && rolesMissing)) ? (
+              <Text
+                variant="small"
+                style={{ color: colors.destructive }}
+                testID="staff-roles-problem"
+              >
+                {fieldError("roleCodes") ?? t("validation.rolesMin")}
+              </Text>
+            ) : null}
+          </View>
+        ) : null}
         <Select
           label={tf("salaryMethod")}
           value={form.salaryMethod}
           onChange={(picked) => {
-            const salaryMethod = picked ?? "PERCENT";
+            const salaryMethod = picked ?? method;
             const kept = person?.[SALARY_AMOUNT_FIELD[salaryMethod]] ?? null;
             set({ salaryMethod, amount: kept === null ? "" : String(kept) });
           }}
           options={SALARY_METHODS.map((m) => ({ value: m, label: tf(`methods.${m}`) }))}
-          testID="teacher-salary"
+          testID={`${id}-salary`}
         />
         <Field
           label={tf(`amounts.${form.salaryMethod}`)}
@@ -265,7 +361,7 @@ export function TeacherFormSheet({
           onChangeText={(text) => set({ amount: text })}
           keyboardType="decimal-pad"
           error={fieldError(amountField) ?? (missing && amountWrong ? t("validation.min") : null)}
-          testID="teacher-amount"
+          testID={`${id}-amount`}
         />
         <View style={styles.block}>
           <Text variant="smallStrong">{tf("gender")}</Text>
@@ -273,11 +369,11 @@ export function TeacherFormSheet({
             value={form.gender}
             onChange={(gender) => set({ gender })}
             options={GENDERS.map((g) => ({ value: g, label: tf(`genders.${g}`) }))}
-            testID="teacher-gender"
+            testID={`${id}-gender`}
           />
         </View>
         {person ? (
-          <View style={[styles.safety, { borderColor: colors.border }]} testID="teacher-safety">
+          <View style={[styles.safety, { borderColor: colors.border }]} testID={`${id}-safety`}>
             <Text variant="bodyStrong">{tf("safety")}</Text>
             <Check
               label={tf("signInCode")}
@@ -285,13 +381,13 @@ export function TeacherFormSheet({
               value={form.signInCode === "TELEGRAM"}
               onChange={(on) => set({ signInCode: on ? "TELEGRAM" : "OFF" })}
               disabled={!person.telegramLinked}
-              testID="teacher-sign-in-code"
+              testID={`${id}-sign-in-code`}
             />
             {signOut.error ? (
               <Notice tone="destructive">{errorText(t, signOut.error)}</Notice>
             ) : null}
             {signOut.isSuccess ? (
-              <Text variant="small" tone="mutedForeground" testID="teacher-signed-out">
+              <Text variant="small" tone="mutedForeground" testID={`${id}-signed-out`}>
                 {tf("signedOutAll")}
               </Text>
             ) : (
@@ -302,12 +398,12 @@ export function TeacherFormSheet({
                 loading={signOut.isPending}
                 onPress={() => signOut.mutate()}
                 style={styles.start}
-                testID="teacher-sign-out-all"
+                testID={`${id}-sign-out-all`}
               />
             )}
           </View>
         ) : (
-          <Text variant="small" tone="mutedForeground" testID="teacher-first-sign-in">
+          <Text variant="small" tone="mutedForeground" testID={`${id}-first-sign-in`}>
             {t("mobile.catalog.firstSignIn")}
           </Text>
         )}
@@ -318,6 +414,7 @@ export function TeacherFormSheet({
 
 const styles = StyleSheet.create({
   form: { gap: space[4] },
+  footer: { gap: space[2] },
   block: { gap: space[2] },
   pair: { flexDirection: "row", gap: space[3], alignItems: "flex-start" },
   fill: { flex: 1 },

@@ -27,6 +27,8 @@ const NATIVE_SETTINGS = new Set([
   "receipt",
   "coins",
   "general",
+  "staff",
+  "roles",
 ]);
 
 /**

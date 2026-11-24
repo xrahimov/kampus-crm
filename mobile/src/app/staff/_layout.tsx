@@ -74,6 +74,8 @@ export default function StaffLayout() {
       <Stack.Screen name="settings/courses" />
       <Stack.Screen name="settings/rooms" />
       <Stack.Screen name="settings/general" />
+      <Stack.Screen name="settings/staff" />
+      <Stack.Screen name="settings/roles" />
       <Stack.Screen name="settings/days-off" />
       <Stack.Screen name="settings/schools" />
       <Stack.Screen name="settings/sms" />

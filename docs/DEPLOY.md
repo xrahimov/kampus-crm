@@ -204,6 +204,12 @@ A-201) has no migration and no setting. Two things to know after it:
   on an `https` address (the live site is one). Nothing on the server switches it
   on or off; a person can switch it off for the site in the browser.
 
+The fix for sheets on an iPhone and iPad (A-245: a form opened from a menu) is in the app
+only: nothing to update on the server; it reaches people with the next build of the app.
+
+Staff and Roles in the app (A-244) use the calls the site's pages make: nothing to update for
+them.
+
 General settings in the app (A-243: the centre's settings, branches, payment methods, grading
 systems and the automatic SMS) uses the calls the site's page makes: nothing to update for it.
 

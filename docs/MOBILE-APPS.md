@@ -65,7 +65,8 @@ able to work from an iPad or a phone.
 | Office: the rest of a student's page, second half: group cards with the lesson calendar, change of status, split fee, move, back to leads, remove; refunds, balance corrections, receipts, the old system's payments (A-241) | Built, phone and tablet; a receipt to print opens on the site                                                            |
 | Office: settings, step 1: Days off, Schools, SMS templates, Receipt settings with its sample, Coin settings with the reasons (A-242)                                                                                         | Built, phone and tablet                                                                                                  |
 | Office: settings, step 2: General settings in five tabs: Center settings, Branches, Payment methods, Grading systems, Auto SMS settings (A-243)                                                                              | Built, phone and tablet                                                                                                  |
-| The office's other pages: the other 14 settings sections, the manual, the assistant                                                                                                                                          | Next, part 6c steps 3 to 5 and part 6d; they open on the site until then                                                 |
+| Office: settings, step 3: Staff (search, role chips, archive, the staff form with roles) and Roles (the permission ticks) (A-244)                                                                                            | Built, phone and tablet; Excel export and import of staff stay on the site                                               |
+| The office's other pages: the other 12 settings sections, the manual, the assistant                                                                                                                                          | Next, part 6c steps 4 and 5 and part 6d; they open on the site until then                                                |
 | The site running on the app's code                                                                                                                                                                                           | Part by part, the student side first; wide tables, Excel and print last                                                  |
 
 ## What kai needs to do
@@ -201,7 +202,18 @@ mobile/
   `/grading-systems` as `{ items }`, and names a refused field by its path
   (`levels.0.maxScore`, `settings.3.template`): play both that way in tests. Check a new call's
   answer against its route before writing the hook; a test that plays the wrong shape passes.
-  Next free number: A-244.
+- **Settings, step 3 (A-244).** `staff-screen.tsx` and `roles-screen.tsx` with
+  `api/office-staff.ts`. The staff form is `features/catalog/teacher-form.tsx` with the `staff`
+  prop: it then shows the roles, saves through `/staff`, starts a new person on a monthly
+  salary and names its test ids `staff-…` instead of `teacher-…`. `onArchive` puts **Archive**
+  under Save; the screen owns the question. `permissions.ts` is the app's copy of the site's
+  permission list, kept in step by `tests/unit/app-permissions.test.ts` on the site's side.
+- **One sheet at a time (A-245).** iOS shows one window over a screen. `Sheet` counts the sheets
+  that are sliding away or being taken down, and a sheet asked for meanwhile waits for them: a
+  form opened from a menu comes after the menu has left. So a screen may close one sheet and open
+  the next in the same press, and a test waits for the second with `findByTestId`. A sheet
+  inside an open sheet (a `Select` in a form) does not wait. Android is left as it was.
+  Next free number: A-246.
 - **Finance and payroll (A-237).** `src/features/finance/` and `src/api/office-finance.ts`.
   `FinanceScreen` is the site's Finance page; `EntriesScreen` the entries of a kind or of a
   category (`entries-routes.tsx` reads which from the address), with `EntrySheet`, the site's one
