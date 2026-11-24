@@ -77,7 +77,10 @@ able to work from an iPad or a phone.
 | Office: a person's photo: chosen in the staff and student forms, shown in the lists, on a teacher's and a student's page and on More (A-255)                                                                                 | Built, phone and tablet; no server update needed                                                                         |
 | Office: the site's Excel files: every list, report, the payroll and the payments log as a file on the phone (A-256)                                                                                                          | Built, phone and tablet; no server update needed                                                                         |
 | Office: importing from an Excel sheet: rooms, courses, staff, groups, a group's students and the five imports of the Students page (A-257)                                                                                   | Built, phone and tablet; the app's part needs no server update                                                           |
-| What the site has and the app does not yet: leads boards and columns                                                                                                                                                         | Next; they open on the site until then                                                                                   |
+| Office: leads boards and columns (new, rename, delete) and the Sources report (A-258)                                                                                                                                        | Built, phone and tablet; no server update needed                                                                         |
+| Office: several leads ticked on the board (move, SMS, add to a group, archive, restore) and an SMS to a whole column (A-259)                                                                                                 | Built, phone and tablet; no server update needed                                                                         |
+| Office: several students ticked on the Students list (add to a group, discount, SMS, Excel, archive, restore), an SMS to the whole filtered list, and Activate (A-260)                                                       | Built, phone and tablet; no server update needed                                                                         |
+| What the site has and the app does not yet                                                                                                                                                                                   | A last sweep of the site's pages against the app is under way                                                            |
 | The site running on the app's code                                                                                                                                                                                           | Part by part, the student side first; wide tables, Excel and print last                                                  |
 
 ## What kai needs to do
@@ -309,7 +312,19 @@ mobile/
   again after rows came in. The test IDs start with the kind's `id` (`rooms-import-open`,
   `-template`, `-choose`, `-submit`, `-done`). The staff import's passwords are only ever tested
   with made-up values.
-  Next free number: A-258.
+- **Leads boards, columns and sources (A-258).** `features/leads/board-setup.tsx`: `NameSheet` (one
+  name asked in a sheet; `onSubmit` throws to keep it open), `BoardSetup` (the board's menu and what
+  it opens; the screen holds `BoardDoing`), `ColumnSetup` (a column's menu). `sources-screen.tsx` is
+  the site's Sources report at `/staff/leads/sources`. The server's refusals are shown as they come.
+- **Ticked leads (A-259).** `features/leads/leads-bulk.tsx` has `LeadsBulkBar`; the screen keeps the
+  set of ticked ids and hands the bar only those still on the screen. `LeadRow` shows a tick box
+  when it is given `onTick`. The SMS sheet takes the targets `leads` and `leadColumn`.
+- **Ticked students (A-260).** `features/office/students-bulk.tsx` has `StudentsBulkBar` and
+  `mayBulkStudents`; the Students list keeps the set of ticked ids and hands the bar only those
+  still listed. `Tick` in `components/check.tsx` is the tick box at the start of a row, for any
+  list. The list's own SMS uses the target `studentFilter` (the search and the filters), so it
+  reaches students the app has not loaded yet.
+  Next free number: A-261.
 - **Finance and payroll (A-237).** `src/features/finance/` and `src/api/office-finance.ts`.
   `FinanceScreen` is the site's Finance page; `EntriesScreen` the entries of a kind or of a
   category (`entries-routes.tsx` reads which from the address), with `EntrySheet`, the site's one

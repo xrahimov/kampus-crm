@@ -204,6 +204,11 @@ A-201) has no migration and no setting. Two things to know after it:
   on an `https` address (the live site is one). Nothing on the server switches it
   on or off; a person can switch it off for the site in the browser.
 
+Leads boards, columns and the Sources report (A-258), several leads ticked at once with an SMS to
+a column (A-259) and several students ticked at once, an SMS to the whole list and Activate
+(A-260) use calls the site's own Leads and Students pages already make. No server update, no
+migration, no setting.
+
 Importing from an Excel sheet in the app (A-257) uses the site's own templates and import calls, so
 the app's part needs no server update. Two small repairs of the site come with it and arrive with
 the next server update: the example row of every import template says `<client name>`, `<group
