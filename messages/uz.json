@@ -6473,6 +6473,9 @@
       "firstSignIn": "Birinchi kirish Telegram kodi bilan bo'ladi. Shundan keyin xodim parolini o'zi tanlaydi.",
       "colorChoice": "Rang {number}",
       "moreSettings": "Qolgan sozlamalar saytda ochiladi."
+    },
+    "money": {
+      "sortBy": "Saralash"
     }
   }
 }

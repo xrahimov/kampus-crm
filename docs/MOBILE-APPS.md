@@ -57,7 +57,8 @@ able to work from an iPad or a phone.
 | Office: every group with filters, New group and edit, change times and teachers, days off, finish and archive, the students of a group, Add to a group, Timetable (A-233) | Built, phone and tablet; the form, the filters and Timetable need the server update with A-233                           |
 | Office: teachers (two lists, New teacher, a teacher's page, hours for 1:1 booking), the Settings list, courses with syllabus and grade weights, rooms (A-234)             | Built, phone and tablet                                                                                                  |
 | Office: exams (group and mock exams with filters, Add exam and edit, finish and reopen, the grading sheet, a mock exam's registrations) (A-235)                           | Built, phone and tablet                                                                                                  |
-| The office's other pages: the rest of a student's page (discounts, refunds), debts, cash desk, finance, reports, the other settings                                       | Next, part by part (A-230 to A-235 are parts 1 to 4 of 6); they open on the site until then                              |
+| Office: debtors (figures, filters, a contact written down, a Telegram reminder, history) and the cash desk (day closes, Close the day, Accept) (A-236)                    | Built, phone and tablet; the Excel file and the sheet to print stay on the site                                          |
+| The office's other pages: the rest of a student's page (discounts, refunds), finance, payroll, reports, the other settings                                                | Next, part by part (A-230 to A-236 are parts 1 to 5a of 6); they open on the site until then                             |
 | The site running on the app's code                                                                                                                                        | Part by part, the student side first; wide tables, Excel and print last                                                  |
 
 ## What kai needs to do
@@ -135,6 +136,12 @@ mobile/
   `CourseFormSheet` and `SyllabusSheet`, and `RoomsScreen`, are the two sections the app has.
   `Fact` and `ActionRow` in `src/components/rows.tsx` are the label-and-value row and the row of a
   menu of things to do. `Glass` takes `dense` for a pane people read and type on (every `Sheet`).
+- **Debts and the cash desk (A-236).** `src/features/money/` and `src/api/office-money.ts`.
+  `DebtsScreen` is the site's Debtors page with `DebtContactSheet` and `DebtHistorySheet`;
+  `CashDeskScreen` the site's Cash desk page with `CloseDaySheet`. The debts list reads `status`,
+  `branchId` and `q` from its address, which is how a notification opens it filtered. The day's
+  figures (`useCashDay`) are never kept: they are asked for again each time the sheet opens, and
+  while they are on their way nothing of an earlier count is shown or acted on.
 - **Exams (A-235).** `src/features/exams/` and `src/api/office-exams.ts`. `ExamsScreen` is the
   site's Exams page, `ExamFormSheet` its form (also opened from a group's Exams page with the group
   given), `ExamScreen` an exam's own page with the grading sheet and a mock exam's registrations.
