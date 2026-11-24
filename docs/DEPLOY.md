@@ -204,6 +204,10 @@ A-201) has no migration and no setting. Two things to know after it:
   on an `https` address (the live site is one). Nothing on the server switches it
   on or off; a person can switch it off for the site in the browser.
 
+A topic's content, words and exercises in the app (A-263: the blocks students read and watch, the
+words for the trainer, self-check exercises on a topic and on a homework) use the calls of the
+site's own plan page. No server update, no migration, no setting.
+
 A group's lessons in the app (A-262: an extra lesson, the plan topic, note and link on a lesson,
 the students' ratings, the students' own lesson links, seats offered to the waiting list) use the
 calls of the site's own group page. No server update, no migration, no setting.

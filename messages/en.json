@@ -6494,6 +6494,9 @@
       "newLinkText": "The old link stops working at once. Send the student the new one.",
       "newLink": "Make a new link"
     },
+    "topics": {
+      "unsaved": "Not saved yet. Press Save to keep the changes to the list."
+    },
     "catalog": {
       "changeHours": "Change hours",
       "firstSignIn": "The first sign-in is with a code from Telegram. The person chooses their own password then.",

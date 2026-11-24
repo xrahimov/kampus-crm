@@ -82,7 +82,8 @@ able to work from an iPad or a phone.
 | Office: several students ticked on the Students list (add to a group, discount, SMS, Excel, archive, restore), an SMS to the whole filtered list, and Activate (A-260)                                                       | Built, phone and tablet; no server update needed                                                                                            |
 | Staff: My account: the password, the Telegram sign-in code, the devices signed in with sign out (A-261)                                                                                                                      | Built, phone and tablet; no server update needed                                                                                            |
 | Staff: a group's lessons: an extra lesson, the plan topic, note and link on a lesson, students' ratings, students' own lesson links (share, new link, SMS), seats offered to the waiting list (A-262)                        | Built, phone and tablet; no server update needed                                                                                            |
-| What the site has and the app does not yet: a topic's self-study content, words and exercises; attendance by badge scan and a student's earned badges; some fields of the student form                                       | Next, in that order                                                                                                                         |
+| Staff: a topic's content for self-study (text, video, file, link), its words for the trainer, and self-check exercises of six kinds with results, on a topic and on a homework (A-263)                                       | Built, phone and tablet; no server update needed                                                                                            |
+| What the site has and the app does not yet: attendance by badge scan and a student's earned badges; some fields of the student form                                                                                          | Next, in that order                                                                                                                         |
 | What stays on the site                                                                                                                                                                                                       | The organisations page with the server's status, the print layouts (receipt, badge, cash desk sheet, certificate), recording a video lesson |
 | The site running on the app's code                                                                                                                                                                                           | Part by part, the student side first; wide tables, Excel and print last                                                                     |
 
@@ -335,10 +336,11 @@ mobile/
   (`features/staff/lesson-extras.tsx`) reads the lesson's row from the group's month, as the grades
   do, and saves through `useSetTopic`. `GroupLinksScreen` (`/staff/links/[id]`) builds a student's
   address with `classLink`, which uses the page's own address in a browser build.
+- **A topic's content, words and exercises (A-263).** `api/topic-content.ts` holds the calls and `features/topics/` the screens: `TopicContentScreen` (`/staff/topic/[id]`, from **Content** on a group's plan) with `ExercisesPanel` and `WordsPanel`, `ExerciseEditorScreen` (`/staff/exercise/[id]`, `new` for a new one, with `topic` or `homework` saying where it belongs) and `HomeworkExercisesScreen` (`/staff/exercises/[id]`). The rules are the site's own, imported from `@kampus/lib/validation/` (`topic-content`, `exercises`, `vocab`): do not copy them into the app. A block is drawn with the students' own `Block` from `features/student/course-screen.tsx`.
 - **Finding what is missing.** The last sweep listed every `route.ts` under `src/app/api/v1` with
   its methods and looked for each path's last fixed part in `mobile/src`: a call nobody names is a
   feature the app lacks. Worth repeating after the site gains a feature.
-  Next free number: A-263.
+  Next free number: A-264.
 - **Finance and payroll (A-237).** `src/features/finance/` and `src/api/office-finance.ts`.
   `FinanceScreen` is the site's Finance page; `EntriesScreen` the entries of a kind or of a
   category (`entries-routes.tsx` reads which from the address), with `EntrySheet`, the site's one

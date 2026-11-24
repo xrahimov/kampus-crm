@@ -258,8 +258,11 @@ function Topic({
 
 const BLOCK_ICON = { TEXT: Type, VIDEO: Play, FILE: FileText, LINK: Link2 } as const;
 
-/** One block of a topic as a student reads it: text, a video, a file or a link. */
-function Block({ block }: { block: TopicBlock }) {
+/**
+ * One block of a topic as a student reads it: text, a video, a file or a link.
+ * The staff's content page shows the same (A-263), so they see what students get.
+ */
+export function Block({ block }: { block: TopicBlock }) {
   const t = useTranslations("portal.course");
   const { colors } = useTheme();
   const router = useRouter();

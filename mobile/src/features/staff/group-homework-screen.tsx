@@ -453,6 +453,15 @@ function Task({
             onPress={() => setOpen((was) => !was)}
             testID="task-answers"
           />
+          <Button
+            compact
+            variant="ghost"
+            label={t("groups.homework.exercises")}
+            onPress={() =>
+              router.push({ pathname: "/staff/exercises/[id]", params: { id: task.id, name } })
+            }
+            testID="task-exercises"
+          />
           {canSet ? (
             <>
               <Button
