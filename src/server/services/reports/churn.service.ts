@@ -5,6 +5,7 @@ import { prisma, type DbClient } from "@/server/db/prisma";
 import { AppError } from "@/server/errors/app-error";
 import { authorize, type Actor } from "@/server/rbac/authorize";
 import { mustFind, rethrowAsAppError } from "@/server/services/settings/shared";
+import { TEACHER_ROLE_CODES } from "@/server/services/staff/staff.service";
 
 import {
   branchIn,
@@ -239,6 +240,39 @@ const reasonDto = (r: {
   kind: r.kind,
   isActive: r.isActive,
 });
+
+export interface ChurnOptions {
+  courses: Array<{ id: string; name: string }>;
+  teachers: Array<{ id: string; name: string }>;
+  groups: Array<{ id: string; name: string }>;
+}
+
+/** What the report's filters choose from: courses and groups of the branch (or the actor's scope), and the teachers. */
+export async function getChurnOptions(
+  actor: Actor,
+  branchId?: string,
+  db: DbClient = prisma,
+): Promise<ChurnOptions> {
+  authorize(actor, "reports.view");
+  const scope = branchIn(reportBranch(actor, branchId));
+  const [courses, teachers, groups] = await Promise.all([
+    db.course.findMany({
+      where: scope,
+      select: { id: true, name: true },
+      orderBy: { name: "asc" },
+    }),
+    db.user.findMany({
+      where: {
+        isArchived: false,
+        roles: { some: { role: { code: { in: [...TEACHER_ROLE_CODES] } } } },
+      },
+      select: { id: true, fullName: true },
+      orderBy: { fullName: "asc" },
+    }),
+    db.group.findMany({ where: scope, select: { id: true, name: true }, orderBy: { name: "asc" } }),
+  ]);
+  return { courses, teachers: teachers.map((x) => ({ id: x.id, name: x.fullName })), groups };
+}
 
 export async function listLeaveReasons(
   actor: Actor,

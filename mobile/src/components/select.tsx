@@ -33,6 +33,7 @@ export function Select<T extends string>({
   onChange,
   placeholder,
   clearLabel,
+  emptyLabel,
   error,
   compact = false,
   testID = "select",
@@ -43,6 +44,12 @@ export function Select<T extends string>({
   onChange: (value: T | null) => void;
   placeholder?: string;
   clearLabel?: string;
+  /**
+   * What the field itself shows with nothing chosen, when the row that chooses nothing would
+   * not say enough there: "Group" in a row of filters that have no labels, where "All" five
+   * times over tells nobody which filter is which.
+   */
+  emptyLabel?: string;
   error?: string | null;
   /** Without the label above: a filter in a row of filters. The label is still read out. */
   compact?: boolean;
@@ -114,10 +121,10 @@ export function Select<T extends string>({
         <Text
           numberOfLines={1}
           variant={compact ? "small" : "body"}
-          tone={chosen ? "foreground" : clearLabel ? "foreground" : "mutedForeground"}
+          tone={chosen || (clearLabel && !emptyLabel) ? "foreground" : "mutedForeground"}
           style={styles.value}
         >
-          {chosen?.label ?? clearLabel ?? placeholder ?? ""}
+          {chosen?.label ?? emptyLabel ?? clearLabel ?? placeholder ?? ""}
         </Text>
         <ChevronDown size={compact ? 16 : 18} color={colors.mutedForeground} />
       </Press>

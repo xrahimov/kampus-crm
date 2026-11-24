@@ -6,11 +6,8 @@ import { Forbidden } from "@/features/settings/forbidden";
 import type { SearchParams } from "@/features/settings/list-params";
 import { churnFilterSchema } from "@/lib/validation/reports";
 import { requireCurrentUser } from "@/server/auth/current-user";
-import { prisma } from "@/server/db/prisma";
 import { can } from "@/server/rbac/authorize";
-import { getChurnReport } from "@/server/services/reports/churn.service";
-import { branchIn, reportBranch } from "@/server/services/reports/shared";
-import { TEACHER_ROLE_CODES } from "@/server/services/staff/staff.service";
+import { getChurnOptions, getChurnReport } from "@/server/services/reports/churn.service";
 
 import { pick } from "../_params";
 
@@ -35,34 +32,16 @@ export default async function Page({
     pick(sp, ["from", "to", "branchId", "courseId", "teacherId", "groupId", "reason", "discount"]),
   );
   const filters = parsed.success ? parsed.data : {};
-  const scope = branchIn(reportBranch(current.actor, filters.branchId));
-  const [report, courses, teachers, groups] = await Promise.all([
+  const [report, options] = await Promise.all([
     getChurnReport(current.actor, filters),
-    prisma.course.findMany({
-      where: scope,
-      select: { id: true, name: true },
-      orderBy: { name: "asc" },
-    }),
-    prisma.user.findMany({
-      where: {
-        isArchived: false,
-        roles: { some: { role: { code: { in: [...TEACHER_ROLE_CODES] } } } },
-      },
-      select: { id: true, fullName: true },
-      orderBy: { fullName: "asc" },
-    }),
-    prisma.group.findMany({
-      where: scope,
-      select: { id: true, name: true },
-      orderBy: { name: "asc" },
-    }),
+    getChurnOptions(current.actor, filters.branchId),
   ]);
   return (
     <ChurnReport
       report={report}
       filters={filters}
       branches={current.branches}
-      options={{ courses, teachers: teachers.map((x) => ({ id: x.id, name: x.fullName })), groups }}
+      options={options}
       canManageReasons={can(current.actor, "settings.catalog")}
     />
   );

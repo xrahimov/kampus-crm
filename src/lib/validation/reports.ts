@@ -64,6 +64,15 @@ export const leaveReasonSchema = z.object({
   isActive: z.boolean().default(true),
 });
 export type LeaveReasonInput = z.infer<typeof leaveReasonSchema>;
+/**
+ * A change to a reason: only what was sent. Not `leaveReasonSchema.partial()`: that one fills
+ * in the defaults of what was not sent, so switching a Transfer reason off made it a Leaving one.
+ */
+export const leaveReasonUpdateSchema = z.object({
+  name: leaveReasonSchema.shape.name.optional(),
+  kind: z.enum(LEAVE_REASON_KINDS).optional(),
+  isActive: z.boolean().optional(),
+});
 
 /** "Bitiruvchilar hisoboti". */
 export const graduatesFilterSchema = reportPeriodSchema.extend({

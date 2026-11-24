@@ -3,6 +3,7 @@ import { useState } from "react";
 
 import { FINANCE_SECTIONS } from "@/api/office-finance";
 import { DEBT_FILTERS } from "@/api/office-money";
+import { NATIVE_REPORTS } from "@/api/office-reports";
 import { GROUP_STATUS_FILTERS, PAYMENT_STATUS_FILTERS } from "@/api/staff-students";
 import { errorText, useLocaleChoice, useTranslations } from "@/lib/i18n";
 import { can, type Me } from "@/lib/session";
@@ -62,6 +63,13 @@ export function nativeRoute(path: string): Href | null {
     return id in FINANCE_SECTIONS
       ? { pathname: "/staff/finance/[section]", params: { section: id } }
       : null;
+  }
+  // Reports (A-238): the list, and the reports the app shows itself. The rest are the site's.
+  if (first === "reports") {
+    if (!id) return "/staff/reports";
+    if (rest.length > 0) return null;
+    const report = NATIVE_REPORTS.find((name) => name === id);
+    return report ? `/staff/reports/${report}` : null;
   }
   if (rest.length > 0) return null;
   if (first === "account") return id === "salary" ? "/staff/salary" : null;
