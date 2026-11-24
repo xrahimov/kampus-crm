@@ -23,6 +23,10 @@ jest.mock("expo-router", () => ({
 }));
 const ALL_STAFF_RIGHTS = ["staff.view", "staff.create", "staff.update", "staff.delete"];
 let mockPermissions = [...ALL_STAFF_RIGHTS, "settings.roles"];
+const mockSaveFile = jest.fn<Promise<string>, [string, string]>(async () => "opened");
+jest.mock("@/lib/save-file", () => ({
+  saveFile: (path: string, name: string) => mockSaveFile(path, name),
+}));
 jest.mock("@/lib/session", () => ({
   useMe: () => ({
     user: { id: "me" },
@@ -156,6 +160,12 @@ describe("staff", () => {
     expect(screen.getByTestId("staff-s1")).toHaveTextContent(/Monthly: .*Hired on/);
     expect(screen.getByTestId("staff-temporary-s1")).toHaveTextContent("Temporary password");
     expect(screen.queryByTestId("staff-temporary-me")).toBeNull();
+    // The list as it is filtered, as an Excel file (A-256).
+    await fireEvent.press(screen.getByTestId("staff-excel"));
+    expect(mockSaveFile).toHaveBeenLastCalledWith(
+      "/staff/export.xlsx?sort=fullName%3Aasc&locale=en",
+      "kampus.xlsx",
+    );
 
     // A chip per role somebody holds, with how many; All is their sum.
     expect(screen.getByTestId("staff-role-all")).toHaveTextContent(/All.*3/);

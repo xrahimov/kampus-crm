@@ -10,6 +10,7 @@ import { Field } from "@/components/field";
 import { Header } from "@/components/header";
 import { Avatar, Badge, Card, Divider, EmptyState, Screen } from "@/components/surface";
 import { Text } from "@/components/text";
+import { ExcelButton } from "@/features/files/excel-button";
 import { filtersFromParams, StudentFilterSheet } from "@/features/office/student-filters";
 import { StudentFormSheet } from "@/features/office/student-form";
 import { PendingScreen } from "@/features/shared/pending-screen";
@@ -137,6 +138,13 @@ export function StudentsScreen() {
           onPress={() => void query.fetchNextPage()}
           style={styles.start}
           testID="students-more"
+        />
+      ) : null}
+      {total > 0 ? (
+        <ExcelButton
+          path="/students/export.xlsx"
+          params={{ sort: "fullName:asc", q, ...filters }}
+          testID="students-excel"
         />
       ) : null}
       <StudentFilterSheet

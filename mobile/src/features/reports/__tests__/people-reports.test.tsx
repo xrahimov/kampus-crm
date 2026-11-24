@@ -33,6 +33,10 @@ jest.mock("expo-router", () => ({
 }));
 const mockOpenOnSite = jest.fn<Promise<void>, [string]>();
 jest.mock("@/lib/web", () => ({ openOnSite: (path: string) => mockOpenOnSite(path) }));
+const mockSaveFile = jest.fn<Promise<string>, [string, string]>();
+jest.mock("@/lib/save-file", () => ({
+  saveFile: (path: string, name: string) => mockSaveFile(path, name),
+}));
 const mockChoosePhoto = jest.fn();
 jest.mock("@/features/files/pick", () => ({
   choosePhoto: (options: unknown) => mockChoosePhoto(options),
@@ -77,6 +81,8 @@ beforeEach(() => {
   fetchMock.mockReset();
   mockPush.mockReset();
   mockOpenOnSite.mockReset();
+  mockSaveFile.mockReset();
+  mockSaveFile.mockResolvedValue("opened");
   mockOpenOnSite.mockResolvedValue();
   mockChoosePhoto.mockReset();
   mockBranches = [{ id: "b1", name: "Chilonzor" }];
@@ -215,7 +221,7 @@ describe("the graduates report", () => {
     expect(asked("GET", "/reports/graduates").has("result")).toBe(false);
   });
 
-  it("asks again for every filter, and opens the same list on the site for Excel", async () => {
+  it("asks again for every filter, and fetches the same list as an Excel file", async () => {
     serve({ "GET /reports/graduates": GRADUATES });
     await show(<GraduatesReportScreen />);
     await fireEvent.press(await screen.findByTestId("graduates-group"));
@@ -233,10 +239,11 @@ describe("the graduates report", () => {
     expect(query.get("courseId")).toBe("c1");
 
     await fireEvent.press(screen.getByTestId("report-excel"));
-    const path = mockOpenOnSite.mock.calls.at(-1)![0];
-    expect(path.startsWith("/en/reports/graduates?")).toBe(true);
+    const path = mockSaveFile.mock.calls.at(-1)![0];
+    expect(path.startsWith("/reports/graduates/export.xlsx?")).toBe(true);
     expect(path).toContain("groupId=g1");
     expect(path).toContain("result=no");
+    expect(path.endsWith("&locale=en")).toBe(true);
   });
 
   it("records what came of a graduate's studies", async () => {

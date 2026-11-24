@@ -6361,7 +6361,9 @@
       "title": "Файл",
       "failed": "Не удалось открыть этот файл.",
       "cannotShow": "Приложение не может показать файл такого типа.",
-      "openOutside": "Открыть в другом приложении"
+      "openOutside": "Открыть в другом приложении",
+      "inDownloads": "Файл сохранён в «Загрузки».",
+      "noApp": "На этом телефоне нет приложения для файлов Excel. Установите его или откройте этот список на сайте."
     },
     "materials": {
       "continueFrom": "Продолжить с {time}",
@@ -6476,7 +6478,9 @@
       "undoDayOff": "Вернуть урок",
       "undoDayOffTitle": "Отменить выходной?",
       "undoDayOffText": "Урок {date} вернётся в расписание. Перенесённый урок вернётся на свой день.",
-      "nothingThatDay": "{day}: уроков нет."
+      "nothingThatDay": "{day}: уроков нет.",
+      "excelAttendance": "Посещаемость в Excel",
+      "excelGrades": "Оценки в Excel"
     },
     "catalog": {
       "changeHours": "Изменить часы",
@@ -6485,8 +6489,7 @@
       "moreSettings": "Остальные настройки открываются на сайте."
     },
     "money": {
-      "sortBy": "Сортировка",
-      "excelOnSite": "Файл Excel на сайте"
+      "sortBy": "Сортировка"
     },
     "reports": {
       "certificateOnSite": "Открыть сертификат {number}",

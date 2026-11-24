@@ -24,6 +24,10 @@ jest.mock("expo-router", () => ({
 }));
 let mockPermissions: string[] = [];
 let mockBranches = [{ id: "b1", name: "Chilonzor" }];
+const mockSaveFile = jest.fn<Promise<string>, [string, string]>(async () => "opened");
+jest.mock("@/lib/save-file", () => ({
+  saveFile: (path: string, name: string) => mockSaveFile(path, name),
+}));
 jest.mock("@/lib/session", () => ({
   useMe: () => ({
     user: { id: "u1", fullName: "Dilnoza Karimova", hasSalary: false },
@@ -308,6 +312,12 @@ describe("absences", () => {
     const card = await screen.findByTestId("absence-a1");
     expect(card).toHaveTextContent(/3 lessons missed in a row/);
     expect(card).toHaveTextContent(/9 days/);
+    // The list as it is filtered, as an Excel file (A-256).
+    await fireEvent.press(screen.getByTestId("absences-excel"));
+    expect(mockSaveFile).toHaveBeenLastCalledWith(
+      "/absences/export.xlsx?status=OPEN&locale=en",
+      "kampus.xlsx",
+    );
     expect(screen.getByTestId("absence-contact-a1")).toHaveTextContent("Nobody has called yet");
     expect(screen.getByTestId("absences-no-contact")).toHaveTextContent("2");
     expect(screen.getByText("Not seen for 14 days")).toBeTruthy();

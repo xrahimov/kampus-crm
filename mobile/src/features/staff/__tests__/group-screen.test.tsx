@@ -15,6 +15,10 @@ jest.mock("expo-router", () => ({
   useFocusEffect: () => undefined,
 }));
 let mockPermissions: string[] = [];
+const mockSaveFile = jest.fn<Promise<string>, [string, string]>(async () => "opened");
+jest.mock("@/lib/save-file", () => ({
+  saveFile: (path: string, name: string) => mockSaveFile(path, name),
+}));
 jest.mock("@/lib/session", () => ({
   useMe: () => ({
     user: { id: "u1", fullName: "Dilnoza Karimova", hasSalary: false },
@@ -142,6 +146,15 @@ describe("a group's page on a phone", () => {
     mockPermissions = ["groups.view", "groups.update", "students.view"];
     await renderScreen(<GroupScreen />);
     await screen.findByTestId("member-m1");
+    // The month's attendance and grades as Excel files (A-256).
+    await fireEvent.press(screen.getByTestId("attendance-excel"));
+    expect(mockSaveFile.mock.calls.at(-1)![0]).toMatch(
+      /^\/groups\/g1\/attendance\.xlsx\?month=\d{4}-\d{2}&locale=en$/,
+    );
+    await fireEvent.press(screen.getByTestId("grades-excel"));
+    expect(mockSaveFile.mock.calls.at(-1)![0]).toMatch(
+      /^\/groups\/g1\/grades\.xlsx\?month=\d{4}-\d{2}&locale=en$/,
+    );
     const [members, facts, month, list] = order(
       "open-members",
       "group-office",

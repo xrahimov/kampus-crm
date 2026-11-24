@@ -6361,7 +6361,9 @@
       "title": "File",
       "failed": "This file could not be opened.",
       "cannotShow": "The app cannot show this kind of file.",
-      "openOutside": "Open with another app"
+      "openOutside": "Open with another app",
+      "inDownloads": "The file is in Downloads.",
+      "noApp": "No app on this phone opens Excel files. Install one, or open this list on the site."
     },
     "materials": {
       "continueFrom": "Continue from {time}",
@@ -6476,7 +6478,9 @@
       "undoDayOff": "Bring the lesson back",
       "undoDayOffTitle": "Take the day off back?",
       "undoDayOffText": "The lesson on {date} comes back to the timetable. A lesson that was moved goes back to its own day.",
-      "nothingThatDay": "Nothing on {day}."
+      "nothingThatDay": "Nothing on {day}.",
+      "excelAttendance": "Attendance in Excel",
+      "excelGrades": "Grades in Excel"
     },
     "catalog": {
       "changeHours": "Change hours",
@@ -6485,8 +6489,7 @@
       "moreSettings": "The other settings open on the site."
     },
     "money": {
-      "sortBy": "Sort by",
-      "excelOnSite": "Excel file on the site"
+      "sortBy": "Sort by"
     },
     "reports": {
       "certificateOnSite": "Open certificate {number}",

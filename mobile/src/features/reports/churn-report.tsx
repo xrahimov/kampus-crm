@@ -5,7 +5,6 @@ import { Pressable, StyleSheet, View } from "react-native";
 
 import {
   CHURN_BREAKDOWNS,
-  reportQuery,
   useChurnOptions,
   useChurnReport,
   useLeaveReasonStep,
@@ -33,7 +32,7 @@ import { space, useTheme } from "@/lib/theme";
 
 import {
   CountBars,
-  ExcelOnSite,
+  ReportExcel,
   FilterCell,
   Filters,
   Kpis,
@@ -351,7 +350,7 @@ export function ChurnReportScreen() {
           ))}
         </Rows>
       )}
-      <ExcelOnSite path={`/reports/churn${reportQuery({ ...filters })}`} />
+      <ReportExcel path="/reports/churn/export.xlsx" params={{ ...filters }} />
 
       <ReasonsSheet
         open={reasonsOpen}

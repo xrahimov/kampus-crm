@@ -17,6 +17,7 @@ import { Header } from "@/components/header";
 import { Select } from "@/components/select";
 import { Badge, Card, EmptyState, Loading, Notice, Screen } from "@/components/surface";
 import { Text } from "@/components/text";
+import { ExcelButton } from "@/features/files/excel-button";
 import { errorText, useTranslations } from "@/lib/i18n";
 import { useLayout } from "@/lib/layout";
 import { useRested } from "@/lib/rested";
@@ -172,6 +173,11 @@ export function OfficeGroupsScreen() {
               testID="groups-more"
             />
           ) : null}
+          <ExcelButton
+            path="/groups/export.xlsx"
+            params={{ status, sort: "name:asc", teacherId, courseId, weekdayPattern, q }}
+            testID="groups-excel"
+          />
         </>
       )}
       <GroupFormSheet

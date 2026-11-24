@@ -32,6 +32,10 @@ jest.mock("expo-router", () => ({
 let mockPermissions: string[] = [];
 let mockBranches = [{ id: "b1", name: "Chilonzor" }];
 let mockUserId = "u1";
+const mockSaveFile = jest.fn<Promise<string>, [string, string]>(async () => "opened");
+jest.mock("@/lib/save-file", () => ({
+  saveFile: (path: string, name: string) => mockSaveFile(path, name),
+}));
 jest.mock("@/lib/session", () => ({
   useMe: () => ({
     user: { id: mockUserId, fullName: "Dilnoza Karimova", hasSalary: false },
@@ -242,6 +246,12 @@ describe("the teachers list", () => {
     expect(await screen.findByText("Aziz Rahimov")).toBeOnTheScreen();
     // A teacher's row says how they are paid.
     expect(screen.getByText("Percent: 40%")).toBeOnTheScreen();
+    // The list as it is filtered, as an Excel file (A-256).
+    await fireEvent.press(screen.getByTestId("teachers-excel"));
+    expect(mockSaveFile).toHaveBeenLastCalledWith(
+      "/teachers/export.xlsx?tab=teachers&sort=fullName%3Aasc&locale=en",
+      "kampus.xlsx",
+    );
     expect(calls("GET", "/teachers")[0]![0]).toContain("tab=teachers");
     expect(calls("GET", "/teachers")[0]![0]).not.toContain("archived");
 

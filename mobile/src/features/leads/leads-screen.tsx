@@ -12,6 +12,7 @@ import { Select } from "@/components/select";
 import { Card, Divider, EmptyState, Notice, Screen } from "@/components/surface";
 import { Text } from "@/components/text";
 import { PendingScreen } from "@/features/shared/pending-screen";
+import { ExcelButton } from "@/features/files/excel-button";
 import { errorText, useTranslations } from "@/lib/i18n";
 import { useLayout } from "@/lib/layout";
 import { useRested } from "@/lib/rested";
@@ -226,6 +227,16 @@ export function LeadsScreen() {
               ) : null}
             </>
           )}
+          <ExcelButton
+            path="/leads/export.xlsx"
+            params={{
+              boardId: board?.id ?? boardId,
+              q,
+              ownerId: ownerId === "unassigned" ? "none" : ownerId,
+              archived: archived ? "true" : null,
+            }}
+            testID="leads-excel"
+          />
         </>
       )}
       <LeadFlow lead={picked} onClose={() => setPicked(null)} today={today} />

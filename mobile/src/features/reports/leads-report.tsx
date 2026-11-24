@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { StyleSheet, View } from "react-native";
 
-import { reportQuery, useLeadsReport } from "@/api/office-reports";
+import { useLeadsReport } from "@/api/office-reports";
 import { Header } from "@/components/header";
 import { Card, Screen } from "@/components/surface";
 import { Text } from "@/components/text";
@@ -12,7 +12,7 @@ import { space } from "@/lib/theme";
 
 import {
   CountBars,
-  ExcelOnSite,
+  ReportExcel,
   Filters,
   Kpis,
   OptionFilter,
@@ -142,7 +142,7 @@ export function LeadsReportScreen() {
           ))}
         </Rows>
       )}
-      <ExcelOnSite path={`/reports/leads${reportQuery({ ...state.period, sourceId })}`} />
+      <ReportExcel path="/reports/leads/export.xlsx" params={{ ...state.period, sourceId }} />
     </Screen>
   );
 }

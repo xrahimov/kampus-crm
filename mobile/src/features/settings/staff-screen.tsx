@@ -14,6 +14,7 @@ import { Avatar, Badge, Card, EmptyState, Loading, Notice, Screen } from "@/comp
 import { Text } from "@/components/text";
 import { TeacherFormSheet } from "@/features/catalog/teacher-form";
 import { useSalaryLine } from "@/features/catalog/teachers-screen";
+import { ExcelButton } from "@/features/files/excel-button";
 import { dayAsDate } from "@/lib/days";
 import { errorText, useDate, useTranslations } from "@/lib/i18n";
 import { useLayout } from "@/lib/layout";
@@ -173,6 +174,11 @@ export function StaffScreen() {
               testID="staff-more"
             />
           ) : null}
+          <ExcelButton
+            path="/staff/export.xlsx"
+            params={{ sort: "fullName:asc", role, archived: archived ? "true" : null, q }}
+            testID="staff-excel"
+          />
         </>
       )}
       <TeacherFormSheet

@@ -40,6 +40,10 @@ jest.mock("expo-router", () => ({
 }));
 const mockOpenOnSite = jest.fn<Promise<void>, [string]>();
 jest.mock("@/lib/web", () => ({ openOnSite: (path: string) => mockOpenOnSite(path) }));
+const mockSaveFile = jest.fn<Promise<string>, [string, string]>();
+jest.mock("@/lib/save-file", () => ({
+  saveFile: (path: string, name: string) => mockSaveFile(path, name),
+}));
 let mockPermissions: string[] = [];
 let mockBranches = [{ id: "b1", name: "Chilonzor" }];
 let mockActive: { id: string; name: string } | null = null;
@@ -82,6 +86,8 @@ beforeEach(() => {
   fetchMock.mockReset();
   mockPush.mockReset();
   mockOpenOnSite.mockReset();
+  mockSaveFile.mockReset();
+  mockSaveFile.mockResolvedValue("opened");
   mockOpenOnSite.mockResolvedValue();
   mockParams = {};
   mockBranches = [{ id: "b1", name: "Chilonzor" }];
@@ -592,8 +598,9 @@ describe("the payments report", () => {
     );
 
     await fireEvent.press(screen.getByTestId("report-excel"));
-    expect(mockOpenOnSite).toHaveBeenLastCalledWith(
-      `/en/reports/payments?year=${YEAR - 1}&month=3&tab=staff`,
+    expect(mockSaveFile).toHaveBeenLastCalledWith(
+      `/reports/payments/export.xlsx?year=${YEAR - 1}&month=3&tab=staff&locale=en`,
+      "kampus.xlsx",
     );
   });
 
@@ -675,7 +682,7 @@ describe("the student payments report", () => {
     });
   });
 
-  it("asks again for every filter, and opens the same list on the site for Excel", async () => {
+  it("asks again for every filter, and fetches the same list as an Excel file", async () => {
     serve(routes({ 1: paymentsPage([payment("p1")]) }));
     await show(<StudentPaymentsReportScreen />);
     await screen.findByTestId("student-payment-p1");
@@ -701,9 +708,10 @@ describe("the student payments report", () => {
     }
 
     await fireEvent.press(screen.getByTestId("report-excel"));
-    expect(mockOpenOnSite).toHaveBeenLastCalledWith(
-      `/en/reports/student-payments?year=${YEAR}&month=${MONTH}&byPaidAt=true&q=Jasur` +
-        "&groupId=g1&paymentMethodId=pm2&teacherId=t1&courseId=c1&bonus=yes&receivedById=s1",
+    expect(mockSaveFile).toHaveBeenLastCalledWith(
+      `/reports/student-payments/export.xlsx?year=${YEAR}&month=${MONTH}&byPaidAt=true&q=Jasur` +
+        "&groupId=g1&paymentMethodId=pm2&teacherId=t1&courseId=c1&bonus=yes&receivedById=s1&locale=en",
+      "kampus.xlsx",
     );
 
     // "All" takes a filter off again.
@@ -973,7 +981,7 @@ describe("the lead statements", () => {
     expect(screen.getByTestId("leads-trials-1")).toHaveTextContent(/No source/);
   });
 
-  it("asks again for one source and sends the same to the site for Excel", async () => {
+  it("asks again for one source and fetches the same as an Excel file", async () => {
     serve({
       "GET /reports/leads": {
         ...LEADS,
@@ -992,8 +1000,9 @@ describe("the lead statements", () => {
     await fireEvent.press(await screen.findByTestId("leads-source-option-src2"));
     await waitFor(() => expect(asked("GET", "/reports/leads").get("sourceId")).toBe("src2"));
     await fireEvent.press(screen.getByTestId("report-excel"));
-    expect(mockOpenOnSite).toHaveBeenLastCalledWith(
-      `/en/reports/leads?year=${YEAR}&month=${MONTH}&sourceId=src2`,
+    expect(mockSaveFile).toHaveBeenLastCalledWith(
+      `/reports/leads/export.xlsx?year=${YEAR}&month=${MONTH}&sourceId=src2&locale=en`,
+      "kampus.xlsx",
     );
   });
 });
@@ -1095,9 +1104,10 @@ describe("the students report", () => {
     expect(asked("GET", "/reports/students").get("page")).toBeNull();
 
     await fireEvent.press(screen.getByTestId("report-excel"));
-    expect(mockOpenOnSite).toHaveBeenLastCalledWith(
-      `/en/reports/students?year=${YEAR}&month=${MONTH}&from=${THIS_MONTH}-01` +
-        `&to=${monthBounds(YEAR, MONTH).to}&status=ARCHIVED&tab=performance`,
+    expect(mockSaveFile).toHaveBeenLastCalledWith(
+      `/reports/students/export.xlsx?year=${YEAR}&month=${MONTH}&from=${THIS_MONTH}-01` +
+        `&to=${monthBounds(YEAR, MONTH).to}&status=ARCHIVED&tab=performance&locale=en`,
+      "kampus.xlsx",
     );
   });
 
@@ -1180,8 +1190,9 @@ describe("the centre's statistics", () => {
     await waitFor(() => expect(asked("GET", "/reports/statistics").get("view")).toBe("daily"));
 
     await fireEvent.press(screen.getByTestId("report-excel"));
-    expect(mockOpenOnSite).toHaveBeenLastCalledWith(
-      `/en/reports/statistics?year=${YEAR}&month=${MONTH}&view=daily&date=${YEAR}-03-02`,
+    expect(mockSaveFile).toHaveBeenLastCalledWith(
+      `/reports/statistics/export.xlsx?year=${YEAR}&month=${MONTH}&view=daily&date=${YEAR}-03-02&locale=en`,
+      "kampus.xlsx",
     );
   });
 

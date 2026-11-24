@@ -10,7 +10,7 @@ import { Header } from "@/components/header";
 import { Badge, Card, Divider, Notice, Screen, type Tone } from "@/components/surface";
 import { Text } from "@/components/text";
 import { useOpenSite } from "@/features/office/site-paths";
-import { ExcelOnSite, Filters, OptionFilter } from "@/features/reports/parts";
+import { Filters, OptionFilter, ReportExcel } from "@/features/reports/parts";
 import { dayAsDate } from "@/lib/days";
 import { errorText, useDate, useMoney, useTranslations } from "@/lib/i18n";
 import { can, useMe } from "@/lib/session";
@@ -28,7 +28,7 @@ const FISCAL_TONE: Record<"PENDING" | "ISSUED" | "FAILED", Tone> = {
  * Payments (A-246): the site's Settings → Payments. Every payment the centre
  * took, newest first, narrowed by days, the payment method and the cashier,
  * with the sum of all the filters let through. A student's name opens their
- * page; the receipt and the Excel file open on the site.
+ * page; the receipt opens on the site, the Excel file comes to the phone (A-256).
  */
 export function PaymentsLogScreen() {
   const t = useTranslations();
@@ -47,12 +47,6 @@ export function PaymentsLogScreen() {
   const fiscal = useRetryFiscal();
   const query = usePaymentsLog({ ...days.days, paymentMethodId, receivedById });
   const total = query.data?.pages[0]?.totalAmount;
-  const excel = [
-    days.days.from ? `from=${days.days.from}` : null,
-    days.days.to ? `to=${days.days.to}` : null,
-    paymentMethodId ? `paymentMethodId=${paymentMethodId}` : null,
-    receivedById ? `receivedById=${receivedById}` : null,
-  ].filter(Boolean);
   return (
     <Screen
       header={<Header back title={tl("title")} />}
@@ -187,7 +181,10 @@ export function PaymentsLogScreen() {
           </Card>
         )}
       </LogBody>
-      <ExcelOnSite path={`/settings/payments${excel.length ? `?${excel.join("&")}` : ""}`} />
+      <ReportExcel
+        path="/payments/export.xlsx"
+        params={{ ...days.days, paymentMethodId, receivedById }}
+      />
     </Screen>
   );
 }

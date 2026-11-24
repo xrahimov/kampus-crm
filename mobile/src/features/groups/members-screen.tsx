@@ -35,6 +35,7 @@ import {
   type Tone,
 } from "@/components/surface";
 import { Text } from "@/components/text";
+import { ExcelButton } from "@/features/files/excel-button";
 import { centreToday, dayAsDate } from "@/lib/days";
 import { fieldErrorOf, isTaken, phoneOrNull } from "@/lib/form";
 import { errorText, useDate, useMoney, useTranslations } from "@/lib/i18n";
@@ -268,6 +269,11 @@ export function MembersScreen() {
           ))}
         </Card>
       )}
+      <ExcelButton
+        path={`/groups/${id}/export.xlsx`}
+        params={{ archived: removed ? "true" : null }}
+        testID="members-excel"
+      />
 
       {group.data ? (
         <AddMemberSheet open={adding} onClose={() => setAdding(false)} group={group.data} />

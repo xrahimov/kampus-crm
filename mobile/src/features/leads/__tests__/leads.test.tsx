@@ -34,6 +34,10 @@ jest.mock("expo-router", () => ({
   useLocalSearchParams: () => mockParams,
 }));
 let mockPermissions: string[] = [];
+const mockSaveFile = jest.fn<Promise<string>, [string, string]>(async () => "opened");
+jest.mock("@/lib/save-file", () => ({
+  saveFile: (path: string, name: string) => mockSaveFile(path, name),
+}));
 jest.mock("@/lib/session", () => ({
   useMe: () => ({
     user: { id: "u1", fullName: "Dilnoza Karimova", hasSalary: false },
@@ -195,6 +199,12 @@ describe("the leads board", () => {
     );
     expect(screen.getByTestId("leads-calls")).toHaveTextContent("Calls today (2)");
     expect(screen.getByTestId("leads-inbox")).toHaveTextContent("Inbox (1)");
+    // The board as it is filtered, as an Excel file (A-256).
+    await fireEvent.press(screen.getByTestId("leads-excel"));
+    expect(mockSaveFile).toHaveBeenLastCalledWith(
+      "/leads/export.xlsx?boardId=bd1&locale=en",
+      "kampus.xlsx",
+    );
 
     await fireEvent.press(screen.getByTestId("column-c2"));
     expect(screen.getByTestId("lead-l2")).toBeTruthy();

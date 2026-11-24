@@ -8,6 +8,7 @@ import { Button } from "@/components/button";
 import { Select } from "@/components/select";
 import { Badge, Card, Divider, Loading, Notice, type Tone } from "@/components/surface";
 import { Text } from "@/components/text";
+import { ExcelButton } from "@/features/files/excel-button";
 import { dayAsDate } from "@/lib/days";
 import { errorText, useDate, useMoney, useTranslations } from "@/lib/i18n";
 import { can, useMe } from "@/lib/session";
@@ -173,6 +174,13 @@ export function StudentPayments({ student }: { student: StudentDetail }) {
           <Text variant="smallStrong" style={styles.total} testID="student-payments-total">
             {th("total", { amount: money(total) })}
           </Text>
+          <ExcelButton
+            compact
+            path="/payments/export.xlsx"
+            params={{ studentId: student.id, groupId }}
+            label={th("excel")}
+            testID="student-payments-excel"
+          />
         </View>
       ) : null}
       {fiscal.error || site.error ? (
