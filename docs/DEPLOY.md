@@ -204,6 +204,9 @@ A-201) has no migration and no setting. Two things to know after it:
   on an `https` address (the live site is one). Nothing on the server switches it
   on or off; a person can switch it off for the site in the browser.
 
+A group's discounts and lesson packages in the app (A-254) use the calls the site's own tabs use:
+no server update, no migration, no setting.
+
 The assistant in the app (A-253) needs the server update: one new read-only call,
 `GET /api/v1/assistant`, tells the app who is asking and whether the centre has a key. No
 migration, no setting; the conversation and the summary use the calls the site already has. Until
