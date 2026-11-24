@@ -303,6 +303,16 @@ describe("the way to the scanner", () => {
     expect(screen.queryByTestId("scan-badges")).toBeNull();
   });
 
+  it("leaves the first line of Today's card to the time and the room: Extra is with the badges (A-266)", async () => {
+    serveDay(day({ lessons: [{ ...LESSON, isExtra: true, roomName: null }] }));
+    await renderScreen(<TodayScreen />);
+    // A tablet's narrow card showed "N." for "No room" while the badge stood beside the time.
+    expect(await screen.findByTestId("lesson-card-l1")).toHaveTextContent(
+      /19:30–21:00No roomGE-Morning A1Extra lesson0 of 1 marked/,
+    );
+    expect(screen.getByTestId("lesson-extra-l1")).toHaveTextContent("Extra lesson");
+  });
+
   it("is on Today for the door, for whoever marks lessons", async () => {
     serveDay(day());
     await renderScreen(<TodayScreen />);

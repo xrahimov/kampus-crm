@@ -291,12 +291,9 @@ function LessonCard({
           <Text variant="figure" tone={selected ? "accentForeground" : "foreground"}>
             {lesson.startTime}–{lesson.endTime}
           </Text>
-          {/* In the tablet's narrow list the "Extra" badge goes to a line of its own
-              before the room is cut to a letter. */}
-          <Text variant="small" tone="mutedForeground" numberOfLines={1} style={styles.room}>
+          <Text variant="small" tone="mutedForeground" numberOfLines={1} style={styles.fill}>
             {lesson.roomName ?? t("today.lesson.noRoom")}
           </Text>
-          {lesson.isExtra ? <Badge label={t("today.lesson.extra")} /> : null}
         </View>
         <Text variant="heading" numberOfLines={2}>
           {lesson.groupName}
@@ -307,6 +304,11 @@ function LessonCard({
           </Text>
         ) : null}
         <View style={styles.lessonFoot}>
+          {/* With the other badges, which wrap: beside the time it left a tablet's narrow
+              card one letter of the room (A-266). */}
+          {lesson.isExtra ? (
+            <Badge label={t("today.lesson.extra")} testID={`lesson-extra-${lesson.id}`} />
+          ) : null}
           <Badge
             tone={done ? "success" : "neutral"}
             label={t("today.attendance.summary", {
@@ -406,14 +408,7 @@ const styles = StyleSheet.create({
   lesson: { flexDirection: "row", padding: 0, gap: 0, overflow: "hidden" },
   edge: { width: 5 },
   lessonBody: { flex: 1, padding: space[4], gap: space[2] },
-  lessonTop: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    alignItems: "baseline",
-    columnGap: space[3],
-    rowGap: space[1],
-  },
-  room: { flexGrow: 1, flexShrink: 1, flexBasis: 72 },
+  lessonTop: { flexDirection: "row", alignItems: "baseline", gap: space[3] },
   lessonFoot: { flexDirection: "row", flexWrap: "wrap", gap: space[2], marginTop: space[1] },
   debtor: { flexDirection: "row", alignItems: "center", gap: space[3] },
 });

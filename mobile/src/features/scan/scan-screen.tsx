@@ -127,6 +127,19 @@ export function ScanScreen() {
     <>
       <Card>
         <Text variant="heading">{ts("manual")}</Text>
+        {/* On a phone the list is under the keyboard, and so is all below the field: the latest
+            badge is said above it too. */}
+        {!wide && newest ? (
+          <View style={styles.last} testID="scan-last">
+            <Text variant="small" numberOfLines={1} style={styles.fill}>
+              {newest.result?.studentName ?? newest.problem ?? newest.code}
+            </Text>
+            <Badge
+              tone={newest.result ? STATUS_TONE[newest.result.status] : "destructive"}
+              label={ts(`status.${newest.result ? newest.result.status : "error"}`)}
+            />
+          </View>
+        ) : null}
         <Field
           label={ts("code")}
           value={typed}
@@ -149,18 +162,6 @@ export function ScanScreen() {
           testID="scan-send"
           style={styles.start}
         />
-        {/* On a phone the list is under the keyboard: the latest badge is said here too. */}
-        {!wide && newest ? (
-          <View style={styles.last} testID="scan-last">
-            <Text variant="small" numberOfLines={1} style={styles.fill}>
-              {newest.result?.studentName ?? newest.problem ?? newest.code}
-            </Text>
-            <Badge
-              tone={newest.result ? STATUS_TONE[newest.result.status] : "destructive"}
-              label={ts(`status.${newest.result ? newest.result.status : "error"}`)}
-            />
-          </View>
-        ) : null}
       </Card>
       <Card style={styles.flush} testID="scan-log">
         <View style={styles.logHead}>
