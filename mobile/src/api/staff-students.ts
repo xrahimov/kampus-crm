@@ -36,6 +36,7 @@ export interface StudentFilters {
   groupStatus?: "ACTIVE" | "NEW" | "FROZEN" | "LEFT_AFTER_TRIAL" | "NO_GROUP";
   archived?: boolean;
   courseId?: string;
+  schoolId?: string;
   groupId?: string;
   teacherId?: string;
 }

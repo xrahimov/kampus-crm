@@ -1037,6 +1037,7 @@ export interface StudentRow {
   photoUrl?: string | null;
   /** Null when the centre keeps phone numbers from this person. */
   phone: string | null;
+  gender?: "MALE" | "FEMALE";
   note: string | null;
   isArchived: boolean;
   isBlacklisted: boolean;
@@ -1088,7 +1089,15 @@ export interface StudentGroupCard extends StudentGroup {
 export interface StudentDetail extends StudentRow {
   groups: StudentGroupCard[];
   birthDate: string | null;
+  schoolId?: string | null;
   schoolName: string | null;
+  sourceId?: string | null;
+  sourceName?: string | null;
+  /** The student who brought this one (A-120). */
+  referredById?: string | null;
+  referredByName?: string | null;
+  /** The zone of a student abroad (A-177); null for the centre's own time. */
+  timeZone?: string | null;
   parents: Array<{ id: string; fullName: string; phone: string }>;
   customFields: Array<{ id: string; name: string; value: string | null }>;
 }
