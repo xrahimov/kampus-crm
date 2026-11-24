@@ -134,4 +134,12 @@ export function tick(): void {
   void Haptics.selectionAsync().catch(() => undefined);
 }
 
+/** A short buzz that says whether something went through, for a person who is not looking (phones only). */
+export function buzz(ok: boolean): void {
+  if (Platform.OS === "web") return;
+  void Haptics.notificationAsync(
+    ok ? Haptics.NotificationFeedbackType.Success : Haptics.NotificationFeedbackType.Warning,
+  ).catch(() => undefined);
+}
+
 export { Animated };

@@ -147,6 +147,15 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
       "expo-build-properties",
       { android: { extraProguardRules: SHRINKER_RULES, usesCleartextTraffic: PLAIN_HTTP } },
     ],
+    // The camera that reads student badges (A-264). The sentences are the lesson room's own,
+    // which name the badges too; `locales` above gives iOS the Uzbek and Russian wording.
+    [
+      "expo-camera",
+      {
+        cameraPermission: PERMISSIONS.en.camera,
+        microphonePermission: PERMISSIONS.en.microphone,
+      },
+    ],
     [
       "./plugins/with-screen-share",
       { words: { en: shareWords(en), ru: shareWords(ru), uz: shareWords(uz) } },

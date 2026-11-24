@@ -6329,7 +6329,7 @@
       "breakoutVisiting": "Siz {number}-xonaga kirdingiz."
     },
     "permissions": {
-      "camera": "Kampus kameradan videodarsda o'qituvchi va guruhdoshlaringiz sizni ko'rishi hamda uy vazifasini suratga olish uchun foydalanadi.",
+      "camera": "Kampus kameradan videodarsda o'qituvchi va guruhdoshlaringiz sizni ko'rishi, uy vazifasini suratga olish hamda o'quvchilar beyjigini o'qish uchun foydalanadi.",
       "microphone": "Kampus mikrofondan videodarsda o'qituvchi va guruhdoshlaringiz sizni eshitishi hamda og'zaki javobni yozib olish uchun foydalanadi.",
       "photos": "Kampus suratlaringizni faqat uy vazifasi uchun surat tanlaganingizda ochadi."
     },
@@ -6496,6 +6496,11 @@
     },
     "topics": {
       "unsaved": "Hali saqlanmagan. Ro'yxatdagi o'zgarishlar qolishi uchun Saqlash tugmasini bosing."
+    },
+    "scan": {
+      "denied": "Kameraga ruxsat berilmadi. Qurilma sozlamalarida Kampus uchun ruxsat bering yoki kodni pastga yozing.",
+      "noCamera": "Bu qurilmada kamerani ochib bo'lmadi. Qo'l skaneridan foydalaning yoki kodni pastga yozing.",
+      "send": "Belgilash"
     },
     "catalog": {
       "changeHours": "Soatlarni o'zgartirish",

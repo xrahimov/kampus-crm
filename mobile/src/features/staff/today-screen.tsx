@@ -1,5 +1,5 @@
 import { useLocalSearchParams, useRouter } from "expo-router";
-import { ChevronLeft, ChevronRight } from "lucide-react-native";
+import { ChevronLeft, ChevronRight, ScanLine } from "lucide-react-native";
 import { useState } from "react";
 import { Pressable, ScrollView, StyleSheet, View } from "react-native";
 
@@ -41,6 +41,7 @@ export function TodayScreen() {
   const formatDate = useDate();
   const router = useRouter();
   const { wide } = useLayout();
+  const { colors } = useTheme();
   // null = the server's own today, so a phone with a wrong clock still opens the right day.
   // A day asked for from elsewhere (A-253): the summary's "not marked" opens the day it counted.
   const asked = dayParam(useLocalSearchParams<{ date?: string }>().date);
@@ -127,6 +128,18 @@ export function TodayScreen() {
   const list = (
     <>
       {query.isError ? <Notice tone="warning">{errorText(t, query.error)}</Notice> : null}
+      {day.canMark && isToday && day.lessons.length > 0 ? (
+        // At the door: a badge marks its student present in their lesson of the day (A-264).
+        <Button
+          compact
+          variant="outline"
+          label={t("today.scan.button")}
+          icon={<ScanLine size={16} color={colors.foreground} />}
+          onPress={() => router.push("/staff/scan")}
+          style={styles.scan}
+          testID="scan-door"
+        />
+      ) : null}
       {day.lessons.length === 0 ? (
         <EmptyState title={t("today.lessons.empty")} text={t("mobile.emptyDayHint")} />
       ) : (
@@ -371,6 +384,7 @@ function Debtors({ day }: { day: Today }) {
 
 const styles = StyleSheet.create({
   fill: { flex: 1 },
+  scan: { alignSelf: "flex-start" },
   split: { flexDirection: "row", gap: space[6], maxWidth: 1280, paddingBottom: 0 },
   // The lesson gets three parts of the width and the list two, and the list stops at 400: on
   // an upright iPad even columns left the attendance row too little room and names wrapped.
