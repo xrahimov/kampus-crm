@@ -257,7 +257,7 @@ The lesson room's client code that is not tied to a browser page lives in `src/l
 ✓ `GET|POST /tests` · `GET|PATCH|DELETE /tests/:id` · `POST /tests/:id/status` · `POST /tests/:id/attempts` · `GET /tests/options` · `GET|POST /question-bank` · `PATCH|DELETE /question-bank/:id` · `GET /question-bank/options`
 ✓ `GET|PUT /settings/org` · ✓ `GET|PUT /settings/auto-sms`
 `GET|POST /staff?role&archived` · ✓ `GET /staff/export.xlsx?role&archived` · `GET /staff/role-counts` · `GET|PATCH|DELETE /staff/:id` · `GET|POST /roles` · `PATCH|DELETE /roles/:id` · `GET /permissions` · `POST /uploads` · `GET /files/:key`
-✓ `GET /calls` · `GET /logs/logins` · `GET /logs/actions` · `GET /logs/sms` · `GET|POST /bot-recipients` · `DELETE /bot-recipients/:id` · `POST /jobs/run`
+✓ `GET /calls` · `GET /logs/logins` · `GET /logs/actions` · `GET /logs/sms` · `GET /logs/actors` · `GET|POST /bot-recipients` · `DELETE /bot-recipients/:id` · `POST /jobs/run`
 ✓ `GET /integrations` · `GET|PUT /integrations/:provider` (amocrm, face-id, sms, telegram, telephony) · `POST /integrations/amocrm-test`
 `GET /approvals` · `POST /approvals/:id/approve|reject` (A-09)
 

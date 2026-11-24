@@ -204,6 +204,18 @@ A-201) has no migration and no setting. Two things to know after it:
   on an `https` address (the live site is one). Nothing on the server switches it
   on or off; a person can switch it off for the site in the browser.
 
+The small repairs of A-248 are in the app, except three English sentences that the site shares
+("1 recipient", "1 student activated", "1 membership activated"): they change on the site with
+the next update. No migration, no setting, no new call.
+
+Bot notifications and Forms in the app (A-247) use the calls the site's pages make: nothing
+to update for them.
+
+The logs, calls and payments in the app (A-246) add one read-only call,
+`GET /api/v1/logs/actors` (for `logs.view`): no migration, no setting. Until the server is
+updated the app's five lists work, the Action log without its **Staff** choice and Sent SMS
+with only **Sent by the system** under **Sent by**.
+
 The fix for sheets on an iPhone and iPad (A-245: a form opened from a menu) is in the app
 only: nothing to update on the server; it reaches people with the next build of the app.
 
