@@ -2,7 +2,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { ChevronRight, Phone } from "lucide-react-native";
 import { useState } from "react";
-import { Linking, Pressable, ScrollView, StyleSheet, View } from "react-native";
+import { Linking, Pressable, StyleSheet, View } from "react-native";
 
 import {
   addCommentOnStudent,
@@ -71,12 +71,9 @@ export function StudentScreen() {
 
   const sections = (
     <View style={styles.block}>
-      <ScrollView
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        contentContainerStyle={styles.chips}
-        keyboardShouldPersistTaps="handled"
-      >
+      {/* The chips wrap onto a second line: in one row that scrolled sideways the last one,
+          Payments, was off the screen with nothing to say it was there. */}
+      <View style={styles.chips}>
         {SECTIONS.map((key) => (
           <WordChip
             key={key}
@@ -94,7 +91,7 @@ export function StudentScreen() {
             testID="student-tab-payments"
           />
         ) : null}
-      </ScrollView>
+      </View>
       {section === "groups" ? <Groups student={student} /> : null}
       {section === "progress" ? <Progress id={id} /> : null}
       {section === "testResults" ? <Tests id={id} /> : null}
@@ -704,7 +701,7 @@ const styles = StyleSheet.create({
   widePerson: { flex: 2 },
   wideSections: { flex: 3 },
   block: { gap: space[3] },
-  chips: { gap: space[2], paddingRight: space[2] },
+  chips: { flexDirection: "row", flexWrap: "wrap", gap: space[2] },
   flush: { padding: 0, gap: 0 },
   head: { flexDirection: "row", alignItems: "flex-start", gap: space[3] },
   badges: { flexDirection: "row", flexWrap: "wrap", gap: space[2], marginTop: space[1] },

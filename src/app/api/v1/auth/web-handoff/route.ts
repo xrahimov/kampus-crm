@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 
+import { FROM_APP_COOKIE, FROM_APP_SECONDS } from "@/lib/from-app";
 import { applySessionCookies } from "@/server/auth/session";
 import { json, route } from "@/server/http/handler";
 import { createWebHandoff, redeemWebHandoff } from "@/server/services/sign-in/web-handoff.service";
@@ -35,6 +36,15 @@ export const GET = route({ auth: false }, async ({ request, ip }) => {
     status: 303,
     headers: { Location: result ? result.path : "/", "Cache-Control": "no-store" },
   });
-  if (result) applySessionCookies(response, result.issued);
+  if (result) {
+    applySessionCookies(response, result.issued);
+    // The person asked the app for one page: the day's summary must not open over it (A-234).
+    response.cookies.set(FROM_APP_COOKIE, "1", {
+      httpOnly: false,
+      sameSite: "lax",
+      path: "/",
+      maxAge: FROM_APP_SECONDS,
+    });
+  }
   return response;
 });

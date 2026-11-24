@@ -55,7 +55,8 @@ able to work from an iPad or a phone.
 | Office: students list with the site's filters, Add student, Make a payment, a student's payments (A-231)                                                                  | Built, phone and tablet                                                                                                  |
 | Office: leads board, a lead's card, Calls today, waiting list, inbox, sign-in requests, absences (A-232)                                                                  | Built, phone and tablet                                                                                                  |
 | Office: every group with filters, New group and edit, change times and teachers, days off, finish and archive, the students of a group, Add to a group, Timetable (A-233) | Built, phone and tablet; the form, the filters and Timetable need the server update with A-233                           |
-| The office's other pages: the rest of a student's page (discounts, refunds), debts, cash desk, teachers, courses, rooms, exams, finance, reports, settings                | Next, part by part (A-230 to A-233 are parts 1 to 4a of 6); they open on the site until then                             |
+| Office: teachers (two lists, New teacher, a teacher's page, hours for 1:1 booking), the Settings list, courses with syllabus and grade weights, rooms (A-234)             | Built, phone and tablet                                                                                                  |
+| The office's other pages: the rest of a student's page (discounts, refunds), debts, cash desk, exams, finance, reports, the other settings                                | Next, part by part (A-230 to A-234 are parts 1 to 4b of 6); they open on the site until then                             |
 | The site running on the app's code                                                                                                                                        | Part by part, the student side first; wide tables, Excel and print last                                                  |
 
 ## What kai needs to do
@@ -124,6 +125,15 @@ mobile/
   typed as day.month.year; they show the server's field errors under the fields
   (`ApiError.fields`). `payment-sheet.tsx` is the site's Payment dialog, `student-form.tsx` the
   short Add student form, `student-payments.tsx` the Payments part of a student's page.
+- **Teachers, courses and rooms (A-234).** `src/features/catalog/` and `src/api/office-catalog.ts`.
+  `TeachersScreen` and `TeacherScreen` are the site's Teachers pages; `TeacherFormSheet` is its
+  drawer without the photo and the password. `HoursCard` shows a teacher's hours for 1:1 booking and
+  opens the sheet that changes them; it is also on the More screen for a teacher's own hours.
+  `SettingsScreen` draws `SETTINGS_SECTIONS`, a copy of the site's `settings-nav.ts` that
+  `tests/unit/app-settings-sections.test.ts` keeps equal to it. `CoursesScreen` with
+  `CourseFormSheet` and `SyllabusSheet`, and `RoomsScreen`, are the two sections the app has.
+  `Fact` and `ActionRow` in `src/components/rows.tsx` are the label-and-value row and the row of a
+  menu of things to do. `Glass` takes `dense` for a pane people read and type on (every `Sheet`).
 - **Groups for the office (A-233).** `src/features/groups/` and `src/api/office-groups.ts`.
   `GroupsTab` picks the office's list (`OfficeGroupsScreen`) in the full view and the teacher's cards
   otherwise. `GroupFormSheet` is the site's group drawer in two modes, "full" and "schedule"; the

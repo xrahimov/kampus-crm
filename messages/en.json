@@ -6455,7 +6455,8 @@
       "showResults": "Show",
       "archivedOnly": "Archived students only",
       "replyPlaceholder": "Write a reply…",
-      "toGroup": "Add to a group"
+      "toGroup": "Add to a group",
+      "noUnread": "No unread notifications."
     },
     "groups": {
       "search": "Group name",
@@ -6466,6 +6467,12 @@
       "undoDayOffTitle": "Take the day off back?",
       "undoDayOffText": "The lesson on {date} comes back to the timetable. A lesson that was moved goes back to its own day.",
       "nothingThatDay": "Nothing on {day}."
+    },
+    "catalog": {
+      "changeHours": "Change hours",
+      "firstSignIn": "The first sign-in is with a code from Telegram. The person chooses their own password then.",
+      "colorChoice": "Colour {number}",
+      "moreSettings": "The other settings open on the site."
     }
   }
 }

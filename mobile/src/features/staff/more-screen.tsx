@@ -14,6 +14,7 @@ import { useLayout } from "@/lib/layout";
 import { useMe, useSession } from "@/lib/session";
 import { space } from "@/lib/theme";
 
+import { HoursCard } from "@/features/catalog/hours";
 import { Menu } from "@/features/office/menu";
 
 import { OpenOnSite } from "./open-on-site";
@@ -76,6 +77,10 @@ export function MoreScreen() {
           onChange={(branchId) => void change("/auth/active-branch", { branchId })}
           options={me.branches.map((b) => ({ value: b.id, label: b.name }))}
         />
+      ) : null}
+      {/* A teacher's own hours for 1:1 booking, as on the site's "My account" (A-234). */}
+      {me.roles.some((r) => r.code === "TEACHER" || r.code === "SUPPORT_TEACHER") ? (
+        <HoursCard userId={me.user.id} canEdit own />
       ) : null}
       <Card>
         <Text variant="heading">{t("mobile.siteTitle")}</Text>

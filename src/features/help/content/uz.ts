@@ -111,6 +111,7 @@ export const uz: HelpContent = {
                 "Ham boshqarsangiz, ham dars bersangiz, **Markaz** va **Guruhlarim** o‘rtasida almashing.",
                 "Xulosani yopish uchun **Tushunarli** ni bosing. Shu kuni u boshqa o‘zi ochilmaydi.",
                 "O‘zingiz ochishni xohlasangiz, **Kuniga bir marta o‘zi ochilsin** ni o‘chiring.",
+                "Telefondagi ilovadan ochilgan sahifa ustida xulosa o‘zi ochilmaydi; uni burchakdagi tugma ochadi.",
               ],
             },
             {

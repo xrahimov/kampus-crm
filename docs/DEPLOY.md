@@ -204,6 +204,13 @@ A-201) has no migration and no setting. Two things to know after it:
   on an `https` address (the live site is one). Nothing on the server switches it
   on or off; a person can switch it off for the site in the browser.
 
+The update for the app's Teachers, Courses and Rooms pages (A-234) has no
+migration, no new environment variable and no new call. One thing changes on
+the site: a page opened from the phone app arrives with a half-hour cookie,
+`kampus_from_app`, and the day's summary does not open over it by itself. On an
+older server the app's new pages work all the same; only the summary still
+opens over a page the app asked for.
+
 The update for the app's Groups pages (A-233) has no migration and no new
 environment variable. It adds two read-only calls the app asks for,
 `GET /api/v1/groups/options` and `GET /api/v1/groups/timetable`; the site reads

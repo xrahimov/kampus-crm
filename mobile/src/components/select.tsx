@@ -1,6 +1,6 @@
 import { Check, ChevronDown } from "lucide-react-native";
 import { useMemo, useState } from "react";
-import { Pressable, StyleSheet, View } from "react-native";
+import { Keyboard, Pressable, StyleSheet, View } from "react-native";
 
 import { useTranslations } from "@/lib/i18n";
 import { radius, space, useTheme } from "@/lib/theme";
@@ -97,7 +97,12 @@ export function Select<T extends string>({
       <Press
         accessibilityRole="button"
         accessibilityLabel={`${label}: ${chosen?.label ?? clearLabel ?? placeholder ?? ""}`}
-        onPress={() => setOpen(true)}
+        onPress={() => {
+          // A field of the form may still hold the keyboard: an iPhone gives it back to that
+          // field when the list closes, and the keyboard would come up again over the form.
+          Keyboard.dismiss();
+          setOpen(true);
+        }}
         sink={0.985}
         style={[
           styles.field,

@@ -396,8 +396,10 @@ function Forecast({ data, mask }: { data: RevenueForecast; mask: (value: string)
       <View style={wide ? styles.sideBySide : styles.section}>
         <Card style={wide ? styles.fill : undefined} testID="forecast-this-month">
           <Text variant="bodyStrong">{t("thisMonth", { month: month(data.month) })}</Text>
+          {/* Each figure has half the card and shrinks inside it: two long sums side by side
+              ran over the card's edge on a tablet held upright. */}
           <View style={styles.between}>
-            <View>
+            <View style={styles.half}>
               <Text variant="small" tone="mutedForeground">
                 {t("collected")}
               </Text>
@@ -405,7 +407,7 @@ function Forecast({ data, mask }: { data: RevenueForecast; mask: (value: string)
                 {amount(data.current.collected)}
               </Figure>
             </View>
-            <View style={styles.end}>
+            <View style={[styles.half, styles.end]}>
               <Text variant="small" tone="mutedForeground">
                 {t("expected")}
               </Text>
@@ -629,10 +631,16 @@ function Finance({
   const thisYear = new Date().getFullYear();
   const [year, setYear] = useState(thisYear);
   const [month, setMonth] = useState<string | null>(null);
-  const [methodId, setMethodId] = useState<string | null>(null);
+  const [pickedMethod, setMethodId] = useState<string | null>(null);
   const period = { year, month: month ? Number(month) : null, branchId };
   // Every payment type of the period: the list to choose from, and the answer when none is chosen.
   const all = useFinanceOverview({ ...period, methodId: null }, true);
+  const methods = (all.data?.byMethod ?? []).flatMap((m) =>
+    m.id ? [{ value: m.id, label: m.name ?? tf("noMethod") }] : [],
+  );
+  // A payment type chosen for one period counts only while the period shown has it. Chosen for
+  // the year and then a month without it, the list was gone and the sums stayed filtered.
+  const methodId = methods.some((m) => m.value === pickedMethod) ? pickedMethod : null;
   const one = useFinanceOverview({ ...period, methodId }, methodId !== null);
   const data: FinanceOverview | undefined = methodId ? one.data : all.data;
   const error = (methodId ? one.error : null) ?? all.error;
@@ -642,9 +650,6 @@ function Finance({
       dayAsDate(`${year}-${String(index + 1).padStart(2, "0")}-01`),
       withYear ? { month: "short", year: "numeric" } : { month: "short" },
     );
-  const methods = (all.data?.byMethod ?? []).flatMap((m) =>
-    m.id ? [{ value: m.id, label: m.name ?? tf("noMethod") }] : [],
-  );
   const largest = Math.max(1, ...(data?.byMethod ?? []).map((m) => m.amount));
 
   return (
@@ -760,6 +765,18 @@ function Finance({
                   </View>
                 ))
               )}
+              {/* Income above also counts what did not come from students; with this line the
+                  card adds up to it. */}
+              {data.otherIncome > 0 ? (
+                <View style={styles.between} testID="finance-other-income">
+                  <Text variant="body" style={styles.fill} numberOfLines={1}>
+                    {tt("cashdesk.sheet.income")}
+                  </Text>
+                  <Text variant="figure" style={styles.number}>
+                    {amount(data.otherIncome)}
+                  </Text>
+                </View>
+              ) : null}
             </Card>
             <Card style={wide ? styles.fill : undefined} testID="finance-yearly">
               <Text variant="bodyStrong">{tf("yearly", { year })}</Text>
@@ -787,6 +804,7 @@ function Finance({
 
 const styles = StyleSheet.create({
   fill: { flex: 1 },
+  half: { flex: 1, minWidth: 0 },
   end: { alignItems: "flex-end" },
   off: { opacity: 0.35 },
   column: { gap: space[5] },
