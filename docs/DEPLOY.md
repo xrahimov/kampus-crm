@@ -204,6 +204,10 @@ A-201) has no migration and no setting. Two things to know after it:
   on an `https` address (the live site is one). Nothing on the server switches it
   on or off; a person can switch it off for the site in the browser.
 
+A group's lessons in the app (A-262: an extra lesson, the plan topic, note and link on a lesson,
+the students' ratings, the students' own lesson links, seats offered to the waiting list) use the
+calls of the site's own group page. No server update, no migration, no setting.
+
 My account in the app (A-261: the password, the Telegram sign-in code, the devices) uses the calls
 of the site's own account page. No server update, no migration, no setting.
 
