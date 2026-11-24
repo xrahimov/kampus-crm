@@ -6475,7 +6475,8 @@
       "moreSettings": "The other settings open on the site."
     },
     "money": {
-      "sortBy": "Sort by"
+      "sortBy": "Sort by",
+      "excelOnSite": "Excel file on the site"
     }
   }
 }

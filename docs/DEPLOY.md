@@ -204,6 +204,11 @@ A-201) has no migration and no setting. Two things to know after it:
   on an `https` address (the live site is one). Nothing on the server switches it
   on or off; a person can switch it off for the site in the browser.
 
+The update for the app's Finance and payroll pages (A-237) adds one read-only call,
+`GET /api/v1/finance/totals` (for `finance.view`): no migration, no setting. Until the server
+is updated the app's Finance page shows its Advances, Marketing, Bonuses, Fines and Cash desk
+cards without their sums; everything else on it works on the server as it is.
+
 The update for the app's Debtors and Cash desk pages (A-236) changes nothing on the server:
 no migration, no setting, no new address. It reaches people with the next build of the app.
 

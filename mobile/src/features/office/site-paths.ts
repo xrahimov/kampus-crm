@@ -1,6 +1,7 @@
 import { useRouter, type Href } from "expo-router";
 import { useState } from "react";
 
+import { FINANCE_SECTIONS } from "@/api/office-finance";
 import { DEBT_FILTERS } from "@/api/office-money";
 import { GROUP_STATUS_FILTERS, PAYMENT_STATUS_FILTERS } from "@/api/staff-students";
 import { errorText, useLocaleChoice, useTranslations } from "@/lib/i18n";
@@ -45,6 +46,22 @@ export function nativeRoute(path: string): Href | null {
     if (!id) return "/staff/settings";
     if (rest.length > 0) return null;
     return id === "courses" || id === "rooms" ? `/staff/settings/${id}` : null;
+  }
+  // Finance (A-237): its page, the entries of a kind or of a category, and a month's payroll.
+  if (first === "finance") {
+    if (!id) return "/staff/finance";
+    const [last, ...more] = rest;
+    if (more.length > 0) return null;
+    if (id === "costs" && last) {
+      return { pathname: "/staff/finance/costs/[id]", params: { id: last } };
+    }
+    if (id === "salary-detail" && last && /^\d{4}-(0[1-9]|1[0-2])(-01)?$/.test(last)) {
+      return { pathname: "/staff/finance/salary/[month]", params: { month: last.slice(0, 7) } };
+    }
+    if (last) return null;
+    return id in FINANCE_SECTIONS
+      ? { pathname: "/staff/finance/[section]", params: { section: id } }
+      : null;
   }
   if (rest.length > 0) return null;
   if (first === "account") return id === "salary" ? "/staff/salary" : null;
@@ -144,16 +161,25 @@ function filteredRoute(
  */
 export function useOpenPath(): { open: (path: string) => void; error: string | null } {
   const router = useRouter();
+  const site = useOpenSite();
+  const open = (path: string) => {
+    const route = nativeRoute(path);
+    if (route) router.push(route);
+    else site.open(path);
+  };
+  return { open, error: site.error };
+}
+
+/**
+ * Opens a page on the site even where the app has that page: for what only
+ * the site does there, such as the Excel file of a month's payroll.
+ */
+export function useOpenSite(): { open: (path: string) => void; error: string | null } {
   const t = useTranslations();
   const { locale } = useLocaleChoice();
   const [error, setError] = useState<string | null>(null);
   const open = (path: string) => {
     setError(null);
-    const route = nativeRoute(path);
-    if (route) {
-      router.push(route);
-      return;
-    }
     openOnSite(`/${locale}${path}`).catch((e: unknown) => setError(errorText(t, e)));
   };
   return { open, error };

@@ -262,7 +262,7 @@ The lesson room's client code that is not tied to a browser page lives in `src/l
 `GET /approvals` · `POST /approvals/:id/approve|reject` (A-09)
 
 **Finance (EXP §9)**
-✓ `GET /finance/overview?branchId&year&month&paymentMethodId` · `GET /finance/plan?…&effective` · `GET|POST /finance/categories` · `GET|PATCH|DELETE /finance/categories/:id` · `GET|POST /finance/entries?type&categoryId&…` (one ledger for advances, marketing, bonuses, penalties, investments and category rows, A-74) · `PATCH|DELETE /finance/entries/:id` · `GET /finance/options` · `GET /finance/students?q`
+✓ `GET /finance/overview?branchId&year&month&paymentMethodId` · `GET /finance/plan?…&effective` · `GET|POST /finance/categories` · `GET|PATCH|DELETE /finance/categories/:id` · `GET|POST /finance/entries?type&categoryId&…` (one ledger for advances, marketing, bonuses, penalties, investments and category rows, A-74) · `PATCH|DELETE /finance/entries/:id` · `GET /finance/options` · `GET /finance/students?q` · `GET /finance/totals?branchId&year&month` (the sums on the Finance page's cards, for the app, A-237)
 ✓ `GET /payroll` · `GET|PUT /payroll/:month` (PUT = draft/save status) · `POST /payroll/:month/recalculate` · `POST /payroll/:month/lines/:id/approve` · ✓ `GET /payroll/:month/export.xlsx`
 
 **Reports (EXP §10)**
