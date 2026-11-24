@@ -218,6 +218,8 @@ describe("the leads board", () => {
     serve({ "GET /leads": board(), "GET /leads/options": OPTIONS });
     await renderScreen(<LeadsScreen />);
     await screen.findByTestId("lead-l1");
+    // Beside the owner filter the tick box is as wide as its word, so the filter keeps its room (A-266).
+    expect(screen.getByTestId("leads-archived")).toHaveStyle({ flexGrow: 0, flexShrink: 0 });
     await fireEvent.press(screen.getByTestId("leads-owner"));
     await fireEvent.press(await screen.findByTestId("leads-owner-option-unassigned"));
     await fireEvent.press(screen.getByTestId("leads-archived"));

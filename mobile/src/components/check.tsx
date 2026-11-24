@@ -12,6 +12,7 @@ export function Check({
   value,
   onChange,
   disabled = false,
+  inline = false,
   testID,
 }: {
   label: string;
@@ -19,6 +20,12 @@ export function Check({
   value: boolean;
   onChange: (value: boolean) => void;
   disabled?: boolean;
+  /**
+   * Beside something else in a row: as wide as its words and no wider. Without
+   * it the row is taken whole on a phone, and a filter next to it is left no
+   * room at all (A-266).
+   */
+  inline?: boolean;
   testID?: string;
 }) {
   const { colors } = useTheme();
@@ -29,12 +36,13 @@ export function Check({
       accessibilityState={{ checked: value, disabled }}
       disabled={disabled}
       onPress={() => onChange(!value)}
-      style={styles.row}
+      style={[styles.row, inline ? styles.inline : null]}
       testID={testID}
     >
       <View
         style={[
           styles.box,
+          inline ? styles.level : null,
           {
             borderColor: value ? colors.primary : colors.input,
             backgroundColor: value ? colors.primary : colors.card,
@@ -43,7 +51,7 @@ export function Check({
       >
         {value ? <CheckIcon size={16} color={colors.primaryForeground} /> : null}
       </View>
-      <View style={styles.fill}>
+      <View style={inline ? styles.words : styles.fill}>
         <Text>{label}</Text>
         {hint ? (
           <Text variant="small" tone="mutedForeground">
@@ -109,6 +117,9 @@ const styles = StyleSheet.create({
   },
   row: { flexDirection: "row", alignItems: "flex-start", gap: space[3], minHeight: 44 },
   fill: { flex: 1 },
+  inline: { flexGrow: 0, flexShrink: 0, alignItems: "center" },
+  level: { marginTop: 0 },
+  words: { flexShrink: 1 },
   box: {
     width: 24,
     height: 24,

@@ -119,6 +119,28 @@ describe("a typed badge code", () => {
     expect(scans()).toHaveLength(2);
   });
 
+  it("sends the whole code when Enter comes before its last letter has arrived (A-266)", async () => {
+    serve(result(), result({ status: "unknown", studentId: null, studentName: null }));
+    await renderScreen(<ScanScreen />);
+    // A hand scanner types and presses Enter in one go: the field's last change is a letter short.
+    await fireEvent.changeText(screen.getByTestId("scan-code"), CODE.slice(0, -1));
+    await fireEvent(screen.getByTestId("scan-code"), "submitEditing", {
+      nativeEvent: { text: CODE },
+    });
+    await screen.findByTestId("scan-line-1");
+    expect(sentBody(scans()[0]![1])).toEqual({ code: CODE });
+    expect(screen.getByTestId("scan-code").props.value).toBe("");
+    // On a phone the newest badge is said under the field, above the keyboard.
+    expect(screen.getByTestId("scan-last")).toHaveTextContent(/Sardor Karimov.*Present/);
+
+    // Nothing left over from the first code goes with the next one.
+    await fireEvent.changeText(screen.getByTestId("scan-code"), "nonsense");
+    await fireEvent.press(screen.getByTestId("scan-send"));
+    await screen.findByTestId("scan-line-2");
+    expect(sentBody(scans()[1]![1])).toEqual({ code: "nonsense" });
+    expect(screen.getByTestId("scan-last")).toHaveTextContent(/nonsense.*Not a badge/);
+  });
+
   it("gets a line saying what the server made of it, newest first", async () => {
     serve(
       result({ status: "already" }),

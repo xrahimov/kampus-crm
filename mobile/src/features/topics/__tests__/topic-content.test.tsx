@@ -280,7 +280,13 @@ describe("a topic's content", () => {
   it("is only read by someone who may not change it", async () => {
     serve({
       "GET /topics/t1/content": { ...CONTENT, canEdit: false },
-      "GET /exercises": { items: [EXERCISE], canEdit: false },
+      "GET /exercises": {
+        items: [
+          EXERCISE,
+          { ...EXERCISE, id: "e2", title: "One more", items: EXERCISE.items.slice(0, 1) },
+        ],
+        canEdit: false,
+      },
       "GET /topics/t1/words": {
         ...NO_WORDS,
         canEdit: false,
@@ -298,6 +304,7 @@ describe("a topic's content", () => {
     expect(await screen.findByTestId("exercise-e1")).toHaveTextContent(
       /Quick check.*2 items · 3 tried/,
     );
+    expect(screen.getByTestId("exercise-e2")).toHaveTextContent(/One more.*1 item · 3 tried/);
     expect(screen.queryByTestId("exercise-new")).toBeNull();
     expect(screen.queryByTestId("exercise-delete-e1")).toBeNull();
     await fireEvent.press(screen.getByTestId("exercise-open-e1"));

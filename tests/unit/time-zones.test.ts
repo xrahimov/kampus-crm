@@ -42,6 +42,30 @@ describe("conversions", () => {
     expect(timeZoneLabel("Asia/Tashkent")).toBe("Asia/Tashkent (GMT+5)");
   });
 
+  it("says a zone's offset the way the engine's own short offset does (A-266)", () => {
+    const winter = new Date("2026-01-15T12:00:00Z");
+    const summer = new Date("2026-07-15T12:00:00Z");
+    expect(timeZoneLabel("Europe/Berlin", winter)).toBe("Europe/Berlin (GMT+1)");
+    expect(timeZoneLabel("Europe/Berlin", summer)).toBe("Europe/Berlin (GMT+2)");
+    expect(timeZoneLabel("Asia/Kolkata", winter)).toBe("Asia/Kolkata (GMT+5:30)");
+    expect(timeZoneLabel("America/St_Johns", winter)).toBe("America/St_Johns (GMT-3:30)");
+    expect(timeZoneLabel("America/New_York", summer)).toBe("America/New_York (GMT-4)");
+    for (const zone of ["Asia/Tokyo", "UTC", "Pacific/Auckland", "America/Los_Angeles"]) {
+      const engine = new Intl.DateTimeFormat("en-US", {
+        timeZone: zone,
+        timeZoneName: "shortOffset",
+      })
+        .formatToParts(winter)
+        .find((part) => part.type === "timeZoneName")?.value;
+      expect(timeZoneLabel(zone, winter)).toBe(`${zone} (${engine})`);
+    }
+    // Late in a minute the offset is still whole.
+    expect(timeZoneLabel("Asia/Tashkent", new Date("2026-11-24T21:34:47.900Z"))).toBe(
+      "Asia/Tashkent (GMT+5)",
+    );
+    expect(timeZoneLabel("Mars/Olympus")).toBe("Mars/Olympus");
+  });
+
   it("turns a Tashkent wall clock into an instant and back", () => {
     const at = zonedToUtc("2026-11-06", "19:30", "Asia/Tashkent");
     expect(at.toISOString()).toBe("2026-11-06T14:30:00.000Z");

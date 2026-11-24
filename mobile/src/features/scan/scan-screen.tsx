@@ -54,6 +54,7 @@ export function ScanScreen() {
   const client = useQueryClient();
   const [lines, setLines] = useState<Line[]>([]);
   const [typed, setTyped] = useState("");
+  const latest = useRef("");
   const recent = useRef(new Map<string, number>());
   const counter = useRef(0);
   const changed = useRef(false);
@@ -91,11 +92,21 @@ export function ScanScreen() {
     }
   };
 
-  const submit = () => {
-    const code = typed.trim();
+  /**
+   * A hand scanner types the code and presses Enter in one go, and on a phone
+   * the Enter arrives before the last letter has reached `typed`: the text is
+   * taken from the Enter itself, else from the latest change.
+   */
+  const submit = (text?: string) => {
+    const code = (text ?? latest.current).trim();
     if (!code) return;
+    latest.current = "";
     setTyped("");
     void send(code, false);
+  };
+  const change = (text: string) => {
+    latest.current = text;
+    setTyped(text);
   };
 
   const header = <Header back title={ts("title")} />;
@@ -110,6 +121,7 @@ export function ScanScreen() {
   }
 
   const marked = lines.filter((line) => line.result?.status === "marked").length;
+  const newest = lines[0] ?? null;
   const camera = <BadgeCamera onCode={(code) => void send(code, true)} />;
   const rest = (
     <>
@@ -118,8 +130,8 @@ export function ScanScreen() {
         <Field
           label={ts("code")}
           value={typed}
-          onChangeText={setTyped}
-          onSubmitEditing={submit}
+          onChangeText={change}
+          onSubmitEditing={(event) => submit(event?.nativeEvent?.text)}
           submitBehavior="submit"
           returnKeyType="done"
           autoCapitalize="none"
@@ -133,10 +145,22 @@ export function ScanScreen() {
           variant="outline"
           label={t("mobile.scan.send")}
           disabled={!typed.trim()}
-          onPress={submit}
+          onPress={() => submit()}
           testID="scan-send"
           style={styles.start}
         />
+        {/* On a phone the list is under the keyboard: the latest badge is said here too. */}
+        {!wide && newest ? (
+          <View style={styles.last} testID="scan-last">
+            <Text variant="small" numberOfLines={1} style={styles.fill}>
+              {newest.result?.studentName ?? newest.problem ?? newest.code}
+            </Text>
+            <Badge
+              tone={newest.result ? STATUS_TONE[newest.result.status] : "destructive"}
+              label={ts(`status.${newest.result ? newest.result.status : "error"}`)}
+            />
+          </View>
+        ) : null}
       </Card>
       <Card style={styles.flush} testID="scan-log">
         <View style={styles.logHead}>
@@ -240,6 +264,7 @@ const styles = StyleSheet.create({
   side: { flex: 2 },
   main: { flex: 3, gap: space[4] },
   start: { alignSelf: "flex-start" },
+  last: { flexDirection: "row", alignItems: "center", gap: space[2] },
   flush: { padding: 0, gap: 0, overflow: "hidden" },
   logHead: {
     flexDirection: "row",

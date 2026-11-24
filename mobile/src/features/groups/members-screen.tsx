@@ -679,6 +679,7 @@ function ReasonFields({
   testID: string;
 }) {
   const t = useTranslations("students.remove");
+  const tm = useTranslations("mobile");
   const reasons = useLeaveReasons(active);
   const list = (reasons.data ?? []).filter((r) => r.kind === kind && r.isActive);
   const [picked, setPicked] = useState<string | null>(null);
@@ -705,7 +706,7 @@ function ReasonFields({
       ) : null}
       {picked === null ? (
         <Field
-          label={list.length > 0 ? t("otherReason") : t("reason")}
+          label={list.length > 0 ? tm("reasonOwnWords") : t("reason")}
           value={value}
           onChangeText={onChange}
           maxLength={200}
