@@ -70,7 +70,8 @@ able to work from an iPad or a phone.
 | Office: settings, step 4b: Bot notifications (add and remove a Telegram recipient) and Forms (add, change, delete, share the link) (A-247)                                                                                   | Built, phone and tablet                                                                                                  |
 | Office: settings, step 5a: Integrations (the nine services, the waiting jobs), AmoCRM and FaceID (A-249)                                                                                                                     | Built, phone and tablet; the owner's "Shared with every centre" tick needs the server update                             |
 | Office: settings, step 5b: Tests and the question bank, a test's page with its results and Enter result (A-250)                                                                                                              | Built, phone and tablet                                                                                                  |
-| The office's other pages: the import from the old CRM in Settings, the manual, the assistant                                                                                                                                 | Next, part 6c step 5c and part 6d; they open on the site until then                                                      |
+| Office: settings, step 5c: Import from SOFF CRM (choose a file on the device, see how it is read, preview, import) (A-251)                                                                                                   | Built, phone and tablet; every settings section is now in the app                                                        |
+| The office's other pages: the manual, the assistant                                                                                                                                                                          | Next, part 6d; they open on the site until then                                                                          |
 | The site running on the app's code                                                                                                                                                                                           | Part by part, the student side first; wide tables, Excel and print last                                                  |
 
 ## What kai needs to do
@@ -251,7 +252,13 @@ mobile/
   test form is given the whole test (`OfficeTestDetail`) and never a row of the list, because a
   row has no questions and a save sends the questions; that is why a test is changed from its own
   page. A change invalidates the office's tests, the student side's test and a group's tests.
-  Next free number: A-251.
+- **Settings, step 5c (A-251).** `import-screen.tsx` is the site's Import from SOFF CRM;
+  `src/api/office-import.ts` its one call, sent three ways (which export, preview, import) with
+  `apiForm`. `chooseSheet` and `checkSheet` in `features/files/pick.ts` pick and check the file. A
+  preview is kept per file and branch; an import's answer stays until another file is chosen.
+  `reasonOf` turns the server's "field: key" into words. In a screen test the upload is stood in
+  for by mocking `apiForm` (the test runner's form cannot carry a file named by its address).
+  Next free number: A-252.
 - **Finance and payroll (A-237).** `src/features/finance/` and `src/api/office-finance.ts`.
   `FinanceScreen` is the site's Finance page; `EntriesScreen` the entries of a kind or of a
   category (`entries-routes.tsx` reads which from the address), with `EntrySheet`, the site's one
