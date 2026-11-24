@@ -1037,7 +1037,47 @@ export interface StudentRow {
   groups: StudentGroup[];
 }
 
+/** What is left of a discount on one membership. */
+export interface MembershipDiscount {
+  remainingMonths: number;
+  discountedPrice: number;
+  percent: number;
+  /** The day it was given. */
+  givenAt: string;
+  comment: string | null;
+  /** Set when the discount is the family's. */
+  familyId: string | null;
+}
+
+/** One part of a month's fee that was split. */
+export interface MembershipInstalment {
+  id: string;
+  dueDate: string;
+  amount: number;
+  paid: boolean;
+}
+
+/** A group on the student's own page: the server sends the membership's dates and money with it. */
+export interface StudentGroupCard extends StudentGroup {
+  joinedAt: string;
+  /** Charged from this day when it is not the day they joined. */
+  billingFrom: string | null;
+  leftAt: string | null;
+  groupStartDate: string;
+  groupEndDate: string;
+  customPrice: number | null;
+  note: string | null;
+  nextPaymentDate: string | null;
+  monthlyPrice: number;
+  discount: MembershipDiscount | null;
+  instalments: MembershipInstalment[];
+  /** Lessons left of a package; null in a group that charges by the month. */
+  lessonsLeft: number | null;
+  gradeAverage: number | null;
+}
+
 export interface StudentDetail extends StudentRow {
+  groups: StudentGroupCard[];
   birthDate: string | null;
   schoolName: string | null;
   parents: Array<{ id: string; fullName: string; phone: string }>;

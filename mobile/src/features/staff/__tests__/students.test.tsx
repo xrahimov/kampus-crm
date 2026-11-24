@@ -5,7 +5,7 @@ import type {
   Page,
   StudentComment,
   StudentDetail,
-  StudentGroup,
+  StudentGroupCard,
   StudentProgress,
   StudentRow,
   StudentTests,
@@ -88,7 +88,7 @@ async function rest() {
   });
 }
 
-function group(change: Partial<StudentGroup>): StudentGroup {
+function group(change: Partial<StudentGroupCard>): StudentGroupCard {
   return {
     membershipId: "ms1",
     groupId: "g1",
@@ -100,6 +100,19 @@ function group(change: Partial<StudentGroup>): StudentGroup {
     time: "09:00–10:30",
     weekdays: [2, 4, 6],
     balance: 0,
+    joinedAt: "2026-09-01",
+    billingFrom: null,
+    leftAt: null,
+    groupStartDate: "2026-09-01",
+    groupEndDate: "2027-02-28",
+    customPrice: null,
+    note: null,
+    nextPaymentDate: null,
+    monthlyPrice: 400000,
+    discount: null,
+    instalments: [],
+    lessonsLeft: null,
+    gradeAverage: null,
     ...change,
   };
 }
@@ -203,6 +216,7 @@ describe("the students a teacher may see", () => {
 
 const DETAIL: StudentDetail = {
   ...student({ note: "Allergic to nuts", balance: -200000 }),
+  groups: [group({})],
   birthDate: "2012-05-04",
   schoolName: "School 14",
   parents: [{ id: "p1", fullName: "Demo Parent", phone: "+998 90 444 55 66" }],
