@@ -4,10 +4,13 @@ import { Keyboard } from "react-native";
 
 import {
   checkFile,
+  checkSheet,
   chooseFile,
   choosePhoto,
+  chooseSheet,
   FILE_MAX_BYTES,
   sendableType,
+  SHEET_MAX_BYTES,
   takePhoto,
 } from "@/features/files/pick";
 
@@ -145,5 +148,69 @@ describe("a file chosen on the phone", () => {
     expect(ImagePicker.launchImageLibraryAsync).toHaveBeenCalledWith(
       expect.objectContaining({ preferredAssetRepresentationMode: "compatible" }),
     );
+  });
+});
+
+describe("a sheet chosen for an import (A-251)", () => {
+  const XLSX = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
+
+  it("is an Excel workbook or a CSV file, by the name's ending", () => {
+    expect(
+      checkSheet({ uri: "file:///a/Students.XLSX", type: "application/octet-stream" }),
+    ).toEqual({
+      kind: "file",
+      file: { uri: "file:///a/Students.XLSX", name: "Students.XLSX", type: XLSX, size: null },
+    });
+    const csv = checkSheet({ uri: "file:///a/x", name: "groups.csv", type: "text/plain" });
+    expect(csv.kind === "file" && csv.file.type).toBe("text/csv");
+    // The old Excel format and anything else are not read by the server.
+    for (const name of ["old.xls", "notes.pdf", "photo.jpg"]) {
+      expect(checkSheet({ uri: `file:///a/${name}`, name, type: XLSX })).toEqual({
+        kind: "refused",
+        reason: "wrongType",
+      });
+    }
+  });
+
+  it("is known by its type when the name has no ending", () => {
+    const sheet = checkSheet({ uri: "content://downloads/17", name: "export", type: XLSX });
+    expect(sheet.kind === "file" && sheet.file.type).toBe(XLSX);
+    const csv = checkSheet({
+      uri: "content://downloads/18",
+      name: "export",
+      type: "text/comma-separated-values",
+    });
+    expect(csv.kind === "file" && csv.file.type).toBe("text/csv");
+    expect(checkSheet({ uri: "content://downloads/19", name: "export" })).toEqual({
+      kind: "refused",
+      reason: "wrongType",
+    });
+  });
+
+  it("is refused over 5 MB", () => {
+    expect(
+      checkSheet({ uri: "file:///a/big.xlsx", name: "big.xlsx", size: SHEET_MAX_BYTES + 1 }),
+    ).toEqual({ kind: "refused", reason: "tooBig" });
+    expect(
+      checkSheet({ uri: "file:///a/ok.xlsx", name: "ok.xlsx", size: SHEET_MAX_BYTES }).kind,
+    ).toBe("file");
+  });
+
+  it("comes from the device's file picker, and backing out chooses nothing", async () => {
+    (DocumentPicker.getDocumentAsync as jest.Mock).mockResolvedValueOnce({
+      canceled: false,
+      assets: [{ uri: "file:///cache/staff.xlsx", name: "staff.xlsx", mimeType: XLSX, size: 900 }],
+    });
+    expect(await chooseSheet()).toEqual({
+      kind: "file",
+      file: {
+        uri: "file:///cache/staff.xlsx",
+        name: "staff.xlsx",
+        type: XLSX,
+        size: 900,
+        file: undefined,
+      },
+    });
+    expect(await chooseSheet()).toEqual({ kind: "none" });
   });
 });

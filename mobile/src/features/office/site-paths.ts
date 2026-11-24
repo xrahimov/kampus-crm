@@ -17,7 +17,7 @@ export function hasHome(me: Me): boolean {
   return me.view.current === "FULL" && can(me, "dashboard.view");
 }
 
-/** The site's Settings sections the app has, by the last part of their path (A-234, A-242, A-246, A-247). */
+/** The site's Settings sections the app has, by the last part of their path (A-234, A-242, A-246, A-247, A-251). */
 const NATIVE_SETTINGS = new Set([
   "courses",
   "rooms",
@@ -33,6 +33,7 @@ const NATIVE_SETTINGS = new Set([
   "calls",
   "forms",
   "bot",
+  "migration",
 ]);
 
 /** The pages under Settings → Integrations the app has (A-249): "/settings/integrations/amocrm". */

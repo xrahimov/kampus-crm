@@ -219,3 +219,67 @@ export async function chooseFile(): Promise<Picked> {
     file: asset.file,
   });
 }
+
+/** The import takes one sheet of up to 5 MB (`IMPORT_MAX_BYTES` on the server). */
+export const SHEET_MAX_BYTES = 5 * 1024 * 1024;
+
+const XLSX = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
+const CSV = "text/csv";
+const CSV_NAMES = [CSV, "application/csv", "text/comma-separated-values"];
+
+/**
+ * Checks a sheet for an import: an Excel workbook or a CSV file. The name's
+ * ending decides, as on the server; a file without one is known by its type.
+ */
+export function checkSheet(input: {
+  uri: string;
+  name?: string | null;
+  type?: string | null;
+  size?: number | null;
+  file?: Blob;
+}): Picked {
+  const name = input.name?.trim() || input.uri.split("/").pop()?.split("?")[0] || "file";
+  const ending = /\.([a-z0-9]+)$/i.exec(name)?.[1]?.toLowerCase();
+  const given = (input.type ?? "").toLowerCase().split(";")[0]!.trim();
+  const type =
+    ending === "xlsx"
+      ? XLSX
+      : ending === "csv"
+        ? CSV
+        : ending
+          ? null
+          : given === XLSX
+            ? XLSX
+            : CSV_NAMES.includes(given)
+              ? CSV
+              : null;
+  if (!type) return { kind: "refused", reason: "wrongType" };
+  if (typeof input.size === "number" && input.size > SHEET_MAX_BYTES) {
+    return { kind: "refused", reason: "tooBig" };
+  }
+  return {
+    kind: "file",
+    file: { uri: input.uri, name, type, size: input.size ?? null, file: input.file },
+  };
+}
+
+/** A sheet for an import (A-251): an .xlsx or .csv file from this device. */
+export async function chooseSheet(): Promise<Picked> {
+  await keyboardAway();
+  const result = await DocumentPicker.getDocumentAsync({
+    // An Android file manager does not always know a .csv by its type and would grey it out,
+    // so there every file can be picked and the check below says no to the rest.
+    type: Platform.OS === "android" ? "*/*" : [XLSX, ...CSV_NAMES],
+    copyToCacheDirectory: true,
+    multiple: false,
+  });
+  const asset = result.canceled ? null : result.assets[0];
+  if (!asset) return { kind: "none" };
+  return checkSheet({
+    uri: asset.uri,
+    name: asset.name,
+    type: asset.mimeType,
+    size: asset.size,
+    file: asset.file,
+  });
+}

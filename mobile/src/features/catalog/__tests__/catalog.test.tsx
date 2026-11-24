@@ -12,6 +12,7 @@ import { SettingsScreen } from "@/features/catalog/settings-screen";
 import { TeacherFormSheet } from "@/features/catalog/teacher-form";
 import { TeacherScreen } from "@/features/catalog/teacher-screen";
 import { TeachersScreen } from "@/features/catalog/teachers-screen";
+import { SETTINGS_SECTIONS } from "@/features/catalog/settings-sections";
 import { nativeRoute } from "@/features/office/site-paths";
 import { answer, clearClients, renderScreen, sentBody } from "@/features/student/test-support";
 import { openOnSite } from "@/lib/web";
@@ -697,14 +698,14 @@ describe("rooms", () => {
 });
 
 describe("the settings list", () => {
-  it("shows the sections the person may open: most in the app, the rest on the site", async () => {
+  it("shows the sections the person may open, every one of them in the app", async () => {
     mockPermissions = ["settings.catalog", "settings.org", "students.create"];
     serve({});
     await show(<SettingsScreen />);
     expect(screen.getByTestId("settings-courses")).toBeOnTheScreen();
     const arrow = { includeHiddenElements: true };
     expect(screen.queryByTestId("settings-courses-site", arrow)).toBeNull();
-    expect(screen.getByTestId("settings-migration-site", arrow)).toBeOnTheScreen();
+    expect(screen.queryByTestId("settings-migration-site", arrow)).toBeNull();
     // No permission, no row.
     expect(screen.queryByTestId("settings-roles")).toBeNull();
     expect(screen.queryByTestId("settings-integrations")).toBeNull();
@@ -712,7 +713,10 @@ describe("the settings list", () => {
     await fireEvent.press(screen.getByTestId("settings-rooms"));
     expect(mockPush).toHaveBeenCalledWith("/staff/settings/rooms");
     await fireEvent.press(screen.getByTestId("settings-migration"));
-    await waitFor(() => expect(openOnSite).toHaveBeenCalledWith("/en/settings/migration"));
+    expect(mockPush).toHaveBeenCalledWith("/staff/settings/migration");
+    expect(openOnSite).not.toHaveBeenCalled();
+    // Since A-251 no section is left to the site.
+    for (const section of SETTINGS_SECTIONS) expect(nativeRoute(section.path)).not.toBeNull();
   });
 
   it("knows which of the site's addresses the app has", () => {
@@ -724,6 +728,6 @@ describe("the settings list", () => {
     expect(nativeRoute("/settings")).toBe("/staff/settings");
     expect(nativeRoute("/settings/courses")).toBe("/staff/settings/courses");
     expect(nativeRoute("/settings/rooms")).toBe("/staff/settings/rooms");
-    expect(nativeRoute("/settings/migration")).toBeNull();
+    expect(nativeRoute("/settings/organizations")).toBeNull();
   });
 });
