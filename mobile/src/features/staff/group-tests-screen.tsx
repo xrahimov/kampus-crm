@@ -51,7 +51,7 @@ export function GroupTestsScreen() {
       contentStyle={styles.column}
     >
       {query.data.length === 0 ? (
-        <EmptyState title={t("tests.groupTab.empty")} text={t("mobile.tests.madeOnSite")} />
+        <EmptyState title={t("tests.groupTab.empty")} text={t("mobile.tests.whereMade")} />
       ) : (
         query.data.map((test) => (
           <TestCard key={test.id} test={test} groupName={group.data?.name ?? null} />

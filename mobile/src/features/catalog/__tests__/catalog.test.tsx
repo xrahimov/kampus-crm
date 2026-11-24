@@ -698,21 +698,21 @@ describe("rooms", () => {
 
 describe("the settings list", () => {
   it("shows the sections the person may open: most in the app, the rest on the site", async () => {
-    mockPermissions = ["settings.catalog", "settings.org", "tests.view"];
+    mockPermissions = ["settings.catalog", "settings.org", "students.create"];
     serve({});
     await show(<SettingsScreen />);
     expect(screen.getByTestId("settings-courses")).toBeOnTheScreen();
     const arrow = { includeHiddenElements: true };
     expect(screen.queryByTestId("settings-courses-site", arrow)).toBeNull();
-    expect(screen.getByTestId("settings-tests-site", arrow)).toBeOnTheScreen();
+    expect(screen.getByTestId("settings-migration-site", arrow)).toBeOnTheScreen();
     // No permission, no row.
     expect(screen.queryByTestId("settings-roles")).toBeNull();
     expect(screen.queryByTestId("settings-integrations")).toBeNull();
 
     await fireEvent.press(screen.getByTestId("settings-rooms"));
     expect(mockPush).toHaveBeenCalledWith("/staff/settings/rooms");
-    await fireEvent.press(screen.getByTestId("settings-tests"));
-    await waitFor(() => expect(openOnSite).toHaveBeenCalledWith("/en/settings/tests"));
+    await fireEvent.press(screen.getByTestId("settings-migration"));
+    await waitFor(() => expect(openOnSite).toHaveBeenCalledWith("/en/settings/migration"));
   });
 
   it("knows which of the site's addresses the app has", () => {
@@ -724,6 +724,6 @@ describe("the settings list", () => {
     expect(nativeRoute("/settings")).toBe("/staff/settings");
     expect(nativeRoute("/settings/courses")).toBe("/staff/settings/courses");
     expect(nativeRoute("/settings/rooms")).toBe("/staff/settings/rooms");
-    expect(nativeRoute("/settings/integrations/amocrm")).toBeNull();
+    expect(nativeRoute("/settings/migration")).toBeNull();
   });
 });

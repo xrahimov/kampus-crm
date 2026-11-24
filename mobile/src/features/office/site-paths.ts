@@ -35,6 +35,9 @@ const NATIVE_SETTINGS = new Set([
   "bot",
 ]);
 
+/** The pages under Settings → Integrations the app has (A-249): "/settings/integrations/amocrm". */
+const NATIVE_INTEGRATIONS = new Set(["amocrm", "face-id"]);
+
 /** The logs under Settings the app has (A-246): "/settings/logs/sms". */
 const NATIVE_LOGS = new Set(["logins", "actions", "sms"]);
 
@@ -68,6 +71,20 @@ export function nativeRoute(path: string): Href | null {
     if (!id) return "/staff/settings";
     if (id === "logs" && rest.length === 1 && NATIVE_LOGS.has(rest[0]!)) {
       return `/staff/settings/logs/${rest[0]}` as Href;
+    }
+    // Integrations (A-249): the page itself, and amoCRM and FaceID under it.
+    if (id === "integrations") {
+      if (rest.length === 0) return "/staff/settings/integrations" as Href;
+      return rest.length === 1 && NATIVE_INTEGRATIONS.has(rest[0]!)
+        ? (`/staff/settings/integrations/${rest[0]}` as Href)
+        : null;
+    }
+    // Tests (A-250): the list with the question bank, and one test's page.
+    if (id === "tests") {
+      if (rest.length === 0) return "/staff/settings/tests" as Href;
+      return rest.length === 1
+        ? ({ pathname: "/staff/settings/tests/[id]", params: { id: rest[0]! } } as Href)
+        : null;
     }
     if (rest.length > 0) return null;
     return NATIVE_SETTINGS.has(id) ? (`/staff/settings/${id}` as Href) : null;

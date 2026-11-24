@@ -147,6 +147,9 @@ export async function getIntegration<P extends IntegrationProvider>(
       effective && effective.organizationId !== actor.organizationId
         ? { username: effective.config.botUsername || null }
         : null;
+    // The app is not told who owns the server; this says whether to show the
+    // "shared with every centre" tick, which only the owner may set (A-249).
+    dto.state.mayShare = actor.isSiteOwner === true;
   }
   return dto;
 }

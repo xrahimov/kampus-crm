@@ -6416,7 +6416,8 @@
     "tests": {
       "results": "Results",
       "hideResults": "Hide results",
-      "madeOnSite": "Tests are written and given to a group on the site, under Settings, Tests."
+      "whereMade": "Tests are written and given to a group under Settings, Tests.",
+      "moreQuestions": "{count} more questions. Search to find them."
     },
     "exams": {
       "open": "Open the exam"
