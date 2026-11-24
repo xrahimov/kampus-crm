@@ -6413,6 +6413,9 @@
     "coins": {
       "given": "{name}ga {count} ta coin berildi."
     },
+    "help": {
+      "enlarge": "Kattalashtirish"
+    },
     "import": {
       "choose": "Faylni tanlash",
       "another": "Boshqa faylni tanlash",

@@ -659,6 +659,10 @@ describe("the menu of every page", () => {
     expect(mockPush).toHaveBeenLastCalledWith("/staff/reports");
     await fireEvent.press(screen.getByTestId("menu-assistant"));
     expect(mockOpenOnSite).toHaveBeenCalledWith("/en/assistant");
+    // Help (A-252) is the app's own page, the last row as in the site's side menu.
+    expect(screen.queryByTestId("menu-help-site", { includeHiddenElements: true })).toBeNull();
+    await fireEvent.press(screen.getByTestId("menu-help"));
+    expect(mockPush).toHaveBeenLastCalledWith("/staff/help");
   });
 
   it("leaves the home and the salary out for a teacher without them", async () => {

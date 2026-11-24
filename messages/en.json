@@ -6413,6 +6413,9 @@
     "coins": {
       "given": "{count, plural, one {# coin} other {# coins}} given to {name}."
     },
+    "help": {
+      "enlarge": "Enlarge"
+    },
     "import": {
       "choose": "Choose a file",
       "another": "Choose another file",

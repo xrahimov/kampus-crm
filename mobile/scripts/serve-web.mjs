@@ -1,7 +1,8 @@
 // Serves the web build of the app (`npm run export:web` → dist/) next to a
 // Kampus server, the way the two will sit together when the site moves to this
-// code: pages from dist/, /api from the server. For looking at the app in a
-// browser and for the screen tests; not used in production.
+// code: pages from dist/, /api and the manual's pictures (/help/<language>/*.jpg,
+// A-252) from the server. For looking at the app in a browser and for the screen
+// tests; not used in production.
 //   node scripts/serve-web.mjs [port] [server]   (default 8090, http://localhost:3000)
 import { createReadStream, existsSync, statSync } from "node:fs";
 import http from "node:http";
@@ -24,7 +25,9 @@ const TYPES = {
 http
   .createServer((req, res) => {
     const url = new URL(req.url ?? "/", `http://localhost:${port}`);
-    if (url.pathname.startsWith("/api/")) {
+    // The manual's pictures are the server's own files; the app's Help pages are under /staff.
+    const picture = /^\/help\/[a-z]{2}\/[\w-]+\.jpg$/.test(url.pathname);
+    if (url.pathname.startsWith("/api/") || picture) {
       const proxied = http.request(
         {
           host: upstream.hostname,
