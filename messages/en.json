@@ -6487,7 +6487,8 @@
     "settingsPages": {
       "variablesHint": "Tap a word to add it to the text. It is replaced when the message is sent.",
       "sampleMethod": "Cash",
-      "fixFields": "Some fields need another look. They are marked above."
+      "fixFields": "Some fields need another look. They are marked above.",
+      "formsDescription": "Public web forms that turn visitors into leads. Share a form's link, or open it to see what visitors see."
     }
   }
 }

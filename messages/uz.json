@@ -6487,7 +6487,8 @@
     "settingsPages": {
       "variablesHint": "Matnga qo'shish uchun so'zni bosing. Xabar yuborilganda u almashtiriladi.",
       "sampleMethod": "Naqd",
-      "fixFields": "Ba'zi maydonlarni tuzatish kerak. Ular yuqorida belgilangan."
+      "fixFields": "Ba'zi maydonlarni tuzatish kerak. Ular yuqorida belgilangan.",
+      "formsDescription": "Tashrif buyuruvchilarni lidga aylantiradigan ochiq veb-formalar. Forma havolasini ulashing yoki tashrif buyuruvchilar nimani ko'rishini bilish uchun uni oching."
     }
   }
 }

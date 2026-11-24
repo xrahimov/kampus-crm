@@ -45,7 +45,11 @@ import {
   loadIntegrationConfig,
   updateIntegration,
 } from "@/server/services/integrations/integrations.service";
-import { listActionLog, listLoginLogs } from "@/server/services/logs/logs.service";
+import {
+  listActionLog,
+  listActionLogActors,
+  listLoginLogs,
+} from "@/server/services/logs/logs.service";
 import { createBranch } from "@/server/services/settings/branches.service";
 import { createCourse } from "@/server/services/settings/courses.service";
 import { dateToIso } from "@/server/services/settings/shared";
@@ -587,6 +591,11 @@ describe("logs", () => {
     );
     expect(mine).toBeDefined();
     await expect(listActionLog(teacher, list, {})).rejects.toMatchObject({ code: "FORBIDDEN" });
+
+    // The staff of the feed, for its filter and the phone app's (A-246): this centre's only.
+    const actors = await listActionLogActors(ceo);
+    expect(actors).toContainEqual({ id: teacher.userId, fullName: `${TAG} Teacher` });
+    await expect(listActionLogActors(teacher)).rejects.toMatchObject({ code: "FORBIDDEN" });
   });
 });
 

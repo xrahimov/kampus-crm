@@ -525,7 +525,7 @@ describe("where the site's settings pages live in the app", () => {
     expect(nativeRoute("/settings/sms")).toBe("/staff/settings/sms");
     expect(nativeRoute("/settings/receipt")).toBe("/staff/settings/receipt");
     expect(nativeRoute("/settings/coins")).toBe("/staff/settings/coins");
-    expect(nativeRoute("/settings/logs/sms")).toBeNull();
+    expect(nativeRoute("/settings/integrations/face-id")).toBeNull();
     expect(nativeRoute("/settings/integrations/amocrm")).toBeNull();
   });
 });
