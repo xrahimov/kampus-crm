@@ -1,11 +1,12 @@
 import { useQueryClient } from "@tanstack/react-query";
-import { useLocalSearchParams } from "expo-router";
+import { useLocalSearchParams, useRouter } from "expo-router";
 import { useState } from "react";
 import { ScrollView, StyleSheet, View } from "react-native";
 
 import { useGroup } from "@/api/hooks";
 import { setTopicRelease, staffGroupKeys, useGroupPlan, useGroupProgress } from "@/api/staff-group";
 import type { GroupPlan, GroupPlanTopic, GroupProgress, TopicReleaseMode } from "@/api/types";
+import { Button } from "@/components/button";
 import { Header } from "@/components/header";
 import { Badge, Card, EmptyState, Notice, Screen, type Tone } from "@/components/surface";
 import { Text } from "@/components/text";
@@ -130,6 +131,7 @@ function Topic({
 }) {
   const t = useTranslations();
   const formatDate = useDate();
+  const router = useRouter();
   const [picking, setPicking] = useState(false);
   const [busy, setBusy] = useState(false);
   const [problem, setProblem] = useState<string | null>(null);
@@ -176,20 +178,21 @@ function Topic({
           testID="topic-status"
         />
       </View>
+      <View style={styles.row}>
+        {/* The topic's content, exercises and words, to read or to write (A-263). */}
+        <Button
+          compact
+          variant="outline"
+          label={t("groups.syllabus.content.button", { count: topic.blocks })}
+          onPress={() => router.push({ pathname: "/staff/topic/[id]", params: { id: topic.id } })}
+          testID={`topic-content-${topic.id}`}
+        />
+        {topic.blocks > 0 && topic.open ? (
+          <Badge tone="success" label={t("groups.syllabus.content.openNow")} testID="topic-open" />
+        ) : null}
+      </View>
       {topic.blocks > 0 ? (
         <View style={styles.part}>
-          <View style={styles.row}>
-            <Text variant="small" tone="mutedForeground">
-              {t("groups.syllabus.content.button", { count: topic.blocks })}
-            </Text>
-            {topic.open ? (
-              <Badge
-                tone="success"
-                label={t("groups.syllabus.content.openNow")}
-                testID="topic-open"
-              />
-            ) : null}
-          </View>
           {canSet ? (
             <>
               <Text variant="smallStrong">{t("groups.syllabus.content.release")}</Text>

@@ -33,6 +33,9 @@ export default function StaffLayout() {
       <Stack.Screen name="discounts/[id]" />
       <Stack.Screen name="packages/[id]" />
       <Stack.Screen name="links/[id]" />
+      <Stack.Screen name="topic/[id]" />
+      <Stack.Screen name="exercise/[id]" />
+      <Stack.Screen name="exercises/[id]" />
       <Stack.Screen name="tests/[id]" />
       <Stack.Screen name="exams/[id]" />
       <Stack.Screen name="exams/index" />

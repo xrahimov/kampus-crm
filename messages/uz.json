@@ -6494,6 +6494,9 @@
       "newLinkText": "Eski havola shu zahoti ishlamay qoladi. O'quvchiga yangisini yuboring.",
       "newLink": "Yangi havola yaratish"
     },
+    "topics": {
+      "unsaved": "Hali saqlanmagan. Ro'yxatdagi o'zgarishlar qolishi uchun Saqlash tugmasini bosing."
+    },
     "catalog": {
       "changeHours": "Soatlarni o'zgartirish",
       "firstSignIn": "Birinchi kirish Telegram kodi bilan bo'ladi. Shundan keyin xodim parolini o'zi tanlaydi.",
