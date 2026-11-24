@@ -167,7 +167,7 @@ function Row({ row }: { row: StudentRow }) {
       style={({ pressed }) => [styles.row, pressed ? { backgroundColor: colors.muted } : null]}
       testID={`student-${row.id}`}
     >
-      <Avatar name={row.fullName} />
+      <Avatar name={row.fullName} photo={row.photoUrl} />
       <View style={styles.fill}>
         <Text variant="bodyStrong" numberOfLines={1}>
           {row.fullName}

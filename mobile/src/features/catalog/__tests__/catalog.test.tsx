@@ -292,6 +292,7 @@ describe("the teacher form", () => {
       gender: "FEMALE",
       birthDate: null,
       hireDate: expect.stringMatching(/^\d{4}-\d{2}-\d{2}$/),
+      photoUrl: null,
       branchIds: ["b1"],
       salaryMethod: "PERCENT",
       fixedSalary: null,

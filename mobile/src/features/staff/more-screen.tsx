@@ -45,7 +45,7 @@ export function MoreScreen() {
     <View style={styles.block}>
       <Card>
         <View style={styles.person}>
-          <Avatar name={me.user.fullName} size={48} />
+          <Avatar name={me.user.fullName} photo={me.user.photoUrl} size={48} />
           <View style={styles.fill}>
             <Text variant="heading" testID="me-name">
               {me.user.fullName}

@@ -11,6 +11,7 @@ import { Select } from "@/components/select";
 import { Sheet } from "@/components/sheet";
 import { Notice, Segmented } from "@/components/surface";
 import { Text } from "@/components/text";
+import { PhotoField } from "@/features/files/photo-field";
 import { ApiError } from "@/lib/api";
 import { centreToday } from "@/lib/days";
 import { phoneOrNull } from "@/lib/form";
@@ -20,12 +21,12 @@ import { space } from "@/lib/theme";
 
 /**
  * "Add student" (A-231), the site's form with the parts a phone is used for:
- * the name, the phone, the day of birth, the group to join and a parent's
- * phone. The rest of the profile (school, source, the app password) is set on
+ * the photo (A-255), the name, the phone, the day of birth, the group to join
+ * and a parent's phone. The rest of the profile (school, source, the app password) is set on
  * the site for now. The new student's page opens when it is saved.
  *
- * With `student` it is "Edit student": the name, the phone, the day of birth
- * and the note of someone who is already there. Groups and parents have their
+ * With `student` it is "Edit student": the photo, the name, the phone, the day
+ * of birth and the note of someone who is already there. Groups and parents have their
  * own places on the student's page.
  */
 export function StudentFormSheet({
@@ -56,6 +57,9 @@ export function StudentFormSheet({
   const [parentName, setParentName] = useState("");
   const [parentPhone, setParentPhone] = useState("+998");
   const [note, setNote] = useState("");
+  const [photoUrl, setPhotoUrl] = useState<string | null>(null);
+  // A photo on its way holds Save: the form would otherwise be saved without it.
+  const [sendingPhoto, setSendingPhoto] = useState(false);
   const [missing, setMissing] = useState(false);
   const [wasOpen, setWasOpen] = useState(open);
   if (open !== wasOpen) {
@@ -71,6 +75,7 @@ export function StudentFormSheet({
       setParentName("");
       setParentPhone("+998");
       setNote(student?.note ?? "");
+      setPhotoUrl(student?.photoUrl ?? null);
       setMissing(false);
       add.reset();
       change.reset();
@@ -103,6 +108,7 @@ export function StudentFormSheet({
           fullName: fullName.trim(),
           phone: phoneOrNull(phone),
           birthDate,
+          photoUrl,
           note: note.trim() || null,
         },
         { onSuccess: onClose },
@@ -116,6 +122,7 @@ export function StudentFormSheet({
         phone: phoneOrNull(phone),
         birthDate,
         gender,
+        photoUrl,
         note: note.trim() || null,
         membership: groupId && joinedAt ? { groupId, joinedAt, status: "ACTIVE" } : null,
         parent: parent ? { fullName: parentName.trim(), phone: parent } : null,
@@ -139,6 +146,7 @@ export function StudentFormSheet({
         <Button
           label={t("common.save")}
           loading={create.isPending}
+          disabled={sendingPhoto}
           onPress={save}
           testID="student-save"
         />
@@ -158,6 +166,13 @@ export function StudentFormSheet({
             testID="student-branch"
           />
         ) : null}
+        <PhotoField
+          value={photoUrl}
+          name={fullName}
+          onChange={setPhotoUrl}
+          onBusy={setSendingPhoto}
+          testID="student-photo"
+        />
         <Field
           label={tf("fullName")}
           value={fullName}

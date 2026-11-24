@@ -264,6 +264,7 @@ describe("the students list for the office", () => {
       fullName: "Sardor Karimov",
       phone: "+998901112233",
       birthDate: "2012-03-05",
+      photoUrl: null,
       gender: "MALE",
       note: null,
       membership: { groupId: "g1", joinedAt: "2026-11-01", status: "ACTIVE" },
@@ -392,6 +393,7 @@ describe("the office's actions on a student", () => {
       fullName: "Ali Valiyev Jr",
       phone: "+998901112233",
       birthDate: "2012-03-05",
+      photoUrl: null,
       note: "Allergy",
     });
   });

@@ -27,6 +27,7 @@ import { Select } from "@/components/select";
 import { Sheet } from "@/components/sheet";
 import { Badge, Notice, Segmented } from "@/components/surface";
 import { Text } from "@/components/text";
+import { PhotoField } from "@/features/files/photo-field";
 import { centreToday } from "@/lib/days";
 import { fieldErrorOf, hasFieldErrors, phoneOrNull } from "@/lib/form";
 import { errorText, useTranslations } from "@/lib/i18n";
@@ -39,6 +40,7 @@ interface FormState {
   gender: Gender;
   birthDate: string | null;
   hireDate: string | null;
+  photoUrl: string | null;
   branchIds: string[];
   /** Only the staff form shows them; a teacher's role is fixed by the list they are in. */
   roleCodes: string[];
@@ -54,6 +56,7 @@ function emptyForm(branchId: string | null, method: SalaryMethod): FormState {
     gender: "MALE",
     birthDate: null,
     hireDate: centreToday(),
+    photoUrl: null,
     branchIds: branchId ? [branchId] : [],
     roleCodes: [],
     salaryMethod: method,
@@ -71,6 +74,7 @@ function formOf(person: Staff, method: SalaryMethod): FormState {
     gender: person.gender,
     birthDate: person.birthDate,
     hireDate: person.hireDate,
+    photoUrl: person.photoUrl,
     branchIds: person.branches.map((b) => b.id),
     roleCodes: person.roles.map((r) => r.code),
     salaryMethod,
@@ -87,9 +91,10 @@ function typedAmount(text: string): number | null {
 }
 
 /**
- * A new teacher or a change to one (A-234): the site's form without its photo
- * and its password. A new person's first sign-in is with a code from Telegram
- * and they choose their own password; nobody types one for them here.
+ * A new teacher or a change to one (A-234): the site's form without its
+ * password. A new person's first sign-in is with a code from Telegram and they
+ * choose their own password; nobody types one for them here. The photo is the
+ * site's photo field (A-255).
  *
  * With `staff` it is the site's staff form (A-244): the same fields and the
  * person's roles, saved through the staff calls. Someone changing their own
@@ -134,6 +139,8 @@ export function TeacherFormSheet({
     person ? formOf(person, method) : emptyForm(defaultBranch, method),
   );
   const [missing, setMissing] = useState(false);
+  // A photo on its way holds Save: the form would otherwise be saved without it.
+  const [sendingPhoto, setSendingPhoto] = useState(false);
   const [wasOpen, setWasOpen] = useState(open);
   if (open !== wasOpen) {
     setWasOpen(open);
@@ -182,6 +189,7 @@ export function TeacherFormSheet({
       gender: form.gender,
       birthDate: form.birthDate,
       hireDate: form.hireDate,
+      photoUrl: form.photoUrl,
       branchIds: form.branchIds,
       salaryMethod: form.salaryMethod,
       // The sums of the other ways of paying stay as they were, as on the site.
@@ -215,6 +223,7 @@ export function TeacherFormSheet({
           <Button
             label={t("common.save")}
             loading={save.isPending}
+            disabled={sendingPhoto}
             onPress={submit}
             testID={`${id}-save`}
           />
@@ -235,6 +244,13 @@ export function TeacherFormSheet({
             {errorText(t, save.error)}
           </Notice>
         ) : null}
+        <PhotoField
+          value={form.photoUrl}
+          name={form.fullName}
+          onChange={(photoUrl) => set({ photoUrl })}
+          onBusy={setSendingPhoto}
+          testID={`${id}-photo`}
+        />
         <Field
           label={tf("fullName")}
           value={form.fullName}
