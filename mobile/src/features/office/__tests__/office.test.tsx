@@ -451,7 +451,14 @@ describe("where a page of the site lives in the app", () => {
   });
 
   it("sends everything else to the site", () => {
-    expect(nativeRoute("/assistant")).toBeNull();
+    // The assistant is the app's own since A-253, and Today opens on a day asked for.
+    expect(nativeRoute("/assistant")).toBe("/staff/assistant");
+    expect(nativeRoute("/today?date=2026-11-23")).toEqual({
+      pathname: "/staff",
+      params: { date: "2026-11-23" },
+    });
+    expect(nativeRoute("/today?date=tomorrow")).toBeNull();
+    expect(nativeRoute("/today?groupId=g1")).toBeNull();
     // A report's Excel file is the site's, and so is a report the site does not have.
     expect(nativeRoute("/reports/taxes")).toBeNull();
     expect(nativeRoute("/reports/payments/export.xlsx")).toBeNull();
@@ -642,13 +649,12 @@ describe("the menu of every page", () => {
     // No right to them, no row.
     expect(screen.queryByTestId("menu-settings")).toBeNull();
     expect(screen.queryByTestId("menu-exams")).toBeNull();
-    // The app has students, leads, finance (A-237) and reports (A-238); the assistant is the
-    // site's for now.
+    // The app has students, leads, finance (A-237), reports (A-238) and the assistant (A-253).
     expect(screen.queryByTestId("menu-students-site", { includeHiddenElements: true })).toBeNull();
     expect(screen.queryByTestId("menu-leads-site", { includeHiddenElements: true })).toBeNull();
     expect(screen.queryByTestId("menu-finance-site", { includeHiddenElements: true })).toBeNull();
     expect(screen.queryByTestId("menu-reports-site", { includeHiddenElements: true })).toBeNull();
-    expect(screen.getByTestId("menu-assistant-site", { includeHiddenElements: true })).toBeTruthy();
+    expect(screen.queryByTestId("menu-assistant-site", { includeHiddenElements: true })).toBeNull();
     await waitFor(() => expect(screen.getByTestId("menu-notifications")).toHaveTextContent(/1/));
 
     await fireEvent.press(screen.getByTestId("menu-salary"));
@@ -658,7 +664,8 @@ describe("the menu of every page", () => {
     await fireEvent.press(screen.getByTestId("menu-reports"));
     expect(mockPush).toHaveBeenLastCalledWith("/staff/reports");
     await fireEvent.press(screen.getByTestId("menu-assistant"));
-    expect(mockOpenOnSite).toHaveBeenCalledWith("/en/assistant");
+    expect(mockPush).toHaveBeenLastCalledWith("/staff/assistant");
+    expect(mockOpenOnSite).not.toHaveBeenCalled();
     // Help (A-252) is the app's own page, the last row as in the site's side menu.
     expect(screen.queryByTestId("menu-help-site", { includeHiddenElements: true })).toBeNull();
     await fireEvent.press(screen.getByTestId("menu-help"));

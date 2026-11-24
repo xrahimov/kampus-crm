@@ -57,6 +57,11 @@ export function nativeRoute(path: string): Href | null {
     if (pathname === "/leads") return filteredRoute("/staff/leads", filter, LEAD_FILTER_VALUES);
     // The debtors a notification points at (A-236): "to call in this branch", one student.
     if (pathname === "/debts") return filteredRoute("/staff/debts", filter, DEBT_FILTER_VALUES);
+    // A day of Today (A-253): the summary's "not marked" opens the day it counted.
+    if (pathname === "/today") {
+      const day = /^date=(\d{4}-\d{2}-\d{2})$/.exec(filter)?.[1];
+      return day ? { pathname: "/staff", params: { date: day } } : null;
+    }
     return null;
   }
   const parts = pathname.split("/").filter(Boolean);
@@ -161,6 +166,9 @@ export function nativeRoute(path: string): Href | null {
       return "/staff/notifications";
     case "search":
       return "/staff/search";
+    // The assistant (A-253): the conversation; its summary is the screen's other tab.
+    case "assistant":
+      return "/staff/assistant" as Href;
     default:
       return null;
   }

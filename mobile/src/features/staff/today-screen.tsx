@@ -1,4 +1,4 @@
-import { useRouter } from "expo-router";
+import { useLocalSearchParams, useRouter } from "expo-router";
 import { ChevronLeft, ChevronRight } from "lucide-react-native";
 import { useState } from "react";
 import { Pressable, ScrollView, StyleSheet, View } from "react-native";
@@ -26,6 +26,11 @@ import { radius, space, useTheme } from "@/lib/theme";
 import { LessonPanel } from "./lesson-panel";
 import { OpenOnSite } from "./open-on-site";
 
+/** A day from an address, if it is one: "2026-11-23". */
+function dayParam(value: unknown): string | null {
+  return typeof value === "string" && /^\d{4}-\d{2}-\d{2}$/.test(value) ? value : null;
+}
+
 /**
  * The teacher's day. On a phone: the day's lessons as a list, each opening its
  * own screen. On a tablet: the list stays on the left and the chosen lesson is
@@ -37,10 +42,20 @@ export function TodayScreen() {
   const router = useRouter();
   const { wide } = useLayout();
   // null = the server's own today, so a phone with a wrong clock still opens the right day.
-  const [date, setDate] = useState<string | null>(null);
+  // A day asked for from elsewhere (A-253): the summary's "not marked" opens the day it counted.
+  const asked = dayParam(useLocalSearchParams<{ date?: string }>().date);
+  const [date, setDate] = useState<string | null>(asked);
+  const [chosen, setChosen] = useState<string | null>(null);
+  const [taken, setTaken] = useState<string | null>(asked);
+  if (asked !== taken) {
+    setTaken(asked);
+    if (asked) {
+      setDate(asked);
+      setChosen(null);
+    }
+  }
   const query = useToday(date);
   const day = query.data;
-  const [chosen, setChosen] = useState<string | null>(null);
   // The lesson list of the two-column layout reloads on a pull, as the phone's page does.
   const reload = usePullToReload({
     onRefresh: () => void query.refetch(),

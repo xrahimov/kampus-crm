@@ -274,3 +274,49 @@ describe("a place on the page a screen asks for", () => {
     expect(scrollTo.mock.calls).toHaveLength(calls);
   });
 });
+
+describe("a page that ends in a field to write in", () => {
+  const scrollTo = (ScrollView as unknown as { prototype: { scrollTo: jest.Mock } }).prototype
+    .scrollTo;
+  const scrollToEnd = (ScrollView as unknown as { prototype: { scrollToEnd: jest.Mock } }).prototype
+    .scrollToEnd;
+  const handle = createRef<ScreenScroll>();
+  const talk = (
+    <Screen header={<View testID="bar" />} footer={<Text>Ask</Text>} footerField scrollRef={handle}>
+      <Text>Conversation</Text>
+    </Screen>
+  );
+  beforeEach(() => {
+    scrollTo.mockClear();
+    scrollToEnd.mockClear();
+  });
+
+  it("goes to its end on request, and forgets a place asked for before", async () => {
+    Platform.OS = "android";
+    await renderScreen(talk);
+    await act(async () => handle.current!.to(500, false));
+    await act(async () => handle.current!.end());
+    expect(scrollToEnd).toHaveBeenLastCalledWith({ animated: true });
+    // The header is measured after that: the page stays at its end.
+    const calls = scrollTo.mock.calls.length;
+    await act(async () =>
+      screen
+        .getByTestId("bar", { includeHiddenElements: true })
+        .parent!.props.onLayout({ nativeEvent: { layout: { height: 100 } } }),
+    );
+    expect(scrollTo.mock.calls).toHaveLength(calls);
+  });
+
+  it("rises with the keyboard as a whole on an iPhone too, the field being outside what scrolls", async () => {
+    Platform.OS = "ios";
+    await renderScreen(talk);
+    // The whole page gives up the keyboard's room instead; the scrolling part adds none of its own.
+    expect(screen.getByTestId("screen-scroll").props.automaticallyAdjustKeyboardInsets).toBe(false);
+  });
+
+  it("leaves an iPhone's other pages to move the scrolling part by itself", async () => {
+    Platform.OS = "ios";
+    await renderScreen(page);
+    expect(screen.getByTestId("screen-scroll").props.automaticallyAdjustKeyboardInsets).toBe(true);
+  });
+});
