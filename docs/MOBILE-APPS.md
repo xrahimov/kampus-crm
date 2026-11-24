@@ -74,7 +74,8 @@ able to work from an iPad or a phone.
 | Office: Help, the manual with its how-to videos: search, articles by role, pictures that enlarge, videos (A-252)                                                                                                             | Built, phone and tablet; needs the server update                                                                         |
 | Office: the assistant: Summary (figures and a conclusion for yesterday, today, 7 days) and Ask (the conversation), the button on Home (A-253)                                                                                | Built, phone and tablet; needs the server update                                                                         |
 | Office: a group's Discounts (give one, end one) and, in a package group, Packages (offers, students' lessons, sell a package, packages sold) (A-254)                                                                         | Built, phone and tablet; no server update needed                                                                         |
-| What the site has and the app does not yet: Excel files, leads boards and columns, a person's photo                                                                                                                          | Next; they open on the site until then                                                                                   |
+| Office: a person's photo: chosen in the staff and student forms, shown in the lists, on a teacher's and a student's page and on More (A-255)                                                                                 | Built, phone and tablet; no server update needed                                                                         |
+| What the site has and the app does not yet: Excel files, leads boards and columns                                                                                                                                            | Next; they open on the site until then                                                                                   |
 | The site running on the app's code                                                                                                                                                                                           | Part by part, the student side first; wide tables, Excel and print last                                                  |
 
 ## What kai needs to do
@@ -145,7 +146,7 @@ mobile/
   short Add student form, `student-payments.tsx` the Payments part of a student's page.
 - **Teachers, courses and rooms (A-234).** `src/features/catalog/` and `src/api/office-catalog.ts`.
   `TeachersScreen` and `TeacherScreen` are the site's Teachers pages; `TeacherFormSheet` is its
-  drawer without the photo and the password. `HoursCard` shows a teacher's hours for 1:1 booking and
+  drawer without the password (its photo field came with A-255). `HoursCard` shows a teacher's hours for 1:1 booking and
   opens the sheet that changes them; it is also on the More screen for a teacher's own hours.
   `SettingsScreen` draws `SETTINGS_SECTIONS`, a copy of the site's `settings-nav.ts` that
   `tests/unit/app-settings-sections.test.ts` keeps equal to it. `CoursesScreen` with
@@ -285,7 +286,13 @@ mobile/
   for the group's students (and the ways to pay) when it is first opened. `Fact` and `Facts` in
   `group-money-parts.tsx` are a table's columns as they read on a phone: the name of a figure
   above the figure, several in a row that wraps.
-  Next free number: A-255.
+- **A person's photo (A-255).** `features/files/photo-field.tsx` is the photo field of the staff
+  form (`catalog/teacher-form.tsx`) and the student form (`office/student-form.tsx`): it sends the
+  chosen photo with `uploadPhoto` and hands the form the address; `onBusy` lets the form hold its
+  Save meanwhile. `Avatar` in `components/surface.tsx` takes `photo` and falls back to the initials.
+  `lib/file-source.ts` and `lib/local-file.ts` are where `fileSource` and `useLocalFile` live now;
+  `features/room/file-source.ts` and `features/files/local-file.ts` re-export them.
+  Next free number: A-256.
 - **Finance and payroll (A-237).** `src/features/finance/` and `src/api/office-finance.ts`.
   `FinanceScreen` is the site's Finance page; `EntriesScreen` the entries of a kind or of a
   category (`entries-routes.tsx` reads which from the address), with `EntrySheet`, the site's one
