@@ -36,7 +36,7 @@ import {
 } from "@/components/surface";
 import { Text } from "@/components/text";
 import { centreToday, dayAsDate } from "@/lib/days";
-import { fieldErrorOf, phoneOrNull } from "@/lib/form";
+import { fieldErrorOf, isTaken, phoneOrNull } from "@/lib/form";
 import { errorText, useDate, useMoney, useTranslations } from "@/lib/i18n";
 import { useLayout } from "@/lib/layout";
 import { useRested } from "@/lib/rested";
@@ -459,6 +459,7 @@ export function AddMemberSheet({
   const found = useStudentSearch(rested, open && !createNew && picked === null);
   const fieldError = fieldErrorOf(t, change.error);
   const required = (empty: boolean) => (missing && empty ? t("validation.required") : null);
+  const taken = isTaken(change.error, "studentId") ? tm("alreadyIn") : null;
   const submit = () => {
     if (!joinedAt || (createNew ? !fullName.trim() : !picked)) {
       setMissing(true);
@@ -526,17 +527,29 @@ export function AddMemberSheet({
             />
           </>
         ) : picked ? (
-          <View style={[styles.picked, { borderColor: colors.border }]} testID="member-picked">
-            <Text variant="bodyStrong" style={styles.fill}>
-              {picked.fullName}
-            </Text>
-            <Button
-              variant="ghost"
-              compact
-              label={t("common.edit")}
-              onPress={() => setPicked(null)}
-              testID="member-unpick"
-            />
+          <View style={styles.tight}>
+            <View style={[styles.picked, { borderColor: colors.border }]} testID="member-picked">
+              <Text variant="bodyStrong" style={styles.fill}>
+                {picked.fullName}
+              </Text>
+              <Button
+                variant="ghost"
+                compact
+                label={t("common.edit")}
+                onPress={() => {
+                  setPicked(null);
+                  change.reset();
+                }}
+                testID="member-unpick"
+              />
+            </View>
+            {/* The search field that would carry the refusal is gone once a
+                student is picked, so it is said here (A-248). */}
+            {(taken ?? fieldError("studentId")) ? (
+              <Text variant="small" tone="destructive" testID="member-picked-problem">
+                {taken ?? fieldError("studentId")}
+              </Text>
+            ) : null}
           </View>
         ) : (
           <View style={styles.tight}>
@@ -546,7 +559,11 @@ export function AddMemberSheet({
               onChangeText={setSearch}
               hint={tm("searchHint")}
               autoCorrect={false}
-              error={fieldError("studentId") ?? (missing ? t("validation.studentRequired") : null)}
+              error={
+                taken ??
+                fieldError("studentId") ??
+                (missing ? t("validation.studentRequired") : null)
+              }
               testID="member-search"
             />
             {(found.data?.items ?? []).map((s) => (
@@ -862,7 +879,11 @@ export function TransferSheet({ open, onClose, member, groupId }: MemberRefSheet
             label: g.name,
             note: [g.teacherName, g.time].filter(Boolean).join(", ") || undefined,
           }))}
-          error={fieldError("groupId") ?? (missing && !target ? t("validation.required") : null)}
+          error={
+            (isTaken(change.error, "groupId") ? tm("alreadyIn") : null) ??
+            fieldError("groupId") ??
+            (missing && !target ? t("validation.required") : null)
+          }
           testID="member-transfer-group"
         />
         <DateField

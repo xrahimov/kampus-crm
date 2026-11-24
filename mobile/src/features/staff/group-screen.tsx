@@ -17,6 +17,7 @@ import {
   MessageSquare,
   MessageSquareText,
   StickyNote,
+  UsersRound,
 } from "lucide-react-native";
 import { useCallback, useState } from "react";
 import { Pressable, StyleSheet, View } from "react-native";
@@ -77,9 +78,15 @@ export function GroupScreen() {
     void grid.refetch();
   };
 
+  // On a phone the office meets what the group is, and the way to its students,
+  // before the month of lessons; a teacher meets the lessons first (A-248).
+  const officeFirst = !wide && mayManage;
+  const pages = <GroupPages id={id} students={officeFirst} />;
+  const facts = group.data ? <GroupOffice group={group.data} /> : null;
+
   const lessons = (
     <View style={styles.block}>
-      <GroupPages id={id} />
+      {officeFirst ? null : pages}
       <MonthSwitch month={month} onChange={setMonth} />
       {grid.isLoading ? (
         <Loading />
@@ -107,7 +114,7 @@ export function GroupScreen() {
 
   const students = grid.data ? (
     <View style={styles.block}>
-      {group.data ? <GroupOffice group={group.data} /> : null}
+      {officeFirst ? null : facts}
       <View style={styles.studentsHead}>
         <Text variant="heading" style={styles.fill}>
           {t("mobile.students", { count: grid.data.members.length })}
@@ -182,6 +189,13 @@ export function GroupScreen() {
           <View style={styles.fill}>{lessons}</View>
           <View style={styles.fill}>{students}</View>
         </>
+      ) : officeFirst ? (
+        <>
+          {pages}
+          {facts}
+          {lessons}
+          {students}
+        </>
       ) : (
         <>
           {lessons}
@@ -196,7 +210,7 @@ export function GroupScreen() {
 const FIRST_PAGES = 6;
 
 /** The group's other pages, each a screen of its own (A-214, A-217 to A-219). */
-function GroupPages({ id }: { id: string }) {
+function GroupPages({ id, students = false }: { id: string; students?: boolean }) {
   const t = useTranslations();
   const router = useRouter();
   const { colors } = useTheme();
@@ -217,6 +231,17 @@ function GroupPages({ id }: { id: string }) {
   const unread = chat.data?.unread ?? 0;
   const toCheck = checking.data?.items.filter((item) => item.groupId === id).length ?? 0;
   const pages = [
+    // For the office on a phone: the students to add, move and remove, first.
+    ...(students
+      ? [
+          {
+            key: "members",
+            label: t("mobile.groups.manageStudents"),
+            Icon: UsersRound,
+            pathname: "/staff/members/[id]" as const,
+          },
+        ]
+      : []),
     {
       key: "homework",
       label: t("groups.detail.tabs.homework"),

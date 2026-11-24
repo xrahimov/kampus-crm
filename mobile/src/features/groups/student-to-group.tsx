@@ -10,7 +10,7 @@ import { Field } from "@/components/field";
 import { Select } from "@/components/select";
 import { Sheet } from "@/components/sheet";
 import { centreToday } from "@/lib/days";
-import { fieldErrorOf } from "@/lib/form";
+import { fieldErrorOf, isTaken } from "@/lib/form";
 import { useTranslations } from "@/lib/i18n";
 import { space } from "@/lib/theme";
 
@@ -111,7 +111,11 @@ export function StudentToGroupSheet({
             label: g.name,
             note: [g.teacherName, g.time].filter(Boolean).join(", ") || undefined,
           }))}
-          error={fieldError("studentId") ?? (missing && !groupId ? t("validation.required") : null)}
+          error={
+            (isTaken(add.error, "studentId") ? tm("alreadyIn") : null) ??
+            fieldError("studentId") ??
+            (missing && !groupId ? t("validation.required") : null)
+          }
           testID="to-group-group"
         />
         <DateField

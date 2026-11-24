@@ -210,7 +210,9 @@ describe("the SMS of a student", () => {
     expect(await screen.findByTestId("student-sms-empty")).toBeOnTheScreen();
     await fireEvent.press(screen.getByTestId("student-sms-send"));
     await waitFor(() =>
-      expect(screen.getByTestId("student-sms-sheet-recipients")).toHaveTextContent(/1 recipients/),
+      expect(screen.getByTestId("student-sms-sheet-recipients")).toHaveTextContent(
+        /1 recipient \(/,
+      ),
     );
     expect(sentBody(calls("POST", "/sms/count")[0]![1])).toEqual({
       target: { kind: "student", studentId: "s1" },
@@ -398,7 +400,9 @@ describe("the parents of a student", () => {
     await fireEvent.press(await screen.findByTestId("parents-sms"));
     await fireEvent.changeText(await screen.findByTestId("parents-sms-sheet-text"), "Hello");
     await waitFor(() =>
-      expect(screen.getByTestId("parents-sms-sheet-recipients")).toHaveTextContent(/1 recipients/),
+      expect(screen.getByTestId("parents-sms-sheet-recipients")).toHaveTextContent(
+        /1 recipient \(/,
+      ),
     );
     await fireEvent.press(screen.getByTestId("parents-sms-sheet-send"));
     expect(await screen.findByTestId("parents-sms-sheet-result")).toHaveTextContent(
