@@ -6437,7 +6437,8 @@
       "none": "Mos o'quvchi topilmadi.",
       "noneYet": "Hozircha o'quvchilar yo'q.",
       "call": "Qo'ng'iroq qilish",
-      "noPhone": "Telefon raqami sizga ko'rsatilmaydi."
+      "noPhone": "Telefon raqami sizga ko'rsatilmaydi.",
+      "shareLink": "Havolani ulashish"
     },
     "announcements": {
       "posted": "E'lon qilindi. Uni {count} ta o'quvchi ko'radi.",

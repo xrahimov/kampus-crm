@@ -1,8 +1,8 @@
 import { useQueryClient } from "@tanstack/react-query";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import { ChevronRight, Phone } from "lucide-react-native";
+import { ChevronRight, X } from "lucide-react-native";
 import { useState } from "react";
-import { Linking, Pressable, StyleSheet, View } from "react-native";
+import { Pressable, StyleSheet, View } from "react-native";
 
 import {
   addCommentOnStudent,
@@ -33,8 +33,14 @@ import {
   Screen,
 } from "@/components/surface";
 import { Text } from "@/components/text";
+import { useBlacklist, useRemoveField } from "@/api/office-student-page";
 import { useArchiveStudent } from "@/api/office-students";
+import { Confirm } from "@/components/confirm";
 import { Sheet } from "@/components/sheet";
+import { useOpenSite } from "@/features/office/site-paths";
+import { FamilyCard } from "@/features/office/student-family";
+import { AccessCard, FieldSheet, ParentsCard, PhoneLine } from "@/features/office/student-people";
+import { StudentCalls, StudentHistory, StudentSms } from "@/features/office/student-record";
 import { PaymentSheet } from "@/features/office/payment-sheet";
 import { StudentFormSheet } from "@/features/office/student-form";
 import { StudentToGroupSheet } from "@/features/groups/student-to-group";
@@ -48,8 +54,10 @@ import { can, useMe } from "@/lib/session";
 import { space, useTheme } from "@/lib/theme";
 
 const SECTIONS = ["groups", "progress", "testResults", "comments"] as const;
-/** The office also has the student's payments (A-231). */
-type Section = (typeof SECTIONS)[number] | "payments";
+/** The office also has what was sent, said and done (A-240), in the site's order. */
+const OFFICE_SECTIONS = ["sms", "calls", "history"] as const;
+/** And the student's payments (A-231). */
+type Section = (typeof SECTIONS)[number] | (typeof OFFICE_SECTIONS)[number] | "payments";
 
 /**
  * One student on the teacher's side, in the app (A-220): who they are and how
@@ -69,6 +77,15 @@ export function StudentScreen() {
   if (!query.data) return <PendingScreen header={header} query={query} />;
   const student = query.data;
 
+  // The family and who signs in (A-240) sit under the person on a tablet, as on the site; on a
+  // phone they come after the sections, so the groups stay one short scroll away.
+  const officeCards = office ? (
+    <>
+      <FamilyCard student={student} />
+      <AccessCard student={student} />
+    </>
+  ) : null;
+
   const sections = (
     <View style={styles.block}>
       {/* The chips wrap onto a second line: in one row that scrolled sideways the last one,
@@ -83,6 +100,17 @@ export function StudentScreen() {
             testID={`student-tab-${key}`}
           />
         ))}
+        {office
+          ? OFFICE_SECTIONS.map((key) => (
+              <WordChip
+                key={key}
+                label={t(`students.detail.tabs.${key}`)}
+                chosen={section === key}
+                onPress={() => setSection(key)}
+                testID={`student-tab-${key}`}
+              />
+            ))
+          : null}
         {office ? (
           <WordChip
             label={t("payments.log.title")}
@@ -96,6 +124,9 @@ export function StudentScreen() {
       {section === "progress" ? <Progress id={id} /> : null}
       {section === "testResults" ? <Tests id={id} /> : null}
       {section === "comments" ? <Comments id={id} /> : null}
+      {section === "sms" ? <StudentSms student={student} /> : null}
+      {section === "calls" ? <StudentCalls student={student} /> : null}
+      {section === "history" ? <StudentHistory id={id} /> : null}
       {section === "payments" ? <StudentPayments id={id} /> : null}
     </View>
   );
@@ -109,8 +140,9 @@ export function StudentScreen() {
     >
       {wide ? (
         <>
-          <View style={styles.widePerson}>
+          <View style={[styles.widePerson, styles.block]}>
             <Person student={student} />
+            {officeCards}
           </View>
           <View style={styles.wideSections}>{sections}</View>
         </>
@@ -118,35 +150,10 @@ export function StudentScreen() {
         <>
           <Person student={student} />
           {sections}
+          {officeCards}
         </>
       )}
     </Screen>
-  );
-}
-
-/** A phone number with a button that starts the call. */
-function PhoneLine({ name, phone, testID }: { name: string; phone: string; testID: string }) {
-  const tm = useTranslations("mobile.studentsPage");
-  const { colors } = useTheme();
-  return (
-    <View style={styles.line}>
-      <View style={styles.fill}>
-        <Text variant="bodyStrong" numberOfLines={1}>
-          {name}
-        </Text>
-        <Text variant="small" tone="mutedForeground">
-          {phone}
-        </Text>
-      </View>
-      <Button
-        compact
-        variant="outline"
-        label={tm("call")}
-        icon={<Phone size={16} color={colors.foreground} />}
-        onPress={() => void Linking.openURL(`tel:${phone.replace(/[^+0-9]/g, "")}`)}
-        testID={testID}
-      />
-    </View>
   );
 }
 
@@ -162,9 +169,20 @@ function Person({ student }: { student: StudentDetail }) {
   // Into a group from the student's own page (A-233): how a restored student gets back in.
   const mayAddToGroup = can(me, "groups.update") && !student.isArchived;
   const [joining, setJoining] = useState(false);
+  // The rest of the card for the office (A-240): extra information, the badge, the blacklist.
+  const office = me.view.current === "FULL";
+  const mayChangeFields = office && mayEdit;
+  const mayBlacklist = office && can(me, "students.blacklist");
+  const [addingField, setAddingField] = useState(false);
+  const [blacklisting, setBlacklisting] = useState(false);
+  const removeField = useRemoveField(student.id);
+  const blacklist = useBlacklist(student.id);
+  const site = useOpenSite();
+  const { colors } = useTheme();
   const tm = useTranslations("mobile.studentsPage");
   const formatDate = useDate();
   const money = useMoney();
+  const fields = student.customFields.filter((f) => mayChangeFields || f.value);
   const facts = [
     student.birthDate
       ? `${t("students.detail.birthDate")}: ${formatDate(dayAsDate(student.birthDate), {
@@ -172,7 +190,8 @@ function Person({ student }: { student: StudentDetail }) {
         })}`
       : null,
     student.schoolName,
-    ...student.customFields.filter((f) => f.value).map((f) => `${f.name}: ${f.value}`),
+    // People who may change the extra information get it as lines they can remove.
+    ...(mayChangeFields ? [] : fields.map((f) => `${f.name}: ${f.value}`)),
   ].filter(Boolean);
   return (
     <View style={styles.block}>
@@ -222,6 +241,25 @@ function Person({ student }: { student: StudentDetail }) {
             {facts.join(", ")}
           </Text>
         ) : null}
+        {mayChangeFields
+          ? fields.map((field) => (
+              <View key={field.id} style={styles.line} testID={`student-field-${field.id}`}>
+                <Text variant="small" tone="mutedForeground" style={styles.fill}>
+                  {field.value ? `${field.name}: ${field.value}` : field.name}
+                </Text>
+                <Pressable
+                  onPress={() => removeField.mutate(field.id)}
+                  disabled={removeField.isPending}
+                  accessibilityRole="button"
+                  accessibilityLabel={`${t("common.remove")}: ${field.name}`}
+                  hitSlop={8}
+                  testID={`student-field-remove-${field.id}`}
+                >
+                  <X size={16} color={colors.mutedForeground} />
+                </Pressable>
+              </View>
+            ))
+          : null}
         {student.note ? <Text>{student.note}</Text> : null}
         {can(me, "payments.create") && !student.isArchived ? (
           <Button
@@ -232,7 +270,7 @@ function Person({ student }: { student: StudentDetail }) {
           />
         ) : null}
       </Card>
-      {mayEdit || mayArchive || mayAddToGroup ? (
+      {mayEdit || mayArchive || mayAddToGroup || office ? (
         <View style={styles.officeActions}>
           {mayAddToGroup ? (
             <Button
@@ -262,6 +300,40 @@ function Person({ student }: { student: StudentDetail }) {
               testID="student-restore"
             />
           ) : null}
+          {mayChangeFields && !student.isArchived ? (
+            <Button
+              compact
+              variant="outline"
+              label={t("students.detail.addField")}
+              onPress={() => setAddingField(true)}
+              testID="student-add-field"
+            />
+          ) : null}
+          {office ? (
+            <Button
+              compact
+              variant="outline"
+              label={t("students.detail.badge")}
+              onPress={() => site.open(`/students/${student.id}/badge`)}
+              testID="student-badge"
+            />
+          ) : null}
+          {mayBlacklist ? (
+            <Button
+              compact
+              variant="outline"
+              label={
+                student.isBlacklisted
+                  ? t("students.detail.unblacklist")
+                  : t("students.detail.blacklist")
+              }
+              onPress={() => {
+                blacklist.reset();
+                setBlacklisting(true);
+              }}
+              testID="student-blacklist"
+            />
+          ) : null}
           {mayArchive ? (
             <Button
               compact
@@ -278,6 +350,34 @@ function Person({ student }: { student: StudentDetail }) {
           {errorText(t, archive.error)}
         </Notice>
       ) : null}
+      {removeField.error || site.error ? (
+        <Notice tone="destructive" testID="student-card-problem">
+          {removeField.error ? errorText(t, removeField.error) : site.error}
+        </Notice>
+      ) : null}
+      <FieldSheet open={addingField} onClose={() => setAddingField(false)} studentId={student.id} />
+      <Confirm
+        open={blacklisting}
+        onClose={() => setBlacklisting(false)}
+        title={
+          student.isBlacklisted ? t("students.detail.unblacklist") : t("students.blacklistTitle")
+        }
+        text={
+          student.isBlacklisted
+            ? undefined
+            : t("students.blacklistText", { name: student.fullName })
+        }
+        label={
+          student.isBlacklisted ? t("students.detail.unblacklist") : t("students.detail.blacklist")
+        }
+        destructive={!student.isBlacklisted}
+        loading={blacklist.isPending}
+        problem={blacklist.error ? errorText(t, blacklist.error) : null}
+        onConfirm={() =>
+          blacklist.mutate(!student.isBlacklisted, { onSuccess: () => setBlacklisting(false) })
+        }
+        testID="blacklist"
+      />
       <PaymentSheet open={paying} onClose={() => setPaying(false)} student={student} />
       <StudentFormSheet open={editing} onClose={() => setEditing(false)} student={student} />
       <StudentToGroupSheet open={joining} onClose={() => setJoining(false)} student={student} />
@@ -308,21 +408,7 @@ function Person({ student }: { student: StudentDetail }) {
       >
         <Text>{t("students.archiveText", { name: student.fullName })}</Text>
       </Sheet>
-      <Card testID="student-parents">
-        <Text variant="heading">{t("students.parents.title")}</Text>
-        {student.parents.length === 0 ? (
-          <Text tone="mutedForeground">{t("students.parents.empty")}</Text>
-        ) : (
-          student.parents.map((parent) => (
-            <PhoneLine
-              key={parent.id}
-              name={parent.fullName}
-              phone={parent.phone}
-              testID={`parent-call-${parent.id}`}
-            />
-          ))
-        )}
-      </Card>
+      <ParentsCard student={student} office={office} />
     </View>
   );
 }

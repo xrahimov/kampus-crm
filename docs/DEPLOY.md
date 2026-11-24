@@ -204,6 +204,10 @@ A-201) has no migration and no setting. Two things to know after it:
   on an `https` address (the live site is one). Nothing on the server switches it
   on or off; a person can switch it off for the site in the browser.
 
+The rest of a student's page in the app (A-240: SMS, calls, history, parents, family, app
+sign-in, extra information, blacklist) uses calls the server already has: nothing to update
+for it.
+
 The app's Graduates, Staff attendance and Coins reports (A-239) use calls the server already
 has: nothing to update for them.
 

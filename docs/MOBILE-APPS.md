@@ -61,7 +61,8 @@ able to work from an iPad or a phone.
 | Office: finance (key figures, plan, categories, the entries of each kind with add, edit and delete) and a month's payroll (approve, recalculate, save) (A-237)                              | Built, phone and tablet; the payroll's Excel file stays on the site                                                      |
 | Office: reports (the list, Payments, Student payments, Left students with Set up reasons, Lead statements, Referral programme, Students, Center statistics) (A-238)                         | Built, phone and tablet; Excel files stay on the site                                                                    |
 | Office: the last three reports: Graduates (record result, certificates), Staff attendance (five tabs, check-in/out, work schedules), Coins (rating, marketplace, purchase requests) (A-239) | Built, phone and tablet; a certificate's page to print opens on the site                                                 |
-| The office's other pages: the rest of a student's page (discounts, refunds), the other settings, the manual, the assistant                                                                  | Next, part 6 (A-230 to A-239 are parts 1 to 5 of 6); they open on the site until then                                    |
+| Office: the rest of a student's page, first half: SMS with Send SMS, calls, history, parents, family with the parents' page, app sign-in, extra information, blacklist (A-240)              | Built, phone and tablet; the badge to print opens on the site                                                            |
+| The office's other pages: a student's group cards and money (lesson calendar, split fees, refunds, corrections), the other settings, the manual, the assistant                              | Next, parts 6b to 6d; they open on the site until then                                                                   |
 | The site running on the app's code                                                                                                                                                          | Part by part, the student side first; wide tables, Excel and print last                                                  |
 
 ## What kai needs to do
@@ -155,7 +156,16 @@ mobile/
   `parts.tsx` is for tabs that do not fit `Segmented` (five of them, or long names). The
   attendance chart (`DayStacks`) stacks three states in the theme's status colours with a legend
   and the pressed day in words. A product's picture goes through `choosePhoto({ smallSquare })`
-  and `POST /uploads`, and shows with `fileSource` (the session's header). Next free number: A-240.
+  and `POST /uploads`, and shows with `fileSource` (the session's header).
+- **The rest of a student's page, first half (A-240).** `api/office-student-page.ts` holds the
+  calls; every query key starts with `["students", id]`, so a change to the student reads them
+  again. `features/office/sms-sheet.tsx` is the one **Send SMS** sheet (give it a target:
+  a student, a student's parents or a group); `lib/sms-parts.ts` counts as the site's
+  `sms-counter.ts` does. `student-record.tsx` has the SMS, Calls and History sections,
+  `student-family.tsx` the Family card with its sheets, `student-people.tsx` the Parents card,
+  the sign-in card and the extra-information sheet. The parents' page link goes to the phone's
+  share sheet (`Share.share`): the app carries no clipboard package. The office's cards show
+  only when `me.view.current === "FULL"`. Next free number: A-241.
 - **Finance and payroll (A-237).** `src/features/finance/` and `src/api/office-finance.ts`.
   `FinanceScreen` is the site's Finance page; `EntriesScreen` the entries of a kind or of a
   category (`entries-routes.tsx` reads which from the address), with `EntrySheet`, the site's one
