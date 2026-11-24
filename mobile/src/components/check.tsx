@@ -55,7 +55,58 @@ export function Check({
   );
 }
 
+/**
+ * A tick box with no words beside it, at the start of a row of a list: the
+ * row keeps its own tap, the box takes its own. `label` is what a screen
+ * reader says ("Select Madina Yusupova").
+ */
+export function Tick({
+  ticked,
+  onPress,
+  label,
+  testID,
+}: {
+  ticked: boolean;
+  onPress: () => void;
+  label: string;
+  testID?: string;
+}) {
+  const { colors } = useTheme();
+  return (
+    <Pressable
+      onPress={onPress}
+      accessibilityRole="checkbox"
+      accessibilityState={{ checked: ticked }}
+      accessibilityLabel={label}
+      hitSlop={6}
+      style={styles.tick}
+      testID={testID}
+    >
+      <View
+        style={[
+          styles.tickBox,
+          {
+            borderColor: ticked ? colors.primary : colors.border,
+            backgroundColor: ticked ? colors.primary : colors.card,
+          },
+        ]}
+      >
+        {ticked ? <CheckIcon size={16} color={colors.primaryForeground} /> : null}
+      </View>
+    </Pressable>
+  );
+}
+
 const styles = StyleSheet.create({
+  tick: { paddingLeft: space[4], paddingRight: space[1], justifyContent: "center" },
+  tickBox: {
+    width: 24,
+    height: 24,
+    borderRadius: radius.sm,
+    borderWidth: 1.5,
+    alignItems: "center",
+    justifyContent: "center",
+  },
   row: { flexDirection: "row", alignItems: "flex-start", gap: space[3], minHeight: 44 },
   fill: { flex: 1 },
   box: {

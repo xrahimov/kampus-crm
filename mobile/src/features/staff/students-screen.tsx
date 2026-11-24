@@ -1,21 +1,26 @@
 import { useLocalSearchParams, useRouter } from "expo-router";
-import { Plus, SlidersHorizontal, X } from "lucide-react-native";
+import { MessageSquare, Plus, SlidersHorizontal, UserCheck, X } from "lucide-react-native";
 import { useEffect, useState } from "react";
 import { Pressable, StyleSheet, View } from "react-native";
 
+import { useActivateStudents } from "@/api/office-students";
 import { countFilters, useStudents, type StudentFilters } from "@/api/staff-students";
 import type { StudentRow } from "@/api/types";
 import { Button } from "@/components/button";
+import { Check, Tick } from "@/components/check";
+import { Confirm } from "@/components/confirm";
 import { Field } from "@/components/field";
 import { Header } from "@/components/header";
-import { Avatar, Badge, Card, Divider, EmptyState, Screen } from "@/components/surface";
+import { Avatar, Badge, Card, Divider, EmptyState, Notice, Screen } from "@/components/surface";
 import { Text } from "@/components/text";
 import { ExcelButton } from "@/features/files/excel-button";
 import { ImportMenu, type ImportKind } from "@/features/files/import-button";
+import { SendSmsSheet } from "@/features/office/sms-sheet";
 import { filtersFromParams, StudentFilterSheet } from "@/features/office/student-filters";
 import { StudentFormSheet } from "@/features/office/student-form";
+import { mayBulkStudents, StudentsBulkBar } from "@/features/office/students-bulk";
 import { PendingScreen } from "@/features/shared/pending-screen";
-import { useMoney, useTranslations } from "@/lib/i18n";
+import { errorText, useMoney, useTranslations } from "@/lib/i18n";
 import { can, useMe } from "@/lib/session";
 import { space, useTheme } from "@/lib/theme";
 
@@ -28,6 +33,9 @@ const SEARCH_REST_MS = 300;
  * list to the groups they teach. The office narrows the list with the site's
  * filters and adds a student from here (A-231); a figure of the home page
  * arrives with its filter already set ("/students?paymentStatus=DEBTOR").
+ * The office also ticks several students for one thing done to all of them,
+ * writes one SMS to everyone the list shows, and activates the new and trial
+ * students among them (A-260).
  */
 export function StudentsScreen() {
   const t = useTranslations();
@@ -53,6 +61,12 @@ export function StudentsScreen() {
   }
   const [choosing, setChoosing] = useState(false);
   const [adding, setAdding] = useState(false);
+  // The students ticked for one thing done to all of them (A-260).
+  const [ticked, setTicked] = useState<ReadonlySet<string>>(new Set());
+  const [texting, setTexting] = useState(false);
+  const [activating, setActivating] = useState(false);
+  const [activated, setActivated] = useState<string | null>(null);
+  const activate = useActivateStudents();
   const set = countFilters(filters);
   const query = useStudents(q, filters);
 
@@ -123,6 +137,21 @@ export function StudentsScreen() {
     },
   ].filter((kind) => kind !== false);
   const total = query.data.pages[0]?.total ?? 0;
+  const archived = filters.archived === true;
+  const bulk = office && mayBulkStudents(me);
+  // Only the ticked students still in the list count: a search may have taken some away.
+  const tickedIds = rows.filter((row) => ticked.has(row.id)).map((row) => row.id);
+  const allTicked = rows.length > 0 && tickedIds.length === rows.length;
+  const tick = (id: string) =>
+    setTicked((before) => {
+      const next = new Set(before);
+      if (!next.delete(id)) next.add(id);
+      return next;
+    });
+  // "Activate" has something to do when a listed student is new or on trial in a group.
+  const waiting = rows.some((row) =>
+    row.groups.some((g) => g.status === "NEW" || g.status === "TRIAL"),
+  );
 
   return (
     <Screen
@@ -167,6 +196,22 @@ export function StudentsScreen() {
           </>
         ) : null}
       </View>
+      {activated ? (
+        <Notice tone="success" testID="students-activated">
+          {activated}
+        </Notice>
+      ) : null}
+      {bulk ? (
+        <StudentsBulkBar ids={tickedIds} onClear={() => setTicked(new Set())} archived={archived} />
+      ) : null}
+      {bulk && rows.length > 0 ? (
+        <Check
+          label={t("students.bulk.selectAll")}
+          value={allTicked}
+          onChange={(all) => setTicked(new Set(all ? rows.map((row) => row.id) : []))}
+          testID="students-select-all"
+        />
+      ) : null}
       {rows.length === 0 ? (
         <EmptyState title={q || set > 0 ? tm("none") : tm("noneYet")} />
       ) : (
@@ -174,7 +219,11 @@ export function StudentsScreen() {
           {rows.map((row, index) => (
             <View key={row.id}>
               {index > 0 ? <Divider /> : null}
-              <Row row={row} />
+              <Row
+                row={row}
+                ticked={ticked.has(row.id)}
+                onTick={bulk ? () => tick(row.id) : undefined}
+              />
             </View>
           ))}
         </Card>
@@ -189,16 +238,67 @@ export function StudentsScreen() {
           testID="students-more"
         />
       ) : null}
-      {total > 0 ? (
-        <ExcelButton
-          path="/students/export.xlsx"
-          params={{ sort: "fullName:asc", q, ...filters }}
-          testID="students-excel"
-        />
-      ) : null}
-      {office ? (
-        <ImportMenu label={t("students.importMenu")} kinds={imports} testID="students-import" />
-      ) : null}
+      <View style={styles.actions}>
+        {total > 0 ? (
+          <ExcelButton
+            path="/students/export.xlsx"
+            params={{ sort: "fullName:asc", q, ...filters }}
+            testID="students-excel"
+          />
+        ) : null}
+        {office && can(me, "sms.send") && total > 0 ? (
+          <Button
+            variant="outline"
+            label={t("students.sms")}
+            icon={<MessageSquare size={18} color={colors.foreground} />}
+            onPress={() => setTexting(true)}
+            testID="students-sms"
+          />
+        ) : null}
+        {office && can(me, "groups.update") && !archived && waiting ? (
+          <Button
+            variant="outline"
+            label={t("students.activate")}
+            icon={<UserCheck size={18} color={colors.foreground} />}
+            onPress={() => {
+              activate.reset();
+              setActivating(true);
+            }}
+            testID="students-activate"
+          />
+        ) : null}
+        {office ? (
+          <ImportMenu label={t("students.importMenu")} kinds={imports} testID="students-import" />
+        ) : null}
+      </View>
+      <SendSmsSheet
+        open={texting}
+        onClose={() => setTexting(false)}
+        target={texting ? { kind: "studentFilter", ...filters, ...(q ? { q } : {}) } : null}
+        title={t("sms.send.title")}
+        testID="students-sms-sheet"
+      />
+      <Confirm
+        open={activating}
+        onClose={() => setActivating(false)}
+        title={t("students.activateTitle")}
+        text={t("students.activateText", { count: rows.length })}
+        label={t("students.activate")}
+        loading={activate.isPending}
+        problem={activate.error ? errorText(t, activate.error) : null}
+        onConfirm={() =>
+          activate.mutate(
+            rows.map((row) => row.id),
+            {
+              onSuccess: (result) => {
+                setActivating(false);
+                setActivated(t("students.activated", { count: result.activated }));
+              },
+            },
+          )
+        }
+        testID="students-activate-confirm"
+      />
       <StudentFilterSheet
         open={choosing}
         onClose={() => setChoosing(false)}
@@ -210,7 +310,16 @@ export function StudentsScreen() {
   );
 }
 
-function Row({ row }: { row: StudentRow }) {
+function Row({
+  row,
+  ticked,
+  onTick,
+}: {
+  row: StudentRow;
+  ticked: boolean;
+  /** With it the row has a tick box, for doing one thing to several students (A-260). */
+  onTick?: () => void;
+}) {
   const t = useTranslations();
   const router = useRouter();
   const money = useMoney();
@@ -219,12 +328,16 @@ function Row({ row }: { row: StudentRow }) {
   const groups = row.groups
     .filter((g) => g.status !== "ARCHIVED" && g.status !== "GRADUATED")
     .map((g) => g.groupName);
-  return (
+  const body = (
     <Pressable
       onPress={() => router.push({ pathname: "/staff/student/[id]", params: { id: row.id } })}
       accessibilityRole="button"
       accessibilityLabel={row.fullName}
-      style={({ pressed }) => [styles.row, pressed ? { backgroundColor: colors.muted } : null]}
+      style={({ pressed }) => [
+        styles.row,
+        onTick ? styles.beside : null,
+        pressed ? { backgroundColor: colors.muted } : null,
+      ]}
       testID={`student-${row.id}`}
     >
       <Avatar name={row.fullName} photo={row.photoUrl} />
@@ -252,6 +365,18 @@ function Row({ row }: { row: StudentRow }) {
       ) : null}
     </Pressable>
   );
+  if (!onTick) return body;
+  return (
+    <View style={styles.ticked}>
+      <Tick
+        ticked={ticked}
+        onPress={onTick}
+        label={t("students.bulk.select", { name: row.fullName })}
+        testID={`student-tick-${row.id}`}
+      />
+      {body}
+    </View>
+  );
 }
 
 const styles = StyleSheet.create({
@@ -261,6 +386,9 @@ const styles = StyleSheet.create({
   stale: { opacity: 0.6 },
   start: { alignSelf: "flex-start" },
   tools: { flexDirection: "row", alignItems: "center", gap: space[2] },
+  actions: { flexDirection: "row", flexWrap: "wrap", alignItems: "center", gap: space[2] },
+  ticked: { flexDirection: "row", alignItems: "stretch" },
+  beside: { flex: 1, paddingLeft: space[2] },
   row: {
     flexDirection: "row",
     alignItems: "center",

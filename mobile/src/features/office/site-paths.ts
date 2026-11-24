@@ -66,11 +66,13 @@ export function nativeRoute(path: string): Href | null {
   }
   const parts = pathname.split("/").filter(Boolean);
   const [first, id, ...rest] = parts;
-  // Leads has pages of its own under it (A-232); its sources report stays the site's.
+  // Leads has pages of its own under it (A-232), the Sources report among them (A-258).
   if (first === "leads") {
     if (!id) return "/staff/leads";
     if (rest.length > 0) return null;
-    return id === "calls" || id === "waitlist" || id === "inbox" ? `/staff/leads/${id}` : null;
+    return id === "calls" || id === "waitlist" || id === "inbox" || id === "sources"
+      ? `/staff/leads/${id}`
+      : null;
   }
   // Settings (A-234, A-242): its list of sections, and the ones the app has. The rest are the site's.
   if (first === "settings") {

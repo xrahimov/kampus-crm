@@ -2,6 +2,7 @@ import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from "@tansta
 
 import { api } from "@/lib/api";
 
+import type { StudentFilters } from "./staff-students";
 import type { Page } from "./types";
 
 /*
@@ -36,7 +37,12 @@ export interface SmsLogRow {
 export type SmsTarget =
   | { kind: "student"; studentId: string }
   | { kind: "parents"; studentId: string }
-  | { kind: "group"; groupId: string };
+  | { kind: "group"; groupId: string }
+  | { kind: "students"; studentIds: string[] }
+  /** Everyone the Students list shows under its search and filters. */
+  | ({ kind: "studentFilter"; q?: string } & StudentFilters)
+  | { kind: "leads"; leadIds: string[] }
+  | { kind: "leadColumn"; columnId: string };
 
 export interface SmsCount {
   count: number;

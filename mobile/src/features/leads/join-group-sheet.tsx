@@ -26,6 +26,7 @@ export function JoinGroupSheet({
   saving,
   error,
   onSave,
+  initialStatus = "NEW",
   testID = "join-group",
 }: {
   open: boolean;
@@ -36,13 +37,15 @@ export function JoinGroupSheet({
   saving: boolean;
   error: unknown;
   onSave: (input: { groupId: string; joinedAt: string; status: JoinStatus }) => void;
+  /** What the sheet opens on: New for a lead, Active for someone who is a student already. */
+  initialStatus?: JoinStatus;
   testID?: string;
 }) {
   const t = useTranslations();
   const ta = useTranslations("leads.addToGroup");
   const [groupId, setGroupId] = useState<string | null>(null);
   const [joinedAt, setJoinedAt] = useState<string | null>(centreToday());
-  const [status, setStatus] = useState<JoinStatus>("NEW");
+  const [status, setStatus] = useState<JoinStatus>(initialStatus);
   const [missing, setMissing] = useState(false);
   const [wasOpen, setWasOpen] = useState(open);
   if (open !== wasOpen) {
@@ -50,7 +53,7 @@ export function JoinGroupSheet({
     if (open) {
       setGroupId(null);
       setJoinedAt(centreToday());
-      setStatus("NEW");
+      setStatus(initialStatus);
       setMissing(false);
     }
   }
@@ -99,7 +102,7 @@ export function JoinGroupSheet({
         <Select
           label={ta("status")}
           value={status}
-          onChange={(value) => setStatus(value ?? "NEW")}
+          onChange={(value) => setStatus(value ?? initialStatus)}
           options={JOIN_STATUSES.map((s) => ({ value: s, label: t(`groups.memberStatuses.${s}`) }))}
           testID={`${testID}-status`}
         />

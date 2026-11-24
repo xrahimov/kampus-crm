@@ -1,5 +1,5 @@
 import { useLocalSearchParams, useRouter } from "expo-router";
-import { Plus } from "lucide-react-native";
+import { MoreHorizontal, Plus } from "lucide-react-native";
 import { useState } from "react";
 import { Pressable, ScrollView, StyleSheet, View } from "react-native";
 
@@ -19,7 +19,9 @@ import { useRested } from "@/lib/rested";
 import { can, useMe } from "@/lib/session";
 import { radius, space, useTheme } from "@/lib/theme";
 
+import { BoardSetup, ColumnSetup, type BoardDoing } from "./board-setup";
 import { LeadRow } from "./lead-bits";
+import { LeadsBulkBar } from "./leads-bulk";
 import { LeadFlow } from "./lead-flow";
 import { LeadFormSheet } from "./lead-form";
 
@@ -32,8 +34,10 @@ const COLUMN_WIDTH = 320;
  * is done with it; moving it to another column is a choice on that card, since
  * dragging across a phone's screen is no way to work.
  *
- * Boards and columns are made and renamed on the site. A search result or a
- * notification about a lead opens the board with its name already searched.
+ * Boards and columns are set up from here too (A-258): the button in the top
+ * bar has the board's own things, a column's "more" button its own. A search
+ * result or a notification about a lead opens the board with its name already
+ * searched.
  */
 export function LeadsScreen() {
   const t = useTranslations();
@@ -58,6 +62,17 @@ export function LeadsScreen() {
   const [columnId, setColumnId] = useState<string | null>(null);
   const [picked, setPicked] = useState<Lead | null>(null);
   const [adding, setAdding] = useState<string | null>(null);
+  const [setup, setSetup] = useState<BoardDoing>(null);
+  const [columnMenu, setColumnMenu] = useState<BoardColumn | null>(null);
+  // The leads ticked for one thing done to all of them (A-259).
+  const [ticked, setTicked] = useState<ReadonlySet<string>>(new Set());
+  const tick = (id: string) =>
+    setTicked((before) => {
+      const next = new Set(before);
+      if (!next.delete(id)) next.add(id);
+      return next;
+    });
+  const untick = () => setTicked(new Set());
   // "unassigned" here is the server's "none": the list's own "all" row already goes by that name.
   const query = useBoard({
     boardId,
@@ -67,11 +82,33 @@ export function LeadsScreen() {
   });
   const options = useLeadOptions();
 
-  const header = <Header title={tl("title")} back />;
+  const header = (
+    <Header
+      title={tl("title")}
+      back
+      right={
+        <Pressable
+          onPress={() => setSetup("menu")}
+          accessibilityRole="button"
+          accessibilityLabel={t("common.actions")}
+          hitSlop={8}
+          style={styles.icon}
+          testID="leads-menu"
+        >
+          <MoreHorizontal size={22} color={colors.foreground} />
+        </Pressable>
+      }
+    />
+  );
   if (!query.data) return <PendingScreen header={header} query={query} />;
   const { boards, board, columns, due, today } = query.data;
   const column = columns.find((c) => c.id === columnId) ?? columns[0] ?? null;
   const mayAdd = can(me, "leads.create") && !archived;
+  const mayChange = can(me, "leads.update");
+  // Only the ticked leads still on the screen count: a search may have taken some away.
+  const tickedIds = columns.flatMap((c) =>
+    c.leads.filter((l) => ticked.has(l.id)).map((l) => l.id),
+  );
   const owners = options.data?.owners ?? [];
 
   return (
@@ -115,6 +152,7 @@ export function LeadsScreen() {
           onChange={(value) => {
             setBoardId(value);
             setColumnId(null);
+            untick();
           }}
           options={boards.map((b) => ({
             value: b.id,
@@ -125,7 +163,18 @@ export function LeadsScreen() {
         />
       ) : null}
       {!board ? (
-        <EmptyState title={tl("noBoards")} text={tl("noBoardsHint")} />
+        <>
+          <EmptyState title={tl("noBoards")} text={mayChange ? tl("noBoardsHint") : undefined} />
+          {mayChange ? (
+            <Button
+              icon={<Plus size={18} color={colors.primaryForeground} />}
+              label={tl("createBoard")}
+              onPress={() => setSetup("new")}
+              style={styles.start}
+              testID="board-create"
+            />
+          ) : null}
+        </>
       ) : (
         <>
           <Field
@@ -159,10 +208,23 @@ export function LeadsScreen() {
             <Check
               label={tl("filters.archive")}
               value={archived}
-              onChange={setArchived}
+              onChange={(value) => {
+                setArchived(value);
+                untick();
+              }}
               testID="leads-archived"
             />
           </View>
+          {mayChange ? (
+            <LeadsBulkBar
+              ids={tickedIds}
+              onClear={untick}
+              board={board}
+              columns={columns}
+              archived={archived}
+              groups={options.data?.groups ?? []}
+            />
+          ) : null}
           {wide ? (
             <ScrollView
               horizontal
@@ -178,6 +240,9 @@ export function LeadsScreen() {
                     titled
                     onLead={setPicked}
                     onAdd={mayAdd ? () => setAdding(c.id) : undefined}
+                    onMenu={mayChange ? () => setColumnMenu(c) : undefined}
+                    ticked={ticked}
+                    onTick={mayChange ? tick : undefined}
                   />
                 </View>
               ))}
@@ -223,6 +288,9 @@ export function LeadsScreen() {
                   today={today}
                   onLead={setPicked}
                   onAdd={mayAdd ? () => setAdding(column.id) : undefined}
+                  onMenu={mayChange ? () => setColumnMenu(column) : undefined}
+                  ticked={ticked}
+                  onTick={mayChange ? tick : undefined}
                 />
               ) : null}
             </>
@@ -239,6 +307,16 @@ export function LeadsScreen() {
           />
         </>
       )}
+      <BoardSetup
+        doing={setup}
+        onDoing={setSetup}
+        board={board}
+        onBoard={(id) => {
+          setBoardId(id);
+          setColumnId(null);
+        }}
+      />
+      <ColumnSetup column={columnMenu} onClose={() => setColumnMenu(null)} />
       <LeadFlow lead={picked} onClose={() => setPicked(null)} today={today} />
       <LeadFormSheet
         open={adding !== null}
@@ -256,6 +334,9 @@ function Column({
   titled = false,
   onLead,
   onAdd,
+  onMenu,
+  ticked,
+  onTick,
 }: {
   column: BoardColumn;
   today: string;
@@ -263,9 +344,38 @@ function Column({
   titled?: boolean;
   onLead: (lead: Lead) => void;
   onAdd?: () => void;
+  /** Opens the column's own menu: for whoever may rename or delete it. */
+  onMenu?: () => void;
+  ticked?: ReadonlySet<string>;
+  /** With it every lead has a tick box. */
+  onTick?: (id: string) => void;
 }) {
+  const t = useTranslations();
   const tl = useTranslations("leads");
   const { colors } = useTheme();
+  const menu = onMenu ? (
+    <Pressable
+      onPress={onMenu}
+      accessibilityRole="button"
+      accessibilityLabel={t("common.actionsFor", { name: column.name })}
+      hitSlop={8}
+      style={styles.icon}
+      testID={`column-menu-${column.id}`}
+    >
+      <MoreHorizontal size={20} color={colors.foreground} />
+    </Pressable>
+  ) : null;
+  const add = onAdd ? (
+    <Button
+      variant="outline"
+      compact
+      icon={<Plus size={16} color={colors.foreground} />}
+      label={tl("add")}
+      onPress={onAdd}
+      style={styles.start}
+      testID={`lead-add-${column.id}`}
+    />
+  ) : null;
   return (
     <View style={styles.columnBody} testID={`column-body-${column.id}`}>
       {titled ? (
@@ -274,18 +384,17 @@ function Column({
             {column.name}
           </Text>
           <Text tone="mutedForeground">{column.leads.length}</Text>
+          {menu}
         </View>
       ) : null}
-      {onAdd ? (
-        <Button
-          variant="outline"
-          compact
-          icon={<Plus size={16} color={colors.foreground} />}
-          label={tl("add")}
-          onPress={onAdd}
-          style={styles.start}
-          testID={`lead-add-${column.id}`}
-        />
+      {titled ? (
+        add
+      ) : add || menu ? (
+        // On a phone the column's name is on its chip, so its menu stands beside "Add lead".
+        <View style={styles.columnTools}>
+          {add ?? <View />}
+          {menu}
+        </View>
       ) : null}
       {column.leads.length === 0 ? (
         <Text tone="mutedForeground" testID={`column-empty-${column.id}`}>
@@ -301,6 +410,8 @@ function Column({
                 today={today}
                 note={lead.ownerName}
                 onPress={() => onLead(lead)}
+                ticked={ticked?.has(lead.id)}
+                onTick={onTick ? () => onTick(lead.id) : undefined}
               />
             </View>
           ))}
@@ -329,6 +440,8 @@ const styles = StyleSheet.create({
   boardColumn: { width: COLUMN_WIDTH },
   columnBody: { gap: space[3] },
   columnTitle: { flexDirection: "row", alignItems: "center", gap: space[2] },
+  columnTools: { flexDirection: "row", alignItems: "center", justifyContent: "space-between" },
+  icon: { padding: space[1] },
   flush: { padding: 0, overflow: "hidden" },
   start: { alignSelf: "flex-start" },
 });
