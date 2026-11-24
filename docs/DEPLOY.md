@@ -204,6 +204,12 @@ A-201) has no migration and no setting. Two things to know after it:
   on an `https` address (the live site is one). Nothing on the server switches it
   on or off; a person can switch it off for the site in the browser.
 
+The manual in the app (A-252) needs the server update: the server answers the manual to the app
+through two new read-only calls, `GET /api/v1/help` and `GET /api/v1/help/search`. No migration,
+no setting. The pictures are the site's own files under `/help/<language>/` and the videos the
+ones already in `help-videos/`; nothing is copied. Until the server is updated the app's Help page
+shows an error with **Try again** in place of the manual.
+
 The import from the old CRM in the app (A-251) sends the site's own form to
 `POST /api/v1/imports/soff`: no migration, no setting, no new call. Two small changes on the site
 come with the update: a row an import leaves out says why in words (**Full name: Required.**),
