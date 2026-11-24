@@ -62,6 +62,24 @@ describe("a pane of glass", () => {
     expect(screen.getByText("Today")).toBeTruthy();
   });
 
+  it("carries a heavier tint where people read and type, also on Liquid Glass", async () => {
+    mockLiquid = true;
+    device("ios", "26.0");
+    await render(<Glass dense />);
+    // Still glass, with the pane's own colour laid over it.
+    expect(screen.getByTestId("liquid")).toBeTruthy();
+    expect(StyleSheet.flatten(screen.getByTestId("glass-dense").props.style)).toMatchObject({
+      backgroundColor: "rgba(255, 255, 255, 0.86)",
+    });
+  });
+
+  it("has no such tint as a bar or a floating control", async () => {
+    mockLiquid = true;
+    device("ios", "26.0");
+    await render(<Glass />);
+    expect(screen.queryByTestId("glass-dense")).toBeNull();
+  });
+
   it("is a blur of the page on an older iPhone", async () => {
     device("ios", "18.0");
     await render(<Glass />);

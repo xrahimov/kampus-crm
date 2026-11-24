@@ -95,35 +95,44 @@ export function NavList({ wide, children, ...rest }: TabListProps & { wide: bool
   if (wide) {
     return (
       <HighlightContext.Provider value={moveTo}>
+        {/* The rail starts under the status bar. The clock sits over this corner on a tablet,
+            in the page's ink: on the dark rail it could not be read in light mode. */}
         <View
-          {...rest}
-          accessibilityRole="tablist"
-          style={[
-            styles.rail,
-            {
-              backgroundColor: colors.sidebar,
-              paddingTop: insets.top + space[4],
-              paddingBottom: insets.bottom + space[4],
-              paddingLeft: insets.left,
-              width: RAIL_WIDTH + insets.left,
-            },
-          ]}
+          style={{
+            width: RAIL_WIDTH + insets.left,
+            paddingTop: insets.top,
+            backgroundColor: colors.background,
+          }}
         >
-          {shown ? (
-            <Animated.View
-              testID="nav-highlight"
-              style={[
-                styles.highlight,
-                styles.railHighlight,
-                { backgroundColor: colors.sidebarMuted },
-                highlight,
-              ]}
-            />
-          ) : null}
-          <View style={styles.railMark}>
-            <KampusMark size={36} />
+          <View
+            {...rest}
+            accessibilityRole="tablist"
+            style={[
+              styles.rail,
+              {
+                backgroundColor: colors.sidebar,
+                paddingTop: space[4],
+                paddingBottom: insets.bottom + space[4],
+                paddingLeft: insets.left,
+              },
+            ]}
+          >
+            {shown ? (
+              <Animated.View
+                testID="nav-highlight"
+                style={[
+                  styles.highlight,
+                  styles.railHighlight,
+                  { backgroundColor: colors.sidebarMuted },
+                  highlight,
+                ]}
+              />
+            ) : null}
+            <View style={styles.railMark}>
+              <KampusMark size={36} />
+            </View>
+            {children}
           </View>
-          {children}
         </View>
       </HighlightContext.Provider>
     );
@@ -250,7 +259,7 @@ const styles = StyleSheet.create({
   highlight: { position: "absolute", left: 0, top: 0 },
   barHighlight: { borderRadius: (BAR_HEIGHT - 2 * BAR_INSET) / 2 },
   railHighlight: { borderRadius: radius.md },
-  rail: { alignItems: "center", gap: space[1] },
+  rail: { flex: 1, alignItems: "center", gap: space[1] },
   railMark: { marginBottom: space[5] },
   railItem: {
     width: RAIL_WIDTH - space[3],

@@ -323,6 +323,52 @@ describe("the centre's home", () => {
     expect(sentBody(calls("PATCH", "/dashboard/setup")[0]![1])).toEqual({ shown: false });
   });
 
+  it("drops a payment type the month shown does not have, and counts other income in", async () => {
+    mockMe = me(["dashboard.view", "dashboard.finance"]);
+    serve({
+      "GET /dashboard/kpis": KPIS,
+      "GET /dashboard/schedule": ROOMS,
+      "GET /dashboard/finance": (url: string) => {
+        if (url.includes("paymentMethodId=m2")) {
+          return finance({
+            income: 10000000,
+            otherIncome: 0,
+            byMethod: [{ id: "m2", name: "Card", amount: 10000000 }],
+          });
+        }
+        // October took cash only, and 350,000 that did not come from students.
+        return url.includes("month=10")
+          ? finance({
+              income: 800000,
+              otherIncome: 350000,
+              byMethod: [{ id: "m1", name: "Cash", amount: 450000 }],
+            })
+          : finance();
+      },
+    });
+    await renderScreen(<HomeScreen />);
+    await screen.findByTestId("finance-income");
+    await fireEvent.press(screen.getByTestId("show-numbers"));
+    // What students paid, type by type, and the rest: together the Income above.
+    expect(screen.getByTestId("finance-other-income")).toHaveTextContent(/Other income.*1,000,000/);
+
+    await fireEvent.press(screen.getByTestId("finance-method"));
+    await fireEvent.press(screen.getByTestId("finance-method-option-m2"));
+    await waitFor(() =>
+      expect(screen.getByTestId("finance-income-value")).toHaveTextContent(/10,000,000/),
+    );
+    expect(screen.queryByTestId("finance-other-income")).toBeNull();
+
+    // October has no Card: the choice no longer counts, and nothing stays filtered unseen.
+    await fireEvent.press(screen.getByTestId("finance-month"));
+    await fireEvent.press(screen.getByTestId("finance-month-option-10"));
+    await waitFor(() =>
+      expect(screen.getByTestId("finance-income-value")).toHaveTextContent(/800,000/),
+    );
+    expect(screen.queryByTestId("finance-method")).toBeNull();
+    expect(screen.getByTestId("finance-other-income")).toHaveTextContent(/350,000/);
+  });
+
   it("leads each figure where the site leads it", () => {
     expect(kpiPath("leftThisMonth", true)).toBe("/reports/churn");
     expect(kpiPath("leftThisMonth", false)).toBe("/students?archived=true");
@@ -473,6 +519,20 @@ describe("the bell's list", () => {
     await renderScreen(<NotificationsScreen />);
     expect(await screen.findByText("No notifications yet.")).toBeTruthy();
     expect(screen.queryByTestId("mark-all-read")).toBeNull();
+  });
+
+  it("does not say there are none yet when only the unread list is empty", async () => {
+    serve({
+      "GET /notifications": (url: string) =>
+        url.includes("unread=1")
+          ? notifications({ items: [], total: 0, unread: 0 })
+          : notifications({ unread: 0 }),
+    });
+    await renderScreen(<NotificationsScreen />);
+    await screen.findByTestId("notification-n1");
+    await fireEvent.press(screen.getByText("0 unread"));
+    expect(await screen.findByText("No unread notifications.")).toBeTruthy();
+    expect(screen.queryByText("No notifications yet.")).toBeNull();
   });
 });
 

@@ -7,6 +7,7 @@ import { useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { Link, usePathname } from "@/i18n/navigation";
+import { openedFromApp } from "@/lib/from-app";
 import { cn } from "@/lib/utils";
 
 import { AssistantConversation, type AssistantAudience } from "./assistant-conversation";
@@ -75,7 +76,8 @@ export function AssistantLauncher({
       const allowed = read(AUTO_KEY) !== "off";
       setAuto(allowed);
       setFresh(unseen);
-      if (unseen && allowed) {
+      // Opened from the phone app: the page that was asked for stays in view.
+      if (unseen && allowed && !openedFromApp(document.cookie)) {
         setTab("summary");
         setOpen(true);
       }

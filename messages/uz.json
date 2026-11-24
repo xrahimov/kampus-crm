@@ -6455,7 +6455,8 @@
       "showResults": "Ko'rsatish",
       "archivedOnly": "Faqat arxivdagi o'quvchilar",
       "replyPlaceholder": "Javob yozing…",
-      "toGroup": "Guruhga qo'shish"
+      "toGroup": "Guruhga qo'shish",
+      "noUnread": "O'qilmagan xabarnomalar yo'q."
     },
     "groups": {
       "search": "Guruh nomi",
@@ -6466,6 +6467,12 @@
       "undoDayOffTitle": "Dam olish kuni bekor qilinsinmi?",
       "undoDayOffText": "{date} kungi dars jadvalga qaytadi. Ko'chirilgan dars o'z kuniga qaytadi.",
       "nothingThatDay": "{day}: dars yo'q."
+    },
+    "catalog": {
+      "changeHours": "Soatlarni o'zgartirish",
+      "firstSignIn": "Birinchi kirish Telegram kodi bilan bo'ladi. Shundan keyin xodim parolini o'zi tanlaydi.",
+      "colorChoice": "Rang {number}",
+      "moreSettings": "Qolgan sozlamalar saytda ochiladi."
     }
   }
 }

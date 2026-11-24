@@ -108,6 +108,7 @@ export const en: HelpContent = {
                 "If you both manage and teach, switch between **Centre** and **My groups**.",
                 "Press **Understood** to close the summary. It does not open by itself again that day.",
                 "Switch off **Open by itself once a day** if you would rather open it yourself.",
+                "A page opened from the phone app comes without the summary over it; the button in the corner opens it.",
               ],
             },
             {

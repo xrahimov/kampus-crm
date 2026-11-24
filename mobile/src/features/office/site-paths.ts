@@ -36,11 +36,18 @@ export function nativeRoute(path: string): Href | null {
     if (rest.length > 0) return null;
     return id === "calls" || id === "waitlist" || id === "inbox" ? `/staff/leads/${id}` : null;
   }
+  // Settings (A-234): its list of sections, and the two the app has. The rest are the site's.
+  if (first === "settings") {
+    if (!id) return "/staff/settings";
+    if (rest.length > 0) return null;
+    return id === "courses" || id === "rooms" ? `/staff/settings/${id}` : null;
+  }
   if (rest.length > 0) return null;
   if (first === "account") return id === "salary" ? "/staff/salary" : null;
   if (id) {
     if (first === "students") return { pathname: "/staff/student/[id]", params: { id } };
     if (first === "groups") return { pathname: "/staff/group/[id]", params: { id } };
+    if (first === "teachers") return { pathname: "/staff/teachers/[id]", params: { id } };
     return null;
   }
   switch (first) {
@@ -54,6 +61,8 @@ export function nativeRoute(path: string): Href | null {
       return "/staff/groups";
     case "timetable":
       return "/staff/timetable";
+    case "teachers":
+      return "/staff/teachers";
     case "students":
       return "/staff/students";
     case "announcements":

@@ -81,23 +81,26 @@ export function Sheet({
       onRequestClose={onClose}
     >
       <NoBackdrop>
-        <KeyboardAvoidingView behavior="padding" style={styles.fill}>
+        {/* The dim covers the whole window, also the strip a keyboard takes: it is not inside
+            the part that makes room for the keyboard. */}
+        <Animated.View style={[StyleSheet.absoluteFill, dim]}>
+          <Pressable
+            accessibilityLabel={t("common.close")}
+            onPress={onClose}
+            style={[styles.fill, { backgroundColor: colors.scrim }]}
+            testID={`${testID}-scrim`}
+          />
+        </Animated.View>
+        <KeyboardAvoidingView behavior="padding" style={[styles.fill, styles.through]}>
           <View
             style={[
               styles.fill,
+              styles.through,
               wide ? styles.middle : styles.bottom,
               // Never under the clock: with the keyboard open the sheet gives up height instead.
               { paddingTop: Math.max(wide ? space[8] : 0, insets.top + space[2]) },
             ]}
           >
-            <Animated.View style={[StyleSheet.absoluteFill, dim]}>
-              <Pressable
-                accessibilityLabel={t("common.close")}
-                onPress={onClose}
-                style={[styles.fill, { backgroundColor: colors.scrim }]}
-                testID={`${testID}-scrim`}
-              />
-            </Animated.View>
             <Animated.View
               accessibilityViewIsModal
               style={[
@@ -107,7 +110,12 @@ export function Sheet({
               ]}
               testID={testID}
             >
-              <Glass floating radius={radius.xl} style={[styles.glass, !wide && styles.joined]}>
+              <Glass
+                floating
+                dense
+                radius={radius.xl}
+                style={[styles.glass, !wide && styles.joined]}
+              >
                 <View style={styles.head}>
                   <Text variant="heading" style={styles.title} accessibilityRole="header">
                     {title}
@@ -156,6 +164,8 @@ export function Sheet({
 
 const styles = StyleSheet.create({
   fill: { flex: 1 },
+  // A press beside the sheet goes through to the dim behind, which closes it.
+  through: { pointerEvents: "box-none" },
   bottom: { justifyContent: "flex-end" },
   middle: { justifyContent: "center", alignItems: "center", padding: space[8] },
   // Both give up height when the keyboard takes the room: the title and the footer stay on

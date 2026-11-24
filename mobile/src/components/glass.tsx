@@ -122,6 +122,9 @@ function canBlur(): boolean {
 
 export type GlassTone = "page" | "night";
 
+/** How much of a dense pane is its own colour: the page behind is a hint of light, no more. */
+const DENSE = 0.86;
+
 export interface GlassProps extends ViewProps {
   /** "page" follows the theme; "night" is the lesson room's dark lapis whatever the theme. */
   tone?: GlassTone;
@@ -129,6 +132,11 @@ export interface GlassProps extends ViewProps {
   radius?: number;
   /** A pane that floats free gets a soft shadow; a bar joined to an edge gets a hairline. */
   floating?: boolean;
+  /**
+   * A pane people read and type on (a sheet with a form): still glass, with a heavier tint,
+   * so a bright button of the page behind does not glow through between the fields.
+   */
+  dense?: boolean;
   /** Which edge a joined bar's hairline is on. */
   edge?: "top" | "bottom" | "none";
   style?: StyleProp<ViewStyle>;
@@ -139,6 +147,7 @@ export function Glass({
   tone = "page",
   radius = 0,
   floating = false,
+  dense = false,
   edge = "none",
   style,
   children,
@@ -162,7 +171,7 @@ export function Glass({
   const thin = android ? (night ? 0.22 : dark ? 0.28 : 0.3) : night ? 0.26 : dark ? 0.34 : 0.46;
   // Android with nothing to blur (a sheet in a window of its own) is a solid pane: at 0.94 the
   // list behind still showed between the fields of a form.
-  const veil = solid || (android && !blurs) ? 1 : blurs ? thin : 0.94;
+  const veil = solid || (android && !blurs) ? 1 : blurs ? (dense ? DENSE : thin) : 0.94;
   const rim = darkPane ? "rgba(255, 255, 255, 0.14)" : "rgba(255, 255, 255, 0.75)";
   const line = night ? "rgba(255, 255, 255, 0.1)" : colors.border;
 
@@ -182,12 +191,25 @@ export function Glass({
   return (
     <View {...rest} style={[frame, style]}>
       {liquid ? (
-        <GlassView
-          glassEffectStyle="regular"
-          colorScheme={darkPane ? "dark" : "light"}
-          tintColor={night ? "rgba(23, 35, 75, 0.35)" : undefined}
-          style={[StyleSheet.absoluteFill, styles.untouched, round]}
-        />
+        <>
+          <GlassView
+            glassEffectStyle="regular"
+            colorScheme={darkPane ? "dark" : "light"}
+            tintColor={night ? "rgba(23, 35, 75, 0.35)" : undefined}
+            style={[StyleSheet.absoluteFill, styles.untouched, round]}
+          />
+          {dense ? (
+            <View
+              testID="glass-dense"
+              style={[
+                StyleSheet.absoluteFill,
+                styles.untouched,
+                round,
+                { backgroundColor: `rgba(${base}, ${DENSE})` },
+              ]}
+            />
+          ) : null}
+        </>
       ) : (
         <>
           {blurs ? (

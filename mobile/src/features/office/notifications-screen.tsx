@@ -70,7 +70,7 @@ export function NotificationsScreen() {
       {error ? <Notice tone="destructive">{error}</Notice> : null}
       {markRead.error ? <Notice tone="destructive">{errorText(t, markRead.error)}</Notice> : null}
       {rows.length === 0 ? (
-        <EmptyState title={tn("empty")} />
+        <EmptyState title={filter === "unread" ? t("mobile.office.noUnread") : tn("empty")} />
       ) : (
         <Card style={styles.flush} testID="notifications">
           {rows.map((n, index) => (

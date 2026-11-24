@@ -349,6 +349,8 @@ describe("opening the site from the app (A-204)", () => {
     expect(session?.userId).toBe(userId);
     // The browser's session is an ordinary one, not a 30-day app session.
     expect(session?.app).toBe(false);
+    // The browser is told it was opened from the app: the day's summary stays closed (A-234).
+    expect(cookie).toContain("kampus_from_app=1");
 
     // The same link a second time signs nobody in.
     const again = await handoffOpen(request(path), noParams);
