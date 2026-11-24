@@ -47,7 +47,7 @@ import { PaymentSheet } from "../office/payment-sheet";
 import { Problem } from "./group-office";
 
 /** The status moves the office may make by hand (A-08), as on the site. */
-const NEXT: Record<MembershipStatus, MembershipStatus[]> = {
+export const NEXT: Record<MembershipStatus, MembershipStatus[]> = {
   NEW: ["TRIAL", "ACTIVE"],
   TRIAL: ["ACTIVE"],
   ACTIVE: ["FROZEN", "GRADUATED"],
@@ -56,7 +56,7 @@ const NEXT: Record<MembershipStatus, MembershipStatus[]> = {
   GRADUATED: [],
 };
 
-const STATUS_TONE: Record<MembershipStatus, Tone> = {
+export const STATUS_TONE: Record<MembershipStatus, Tone> = {
   NEW: "accent",
   TRIAL: "accent",
   ACTIVE: "success",
@@ -624,6 +624,11 @@ interface MemberSheetProps {
   groupId: string;
 }
 
+/** Removing and moving need only whose membership it is: a student's own page opens them too (A-241). */
+interface MemberRefSheetProps extends Omit<MemberSheetProps, "member"> {
+  member: Pick<Member, "id" | "fullName"> | null;
+}
+
 /** The centre's own list of reasons with "Other" for free words (A-92). */
 function ReasonFields({
   kind,
@@ -677,7 +682,7 @@ function ReasonFields({
 }
 
 /** "Remove from group", with why: the churn report counts the reasons. */
-function RemoveSheet({ open, onClose, member, groupId }: MemberSheetProps) {
+export function RemoveSheet({ open, onClose, member, groupId }: MemberRefSheetProps) {
   const t = useTranslations();
   const tr = useTranslations("students.remove");
   const change = useMemberChange(groupId);
@@ -779,7 +784,7 @@ function BillingSheet({ open, onClose, member, groupId }: MemberSheetProps) {
 }
 
 /** "Move to another group": this membership ends and a new one starts in the other group. */
-function TransferSheet({ open, onClose, member, groupId }: MemberSheetProps) {
+export function TransferSheet({ open, onClose, member, groupId }: MemberRefSheetProps) {
   const t = useTranslations();
   const tt = useTranslations("students.transfer");
   const tm = useTranslations("groups.members");

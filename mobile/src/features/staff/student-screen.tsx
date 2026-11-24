@@ -39,6 +39,7 @@ import { Confirm } from "@/components/confirm";
 import { Sheet } from "@/components/sheet";
 import { useOpenSite } from "@/features/office/site-paths";
 import { FamilyCard } from "@/features/office/student-family";
+import { StudentGroups } from "@/features/office/student-groups";
 import { AccessCard, FieldSheet, ParentsCard, PhoneLine } from "@/features/office/student-people";
 import { StudentCalls, StudentHistory, StudentSms } from "@/features/office/student-record";
 import { PaymentSheet } from "@/features/office/payment-sheet";
@@ -120,14 +121,20 @@ export function StudentScreen() {
           />
         ) : null}
       </View>
-      {section === "groups" ? <Groups student={student} /> : null}
+      {section === "groups" ? (
+        office ? (
+          <StudentGroups student={student} />
+        ) : (
+          <Groups student={student} />
+        )
+      ) : null}
       {section === "progress" ? <Progress id={id} /> : null}
       {section === "testResults" ? <Tests id={id} /> : null}
       {section === "comments" ? <Comments id={id} /> : null}
       {section === "sms" ? <StudentSms student={student} /> : null}
       {section === "calls" ? <StudentCalls student={student} /> : null}
       {section === "history" ? <StudentHistory id={id} /> : null}
-      {section === "payments" ? <StudentPayments id={id} /> : null}
+      {section === "payments" ? <StudentPayments student={student} /> : null}
     </View>
   );
 

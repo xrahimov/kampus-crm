@@ -65,6 +65,8 @@ export interface Payment {
   comment: string | null;
   receivedByName: string | null;
   createdAt: string;
+  /** The fiscal receipt of the payment; null or absent where the centre does not fiscalise. */
+  fiscal?: { status: "PENDING" | "ISSUED" | "FAILED"; error: string | null } | null;
 }
 
 export interface PaymentInput {

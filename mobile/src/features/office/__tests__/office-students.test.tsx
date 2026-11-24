@@ -1,7 +1,7 @@
 import { fireEvent, screen, waitFor } from "@testing-library/react-native";
 
 import type { Payment, PaymentInfo, PaymentOptions, StudentOptions } from "@/api/office-students";
-import type { Page, StudentDetail, StudentGroup, StudentRow } from "@/api/types";
+import type { Page, StudentDetail, StudentGroupCard, StudentRow } from "@/api/types";
 import { isoToTyped, typedToIso } from "@/components/date-field";
 import { typedMoney } from "@/features/office/payment-sheet";
 import { filtersFromParams } from "@/features/office/student-filters";
@@ -76,7 +76,7 @@ function serve(routes: Routes) {
   });
 }
 
-function group(change: Partial<StudentGroup> = {}): StudentGroup {
+function group(change: Partial<StudentGroupCard> = {}): StudentGroupCard {
   return {
     membershipId: "m1",
     groupId: "g1",
@@ -88,6 +88,19 @@ function group(change: Partial<StudentGroup> = {}): StudentGroup {
     time: "09:00–10:30",
     weekdays: [1, 3, 5],
     balance: -400000,
+    joinedAt: "2026-09-01",
+    billingFrom: null,
+    leftAt: null,
+    groupStartDate: "2026-09-01",
+    groupEndDate: "2027-02-28",
+    customPrice: null,
+    note: null,
+    nextPaymentDate: null,
+    monthlyPrice: 400000,
+    discount: null,
+    instalments: [],
+    lessonsLeft: null,
+    gradeAverage: null,
     ...change,
   };
 }

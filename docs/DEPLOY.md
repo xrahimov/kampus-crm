@@ -204,6 +204,12 @@ A-201) has no migration and no setting. Two things to know after it:
   on an `https` address (the live site is one). Nothing on the server switches it
   on or off; a person can switch it off for the site in the browser.
 
+The update for a student's group cards and money in the app (A-241) adds one read-only call,
+`GET /api/v1/students/:id/payment-history` (for `students.view`): no migration, no setting.
+Until the server is updated the app's student page shows everything except the list
+**Payments in the previous system**; refunds, balance corrections, split fees and the lesson
+calendar use calls the server already has.
+
 The rest of a student's page in the app (A-240: SMS, calls, history, parents, family, app
 sign-in, extra information, blacklist) uses calls the server already has: nothing to update
 for it.
