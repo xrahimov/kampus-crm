@@ -17,7 +17,11 @@ import { DEFAULT_ROLE_PERMISSIONS } from "@/lib/rbac/default-roles";
 import { prisma } from "@/server/db/prisma";
 import { isAppError } from "@/server/errors/app-error";
 import type { Actor } from "@/server/rbac/authorize";
-import { askAssistant, assistantSystemPrompt } from "@/server/services/ai/assistant.service";
+import {
+  askAssistant,
+  assistantInfo,
+  assistantSystemPrompt,
+} from "@/server/services/ai/assistant.service";
 
 import { DEMO_ORG_ID, demoBranchIds } from "./support/tenant";
 
@@ -178,6 +182,24 @@ describe("the assistant", () => {
         { ...teacher, roles: [], permissions: ["students.view"] },
         { messages: [{ role: "user", content: "Who owes money?" }], locale: "en" },
       ),
+    ).rejects.toSatisfy((e) => isAppError(e) && e.code === "FORBIDDEN");
+  });
+
+  it("tells the app who is asking and how the centre's assistant answers (A-253)", async () => {
+    // The demo centre in the tests has no key: the built-in test client answers.
+    const office = await assistantInfo(ceo);
+    expect(office).toMatchObject({ audience: "office", mode: "fake", canConfigure: true });
+    expect(office.model).not.toBe("");
+    // A teacher is offered a teacher's questions and may not enter the key.
+    expect(
+      await assistantInfo({ ...teacher, permissions: [...DEFAULT_ROLE_PERMISSIONS.TEACHER] }),
+    ).toMatchObject({
+      audience: "teacher",
+      mode: "fake",
+      canConfigure: false,
+    });
+    await expect(
+      assistantInfo({ ...teacher, roles: [], permissions: ["students.view"] }),
     ).rejects.toSatisfy((e) => isAppError(e) && e.code === "FORBIDDEN");
   });
 
