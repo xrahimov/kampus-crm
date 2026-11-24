@@ -1,4 +1,6 @@
 import { useQueryClient } from "@tanstack/react-query";
+import { useRouter } from "expo-router";
+import { ChevronRight } from "lucide-react-native";
 import { useState } from "react";
 import { StyleSheet, View } from "react-native";
 
@@ -12,7 +14,7 @@ import { DeviceSettings } from "@/features/shared/device-settings";
 import { errorText, useTranslations } from "@/lib/i18n";
 import { useLayout } from "@/lib/layout";
 import { useMe, useSession } from "@/lib/session";
-import { space } from "@/lib/theme";
+import { space, useTheme } from "@/lib/theme";
 
 import { HoursCard } from "@/features/catalog/hours";
 import { Menu } from "@/features/office/menu";
@@ -25,6 +27,8 @@ export function MoreScreen() {
   const me = useMe();
   const { signOut, refreshMe } = useSession();
   const { wide } = useLayout();
+  const { colors } = useTheme();
+  const router = useRouter();
   const client = useQueryClient();
   const [error, setError] = useState<string | null>(null);
   const [leaving, setLeaving] = useState(false);
@@ -43,7 +47,12 @@ export function MoreScreen() {
 
   const account = (
     <View style={styles.block}>
-      <Card>
+      {/* The person's card opens "My account": the password, the sign-in code, the devices (A-261). */}
+      <Card
+        onPress={() => router.push("/staff/account")}
+        accessibilityLabel={t("account.title")}
+        testID="me-account"
+      >
         <View style={styles.person}>
           <Avatar name={me.user.fullName} photo={me.user.photoUrl} size={48} />
           <View style={styles.fill}>
@@ -53,7 +62,11 @@ export function MoreScreen() {
             <Text variant="small" tone="mutedForeground">
               {[me.user.phone, ...me.roles.map((r) => r.name)].join(", ")}
             </Text>
+            <Text variant="small" tone="primary">
+              {t("account.title")}
+            </Text>
           </View>
+          <ChevronRight size={20} color={colors.mutedForeground} />
         </View>
       </Card>
       {/* Every page the person may open, before the choices of view and branch (A-230). */}

@@ -61,6 +61,7 @@ export default function StaffLayout() {
       <Stack.Screen name="notifications" />
       <Stack.Screen name="search" />
       <Stack.Screen name="salary" />
+      <Stack.Screen name="account" />
       <Stack.Screen name="leads/index" />
       <Stack.Screen name="leads/calls" />
       <Stack.Screen name="leads/waitlist" />

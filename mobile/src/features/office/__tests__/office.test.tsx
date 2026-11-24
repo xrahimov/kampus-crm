@@ -478,7 +478,7 @@ describe("where a page of the site lives in the app", () => {
     expect(nativeRoute("/students?groupStatus=TRIAL")).toBeNull();
     expect(nativeRoute("/groups?status=ACTIVE")).toBeNull();
     expect(nativeRoute("/groups/g1/attendance")).toBeNull();
-    expect(nativeRoute("/account")).toBeNull();
+    expect(nativeRoute("/account/password")).toBeNull();
     expect(nativeRoute("/settings/organizations")).toBeNull();
   });
 
