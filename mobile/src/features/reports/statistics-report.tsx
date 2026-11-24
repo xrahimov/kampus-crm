@@ -3,7 +3,6 @@ import { useState } from "react";
 import { StyleSheet, View } from "react-native";
 
 import {
-  reportQuery,
   STATISTICS_VIEWS,
   useStatisticsReport,
   type StatisticsRow,
@@ -21,7 +20,7 @@ import { useDate, useMoney, useTranslations } from "@/lib/i18n";
 import { can, useMe } from "@/lib/session";
 import { space, useTheme } from "@/lib/theme";
 
-import { ExcelOnSite, Filters, Kpis, PeriodFilters, Rows, Stats, useReportPeriod } from "./parts";
+import { ReportExcel, Filters, Kpis, PeriodFilters, Rows, Stats, useReportPeriod } from "./parts";
 
 /**
  * Reports, Center statistics (A-238): how full the rooms are in a month, a
@@ -125,8 +124,9 @@ export function StatisticsReportScreen() {
           testID="statistics-rooms-open"
         />
       ) : null}
-      <ExcelOnSite
-        path={`/reports/statistics${reportQuery({ ...filters, view: view === "monthly" ? null : view })}`}
+      <ReportExcel
+        path="/reports/statistics/export.xlsx"
+        params={{ ...filters, view: view === "monthly" ? null : view }}
       />
     </Screen>
   );

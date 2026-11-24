@@ -237,7 +237,7 @@ export function useOpenPath(): { open: (path: string) => void; error: string | n
 
 /**
  * Opens a page on the site even where the app has that page: for what only
- * the site does there, such as the Excel file of a month's payroll.
+ * the site does there, such as a payment's receipt.
  */
 export function useOpenSite(): { open: (path: string) => void; error: string | null } {
   const t = useTranslations();

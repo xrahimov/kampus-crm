@@ -21,6 +21,10 @@ jest.mock("expo-router", () => ({
   useRouter: () => ({ push: mockPush, back: jest.fn(), canGoBack: () => true, replace: jest.fn() }),
 }));
 jest.mock("@/lib/web", () => ({ openOnSite: jest.fn(() => Promise.resolve()) }));
+const mockSaveFile = jest.fn<Promise<string>, [string, string]>();
+jest.mock("@/lib/save-file", () => ({
+  saveFile: (path: string, name: string) => mockSaveFile(path, name),
+}));
 let mockPermissions = ["logs.view", "reports.payments", "staff.view", "payments.create"];
 jest.mock("@/lib/session", () => ({
   useMe: () => ({
@@ -45,6 +49,8 @@ const realFetch = globalThis.fetch;
 
 beforeEach(() => {
   fetchMock.mockReset();
+  mockSaveFile.mockReset();
+  mockSaveFile.mockResolvedValue("opened");
   mockPush.mockReset();
   jest.mocked(openOnSite).mockClear();
   mockPermissions = ["logs.view", "reports.payments", "staff.view", "payments.create"];
@@ -457,7 +463,7 @@ describe("the payments log", () => {
     await waitFor(() => expect(openOnSite).toHaveBeenCalledWith("/en/payments/p1/receipt"));
   });
 
-  it("narrows by days, method and cashier, and opens the same list on the site for Excel", async () => {
+  it("narrows by days, method and cashier, and fetches the same list as an Excel file", async () => {
     serve({
       "GET /payments/options": OPTIONS,
       "GET /staff": page(ACTORS),
@@ -476,10 +482,9 @@ describe("the payments log", () => {
     await waitFor(() => expect(asked("/payments").get("from")).toBe("2026-11-01"));
 
     await fireEvent.press(screen.getByTestId("report-excel"));
-    await waitFor(() =>
-      expect(openOnSite).toHaveBeenCalledWith(
-        "/en/settings/payments?from=2026-11-01&paymentMethodId=m2&receivedById=u1",
-      ),
+    expect(mockSaveFile).toHaveBeenCalledWith(
+      "/payments/export.xlsx?from=2026-11-01&paymentMethodId=m2&receivedById=u1&locale=en",
+      "kampus.xlsx",
     );
   });
 

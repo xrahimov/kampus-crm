@@ -1,15 +1,13 @@
-import { FileSpreadsheet } from "lucide-react-native";
 import { useState, type ReactNode } from "react";
 import { Pressable, ScrollView, StyleSheet, View } from "react-native";
 
 import type { ReportPeriod } from "@/api/office-reports";
-import { Button } from "@/components/button";
 import { Chip } from "@/components/chip";
 import { Select, type SelectOption } from "@/components/select";
-import { Card, Notice } from "@/components/surface";
+import { Card } from "@/components/surface";
 import { Text } from "@/components/text";
+import { ExcelButton } from "@/features/files/excel-button";
 import { centreMonth, useMonthName } from "@/features/finance/period";
-import { useOpenSite } from "@/features/office/site-paths";
 import { useTranslations } from "@/lib/i18n";
 import { useLayout } from "@/lib/layout";
 import { useMe } from "@/lib/session";
@@ -565,26 +563,18 @@ export function Rows({ children, testID }: { children: ReactNode[]; testID?: str
 }
 
 /**
- * The Excel file of a report is made by the site: this opens the report there,
- * with the same filters, where its Excel button is.
+ * A report's Excel file (A-256): the report as it is filtered now, made by the
+ * server and handed to the phone.
  */
-export function ExcelOnSite({ path }: { path: string }) {
-  const t = useTranslations();
-  const { colors } = useTheme();
-  const site = useOpenSite();
-  return (
-    <>
-      {site.error ? <Notice tone="destructive">{site.error}</Notice> : null}
-      <Button
-        variant="outline"
-        icon={<FileSpreadsheet size={18} color={colors.foreground} />}
-        label={t("mobile.money.excelOnSite")}
-        onPress={() => site.open(path)}
-        style={styles.start}
-        testID="report-excel"
-      />
-    </>
-  );
+export function ReportExcel({
+  path,
+  params,
+}: {
+  /** The call under /api/v1: "/reports/churn/export.xlsx". */
+  path: string;
+  params: Record<string, string | number | boolean | null | undefined>;
+}) {
+  return <ExcelButton path={path} params={params} testID="report-excel" />;
 }
 
 const styles = StyleSheet.create({

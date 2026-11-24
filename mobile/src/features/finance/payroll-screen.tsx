@@ -21,7 +21,7 @@ import { Field } from "@/components/field";
 import { Header } from "@/components/header";
 import { Badge, Card, Divider, EmptyState, Notice, Screen } from "@/components/surface";
 import { Text } from "@/components/text";
-import { useOpenSite } from "@/features/office/site-paths";
+import { ExcelButton } from "@/features/files/excel-button";
 import { PendingScreen } from "@/features/shared/pending-screen";
 import { errorText, useMoney, useTranslations } from "@/lib/i18n";
 import { useLayout } from "@/lib/layout";
@@ -62,7 +62,7 @@ export function payrollMonth(value: string | undefined): string | null {
  * One month's payroll (A-237): the site's salary page. Every staff member's
  * salary with what it is made of and from which groups, **Approve** on a
  * line, and for the month **Recalculate**, **Save draft** and **Save**. The
- * Excel file is the site's.
+ * Excel file comes to the phone (A-256).
  */
 export function PayrollScreen() {
   const t = useTranslations();
@@ -70,7 +70,6 @@ export function PayrollScreen() {
   const me = useMe();
   const money = useMoney();
   const monthName = useMonthName();
-  const site = useOpenSite();
   const { wide } = useLayout();
   const { colors } = useTheme();
   const params = useLocalSearchParams<{ month?: string }>();
@@ -169,7 +168,6 @@ export function PayrollScreen() {
           {done}
         </Notice>
       ) : null}
-      {site.error ? <Notice tone="destructive">{site.error}</Notice> : null}
 
       <Card testID="payroll-totals">
         <View style={styles.between}>
@@ -222,13 +220,7 @@ export function PayrollScreen() {
           ))}
         </View>
       )}
-      <Button
-        variant="ghost"
-        label={t("mobile.money.excelOnSite")}
-        onPress={() => site.open(`/finance/salary-detail/${month}-01`)}
-        style={styles.start}
-        testID="payroll-site"
-      />
+      <ExcelButton path={`/payroll/${month}/export.xlsx`} testID="payroll-excel" />
     </Screen>
   );
 }

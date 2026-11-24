@@ -1,12 +1,7 @@
 import { useState } from "react";
 import { StyleSheet, View } from "react-native";
 
-import {
-  PAYMENT_KPIS,
-  reportQuery,
-  usePaymentsReport,
-  type PaymentKpi,
-} from "@/api/office-reports";
+import { PAYMENT_KPIS, usePaymentsReport, type PaymentKpi } from "@/api/office-reports";
 import { Header } from "@/components/header";
 import { Card, EmptyState, Screen, Segmented } from "@/components/surface";
 import { Text } from "@/components/text";
@@ -14,7 +9,7 @@ import { PendingScreen } from "@/features/shared/pending-screen";
 import { useMoney, useTranslations } from "@/lib/i18n";
 import { space } from "@/lib/theme";
 
-import { ExcelOnSite, Filters, Kpis, PeriodFilters, Rows, Stats, useReportPeriod } from "./parts";
+import { ReportExcel, Filters, Kpis, PeriodFilters, Rows, Stats, useReportPeriod } from "./parts";
 
 const TABS = ["teachers", "staff"] as const;
 type Tab = (typeof TABS)[number];
@@ -124,9 +119,7 @@ export function PaymentsReportScreen() {
           ))}
         </Rows>
       )}
-      <ExcelOnSite
-        path={`/reports/payments${reportQuery({ ...state.period, tab: tab === "staff" ? tab : null })}`}
-      />
+      <ReportExcel path="/reports/payments/export.xlsx" params={{ ...state.period, tab }} />
     </Screen>
   );
 }

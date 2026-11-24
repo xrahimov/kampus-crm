@@ -26,6 +26,7 @@ import {
   Segmented,
 } from "@/components/surface";
 import { Text } from "@/components/text";
+import { ExcelButton } from "@/features/files/excel-button";
 import { errorText, useMoney, useTranslations } from "@/lib/i18n";
 import { useLayout } from "@/lib/layout";
 import { useRested } from "@/lib/rested";
@@ -142,6 +143,11 @@ export function TeachersScreen() {
               testID="teachers-more"
             />
           ) : null}
+          <ExcelButton
+            path="/teachers/export.xlsx"
+            params={{ tab: kind, sort: "fullName:asc", archived: archived ? "true" : null, q }}
+            testID="teachers-excel"
+          />
         </>
       )}
       <TeacherFormSheet

@@ -4,7 +4,6 @@ import { StyleSheet, View } from "react-native";
 
 import {
   studentPaymentsQuery,
-  reportQuery,
   useStudentPayments,
   useStudentPaymentsOptions,
   type StudentPaymentRow,
@@ -23,7 +22,7 @@ import { useRested } from "@/lib/rested";
 import { can, useMe } from "@/lib/session";
 import { space } from "@/lib/theme";
 
-import { ExcelOnSite, Filters, OptionFilter, PeriodFilters, Rows, useReportPeriod } from "./parts";
+import { ReportExcel, Filters, OptionFilter, PeriodFilters, Rows, useReportPeriod } from "./parts";
 
 /**
  * Reports, Student payments (A-238): every payment of the month, newest
@@ -190,8 +189,9 @@ export function StudentPaymentsReportScreen() {
           ) : null}
         </>
       )}
-      <ExcelOnSite
-        path={`/reports/student-payments${reportQuery(studentPaymentsQuery(filters))}`}
+      <ReportExcel
+        path="/reports/student-payments/export.xlsx"
+        params={studentPaymentsQuery(filters)}
       />
     </Screen>
   );

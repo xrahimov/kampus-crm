@@ -6361,7 +6361,9 @@
       "title": "Fayl",
       "failed": "Bu faylni ochib bo'lmadi.",
       "cannotShow": "Ilova bunday turdagi faylni ko'rsata olmaydi.",
-      "openOutside": "Boshqa ilovada ochish"
+      "openOutside": "Boshqa ilovada ochish",
+      "inDownloads": "Fayl Yuklanmalar papkasida.",
+      "noApp": "Bu telefonda Excel fayllarini ochadigan ilova yo'q. Shunday ilovani o'rnating yoki bu ro'yxatni saytda oching."
     },
     "materials": {
       "continueFrom": "{time} dan davom etish",
@@ -6476,7 +6478,9 @@
       "undoDayOff": "Darsni qaytarish",
       "undoDayOffTitle": "Dam olish kuni bekor qilinsinmi?",
       "undoDayOffText": "{date} kungi dars jadvalga qaytadi. Ko'chirilgan dars o'z kuniga qaytadi.",
-      "nothingThatDay": "{day}: dars yo'q."
+      "nothingThatDay": "{day}: dars yo'q.",
+      "excelAttendance": "Davomat Excelda",
+      "excelGrades": "Baholar Excelda"
     },
     "catalog": {
       "changeHours": "Soatlarni o'zgartirish",
@@ -6485,8 +6489,7 @@
       "moreSettings": "Qolgan sozlamalar saytda ochiladi."
     },
     "money": {
-      "sortBy": "Saralash",
-      "excelOnSite": "Excel fayli saytda"
+      "sortBy": "Saralash"
     },
     "reports": {
       "certificateOnSite": "{number} sertifikatini ochish",

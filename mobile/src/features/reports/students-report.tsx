@@ -3,7 +3,6 @@ import { useState } from "react";
 import { StyleSheet, View } from "react-native";
 
 import {
-  reportQuery,
   STUDENT_REPORT_STATUSES,
   useStudentsReport,
   type StudentReportStatus,
@@ -19,7 +18,7 @@ import { can, useMe } from "@/lib/session";
 import { space } from "@/lib/theme";
 
 import {
-  ExcelOnSite,
+  ReportExcel,
   Filters,
   Kpis,
   monthBounds,
@@ -305,13 +304,7 @@ export function StudentsReportScreen() {
           </View>
         </>
       )}
-      <ExcelOnSite
-        path={`/reports/students${reportQuery({
-          ...filters,
-          page: null,
-          tab: tab === "performance" ? tab : null,
-        })}`}
-      />
+      <ReportExcel path="/reports/students/export.xlsx" params={{ ...filters, tab }} />
     </Screen>
   );
 }

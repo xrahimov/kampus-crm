@@ -21,6 +21,10 @@ jest.mock("expo-router", () => ({
   useLocalSearchParams: () => mockParams,
 }));
 let mockPermissions: string[] = [];
+const mockSaveFile = jest.fn<Promise<string>, [string, string]>(async () => "opened");
+jest.mock("@/lib/save-file", () => ({
+  saveFile: (path: string, name: string) => mockSaveFile(path, name),
+}));
 jest.mock("@/lib/session", () => ({
   useMe: () => ({
     permissions: mockPermissions,
@@ -359,6 +363,13 @@ describe("a payment taken on the student's page", () => {
     const first = await screen.findByTestId("payment-p1");
     expect(first).toHaveTextContent(/400,000/);
     expect(first).toHaveTextContent(/GE-Morning A1/);
+    // The student's payments as an Excel file (A-256), in the site's words.
+    expect(screen.getByTestId("student-payments-excel")).toHaveTextContent("Export to Excel");
+    await fireEvent.press(screen.getByTestId("student-payments-excel"));
+    expect(mockSaveFile).toHaveBeenLastCalledWith(
+      "/payments/export.xlsx?studentId=s1&locale=en",
+      "kampus.xlsx",
+    );
     expect(first).toHaveTextContent(/Cash, Dilnoza Karimova/);
     expect(screen.getByTestId("payment-p0")).toHaveTextContent(/Refunded: .*100,000/);
     expect(screen.getByTestId("student-payments-total")).toHaveTextContent(/600,000/);

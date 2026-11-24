@@ -21,6 +21,7 @@ import { Select } from "@/components/select";
 import { Sheet } from "@/components/sheet";
 import { Badge, Card, Divider, EmptyState, Loading, Notice, Screen } from "@/components/surface";
 import { Text } from "@/components/text";
+import { ExcelButton } from "@/features/files/excel-button";
 import { dayAsDate } from "@/lib/days";
 import { errorText, useDate, useMoney, useTranslations } from "@/lib/i18n";
 import { useLayout } from "@/lib/layout";
@@ -212,6 +213,16 @@ export function DebtsScreen() {
               testID="debts-more"
             />
           ) : null}
+          <ExcelButton
+            path="/debts/export.xlsx"
+            params={{
+              sort: DEBT_SORTS[sort],
+              status: status === "ACTIVE" ? null : status,
+              branchId,
+              q,
+            }}
+            testID="debts-excel"
+          />
         </>
       )}
 

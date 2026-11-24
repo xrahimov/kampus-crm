@@ -1,6 +1,6 @@
 import { StyleSheet, View } from "react-native";
 
-import { reportQuery, useReferralsReport } from "@/api/office-reports";
+import { useReferralsReport } from "@/api/office-reports";
 import { Header } from "@/components/header";
 import { Badge, Card, Screen } from "@/components/surface";
 import { Text } from "@/components/text";
@@ -11,7 +11,7 @@ import { useDate, useMoney, useTranslations } from "@/lib/i18n";
 import { space } from "@/lib/theme";
 
 import {
-  ExcelOnSite,
+  ReportExcel,
   Filters,
   Kpis,
   PeriodFilters,
@@ -139,7 +139,7 @@ export function ReferralsReportScreen() {
           ))}
         </Rows>
       )}
-      <ExcelOnSite path={`/reports/referrals${reportQuery({ ...state.period })}`} />
+      <ReportExcel path="/reports/referrals/export.xlsx" params={{ ...state.period }} />
     </Screen>
   );
 }

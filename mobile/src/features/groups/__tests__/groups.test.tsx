@@ -27,6 +27,10 @@ jest.mock("expo-router", () => ({
 let mockPermissions: string[] = [];
 let mockView: "FULL" | "TEACHING" = "FULL";
 let mockBranches = [{ id: "b1", name: "Chilonzor" }];
+const mockSaveFile = jest.fn<Promise<string>, [string, string]>(async () => "opened");
+jest.mock("@/lib/save-file", () => ({
+  saveFile: (path: string, name: string) => mockSaveFile(path, name),
+}));
 jest.mock("@/lib/session", () => ({
   useMe: () => ({
     user: { id: "u1", fullName: "Dilnoza Karimova", hasSalary: false },
@@ -237,6 +241,12 @@ describe("the Groups tab", () => {
     await waitFor(() => expect(calls("GET", "/groups").at(-1)![0]).toContain("teacherId=t2"));
     await fireEvent.changeText(screen.getByTestId("groups-search"), "IELTS");
     await waitFor(() => expect(calls("GET", "/groups").at(-1)![0]).toContain("q=IELTS"));
+    // The list as it is filtered, as an Excel file (A-256).
+    await fireEvent.press(screen.getByTestId("groups-excel"));
+    expect(mockSaveFile).toHaveBeenLastCalledWith(
+      "/groups/export.xlsx?status=ACTIVE&sort=name%3Aasc&teacherId=t2&q=IELTS&locale=en",
+      "kampus.xlsx",
+    );
     await fireEvent.press(screen.getByTestId("groups-status"));
     await fireEvent.press(await screen.findByTestId("groups-status-option-ALL"));
     await waitFor(() => expect(calls("GET", "/groups").at(-1)![0]).toContain("status=ALL"));
@@ -622,6 +632,11 @@ describe("the students of a group", () => {
     expect(await screen.findByTestId("member-row-m1")).toBeOnTheScreen();
     expect(screen.getByTestId("member-status-m1")).toHaveTextContent("Active");
     expect(screen.getByTestId("member-balance-m1")).toHaveTextContent(/400,000/);
+    await fireEvent.press(screen.getByTestId("members-excel"));
+    expect(mockSaveFile).toHaveBeenLastCalledWith(
+      "/groups/g1/export.xlsx?locale=en",
+      "kampus.xlsx",
+    );
     await fireEvent.changeText(screen.getByTestId("members-search"), "lol");
     expect(screen.queryByTestId("member-row-m1")).toBeNull();
     expect(screen.getByTestId("member-row-m2")).toBeOnTheScreen();

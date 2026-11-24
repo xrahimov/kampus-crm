@@ -23,6 +23,7 @@ import { Sheet } from "@/components/sheet";
 import { Badge, Card, EmptyState, Loading, Notice, Screen } from "@/components/surface";
 import { Text } from "@/components/text";
 import { PendingScreen } from "@/features/shared/pending-screen";
+import { ExcelButton } from "@/features/files/excel-button";
 import { dayAsDate } from "@/lib/days";
 import { errorText, useDate, useTranslations } from "@/lib/i18n";
 import { useRested } from "@/lib/rested";
@@ -160,6 +161,11 @@ export function AbsencesScreen() {
           testID="absences-more"
         />
       ) : null}
+      <ExcelButton
+        path="/absences/export.xlsx"
+        params={{ status, reason, branchId, q }}
+        testID="absences-excel"
+      />
       <LogContact row={logging} onClose={() => setLogging(null)} />
       <History row={history} onClose={() => setHistory(null)} />
     </Screen>

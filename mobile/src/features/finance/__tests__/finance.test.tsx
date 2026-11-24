@@ -36,6 +36,10 @@ jest.mock("expo-router", () => ({
 }));
 const mockOpenOnSite = jest.fn<Promise<void>, [string]>();
 jest.mock("@/lib/web", () => ({ openOnSite: (path: string) => mockOpenOnSite(path) }));
+const mockSaveFile = jest.fn<Promise<string>, [string, string]>();
+jest.mock("@/lib/save-file", () => ({
+  saveFile: (path: string, name: string) => mockSaveFile(path, name),
+}));
 let mockPermissions: string[] = [];
 let mockBranches = [{ id: "b1", name: "Chilonzor" }];
 let mockActive: { id: string; name: string } | null = null;
@@ -79,6 +83,8 @@ beforeEach(() => {
   fetchMock.mockReset();
   mockPush.mockReset();
   mockOpenOnSite.mockReset();
+  mockSaveFile.mockReset();
+  mockSaveFile.mockResolvedValue("opened");
   mockOpenOnSite.mockResolvedValue();
   mockParams = {};
   mockBranches = [{ id: "b1", name: "Chilonzor" }];
@@ -901,11 +907,14 @@ describe("a month's payroll", () => {
     expect(screen.queryByTestId("payroll-save")).toBeNull();
   });
 
-  it("opens the month on the site for its Excel file", async () => {
+  it("fetches the month as an Excel file", async () => {
     serve({ "GET /payroll/2026-11": run() });
     await show(<PayrollScreen />);
-    await fireEvent.press(await screen.findByTestId("payroll-site"));
-    expect(mockOpenOnSite).toHaveBeenCalledWith("/en/finance/salary-detail/2026-11-01");
+    await fireEvent.press(await screen.findByTestId("payroll-excel"));
+    expect(mockSaveFile).toHaveBeenCalledWith(
+      "/payroll/2026-11/export.xlsx?locale=en",
+      "kampus.xlsx",
+    );
   });
 
   it("reads the month from the app's and the site's address, and refuses anything else", async () => {

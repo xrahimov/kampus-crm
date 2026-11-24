@@ -33,6 +33,10 @@ jest.mock("@/lib/web", () => ({ openOnSite: (path: string) => mockOpenOnSite(pat
 let mockPermissions: string[] = [];
 let mockBranches = [{ id: "b1", name: "Chilonzor" }];
 let mockActive: { id: string; name: string } | null = null;
+const mockSaveFile = jest.fn<Promise<string>, [string, string]>(async () => "opened");
+jest.mock("@/lib/save-file", () => ({
+  saveFile: (path: string, name: string) => mockSaveFile(path, name),
+}));
 jest.mock("@/lib/session", () => ({
   useMe: () => ({
     user: { id: "u1", fullName: "Dilnoza Karimova", hasSalary: false },
@@ -197,6 +201,12 @@ describe("the debtors", () => {
 
     const card = await screen.findByTestId("debt-d1");
     expect(screen.getByText("2 debtors")).toBeTruthy();
+    // The list as it is filtered and sorted, as an Excel file (A-256).
+    await fireEvent.press(screen.getByTestId("debts-excel"));
+    expect(mockSaveFile).toHaveBeenLastCalledWith(
+      "/debts/export.xlsx?sort=openedAt%3Aasc&locale=en",
+      "kampus.xlsx",
+    );
     expect(screen.getByTestId("debts-summary-debtors")).toHaveTextContent(/Debtors2/);
     expect(screen.getByTestId("debts-summary-amount")).toHaveTextContent(/900/);
     expect(screen.getByTestId("debts-summary-promised")).toHaveTextContent(/1$/);

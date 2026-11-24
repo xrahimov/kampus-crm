@@ -31,6 +31,7 @@ import { Button } from "@/components/button";
 import { Header } from "@/components/header";
 import { Avatar, Badge, Card, Divider, EmptyState, Loading, Screen } from "@/components/surface";
 import { Text } from "@/components/text";
+import { ExcelButton } from "@/features/files/excel-button";
 import { addMonths, dayAsDate } from "@/lib/days";
 import { errorText, useDate, useTranslations } from "@/lib/i18n";
 import { useLayout } from "@/lib/layout";
@@ -113,6 +114,24 @@ export function GroupScreen() {
           ))}
         </Card>
       )}
+      {grid.data && grid.data.lessons.length > 0 ? (
+        <View style={styles.excel}>
+          <ExcelButton
+            compact
+            path={`/groups/${id}/attendance.xlsx`}
+            params={{ month }}
+            label={t("mobile.groups.excelAttendance")}
+            testID="attendance-excel"
+          />
+          <ExcelButton
+            compact
+            path={`/groups/${id}/grades.xlsx`}
+            params={{ month }}
+            label={t("mobile.groups.excelGrades")}
+            testID="grades-excel"
+          />
+        </View>
+      ) : null}
     </View>
   );
 
@@ -489,6 +508,7 @@ const styles = StyleSheet.create({
   studentsHead: { flexDirection: "row", alignItems: "center", gap: space[2] },
   flush: { padding: 0, gap: 0, overflow: "hidden" },
   month: { flexDirection: "row", alignItems: "center", gap: space[2] },
+  excel: { flexDirection: "row", flexWrap: "wrap", gap: space[2] },
   pages: { flexDirection: "row", flexWrap: "wrap", gap: space[2] },
   morePages: { flexBasis: "100%", alignSelf: "flex-start" },
   page: {

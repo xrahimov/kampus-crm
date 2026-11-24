@@ -12,7 +12,7 @@ import {
   type CefrLevel,
   type GraduateRow,
 } from "@/api/office-graduates";
-import { reportQuery, type YesNo } from "@/api/office-reports";
+import { type YesNo } from "@/api/office-reports";
 import { Button } from "@/components/button";
 import { Check } from "@/components/check";
 import { Confirm } from "@/components/confirm";
@@ -33,7 +33,7 @@ import { can, useMe } from "@/lib/session";
 import { space } from "@/lib/theme";
 
 import {
-  ExcelOnSite,
+  ReportExcel,
   Filters,
   Kpis,
   OptionFilter,
@@ -168,7 +168,7 @@ export function GraduatesReportScreen() {
           ))}
         </Rows>
       )}
-      <ExcelOnSite path={`/reports/graduates${reportQuery({ ...filters })}`} />
+      <ReportExcel path="/reports/graduates/export.xlsx" params={{ ...filters }} />
 
       <Sheet
         open={doing === "menu"}

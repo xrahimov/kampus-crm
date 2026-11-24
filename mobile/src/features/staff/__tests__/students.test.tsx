@@ -24,6 +24,10 @@ jest.mock("expo-router", () => ({
   useRouter: () => ({ push: mockPush, back: jest.fn(), canGoBack: () => true, replace: jest.fn() }),
   useLocalSearchParams: () => ({ id: "s1" }),
 }));
+const mockSaveFile = jest.fn<Promise<string>, [string, string]>(async () => "opened");
+jest.mock("@/lib/save-file", () => ({
+  saveFile: (path: string, name: string) => mockSaveFile(path, name),
+}));
 jest.mock("@/lib/session", () => ({
   // A teacher: the teaching view, no office rights.
   useMe: () => ({
@@ -154,6 +158,12 @@ describe("the students a teacher may see", () => {
     expect(await screen.findByTestId("student-s1")).toHaveTextContent(/Demo Student One/);
     expect(screen.getByTestId("student-s1")).toHaveTextContent(/GE-Morning A1/);
     expect(screen.getByTestId("student-s1")).toHaveTextContent(/4\.5/);
+    // The list as it is filtered, as an Excel file (A-256).
+    await fireEvent.press(screen.getByTestId("students-excel"));
+    expect(mockSaveFile).toHaveBeenLastCalledWith(
+      "/students/export.xlsx?sort=fullName%3Aasc&locale=en",
+      "kampus.xlsx",
+    );
     expect(screen.getByTestId("students-count")).toHaveTextContent("2 students");
     // Someone who left every group has none to name; a debt is told.
     expect(screen.getByTestId("student-s2")).toHaveTextContent(/No groups/);
