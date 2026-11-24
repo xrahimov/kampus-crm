@@ -6486,7 +6486,8 @@
     },
     "settingsPages": {
       "variablesHint": "Matnga qo'shish uchun so'zni bosing. Xabar yuborilganda u almashtiriladi.",
-      "sampleMethod": "Naqd"
+      "sampleMethod": "Naqd",
+      "fixFields": "Ba'zi maydonlarni tuzatish kerak. Ular yuqorida belgilangan."
     }
   }
 }

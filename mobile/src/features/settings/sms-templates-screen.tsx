@@ -354,6 +354,7 @@ function TemplateSheet({
             value={text}
             onChangeText={setText}
             multiline
+            style={styles.message}
             maxLength={SMS_MAX_LENGTH}
             hint={ts("counter", { chars, parts })}
             error={
@@ -423,4 +424,6 @@ const styles = StyleSheet.create({
   form: { gap: space[4] },
   tight: { gap: space[2] },
   footer: { gap: space[2] },
+  // Room for a whole message: a field of one line cuts a long text off.
+  message: { minHeight: 120, textAlignVertical: "top" },
 });

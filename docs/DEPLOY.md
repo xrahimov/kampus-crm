@@ -204,6 +204,9 @@ A-201) has no migration and no setting. Two things to know after it:
   on an `https` address (the live site is one). Nothing on the server switches it
   on or off; a person can switch it off for the site in the browser.
 
+General settings in the app (A-243: the centre's settings, branches, payment methods, grading
+systems and the automatic SMS) uses the calls the site's page makes: nothing to update for it.
+
 Days off, Schools, SMS templates, Receipt settings and Coin settings in the app (A-242) use
 calls the server already has: nothing to update for them.
 

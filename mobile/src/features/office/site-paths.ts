@@ -26,6 +26,7 @@ const NATIVE_SETTINGS = new Set([
   "sms",
   "receipt",
   "coins",
+  "general",
 ]);
 
 /**

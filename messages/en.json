@@ -6486,7 +6486,8 @@
     },
     "settingsPages": {
       "variablesHint": "Tap a word to add it to the text. It is replaced when the message is sent.",
-      "sampleMethod": "Cash"
+      "sampleMethod": "Cash",
+      "fixFields": "Some fields need another look. They are marked above."
     }
   }
 }

@@ -73,6 +73,7 @@ export default function StaffLayout() {
       <Stack.Screen name="settings/index" />
       <Stack.Screen name="settings/courses" />
       <Stack.Screen name="settings/rooms" />
+      <Stack.Screen name="settings/general" />
       <Stack.Screen name="settings/days-off" />
       <Stack.Screen name="settings/schools" />
       <Stack.Screen name="settings/sms" />
