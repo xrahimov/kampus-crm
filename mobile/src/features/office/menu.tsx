@@ -5,6 +5,7 @@ import {
   CalendarRange,
   ChartColumn,
   ChevronRight,
+  CircleHelp,
   ClipboardCheck,
   Contact,
   ExternalLink,
@@ -93,6 +94,8 @@ interface MenuRow {
  * has opens in the app; a page it does not have yet opens on the site, already
  * signed in, and carries the arrow that says so.
  *
+ * "Help" (A-252) is the last row, as it is the last of the site's side menu.
+ *
  * "Sign-in requests" (A-232) is a banner on the site's Students and Staff
  * pages; here it is a row, with the number of people waiting, for whoever may
  * answer them.
@@ -136,6 +139,8 @@ export function Menu() {
       icon: MODULE_ICON[m],
       path: MODULE_PATH[m],
     })),
+    // The manual (A-252), last as in the site's side menu: everyone has it.
+    { key: "help", label: t("help.nav"), icon: CircleHelp, path: "/help" },
   ];
   return (
     <View style={styles.wrap}>

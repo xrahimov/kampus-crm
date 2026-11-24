@@ -2,10 +2,13 @@ import {
   createContext,
   useContext,
   useEffect,
+  useImperativeHandle,
   useMemo,
   useRef,
   useState,
+  type ComponentRef,
   type ReactNode,
+  type Ref,
 } from "react";
 import {
   ActivityIndicator,
@@ -49,6 +52,12 @@ export const BottomBarSpace = BottomBarContext.Provider;
 /** A first guess at a header's height, so the page does not jump when the real one is measured. */
 const HEADER_GUESS = 36 + 2 * space[3];
 
+/** What a screen can ask of its own scrolling part (the manual: go to a section). */
+export interface ScreenScroll {
+  /** Brings what stands `y` points down the page to the top, just under the header. */
+  to: (y: number, animated?: boolean) => void;
+}
+
 /**
  * The page under every screen: the porcelain background, safe-area padding, a
  * column that stops growing on tablets, and pull-to-refresh when the screen
@@ -67,6 +76,7 @@ export function Screen({
   footer,
   contentStyle,
   padTop = false,
+  scrollRef,
 }: {
   children: ReactNode;
   scroll?: boolean;
@@ -79,6 +89,8 @@ export function Screen({
   contentStyle?: StyleProp<ViewStyle>;
   /** For screens without a navigation header: keep clear of the status bar. */
   padTop?: boolean;
+  /** For a screen that moves its own page: a section of an article. */
+  scrollRef?: Ref<ScreenScroll>;
 }) {
   const { colors } = useTheme();
   const { wide } = useLayout();
@@ -96,6 +108,34 @@ export function Screen({
   const inset = Platform.OS === "ios" && scroll;
   const room = useMemo(() => ({ top }), [top]);
   const start = useMemo(() => ({ x: 0, y: -top }), [top]);
+  const scroller = useRef<ComponentRef<typeof ScrollView>>(null);
+  const wanted = useRef<number | null>(null);
+  // A place on the page is counted from the top of what scrolls, which on every platform
+  // starts `top` under the header's lower edge or has that much room above it: the same sum.
+  const go = (y: number, animated: boolean) =>
+    scroller.current?.scrollTo({
+      y: Math.max(inset ? -top : 0, Math.round(y - top - space[3])),
+      animated,
+    });
+  const goRef = useRef(go);
+  useEffect(() => {
+    goRef.current = go;
+  });
+  useImperativeHandle(
+    scrollRef,
+    () => ({
+      to: (y, animated = true) => {
+        wanted.current = y;
+        goRef.current(y, animated);
+      },
+    }),
+    [],
+  );
+  // The header is measured a moment after the page is drawn: a place asked for before that
+  // is gone to again, until the reader moves the page themselves.
+  useEffect(() => {
+    if (wanted.current !== null) goRef.current(wanted.current, false);
+  }, [top]);
   const reload = usePullToReload({
     onRefresh: scroll ? onRefresh : undefined,
     refreshing,
@@ -124,6 +164,7 @@ export function Screen({
             <Backdrop style={styles.fill}>
               {scroll ? (
                 <ScrollView
+                  ref={scroller}
                   style={styles.fill}
                   contentContainerStyle={styles.grow}
                   testID="screen-scroll"
@@ -134,6 +175,9 @@ export function Screen({
                   // The page starts under the header, and goes back there when the header grows.
                   contentOffset={inset ? start : undefined}
                   scrollIndicatorInsets={{ top, bottom: footer ? footerHeight : bottomBar }}
+                  onScrollBeginDrag={() => {
+                    wanted.current = null;
+                  }}
                   {...reload.scrollProps}
                 >
                   <View style={inner}>{children}</View>

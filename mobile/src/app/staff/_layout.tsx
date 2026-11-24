@@ -94,6 +94,9 @@ export default function StaffLayout() {
       <Stack.Screen name="settings/tests/index" />
       <Stack.Screen name="settings/tests/[id]" />
       <Stack.Screen name="settings/migration" />
+      <Stack.Screen name="help/index" />
+      <Stack.Screen name="help/[slug]" />
+      <Stack.Screen name="help/videos" />
       {/* A lesson is left with its own button, not by a stray swipe from the edge. */}
       <Stack.Screen name="room/[id]" options={{ gestureEnabled: false, animation: "fade" }} />
     </Stack>

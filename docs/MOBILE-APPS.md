@@ -71,7 +71,8 @@ able to work from an iPad or a phone.
 | Office: settings, step 5a: Integrations (the nine services, the waiting jobs), AmoCRM and FaceID (A-249)                                                                                                                     | Built, phone and tablet; the owner's "Shared with every centre" tick needs the server update                             |
 | Office: settings, step 5b: Tests and the question bank, a test's page with its results and Enter result (A-250)                                                                                                              | Built, phone and tablet                                                                                                  |
 | Office: settings, step 5c: Import from SOFF CRM (choose a file on the device, see how it is read, preview, import) (A-251)                                                                                                   | Built, phone and tablet; every settings section is now in the app                                                        |
-| The office's other pages: the manual, the assistant                                                                                                                                                                          | Next, part 6d; they open on the site until then                                                                          |
+| Office: Help, the manual with its how-to videos: search, articles by role, pictures that enlarge, videos (A-252)                                                                                                             | Built, phone and tablet; needs the server update                                                                         |
+| The office's other pages: the assistant                                                                                                                                                                                      | Next, part 6d; it opens on the site until then                                                                           |
 | The site running on the app's code                                                                                                                                                                                           | Part by part, the student side first; wide tables, Excel and print last                                                  |
 
 ## What kai needs to do
@@ -258,7 +259,15 @@ mobile/
   preview is kept per file and branch; an import's answer stays until another file is chosen.
   `reasonOf` turns the server's "field: key" into words. In a screen test the upload is stood in
   for by mocking `apiForm` (the test runner's form cannot carry a file named by its address).
-  Next free number: A-252.
+- **The manual (A-252).** `src/features/help/` and `src/api/office-help.ts`. `useManual` asks
+  `GET /help?locale=` once and keeps the answer for the day; `HelpHomeScreen`, `HelpArticleScreen`
+  and `HelpVideosScreen` all read from it. `useManualSearch` asks `GET /help/search`, the site's
+  own search, from two letters. `help-parts.tsx` has the pieces: `Markup` (`**Save**` marked),
+  `Blocks`, `Picture` (the room is kept from the size the server says; a press opens `/file`) and
+  `VideoCard`. An article is opened at a section with `articleRoute(slug, section)`; it measures
+  where its sections start and asks `Screen` to go there through `scrollRef`. In a screen test
+  draw one screen per test: an `unmount()` that is not awaited leaves the next render hanging.
+  Next free number: A-253.
 - **Finance and payroll (A-237).** `src/features/finance/` and `src/api/office-finance.ts`.
   `FinanceScreen` is the site's Finance page; `EntriesScreen` the entries of a kind or of a
   category (`entries-routes.tsx` reads which from the address), with `EntrySheet`, the site's one

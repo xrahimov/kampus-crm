@@ -90,6 +90,13 @@ export function nativeRoute(path: string): Href | null {
     if (rest.length > 0) return null;
     return NATIVE_SETTINGS.has(id) ? (`/staff/settings/${id}` as Href) : null;
   }
+  // Help (A-252): the manual's home, its videos and one article.
+  if (first === "help") {
+    if (!id) return "/staff/help" as Href;
+    if (rest.length > 0) return null;
+    if (id === "videos") return "/staff/help/videos" as Href;
+    return { pathname: "/staff/help/[slug]", params: { slug: id } } as Href;
+  }
   // Finance (A-237): its page, the entries of a kind or of a category, and a month's payroll.
   if (first === "finance") {
     if (!id) return "/staff/finance";

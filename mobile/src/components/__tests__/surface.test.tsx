@@ -1,8 +1,8 @@
 import { act, screen } from "@testing-library/react-native";
-import { useState } from "react";
+import { createRef, useState } from "react";
 import { Platform, ScrollView, StyleSheet, Text, View } from "react-native";
 
-import { Screen, usePullToReload } from "@/components/surface";
+import { Screen, usePullToReload, type ScreenScroll } from "@/components/surface";
 import { clearClients, renderScreen } from "@/features/student/test-support";
 
 jest.mock("@react-native-async-storage/async-storage", () =>
@@ -224,5 +224,53 @@ describe("the refresh spinner on Android", () => {
     expect(shown()).toBe(true);
     await act(async () => jest.advanceTimersByTime(300));
     expect(shown()).toBe(false);
+  });
+});
+
+describe("a place on the page a screen asks for", () => {
+  const scrollTo = (ScrollView as unknown as { prototype: { scrollTo: jest.Mock } }).prototype
+    .scrollTo;
+  const last = () => scrollTo.mock.calls.at(-1)![0] as { y: number; animated: boolean };
+  /** The header is measured: the floating bar turns out this tall. */
+  const headerIs = (height: number) =>
+    act(async () =>
+      screen
+        .getByTestId("bar", { includeHiddenElements: true })
+        .parent!.props.onLayout({ nativeEvent: { layout: { height } } }),
+    );
+  const handle = createRef<ScreenScroll>();
+  const article = (
+    <Screen header={<View testID="bar" />} scrollRef={handle}>
+      <Text>Page</Text>
+    </Screen>
+  );
+  beforeEach(() => scrollTo.mockClear());
+
+  it.each(["ios", "android"] as const)("comes to rest just under the header (%s)", async (os) => {
+    Platform.OS = os;
+    await renderScreen(article);
+    await headerIs(80);
+    scrollTo.mockClear();
+    await act(async () => handle.current!.to(500));
+    // 80 for the header and 12 of air above what was asked for.
+    expect(last()).toEqual({ y: 408, animated: true });
+    // The top of the page is as far up as a page goes.
+    await act(async () => handle.current!.to(0, false));
+    expect(last()).toEqual({ y: os === "ios" ? -80 : 0, animated: false });
+  });
+
+  it("is gone to again when the header turns out taller, until the reader moves the page", async () => {
+    Platform.OS = "android";
+    await renderScreen(article);
+    await headerIs(80);
+    await act(async () => handle.current!.to(500, false));
+    expect(last().y).toBe(408);
+    await headerIs(100);
+    expect(last()).toEqual({ y: 388, animated: false });
+    // The reader takes hold of the page: it is theirs from here.
+    const calls = scrollTo.mock.calls.length;
+    await act(async () => screen.getByTestId("screen-scroll").props.onScrollBeginDrag());
+    await headerIs(120);
+    expect(scrollTo.mock.calls).toHaveLength(calls);
   });
 });
