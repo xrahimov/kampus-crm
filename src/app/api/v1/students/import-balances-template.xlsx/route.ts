@@ -7,9 +7,9 @@ export const GET = route({ permission: "payments.create" }, async ({ request }) 
   const t = await exportTranslator(request);
   return templateResponse(t, t("excel.files.balancesTemplate"), BALANCE_IMPORT_COLUMNS, {
     studentId: "",
-    fullName: t("excel.example.fullName"),
+    fullName: t.raw("excel.example.fullName"),
     phone: "+998901234567",
-    group: t("excel.example.group"),
+    group: t.raw("excel.example.group"),
     balance: -500000,
     date: "2026-10-01",
     comment: "",

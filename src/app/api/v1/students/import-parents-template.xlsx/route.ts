@@ -7,9 +7,9 @@ export const GET = route({ permission: "students.update" }, async ({ request }) 
   const t = await exportTranslator(request);
   return templateResponse(t, t("excel.files.parentsTemplate"), PARENT_IMPORT_COLUMNS, {
     studentId: "",
-    fullName: t("excel.example.fullName"),
+    fullName: t.raw("excel.example.fullName"),
     phone: "+998901234567",
-    parentName: t("excel.example.parentName"),
+    parentName: t.raw("excel.example.parentName"),
     parentPhone: "+998907654321",
   });
 });

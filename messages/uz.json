@@ -613,6 +613,7 @@
     "passwordMin": "Kamida 8 ta belgi.",
     "passwordMax": "Ko‘pi bilan 128 ta belgi.",
     "required": "Majburiy.",
+    "invalid": "Noto‘g‘ri qiymat.",
     "invalidJson": "Noto‘g‘ri so‘rov.",
     "sort": "Noto‘g‘ri saralash.",
     "sortField": "Bu maydon bo‘yicha saralab bo‘lmaydi.",

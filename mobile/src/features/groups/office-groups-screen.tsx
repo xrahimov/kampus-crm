@@ -18,6 +18,7 @@ import { Select } from "@/components/select";
 import { Badge, Card, EmptyState, Loading, Notice, Screen } from "@/components/surface";
 import { Text } from "@/components/text";
 import { ExcelButton } from "@/features/files/excel-button";
+import { ImportButton } from "@/features/files/import-button";
 import { errorText, useTranslations } from "@/lib/i18n";
 import { useLayout } from "@/lib/layout";
 import { useRested } from "@/lib/rested";
@@ -180,6 +181,18 @@ export function OfficeGroupsScreen() {
           />
         </>
       )}
+      {can(me, "groups.create") ? (
+        <ImportButton
+          kind={{
+            id: "groups-import",
+            title: t("excel.importTitles.groups"),
+            description: t("excel.hints.groups"),
+            templatePath: "/groups/import-groups-template.xlsx",
+            importPath: "/groups/import",
+            toBranch: true,
+          }}
+        />
+      ) : null}
       <GroupFormSheet
         open={adding}
         onClose={() => setAdding(false)}

@@ -167,6 +167,16 @@ describe("staff", () => {
       "kampus.xlsx",
     );
 
+    // Staff from a sheet (A-257): the site's import, for someone who may add staff.
+    await fireEvent.press(screen.getByTestId("staff-import-open"));
+    expect(await screen.findByText("Import staff")).toBeOnTheScreen();
+    await fireEvent.press(screen.getByTestId("staff-import-template"));
+    expect(mockSaveFile).toHaveBeenLastCalledWith(
+      "/staff/import-template.xlsx?locale=en",
+      "template.xlsx",
+    );
+    await fireEvent.press(screen.getByTestId("staff-import-close"));
+
     // A chip per role somebody holds, with how many; All is their sum.
     expect(screen.getByTestId("staff-role-all")).toHaveTextContent(/All.*3/);
     expect(screen.getByTestId("staff-role-filter-ADMIN")).toHaveTextContent(/Admin.*2/);
@@ -283,6 +293,7 @@ describe("staff", () => {
     await renderScreen(<StaffScreen />);
     expect(await screen.findByTestId("staff-s1")).toBeOnTheScreen();
     expect(screen.queryByTestId("staff-add")).toBeNull();
+    expect(screen.queryByTestId("staff-import-open")).toBeNull();
     // The roles are for the form, which this person never opens.
     expect(calls("GET", "/roles")).toHaveLength(0);
     await fireEvent.press(screen.getByTestId("staff-s1"));

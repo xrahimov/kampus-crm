@@ -644,6 +644,22 @@ describe("courses", () => {
     });
   });
 
+  it("opens the site's import of courses from a sheet, but not in the archive", async () => {
+    serve({ "GET /courses": page([course()]) });
+    await show(<CoursesScreen />);
+    await screen.findByTestId("course-c1");
+    await fireEvent.press(screen.getByTestId("courses-import-open"));
+    expect(await screen.findByText("Import courses")).toBeOnTheScreen();
+    await fireEvent.press(screen.getByTestId("courses-import-template"));
+    expect(mockSaveFile).toHaveBeenLastCalledWith(
+      "/courses/import-template.xlsx?locale=en",
+      "template.xlsx",
+    );
+    await fireEvent.press(screen.getByTestId("courses-import-close"));
+    await fireEvent.press(screen.getByTestId("courses-archived"));
+    await waitFor(() => expect(screen.queryByTestId("courses-import-open")).toBeNull());
+  });
+
   it("archives a course after a question", async () => {
     serve({ "GET /courses": page([course()]), "DELETE /courses/c1": undefined });
     await show(<CoursesScreen />);
@@ -657,6 +673,19 @@ describe("courses", () => {
 });
 
 describe("rooms", () => {
+  it("opens the site's import of rooms from a sheet", async () => {
+    serve({ "GET /rooms": page([]) });
+    await show(<RoomsScreen />);
+    await fireEvent.press(await screen.findByTestId("rooms-import-open"));
+    expect(await screen.findByText("Import rooms")).toBeOnTheScreen();
+    expect(screen.getByTestId("rooms-import-hint")).toHaveTextContent(/One row per room/);
+    await fireEvent.press(screen.getByTestId("rooms-import-template"));
+    expect(mockSaveFile).toHaveBeenLastCalledWith(
+      "/rooms/import-template.xlsx?locale=en",
+      "template.xlsx",
+    );
+  });
+
   it("lists rooms with their seats and adds one", async () => {
     serve({ "GET /rooms": page([ROOM]), "POST /rooms": { ...ROOM, id: "r2" } });
     await show(<RoomsScreen />);

@@ -6,7 +6,7 @@ import { COURSE_IMPORT_COLUMNS } from "@/server/services/imports/catalog-import.
 export const GET = route({ permission: "settings.catalog" }, async ({ request }) => {
   const t = await exportTranslator(request);
   return templateResponse(t, t("excel.files.coursesTemplate"), COURSE_IMPORT_COLUMNS, {
-    name: t("excel.example.course"),
+    name: t.raw("excel.example.course"),
     price: 450000,
     durationMonths: 6,
     description: "",

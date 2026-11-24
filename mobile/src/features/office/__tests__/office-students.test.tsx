@@ -282,12 +282,59 @@ describe("the students list for the office", () => {
     );
   });
 
+  it("offers the site's imports to whoever may do what each one does", async () => {
+    mockPermissions = ["students.view", "students.create", "students.update", "payments.create"];
+    serve({ "GET /students": page([student()]), "GET /students/options": OPTIONS });
+    await renderScreen(<StudentsScreen />);
+    await screen.findByTestId("student-s1");
+    await fireEvent.press(screen.getByTestId("students-import"));
+    expect(await screen.findByTestId("students-import-new-open")).toHaveTextContent(
+      "Import from Excel",
+    );
+    expect(screen.getByTestId("students-import-balances-open")).toHaveTextContent(
+      "Import opening balances",
+    );
+    expect(screen.getByTestId("students-import-parents-open")).toHaveTextContent("Import parents");
+    expect(screen.getByTestId("students-import-archived-open")).toHaveTextContent(
+      "Import archived students",
+    );
+    expect(screen.getByTestId("students-import-history-open")).toHaveTextContent(
+      "Import payment history",
+    );
+
+    // An import of money shows what it would do first.
+    await fireEvent.press(screen.getByTestId("students-import-history-open"));
+    expect(await screen.findByTestId("students-import-history-submit")).toHaveTextContent(
+      "Preview",
+    );
+    await fireEvent.press(screen.getByTestId("students-import-history-template"));
+    expect(mockSaveFile).toHaveBeenLastCalledWith(
+      "/students/import-history-template.xlsx?locale=en",
+      "template.xlsx",
+    );
+  });
+
+  it("leaves out the imports a person has no right to, and opening balances in the archive", async () => {
+    mockPermissions = ["students.view", "payments.create"];
+    mockParams = { archived: "true" };
+    serve({ "GET /students": page([student()]), "GET /students/options": OPTIONS });
+    await renderScreen(<StudentsScreen />);
+    await screen.findByTestId("student-s1");
+    await fireEvent.press(screen.getByTestId("students-import"));
+    expect(await screen.findByTestId("students-import-history-open")).toBeOnTheScreen();
+    expect(screen.queryByTestId("students-import-balances-open")).toBeNull();
+    expect(screen.queryByTestId("students-import-new-open")).toBeNull();
+    expect(screen.queryByTestId("students-import-parents-open")).toBeNull();
+    expect(screen.queryByTestId("students-import-archived-open")).toBeNull();
+  });
+
   it("keeps the filters and Add student from people without the office's side", async () => {
     mockPermissions = ["students.view"];
     serve({ "GET /students": page([student()]) });
     await renderScreen(<StudentsScreen />);
     await screen.findByTestId("student-s1");
     expect(screen.queryByTestId("student-add")).toBeNull();
+    expect(screen.queryByTestId("students-import")).toBeNull();
   });
 });
 

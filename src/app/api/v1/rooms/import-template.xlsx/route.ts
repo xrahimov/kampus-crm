@@ -6,7 +6,7 @@ import { ROOM_IMPORT_COLUMNS } from "@/server/services/imports/catalog-import.se
 export const GET = route({ permission: "settings.catalog" }, async ({ request }) => {
   const t = await exportTranslator(request);
   return templateResponse(t, t("excel.files.roomsTemplate"), ROOM_IMPORT_COLUMNS, {
-    name: t("excel.example.room"),
+    name: t.raw("excel.example.room"),
     capacity: 12,
     branch: "",
   });

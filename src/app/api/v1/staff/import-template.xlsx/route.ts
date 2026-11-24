@@ -6,11 +6,11 @@ import { STAFF_IMPORT_COLUMNS } from "@/server/services/imports/catalog-import.s
 export const GET = route({ permission: "staff.create" }, async ({ request }) => {
   const t = await exportTranslator(request);
   return templateResponse(t, t("excel.files.staffTemplate"), STAFF_IMPORT_COLUMNS, {
-    fullName: t("excel.example.fullName"),
+    fullName: t.raw("excel.example.fullName"),
     phone: "+998901234567",
-    roles: t("excel.example.roles"),
+    roles: t.raw("excel.example.roles"),
     branches: "",
-    gender: t("excel.example.gender"),
+    gender: t.raw("excel.example.gender"),
     birthDate: "",
     hireDate: new Date().toISOString().slice(0, 10),
     password: "",

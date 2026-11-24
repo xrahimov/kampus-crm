@@ -15,6 +15,7 @@ import { Text } from "@/components/text";
 import { TeacherFormSheet } from "@/features/catalog/teacher-form";
 import { useSalaryLine } from "@/features/catalog/teachers-screen";
 import { ExcelButton } from "@/features/files/excel-button";
+import { ImportButton } from "@/features/files/import-button";
 import { dayAsDate } from "@/lib/days";
 import { errorText, useDate, useTranslations } from "@/lib/i18n";
 import { useLayout } from "@/lib/layout";
@@ -181,6 +182,18 @@ export function StaffScreen() {
           />
         </>
       )}
+      {mayAdd && !archived ? (
+        <ImportButton
+          kind={{
+            id: "staff-import",
+            title: t("excel.importTitles.staff"),
+            description: t("excel.hints.staff"),
+            templatePath: "/staff/import-template.xlsx",
+            importPath: "/staff/import",
+            toBranch: true,
+          }}
+        />
+      ) : null}
       <TeacherFormSheet
         key={person?.id ?? "new"}
         open={form !== null && !archiving}

@@ -613,6 +613,7 @@
     "passwordMin": "At least 8 characters.",
     "passwordMax": "At most 128 characters.",
     "required": "Required.",
+    "invalid": "Not a valid value.",
     "invalidJson": "Invalid request.",
     "sort": "Invalid sort.",
     "sortField": "Cannot sort by this field.",

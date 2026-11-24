@@ -204,6 +204,12 @@ A-201) has no migration and no setting. Two things to know after it:
   on an `https` address (the live site is one). Nothing on the server switches it
   on or off; a person can switch it off for the site in the browser.
 
+Importing from an Excel sheet in the app (A-257) uses the site's own templates and import calls, so
+the app's part needs no server update. Two small repairs of the site come with it and arrive with
+the next server update: the example row of every import template says `<client name>`, `<group
+name>` and so on where it showed a message key, and a skipped row whose value the server does not
+know now says "Not a valid value." in the three languages. No migration, no setting.
+
 Excel files on the phone (A-256): the app asks for the same export files the site's Excel buttons
 link to. No server update, no migration, no setting.
 
