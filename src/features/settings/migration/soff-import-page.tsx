@@ -101,6 +101,14 @@ export function SoffImportPage({
     }
   }
 
+  /** A preview is of one branch: another branch needs its own before anything is imported. */
+  function changeBranch(next: string) {
+    if (next === branchId) return;
+    setBranchId(next);
+    setPreview(null);
+    setError(null);
+  }
+
   async function run(dryRun: boolean) {
     if (!file || !detection?.kind) return;
     setBusy(true);
@@ -123,6 +131,14 @@ export function SoffImportPage({
   }
 
   const text = (key: string) => (tc.has(key) ? tc(key) : key);
+  /** Why a row was left out. "fullName: validation.required" reads "Full name: Required." */
+  const reasonText = (reason: string, kind: string) => {
+    const at = reason.indexOf(": ");
+    if (at < 0) return text(reason);
+    const field = reason.slice(0, at);
+    const label = `fields.${kind}.${field}`;
+    return `${t.has(label) ? t(label) : field}: ${text(reason.slice(at + 2))}`;
+  };
   const shown = result ?? preview;
 
   return (
@@ -154,7 +170,7 @@ export function SoffImportPage({
             id="soff-branch"
             branches={branches}
             value={branchId}
-            onChange={setBranchId}
+            onChange={changeBranch}
           />
           <div className="space-y-2">
             <Label htmlFor="soff-file">{t("file")}</Label>
@@ -245,7 +261,10 @@ export function SoffImportPage({
                 <ul className="max-h-40 space-y-1 overflow-auto text-xs text-muted-foreground">
                   {shown.skipped.slice(0, 50).map((s) => (
                     <li key={`${s.row}-${s.reason}`}>
-                      {tc("excel.skippedRow", { row: s.row, reason: text(s.reason) })}
+                      {tc("excel.skippedRow", {
+                        row: s.row,
+                        reason: reasonText(s.reason, shown.kind),
+                      })}
                     </li>
                   ))}
                 </ul>

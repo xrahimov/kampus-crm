@@ -134,7 +134,13 @@ export function ImportDialog({
     }
   }
 
-  const reasonText = (reason: string) => (t.has(reason) ? t(reason) : reason);
+  /** Why a row was left out; in "phone: validation.phone" the part after the field is a key too. */
+  const reasonText = (reason: string) => {
+    if (t.has(reason)) return t(reason);
+    const at = reason.indexOf(": ");
+    const rest = at < 0 ? "" : reason.slice(at + 2);
+    return rest && t.has(rest) ? `${reason.slice(0, at)}: ${t(rest)}` : reason;
+  };
 
   return (
     <Dialog open={open} onOpenChange={close}>
