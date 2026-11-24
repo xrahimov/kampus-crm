@@ -37,6 +37,7 @@ import { useArchiveStudent } from "@/api/office-students";
 import { Sheet } from "@/components/sheet";
 import { PaymentSheet } from "@/features/office/payment-sheet";
 import { StudentFormSheet } from "@/features/office/student-form";
+import { StudentToGroupSheet } from "@/features/groups/student-to-group";
 import { StudentPayments } from "@/features/office/student-payments";
 import { PendingScreen } from "@/features/shared/pending-screen";
 import { WordChip } from "@/features/student/answer-parts";
@@ -161,6 +162,9 @@ function Person({ student }: { student: StudentDetail }) {
   const archive = useArchiveStudent(student.id);
   const mayEdit = can(me, "students.update");
   const mayArchive = can(me, "students.delete") && !student.isArchived;
+  // Into a group from the student's own page (A-233): how a restored student gets back in.
+  const mayAddToGroup = can(me, "groups.update") && !student.isArchived;
+  const [joining, setJoining] = useState(false);
   const tm = useTranslations("mobile.studentsPage");
   const formatDate = useDate();
   const money = useMoney();
@@ -231,8 +235,17 @@ function Person({ student }: { student: StudentDetail }) {
           />
         ) : null}
       </Card>
-      {mayEdit || mayArchive ? (
+      {mayEdit || mayArchive || mayAddToGroup ? (
         <View style={styles.officeActions}>
+          {mayAddToGroup ? (
+            <Button
+              compact
+              variant="outline"
+              label={t("mobile.office.toGroup")}
+              onPress={() => setJoining(true)}
+              testID="student-to-group"
+            />
+          ) : null}
           {mayEdit ? (
             <Button
               compact
@@ -270,6 +283,7 @@ function Person({ student }: { student: StudentDetail }) {
       ) : null}
       <PaymentSheet open={paying} onClose={() => setPaying(false)} student={student} />
       <StudentFormSheet open={editing} onClose={() => setEditing(false)} student={student} />
+      <StudentToGroupSheet open={joining} onClose={() => setJoining(false)} student={student} />
       <Sheet
         open={archiving}
         onClose={() => setArchiving(false)}

@@ -30,8 +30,8 @@ import { useTheme } from "@/lib/theme";
  *  - iOS 26 and later: Apple's own Liquid Glass.
  *  - older iPhones and iPads, and the web: a blur of what is behind.
  *  - Android 12 and later: a blur of the page marked as the backdrop (see
- *    `Backdrop`); older Android, or glass with no backdrop: a pane that is
- *    nearly solid, because see-through without blur makes text unreadable.
+ *    `Backdrop`); older Android, or glass with no backdrop: a solid pane,
+ *    because see-through without blur makes text unreadable.
  *  - "Reduce transparency" switched on in the device's settings: a solid pane.
  *
  * Only things that float are glass. Cards and rows stay solid: they are the
@@ -50,8 +50,8 @@ export function GlassScope({ children }: { children: ReactNode }) {
 /**
  * Glass inside this has no backdrop to name: a sheet in a window of its own
  * (a `Modal`) cannot blur the page of the window under it on Android. An
- * iPhone blurs whatever is behind without being told; Android gets the nearly
- * solid pane.
+ * iPhone blurs whatever is behind without being told; Android gets the solid
+ * pane.
  */
 export function NoBackdrop({ children }: { children: ReactNode }) {
   return <BackdropContext.Provider value={null}>{children}</BackdropContext.Provider>;
@@ -160,7 +160,9 @@ export function Glass({
   const android = Platform.OS === "android";
   const strength = android ? (darkPane ? 45 : 50) : night ? 60 : dark ? 80 : 90;
   const thin = android ? (night ? 0.22 : dark ? 0.28 : 0.3) : night ? 0.26 : dark ? 0.34 : 0.46;
-  const veil = solid ? 1 : blurs ? thin : 0.94;
+  // Android with nothing to blur (a sheet in a window of its own) is a solid pane: at 0.94 the
+  // list behind still showed between the fields of a form.
+  const veil = solid || (android && !blurs) ? 1 : blurs ? thin : 0.94;
   const rim = darkPane ? "rgba(255, 255, 255, 0.14)" : "rgba(255, 255, 255, 0.75)";
   const line = night ? "rgba(255, 255, 255, 0.1)" : colors.border;
 

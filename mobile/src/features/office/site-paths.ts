@@ -52,6 +52,8 @@ export function nativeRoute(path: string): Href | null {
       return "/staff/checking";
     case "groups":
       return "/staff/groups";
+    case "timetable":
+      return "/staff/timetable";
     case "students":
       return "/staff/students";
     case "announcements":

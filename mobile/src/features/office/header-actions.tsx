@@ -9,6 +9,13 @@ import { useTranslations } from "@/lib/i18n";
 import { useTheme } from "@/lib/theme";
 
 /**
+ * How far past its edges a button of the header still takes a tap. Little at
+ * the bottom: the page scrolls right under the header, and a tap on what sits
+ * just below a button belongs to the page.
+ */
+const REACH = { top: 8, bottom: 2, left: 4, right: 4 };
+
+/**
  * The two things on top of every page of the site, at the right of the home's
  * header (A-230): the search over students, groups and leads, and the bell
  * with how many notifications wait unread.
@@ -24,7 +31,7 @@ export function HeaderActions() {
       <Press
         accessibilityRole="button"
         accessibilityLabel={t("mobile.office.searchTitle")}
-        hitSlop={8}
+        hitSlop={REACH}
         sink={0.88}
         onPress={() => router.push("/staff/search")}
         style={styles.button}
@@ -39,7 +46,7 @@ export function HeaderActions() {
             ? `${t("notifications.title")}: ${t("notifications.unreadCount", { count })}`
             : t("notifications.title")
         }
-        hitSlop={8}
+        hitSlop={REACH}
         sink={0.88}
         onPress={() => router.push("/staff/notifications")}
         style={styles.button}

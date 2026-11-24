@@ -6456,6 +6456,16 @@
       "archivedOnly": "Archived students only",
       "replyPlaceholder": "Write a reply…",
       "toGroup": "Add to a group"
+    },
+    "groups": {
+      "search": "Group name",
+      "count": "{count, plural, one {# group} other {# groups}}",
+      "manageStudents": "Manage students",
+      "openStudent": "Open the student's page",
+      "undoDayOff": "Bring the lesson back",
+      "undoDayOffTitle": "Take the day off back?",
+      "undoDayOffText": "The lesson on {date} comes back to the timetable. A lesson that was moved goes back to its own day.",
+      "nothingThatDay": "Nothing on {day}."
     }
   }
 }

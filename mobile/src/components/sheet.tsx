@@ -29,7 +29,8 @@ const OUT_MS = 180;
  * on it, the cross or Android's back button closes the sheet.
  *
  * The content scrolls when it is taller than the sheet; `footer` stays under
- * it (the button that saves).
+ * it (the button that saves). With the keyboard open the sheet takes what is
+ * left between the status bar and the keyboard.
  */
 export function Sheet({
   open,
@@ -81,7 +82,14 @@ export function Sheet({
     >
       <NoBackdrop>
         <KeyboardAvoidingView behavior="padding" style={styles.fill}>
-          <View style={[styles.fill, wide ? styles.middle : styles.bottom]}>
+          <View
+            style={[
+              styles.fill,
+              wide ? styles.middle : styles.bottom,
+              // Never under the clock: with the keyboard open the sheet gives up height instead.
+              { paddingTop: Math.max(wide ? space[8] : 0, insets.top + space[2]) },
+            ]}
+          >
             <Animated.View style={[StyleSheet.absoluteFill, dim]}>
               <Pressable
                 accessibilityLabel={t("common.close")}
@@ -150,8 +158,11 @@ const styles = StyleSheet.create({
   fill: { flex: 1 },
   bottom: { justifyContent: "flex-end" },
   middle: { justifyContent: "center", alignItems: "center", padding: space[8] },
-  sheet: { width: "100%" },
-  pane: { width: "100%", maxWidth: 520 },
+  // Both give up height when the keyboard takes the room: the title and the footer stay on
+  // the screen and the fields scroll between them. Without it the sheet kept its height and
+  // went off the top (a phone) or off both ends (a tablet on its side).
+  sheet: { width: "100%", flexShrink: 1 },
+  pane: { width: "100%", maxWidth: 520, flexShrink: 1 },
   glass: { flexShrink: 1, overflow: Platform.OS === "android" ? "hidden" : "visible" },
   // On a phone the sheet stands on the bottom edge: only its top corners are round.
   joined: { borderBottomLeftRadius: 0, borderBottomRightRadius: 0 },

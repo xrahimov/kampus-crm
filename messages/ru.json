@@ -6456,6 +6456,16 @@
       "archivedOnly": "Только архивные ученики",
       "replyPlaceholder": "Напишите ответ…",
       "toGroup": "Добавить в группу"
+    },
+    "groups": {
+      "search": "Название группы",
+      "count": "{count, plural, one {# группа} few {# группы} many {# групп} other {# группы}}",
+      "manageStudents": "Управлять учениками",
+      "openStudent": "Открыть страницу ученика",
+      "undoDayOff": "Вернуть урок",
+      "undoDayOffTitle": "Отменить выходной?",
+      "undoDayOffText": "Урок {date} вернётся в расписание. Перенесённый урок вернётся на свой день.",
+      "nothingThatDay": "{day}: уроков нет."
     }
   }
 }

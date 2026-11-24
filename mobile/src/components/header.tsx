@@ -45,7 +45,7 @@ export function Header({
             accessibilityRole="button"
             accessibilityLabel={t("common.back")}
             testID="back"
-            hitSlop={12}
+            hitSlop={{ top: 12, bottom: 4, left: 12, right: 12 }}
             sink={0.88}
             onPress={() => (router.canGoBack() ? router.back() : router.replace("/"))}
             style={styles.back}
