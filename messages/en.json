@@ -6419,7 +6419,7 @@
       "madeOnSite": "Tests are written and given to a group on the site, under Settings, Tests."
     },
     "exams": {
-      "madeOnSite": "Exams are set up and graded on the site, under Exams."
+      "open": "Open the exam"
     },
     "history": {
       "latest": "The latest {count} changes are shown."

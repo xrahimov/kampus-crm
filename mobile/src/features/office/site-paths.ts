@@ -48,6 +48,8 @@ export function nativeRoute(path: string): Href | null {
     if (first === "students") return { pathname: "/staff/student/[id]", params: { id } };
     if (first === "groups") return { pathname: "/staff/group/[id]", params: { id } };
     if (first === "teachers") return { pathname: "/staff/teachers/[id]", params: { id } };
+    // One exam's page (A-235). "/staff/exams/[id]" is the exams of a group, by the group's id.
+    if (first === "exams") return { pathname: "/staff/exam/[id]", params: { id } };
     return null;
   }
   switch (first) {
@@ -63,6 +65,8 @@ export function nativeRoute(path: string): Href | null {
       return "/staff/timetable";
     case "teachers":
       return "/staff/teachers";
+    case "exams":
+      return "/staff/exams";
     case "students":
       return "/staff/students";
     case "announcements":

@@ -20,9 +20,10 @@ jest.mock("@react-native-async-storage/async-storage", () =>
   require("@react-native-async-storage/async-storage/jest/async-storage-mock"),
 );
 jest.mock("expo-localization", () => ({ getLocales: () => [{ languageCode: "en" }] }));
+const mockPush = jest.fn();
 jest.mock("expo-router", () => ({
   useRouter: () => ({
-    push: jest.fn(),
+    push: mockPush,
     back: jest.fn(),
     canGoBack: () => true,
     replace: jest.fn(),
@@ -31,7 +32,7 @@ jest.mock("expo-router", () => ({
 }));
 let mockPermissions: string[] = [];
 jest.mock("@/lib/session", () => ({
-  useMe: () => ({ permissions: mockPermissions }),
+  useMe: () => ({ permissions: mockPermissions, branches: [{ id: "b1", name: "Chilonzor" }] }),
   can: (me: { permissions: string[] } | null, permission: string) =>
     Boolean(me?.permissions.includes(permission)),
 }));
@@ -49,6 +50,7 @@ const GROUP = { id: "g1", name: "GE-Morning A1", status: "ACTIVE" };
 
 beforeEach(() => {
   fetchMock.mockReset();
+  mockPush.mockReset();
   mockPermissions = ["groups.view", "students.view", "exams.view", "tests.view"];
   globalThis.fetch = fetchMock as unknown as typeof fetch;
 });
@@ -167,6 +169,12 @@ describe("a group's exams on the teacher's side", () => {
     expect(screen.getByTestId("exam-row-s1")).toHaveTextContent(/Passed/);
     expect(screen.getByTestId("exam-row-s2")).toHaveTextContent(/Failed/);
     expect(screen.getByTestId("exam-row-s3")).toHaveTextContent(/Absent/);
+
+    // An exam opens its own page, where it is graded (A-235).
+    await fireEvent.press(screen.getAllByTestId("exam-open")[0]!);
+    expect(mockPush).toHaveBeenCalledWith({ pathname: "/staff/exam/[id]", params: { id: "x1" } });
+    // Adding an exam is for whoever may.
+    expect(screen.queryByTestId("group-exam-add")).toBeNull();
   });
 
   it("shows only this group's students of a mock exam", async () => {
@@ -217,10 +225,36 @@ describe("a group's exams on the teacher's side", () => {
     expect(screen.queryByTestId("retry")).toBeNull();
   });
 
-  it("says where exams are made when the group has none", async () => {
-    serve({ "GET /groups/g1": GROUP, "GET /groups/g1/exams": { items: [], counts: {} } });
+  it("adds an exam for this group when the group has none", async () => {
+    mockPermissions = ["groups.view", "exams.view", "exams.create"];
+    serve({
+      "GET /groups/g1": GROUP,
+      "GET /groups/g1/exams": { items: [], counts: {} },
+      "GET /exams/options": {
+        groups: [],
+        courses: [],
+        rooms: [],
+        gradingSystems: [],
+        examiners: [],
+      },
+      "POST /exams": exam({ id: "x9" }),
+    });
     await renderScreen(<GroupExamsScreen />);
-    expect(await screen.findByText(/on the site/)).toBeTruthy();
+    expect(await screen.findByText("Nothing found.")).toBeOnTheScreen();
+    await fireEvent.press(screen.getByTestId("group-exam-add"));
+    await fireEvent.changeText(await screen.findByTestId("exam-name"), "Midterm");
+    // The group is this one and the kind is a group exam: neither is asked.
+    expect(screen.queryByTestId("exam-group")).toBeNull();
+    expect(screen.queryByTestId("exam-type")).toBeNull();
+    await fireEvent.changeText(screen.getByTestId("exam-pass"), "60");
+    await fireEvent.changeText(screen.getByTestId("exam-max"), "100");
+    await fireEvent.press(screen.getByTestId("exam-save"));
+    await waitFor(() => expect(calls("POST", "/exams")).toHaveLength(1));
+    expect(sentBody(calls("POST", "/exams")[0]![1])).toMatchObject({
+      type: "GROUP",
+      groupId: "g1",
+      name: "Midterm",
+    });
   });
 });
 
