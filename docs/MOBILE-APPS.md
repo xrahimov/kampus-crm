@@ -63,7 +63,8 @@ able to work from an iPad or a phone.
 | Office: the last three reports: Graduates (record result, certificates), Staff attendance (five tabs, check-in/out, work schedules), Coins (rating, marketplace, purchase requests) (A-239)                                  | Built, phone and tablet; a certificate's page to print opens on the site                                                 |
 | Office: the rest of a student's page, first half: SMS with Send SMS, calls, history, parents, family with the parents' page, app sign-in, extra information, blacklist (A-240)                                               | Built, phone and tablet; the badge to print opens on the site                                                            |
 | Office: the rest of a student's page, second half: group cards with the lesson calendar, change of status, split fee, move, back to leads, remove; refunds, balance corrections, receipts, the old system's payments (A-241) | Built, phone and tablet; a receipt to print opens on the site                                                            |
-| The office's other pages: the other settings, the manual, the assistant                                                                                                                                                      | Next, parts 6c and 6d; they open on the site until then                                                                  |
+| Office: settings, step 1: Days off, Schools, SMS templates, Receipt settings with its sample, Coin settings with the reasons (A-242)                                                                                         | Built, phone and tablet                                                                                                  |
+| The office's other pages: the other 15 settings sections, the manual, the assistant                                                                                                                                          | Next, part 6c steps 2 to 5 and part 6d; they open on the site until then                                                 |
 | The site running on the app's code                                                                                                                                                                                           | Part by part, the student side first; wide tables, Excel and print last                                                  |
 
 ## What kai needs to do
@@ -177,7 +178,18 @@ mobile/
   the two lists under the payments; `student-payments.tsx` is the section. A student's payments
   live under `["payments", "student", id]`, so every money step invalidates `["payments"]` as
   well as `["students"]`. `GET /students/:id/payment-history` is new on the server: the hook
-  does not retry, and a "not found" simply shows no list. Next free number: A-242.
+  does not retry, and a "not found" simply shows no list.
+- **Settings, step 1 (A-242).** `features/settings/` and `api/office-settings.ts`: one screen per
+  section (`days-off-screen.tsx`, `schools-screen.tsx`, `sms-templates-screen.tsx`,
+  `receipt-screen.tsx`, `coins-settings-screen.tsx`), each a route under
+  `app/staff/settings/`. A section becomes the app's by adding the last part of its path to
+  `NATIVE_SETTINGS` in `features/office/site-paths.ts`; the Settings list then drops the arrow.
+  `parts.tsx` has `RowPress` (a line of a list that opens its form) and `Bin`. Lists that can
+  grow (days off, schools) are infinite queries of fifty with **Show more**. A form that stays
+  open after saving (receipt, coin rules) shows "Saved." from the mutation and resets it on the
+  next change. In a screen test, wait for the page's own text before pressing a header button:
+  the header is drawn twice (while loading and after), and a press on the first one is lost.
+  Next free number: A-243.
 - **Finance and payroll (A-237).** `src/features/finance/` and `src/api/office-finance.ts`.
   `FinanceScreen` is the site's Finance page; `EntriesScreen` the entries of a kind or of a
   category (`entries-routes.tsx` reads which from the address), with `EntrySheet`, the site's one

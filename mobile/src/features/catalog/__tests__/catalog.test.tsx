@@ -704,15 +704,15 @@ describe("the settings list", () => {
     expect(screen.getByTestId("settings-courses")).toBeOnTheScreen();
     const arrow = { includeHiddenElements: true };
     expect(screen.queryByTestId("settings-courses-site", arrow)).toBeNull();
-    expect(screen.getByTestId("settings-general-site", arrow)).toBeOnTheScreen();
+    expect(screen.getByTestId("settings-forms-site", arrow)).toBeOnTheScreen();
     // No permission, no row.
     expect(screen.queryByTestId("settings-roles")).toBeNull();
     expect(screen.queryByTestId("settings-integrations")).toBeNull();
 
     await fireEvent.press(screen.getByTestId("settings-rooms"));
     expect(mockPush).toHaveBeenCalledWith("/staff/settings/rooms");
-    await fireEvent.press(screen.getByTestId("settings-general"));
-    await waitFor(() => expect(openOnSite).toHaveBeenCalledWith("/en/settings/general"));
+    await fireEvent.press(screen.getByTestId("settings-forms"));
+    await waitFor(() => expect(openOnSite).toHaveBeenCalledWith("/en/settings/forms"));
   });
 
   it("knows which of the site's addresses the app has", () => {
@@ -724,7 +724,6 @@ describe("the settings list", () => {
     expect(nativeRoute("/settings")).toBe("/staff/settings");
     expect(nativeRoute("/settings/courses")).toBe("/staff/settings/courses");
     expect(nativeRoute("/settings/rooms")).toBe("/staff/settings/rooms");
-    expect(nativeRoute("/settings/general")).toBeNull();
     expect(nativeRoute("/settings/logs/logins")).toBeNull();
   });
 });

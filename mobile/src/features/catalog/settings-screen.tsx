@@ -13,9 +13,9 @@ import { SETTINGS_SECTIONS } from "./settings-sections";
 
 /**
  * Settings (A-234): the sections of the site's Settings the person may open,
- * in the site's order. Courses and Rooms are in the app; a section the app
- * does not have yet opens on the site, already signed in, with the arrow that
- * says so.
+ * in the site's order. Some are in the app (`nativeRoute` knows which); a
+ * section the app does not have yet opens on the site, already signed in,
+ * with the arrow that says so.
  */
 export function SettingsScreen() {
   const t = useTranslations();

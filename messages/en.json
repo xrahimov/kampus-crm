@@ -6483,6 +6483,10 @@
       "certificateOnSite": "Open certificate {number}",
       "band": "Enter a band from 0 to 9 in halves, such as 6.5.",
       "endAfterStart": "The end of the day must be after its start."
+    },
+    "settingsPages": {
+      "variablesHint": "Tap a word to add it to the text. It is replaced when the message is sent.",
+      "sampleMethod": "Cash"
     }
   }
 }
