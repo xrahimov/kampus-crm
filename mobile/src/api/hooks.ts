@@ -184,12 +184,19 @@ export function useMarkAttendance(lesson: { id: string; groupId: string; date: s
   };
 }
 
-/** The lesson's topic: typed, or the next one from the syllabus. */
+/**
+ * The lesson's topic: typed, or one from the syllabus. The same call carries
+ * the lesson's link and the teacher's note to the students (A-262).
+ */
 export function useSetTopic(lesson: { id: string; groupId: string; date: string }) {
   const client = useQueryClient();
   return useMutation({
-    mutationFn: (input: { topic?: string | null; courseTopicId?: string | null }) =>
-      api<void>(`/lessons/${lesson.id}`, { method: "PATCH", body: input }),
+    mutationFn: (input: {
+      topic?: string | null;
+      courseTopicId?: string | null;
+      attachmentUrl?: string | null;
+      studentNote?: string | null;
+    }) => api<void>(`/lessons/${lesson.id}`, { method: "PATCH", body: input }),
     onSuccess: () =>
       Promise.all([
         client.invalidateQueries({ queryKey: ["today"] }),

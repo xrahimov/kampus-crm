@@ -6483,6 +6483,17 @@
       "excelAttendance": "Attendance in Excel",
       "excelGrades": "Grades in Excel"
     },
+    "lessons": {
+      "noPlanTopic": "No topic from the plan",
+      "extraAdded": "Extra lesson added on {date}.",
+      "endAfterStart": "The lesson must end after it starts.",
+      "linksHint": "Each student has their own link, the same for every lesson of this group. Make a new link when one was passed on to somebody else: the old one stops working.",
+      "unshared": "This device could not open its share window. Press and hold the link to copy it.",
+      "shareLinkOf": "Share {name}'s link",
+      "shareAll": "Share all links",
+      "newLinkText": "The old link stops working at once. Send the student the new one.",
+      "newLink": "Make a new link"
+    },
     "catalog": {
       "changeHours": "Change hours",
       "firstSignIn": "The first sign-in is with a code from Telegram. The person chooses their own password then.",

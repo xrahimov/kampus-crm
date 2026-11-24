@@ -13,11 +13,14 @@ import {
   FolderOpen,
   GraduationCap,
   History,
+  Link2,
   ListChecks,
   Megaphone,
   MessageSquare,
   MessageSquareText,
   Package,
+  Plus,
+  Star,
   StickyNote,
   UsersRound,
 } from "lucide-react-native";
@@ -25,11 +28,20 @@ import { useCallback, useState } from "react";
 import { Pressable, StyleSheet, View } from "react-native";
 
 import { useGroupChat } from "@/api/group-pages";
-import { useCheckingQueue, useGroup, useMonthGrid } from "@/api/hooks";
+import { useCheckingQueue, useGroup, useGroupVideo, useMonthGrid } from "@/api/hooks";
 import type { GridLesson } from "@/api/types";
 import { Button } from "@/components/button";
 import { Header } from "@/components/header";
-import { Avatar, Badge, Card, Divider, EmptyState, Loading, Screen } from "@/components/surface";
+import {
+  Avatar,
+  Badge,
+  Card,
+  Divider,
+  EmptyState,
+  Loading,
+  Notice,
+  Screen,
+} from "@/components/surface";
 import { Text } from "@/components/text";
 import { ExcelButton } from "@/features/files/excel-button";
 import { addMonths, dayAsDate } from "@/lib/days";
@@ -38,6 +50,7 @@ import { useLayout } from "@/lib/layout";
 import { can, useMe } from "@/lib/session";
 import { radius, space, useTheme } from "@/lib/theme";
 
+import { ExtraLessonSheet } from "../groups/group-lesson-parts";
 import { GroupOffice } from "../groups/group-office";
 import { useScheduleLine } from "./groups-screen";
 import { OpenOnSite } from "./open-on-site";
@@ -68,6 +81,11 @@ export function GroupScreen() {
   const maySeeStudents = can(me, "students.view");
   // The office's list of the group's students: balances, add, move, remove (A-233).
   const mayManage = can(me, "groups.update");
+  // A lesson outside the group's days is the office's to add (A-262).
+  const mayAddLesson = mayManage && !!group.data && group.data.status !== "ARCHIVED";
+  const [extra, setExtra] = useState(false);
+  const [added, setAdded] = useState<string | null>(null);
+  const formatDate = useDate();
 
   const header = (
     <Header
@@ -114,23 +132,59 @@ export function GroupScreen() {
           ))}
         </Card>
       )}
-      {grid.data && grid.data.lessons.length > 0 ? (
+      {added ? (
+        <Notice tone="success" testID="extra-lesson-added">
+          {t("mobile.lessons.extraAdded", {
+            date: formatDate(dayAsDate(added), { dateStyle: "medium" }),
+          })}
+        </Notice>
+      ) : null}
+      {grid.data && (grid.data.lessons.length > 0 || mayAddLesson) ? (
         <View style={styles.excel}>
-          <ExcelButton
-            compact
-            path={`/groups/${id}/attendance.xlsx`}
-            params={{ month }}
-            label={t("mobile.groups.excelAttendance")}
-            testID="attendance-excel"
-          />
-          <ExcelButton
-            compact
-            path={`/groups/${id}/grades.xlsx`}
-            params={{ month }}
-            label={t("mobile.groups.excelGrades")}
-            testID="grades-excel"
-          />
+          {mayAddLesson ? (
+            <Button
+              compact
+              variant="outline"
+              label={t("groups.attendance.extraLesson")}
+              icon={<Plus size={16} color={colors.foreground} />}
+              onPress={() => {
+                setAdded(null);
+                setExtra(true);
+              }}
+              testID="extra-lesson-open"
+            />
+          ) : null}
+          {grid.data.lessons.length > 0 ? (
+            <>
+              <ExcelButton
+                compact
+                path={`/groups/${id}/attendance.xlsx`}
+                params={{ month }}
+                label={t("mobile.groups.excelAttendance")}
+                testID="attendance-excel"
+              />
+              <ExcelButton
+                compact
+                path={`/groups/${id}/grades.xlsx`}
+                params={{ month }}
+                label={t("mobile.groups.excelGrades")}
+                testID="grades-excel"
+              />
+            </>
+          ) : null}
         </View>
+      ) : null}
+      {mayAddLesson && group.data ? (
+        <ExtraLessonSheet
+          group={group.data}
+          open={extra}
+          onClose={() => setExtra(false)}
+          onAdded={(date) => {
+            // The month the lesson landed in is the one to look at.
+            setMonth(date.slice(0, 7));
+            setAdded(date);
+          }}
+        />
       ) : null}
     </View>
   );
@@ -252,6 +306,8 @@ function GroupPages({
   const refetchChat = chat.refetch;
   const refetchChecking = checking.refetch;
   const mayCheck = can(me, "groups.attendance.mark");
+  // Each student's own link to the video lessons, where the centre has them (A-262).
+  const video = useGroupVideo(id, mayCheck);
   // Coming back from the chat shows it as read; from the homework, what is still to check.
   useFocusEffect(
     useCallback(() => {
@@ -346,6 +402,16 @@ function GroupPages({
             label: t("groups.detail.tabs.exams"),
             Icon: Award,
             pathname: "/staff/exams/[id]" as const,
+          },
+        ]
+      : []),
+    ...(mayCheck && video.data?.enabled
+      ? [
+          {
+            key: "links",
+            label: t("video.card.links"),
+            Icon: Link2,
+            pathname: "/staff/links/[id]" as const,
           },
         ]
       : []),
@@ -494,7 +560,18 @@ function LessonRow({ lesson }: { lesson: GridLesson }) {
         >
           {lesson.topic ?? lesson.courseTopicTitle ?? t("mobile.noTopic")}
         </Text>
+        {lesson.isExtra ? (
+          <Text variant="small" tone="mutedForeground" testID={`extra-${lesson.id}`}>
+            {t("today.lesson.extra")}
+          </Text>
+        ) : null}
       </View>
+      {lesson.rating?.average != null ? (
+        <View style={styles.stars} testID={`rating-${lesson.id}`}>
+          <Star size={14} color={colors.warning} fill={colors.warning} />
+          <Text variant="small">{lesson.rating.average}</Text>
+        </View>
+      ) : null}
       {marks.length > 0 ? <Badge tone="success" label={`${present}/${marks.length}`} /> : null}
       <ChevronRight size={18} color={colors.mutedForeground} />
     </Pressable>
@@ -540,5 +617,6 @@ const styles = StyleSheet.create({
     minHeight: 60,
   },
   day: { width: 92 },
+  stars: { flexDirection: "row", alignItems: "center", gap: 2 },
   average: { alignItems: "flex-end" },
 });
