@@ -218,7 +218,7 @@ describe("the SMS of a student", () => {
     expect(screen.getByTestId("student-sms-sheet-sample")).toHaveTextContent("Ali Valiyev");
 
     await fireEvent.press(await screen.findByTestId("student-sms-sheet-template"));
-    await fireEvent.press(screen.getByTestId("student-sms-sheet-template-option-t1"));
+    await fireEvent.press(await screen.findByTestId("student-sms-sheet-template-option-t1"));
     expect(screen.getByTestId("student-sms-sheet-text").props.value).toBe(
       "Lesson tomorrow at 10:00",
     );

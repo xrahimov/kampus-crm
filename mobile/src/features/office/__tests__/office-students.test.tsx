@@ -198,7 +198,7 @@ describe("the students list for the office", () => {
 
     await fireEvent.press(screen.getByTestId("students-filters"));
     await fireEvent.press(await screen.findByTestId("filter-payment"));
-    await fireEvent.press(screen.getByTestId("filter-payment-option-DEBTOR"));
+    await fireEvent.press(await screen.findByTestId("filter-payment-option-DEBTOR"));
     await fireEvent.press(screen.getByTestId("filter-archived"));
     await fireEvent.press(screen.getByTestId("filters-apply"));
 

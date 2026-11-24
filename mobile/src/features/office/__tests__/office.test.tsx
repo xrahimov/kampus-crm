@@ -309,7 +309,7 @@ describe("the centre's home", () => {
 
     // One payment type of the year.
     await fireEvent.press(screen.getByTestId("finance-method"));
-    await fireEvent.press(screen.getByTestId("finance-method-option-m2"));
+    await fireEvent.press(await screen.findByTestId("finance-method-option-m2"));
     await waitFor(() =>
       expect(screen.getByTestId("finance-income-value")).toHaveTextContent(/10,000,000/),
     );
@@ -358,7 +358,7 @@ describe("the centre's home", () => {
     expect(screen.getByTestId("finance-other-income")).toHaveTextContent(/Other income.*1,000,000/);
 
     await fireEvent.press(screen.getByTestId("finance-method"));
-    await fireEvent.press(screen.getByTestId("finance-method-option-m2"));
+    await fireEvent.press(await screen.findByTestId("finance-method-option-m2"));
     await waitFor(() =>
       expect(screen.getByTestId("finance-income-value")).toHaveTextContent(/10,000,000/),
     );
@@ -366,7 +366,7 @@ describe("the centre's home", () => {
 
     // October has no Card: the choice no longer counts, and nothing stays filtered unseen.
     await fireEvent.press(screen.getByTestId("finance-month"));
-    await fireEvent.press(screen.getByTestId("finance-month-option-10"));
+    await fireEvent.press(await screen.findByTestId("finance-month-option-10"));
     await waitFor(() =>
       expect(screen.getByTestId("finance-income-value")).toHaveTextContent(/800,000/),
     );

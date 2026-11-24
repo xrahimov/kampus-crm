@@ -219,13 +219,13 @@ describe("the graduates report", () => {
     serve({ "GET /reports/graduates": GRADUATES });
     await show(<GraduatesReportScreen />);
     await fireEvent.press(await screen.findByTestId("graduates-group"));
-    await fireEvent.press(screen.getByTestId("graduates-group-option-g1"));
+    await fireEvent.press(await screen.findByTestId("graduates-group-option-g1"));
     await fireEvent.press(screen.getByTestId("graduates-teacher"));
-    await fireEvent.press(screen.getByTestId("graduates-teacher-option-t1"));
+    await fireEvent.press(await screen.findByTestId("graduates-teacher-option-t1"));
     await fireEvent.press(screen.getByTestId("graduates-course"));
-    await fireEvent.press(screen.getByTestId("graduates-course-option-c1"));
+    await fireEvent.press(await screen.findByTestId("graduates-course-option-c1"));
     await fireEvent.press(screen.getByTestId("graduates-result"));
-    await fireEvent.press(screen.getByTestId("graduates-result-option-no"));
+    await fireEvent.press(await screen.findByTestId("graduates-result-option-no"));
     await waitFor(() => expect(asked("GET", "/reports/graduates").get("result")).toBe("no"));
     const query = asked("GET", "/reports/graduates");
     expect(query.get("groupId")).toBe("g1");
@@ -264,7 +264,7 @@ describe("the graduates report", () => {
 
     await fireEvent.changeText(screen.getByTestId("graduate-result-ielts"), "7,0");
     await fireEvent.press(screen.getByTestId("graduate-result-cefr"));
-    await fireEvent.press(screen.getByTestId("graduate-result-cefr-option-C1"));
+    await fireEvent.press(await screen.findByTestId("graduate-result-cefr-option-C1"));
     await fireEvent.press(screen.getByTestId("graduate-result-employed"));
     await fireEvent.changeText(screen.getByTestId("graduate-result-note"), " Works at a bank ");
     const asks = calls("GET", "/reports/graduates").length;
@@ -543,7 +543,7 @@ describe("the staff attendance report", () => {
 
     const other = MONTH === 1 ? 2 : 1;
     await fireEvent.press(screen.getByTestId("report-month"));
-    await fireEvent.press(screen.getByTestId(`report-month-option-${other}`));
+    await fireEvent.press(await screen.findByTestId(`report-month-option-${other}`));
     await waitFor(() =>
       expect(asked("GET", "/reports/staff-attendance").get("month")).toBe(String(other)),
     );
@@ -830,16 +830,16 @@ describe("the coins report", () => {
 
     // A branch narrows the courses and groups on offer, and takes the group back.
     await fireEvent.press(await screen.findByTestId("coins-group"));
-    await fireEvent.press(screen.getByTestId("coins-group-option-g2"));
+    await fireEvent.press(await screen.findByTestId("coins-group-option-g2"));
     await waitFor(() => expect(asked("GET", "/coins/report").get("groupId")).toBe("g2"));
     await fireEvent.press(screen.getByTestId("coins-branch"));
-    await fireEvent.press(screen.getByTestId("coins-branch-option-b1"));
+    await fireEvent.press(await screen.findByTestId("coins-branch-option-b1"));
     await waitFor(() => expect(asked("GET", "/coins/report").get("branchId")).toBe("b1"));
     expect(asked("GET", "/coins/report").has("groupId")).toBe(false);
     await fireEvent.press(screen.getByTestId("coins-course"));
-    expect(screen.getByTestId("coins-course-option-c1")).toBeTruthy();
+    expect(await screen.findByTestId("coins-course-option-c1")).toBeTruthy();
     expect(screen.queryByTestId("coins-course-option-c2")).toBeNull();
-    await fireEvent.press(screen.getByTestId("coins-course-option-c1"));
+    await fireEvent.press(await screen.findByTestId("coins-course-option-c1"));
     await waitFor(() => expect(asked("GET", "/coins/report").get("courseId")).toBe("c1"));
 
     await fireEvent.changeText(screen.getByTestId("coins-search"), " jasur ");
@@ -1052,7 +1052,7 @@ describe("the coins report", () => {
 
     await settled();
     await fireEvent.press(screen.getByTestId("coins-request-status"));
-    await fireEvent.press(screen.getByTestId("coins-request-status-option-PENDING"));
+    await fireEvent.press(await screen.findByTestId("coins-request-status-option-PENDING"));
     await waitFor(() =>
       expect(asked("GET", "/marketplace/purchase-requests").get("status")).toBe("PENDING"),
     );
@@ -1105,13 +1105,13 @@ describe("the coins report", () => {
     await fireEvent.press(screen.getByTestId("request-product"));
     // What cannot be bought is not offered: switched off, or none left.
     expect(screen.queryByTestId("request-product-option-p2")).toBeNull();
-    await fireEvent.press(screen.getByTestId("request-product-option-p4"));
+    await fireEvent.press(await screen.findByTestId("request-product-option-p4"));
     expect(await screen.findByText("The student does not have enough coins.")).toBeTruthy();
     await fireEvent.press(screen.getByTestId("request-save"));
     expect(calls("POST", "/marketplace/purchase-requests")).toHaveLength(0);
 
     await fireEvent.press(screen.getByTestId("request-product"));
-    await fireEvent.press(screen.getByTestId("request-product-option-p1"));
+    await fireEvent.press(await screen.findByTestId("request-product-option-p1"));
     await fireEvent.press(screen.getByTestId("request-save"));
     await waitFor(() => expect(calls("POST", "/marketplace/purchase-requests")).toHaveLength(1));
     expect(sentBody(calls("POST", "/marketplace/purchase-requests")[0]![1])).toEqual({

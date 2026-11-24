@@ -152,3 +152,21 @@ jest.mock("expo-audio", () => {
  * `fetch`, so the server a test makes up answers it too.
  */
 jest.mock("./src/lib/send-form", () => jest.requireActual("./src/lib/send-form.ts"));
+
+/*
+ * The window a sheet opens in. As on an iPhone, taking it away is told back
+ * with `onDismiss`: a sheet waits for that before the next one may open
+ * (src/components/sheet.tsx).
+ */
+jest.mock("react-native/Libraries/Modal/Modal", () => {
+  const React = require("react");
+  function Modal({ visible = true, onDismiss, children, ...rest }) {
+    const was = React.useRef(visible);
+    React.useEffect(() => {
+      if (was.current && !visible && onDismiss) onDismiss();
+      was.current = visible;
+    }, [visible, onDismiss]);
+    return visible ? React.createElement("Modal", rest, children) : null;
+  }
+  return { __esModule: true, default: Modal };
+});

@@ -634,7 +634,7 @@ describe("a student's money", () => {
     await fireEvent.press(screen.getByTestId("refund-payment"));
     await screen.findByTestId("refund-payment-option-p3");
     expect(screen.queryByTestId("refund-payment-option-p2")).toBeNull();
-    await fireEvent.press(screen.getByTestId("refund-payment-option-p1"));
+    await fireEvent.press(await screen.findByTestId("refund-payment-option-p1"));
 
     await fireEvent.changeText(screen.getByTestId("refund-amount"), "100 000");
     await fireEvent.changeText(screen.getByTestId("refund-reason"), "Missed two weeks");
