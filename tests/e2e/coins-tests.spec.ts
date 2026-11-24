@@ -125,6 +125,8 @@ test.describe("coins and tests", () => {
 
     // Create an active test for GE-Morning A1 with the new question.
     await page.getByTestId("tests-tab-tests").click();
+    // The button changes with the tab; pressed too early it still adds a question.
+    await expect(page.getByTestId("add-button")).toHaveText(/Create test/);
     await page.getByTestId("add-button").click();
     const dialog = page.getByTestId("test-dialog");
     const testName = `E2E Test ${STAMP}`;
@@ -145,6 +147,16 @@ test.describe("coins and tests", () => {
     const row = page.getByTestId("test-row").filter({ hasText: testName });
     await expect(row).toContainText("Active");
     await expect(row).toContainText("GE-Morning A1");
+
+    // Edited from the list, the test keeps its question (A-250): the form opens with it picked.
+    await row.getByRole("button", { name: `Actions for ${testName}` }).click();
+    await page.getByRole("menuitem", { name: "Edit" }).click();
+    await expect(dialog.getByLabel("Test name")).toHaveValue(testName);
+    await expect(dialog.getByTestId("picked-count")).toHaveText("(1)");
+    await dialog.getByLabel("Pass mark (%)").fill("50");
+    await dialog.getByRole("button", { name: "Save" }).click();
+    await expect(dialog).toBeHidden();
+    await expect(row).toContainText("1 point");
 
     // Enter a result on the detail page.
     await row.getByRole("link", { name: testName }).click();

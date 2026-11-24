@@ -36,7 +36,12 @@ import { parseDateOnly } from "@/lib/dates";
 import { TEST_STATUSES, type TestStatus } from "@/lib/validation/tests";
 import { useDateFormat } from "@/lib/use-date-format";
 import type { QuestionBankOptions, QuestionDto } from "@/server/services/tests/questions.service";
-import type { TestDto, TestListDto, TestOptions } from "@/server/services/tests/tests.service";
+import type {
+  TestDetailDto,
+  TestDto,
+  TestListDto,
+  TestOptions,
+} from "@/server/services/tests/tests.service";
 
 import { QuestionDialog } from "./question-dialog";
 import { TestDialog } from "./test-dialog";
@@ -75,7 +80,10 @@ export function TestsSettingsPage({
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const [, startTransition] = useTransition();
-  const [testDialog, setTestDialog] = useState<{ open: boolean; test: TestDto | null }>({
+  const [testDialog, setTestDialog] = useState<{
+    open: boolean;
+    test: TestDto | TestDetailDto | null;
+  }>({
     open: false,
     test: null,
   });
@@ -89,6 +97,21 @@ export function TestsSettingsPage({
   const [deletingTest, setDeletingTest] = useState<TestDto | null>(null);
   const [deletingQuestion, setDeletingQuestion] = useState<QuestionDto | null>(null);
   const refresh = () => startTransition(() => router.refresh());
+
+  /**
+   * The list's rows carry no questions, and the form saves the questions it
+   * shows: opened on a row, it saved the test without its questions, or was
+   * refused once results were in (A-250). So the test is fetched whole first.
+   */
+  async function editTest(row: TestDto) {
+    try {
+      const whole = await api<TestDetailDto>(`/tests/${row.id}`);
+      setTestDialog({ open: true, test: whole });
+    } catch {
+      // Gone or no longer this person's to see: show the list as it is now.
+      refresh();
+    }
+  }
 
   function setParams(entries: Record<string, string | null>) {
     const params = new URLSearchParams(searchParams.toString());
@@ -251,9 +274,7 @@ export function TestsSettingsPage({
                         {(can.update || can.delete) && (
                           <RowActions
                             name={x.name}
-                            onEdit={
-                              can.update ? () => setTestDialog({ open: true, test: x }) : undefined
-                            }
+                            onEdit={can.update ? () => void editTest(x) : undefined}
                             onDelete={can.delete ? () => setDeletingTest(x) : undefined}
                           />
                         )}
