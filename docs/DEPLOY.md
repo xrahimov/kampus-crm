@@ -204,6 +204,11 @@ A-201) has no migration and no setting. Two things to know after it:
   on an `https` address (the live site is one). Nothing on the server switches it
   on or off; a person can switch it off for the site in the browser.
 
+The repairs from the simulator run of the finished app (A-266) are in the app, which needs a
+new build. The site gets two small things with its next update: "1 item" instead of
+"1 items" under an exercise, and the time zone label worked out in a way that also holds in
+the app (the site shows the same text as before). No migration, no setting.
+
 The rest of the student form in the app and the School filter (A-265) use the site's own calls.
 No server update, no migration, no setting.
 

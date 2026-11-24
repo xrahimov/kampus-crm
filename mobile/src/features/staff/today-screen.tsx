@@ -294,7 +294,6 @@ function LessonCard({
           <Text variant="small" tone="mutedForeground" numberOfLines={1} style={styles.fill}>
             {lesson.roomName ?? t("today.lesson.noRoom")}
           </Text>
-          {lesson.isExtra ? <Badge label={t("today.lesson.extra")} /> : null}
         </View>
         <Text variant="heading" numberOfLines={2}>
           {lesson.groupName}
@@ -305,6 +304,11 @@ function LessonCard({
           </Text>
         ) : null}
         <View style={styles.lessonFoot}>
+          {/* With the other badges, which wrap: beside the time it left a tablet's narrow
+              card one letter of the room (A-266). */}
+          {lesson.isExtra ? (
+            <Badge label={t("today.lesson.extra")} testID={`lesson-extra-${lesson.id}`} />
+          ) : null}
           <Badge
             tone={done ? "success" : "neutral"}
             label={t("today.attendance.summary", {

@@ -206,6 +206,7 @@ export function LeadsScreen() {
               />
             </View>
             <Check
+              inline
               label={tl("filters.archive")}
               value={archived}
               onChange={(value) => {

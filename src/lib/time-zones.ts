@@ -46,11 +46,16 @@ function partsIn(at: Date, zone: string): Parts {
     weekday: "short",
   }).formatToParts(at);
   const get = (type: string) => parts.find((p) => p.type === type)?.value ?? "";
+  // An engine that answers with a 12-hour clock in spite of `h23` says AM or PM beside it.
+  const period = get("dayPeriod");
+  const hour = period
+    ? (Number(get("hour")) % 12) + (/p/i.test(period) ? 12 : 0)
+    : Number(get("hour")) % 24;
   return {
     year: Number(get("year")),
     month: Number(get("month")),
     day: Number(get("day")),
-    hour: Number(get("hour")) % 24,
+    hour,
     minute: Number(get("minute")),
     weekday: WEEKDAYS.indexOf(get("weekday")) + 1,
   };
@@ -60,7 +65,8 @@ function partsIn(at: Date, zone: string): Parts {
 function offsetMinutes(at: Date, zone: string): number {
   const p = partsIn(at, zone);
   const asUtc = Date.UTC(p.year, p.month - 1, p.day, p.hour, p.minute);
-  return Math.round((asUtc - at.getTime()) / 60_000);
+  // The clock is read to the minute: the instant's own seconds are left out too.
+  return Math.round((asUtc - Math.floor(at.getTime() / 60_000) * 60_000) / 60_000);
 }
 
 /** True when two zones show the same wall clock at that instant (Tashkent and Samarkand do). */
@@ -144,13 +150,20 @@ export function slotInZone(
   return { weekday, startTime: local.startTime, endTime: local.endTime };
 }
 
-/** "Europe/Berlin (GMT+1)" for labels. */
+/**
+ * "Europe/Berlin (GMT+1)" for labels. The offset is worked out from the zone's
+ * clock, not asked of `timeZoneName: "shortOffset"`: the phone app's engine
+ * answers that with a bare "GMT" for every zone (A-266).
+ */
 export function timeZoneLabel(zone: string, at: Date = new Date()): string {
   try {
-    const name = new Intl.DateTimeFormat("en-US", { timeZone: zone, timeZoneName: "shortOffset" })
-      .formatToParts(at)
-      .find((p) => p.type === "timeZoneName")?.value;
-    return name ? `${zone} (${name})` : zone;
+    const minutes = offsetMinutes(at, zone);
+    if (!Number.isFinite(minutes)) return zone;
+    const abs = Math.abs(minutes);
+    const rest = abs % 60;
+    const sign = minutes < 0 ? "-" : "+";
+    const part = rest ? `:${String(rest).padStart(2, "0")}` : "";
+    return `${zone} (GMT${sign}${Math.floor(abs / 60)}${part})`;
   } catch {
     return zone;
   }

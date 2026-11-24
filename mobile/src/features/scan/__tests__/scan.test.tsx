@@ -119,6 +119,31 @@ describe("a typed badge code", () => {
     expect(scans()).toHaveLength(2);
   });
 
+  it("sends the whole code when Enter comes before its last letter has arrived (A-266)", async () => {
+    serve(result(), result({ status: "unknown", studentId: null, studentName: null }));
+    await renderScreen(<ScanScreen />);
+    // The line of the newest badge is there from the start, so the field never moves under the keyboard.
+    expect(screen.getByTestId("scan-last")).toHaveTextContent("Nothing scanned yet");
+    expect(screen.getByTestId("scan-last")).toHaveStyle({ height: 28 });
+    // A hand scanner types and presses Enter in one go: the field's last change is a letter short.
+    await fireEvent.changeText(screen.getByTestId("scan-code"), CODE.slice(0, -1));
+    await fireEvent(screen.getByTestId("scan-code"), "submitEditing", {
+      nativeEvent: { text: CODE },
+    });
+    await screen.findByTestId("scan-line-1");
+    expect(sentBody(scans()[0]![1])).toEqual({ code: CODE });
+    expect(screen.getByTestId("scan-code").props.value).toBe("");
+    // On a phone the newest badge is said above the field, where the keyboard does not cover it.
+    expect(screen.getByTestId("scan-last")).toHaveTextContent(/Sardor Karimov.*Present/);
+
+    // Nothing left over from the first code goes with the next one.
+    await fireEvent.changeText(screen.getByTestId("scan-code"), "nonsense");
+    await fireEvent.press(screen.getByTestId("scan-send"));
+    await screen.findByTestId("scan-line-2");
+    expect(sentBody(scans()[1]![1])).toEqual({ code: "nonsense" });
+    expect(screen.getByTestId("scan-last")).toHaveTextContent(/nonsense.*Not a badge/);
+  });
+
   it("gets a line saying what the server made of it, newest first", async () => {
     serve(
       result({ status: "already" }),
@@ -279,6 +304,16 @@ describe("the way to the scanner", () => {
     await renderScreen(<LessonPanel lesson={LESSON} canMark={false} canSeeBalances={false} />);
     expect(screen.getByTestId("attendance-summary")).toBeTruthy();
     expect(screen.queryByTestId("scan-badges")).toBeNull();
+  });
+
+  it("leaves the first line of Today's card to the time and the room: Extra is with the badges (A-266)", async () => {
+    serveDay(day({ lessons: [{ ...LESSON, isExtra: true, roomName: null }] }));
+    await renderScreen(<TodayScreen />);
+    // A tablet's narrow card showed "N." for "No room" while the badge stood beside the time.
+    expect(await screen.findByTestId("lesson-card-l1")).toHaveTextContent(
+      /19:30–21:00No roomGE-Morning A1Extra lesson0 of 1 marked/,
+    );
+    expect(screen.getByTestId("lesson-extra-l1")).toHaveTextContent("Extra lesson");
   });
 
   it("is on Today for the door, for whoever marks lessons", async () => {
