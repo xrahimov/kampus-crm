@@ -17,6 +17,17 @@ export function hasHome(me: Me): boolean {
   return me.view.current === "FULL" && can(me, "dashboard.view");
 }
 
+/** The site's Settings sections the app has, by the last part of their path (A-234, A-242). */
+const NATIVE_SETTINGS = new Set([
+  "courses",
+  "rooms",
+  "days-off",
+  "schools",
+  "sms",
+  "receipt",
+  "coins",
+]);
+
 /**
  * Where a page of the site lives in the app, if the app has it. `path` is the
  * site's path without the language, as notifications, the home page's cards
@@ -42,11 +53,11 @@ export function nativeRoute(path: string): Href | null {
     if (rest.length > 0) return null;
     return id === "calls" || id === "waitlist" || id === "inbox" ? `/staff/leads/${id}` : null;
   }
-  // Settings (A-234): its list of sections, and the two the app has. The rest are the site's.
+  // Settings (A-234, A-242): its list of sections, and the ones the app has. The rest are the site's.
   if (first === "settings") {
     if (!id) return "/staff/settings";
     if (rest.length > 0) return null;
-    return id === "courses" || id === "rooms" ? `/staff/settings/${id}` : null;
+    return NATIVE_SETTINGS.has(id) ? (`/staff/settings/${id}` as Href) : null;
   }
   // Finance (A-237): its page, the entries of a kind or of a category, and a month's payroll.
   if (first === "finance") {
