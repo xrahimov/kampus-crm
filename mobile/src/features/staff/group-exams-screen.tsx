@@ -1,4 +1,5 @@
-import { useLocalSearchParams } from "expo-router";
+import { useLocalSearchParams, useRouter } from "expo-router";
+import { Plus } from "lucide-react-native";
 import { useState } from "react";
 import { StyleSheet, View } from "react-native";
 
@@ -9,24 +10,47 @@ import { Button } from "@/components/button";
 import { Header } from "@/components/header";
 import { Badge, Card, Divider, EmptyState, Loading, Notice, Screen } from "@/components/surface";
 import { Text } from "@/components/text";
+import { ExamFormSheet } from "@/features/exams/exam-form";
 import { PendingScreen } from "@/features/shared/pending-screen";
 import { ApiError } from "@/lib/api";
 import { dayAsDate } from "@/lib/days";
 import { errorText, useDate, useTranslations } from "@/lib/i18n";
-import { space } from "@/lib/theme";
+import { can, useMe } from "@/lib/session";
+import { space, useTheme } from "@/lib/theme";
 
 /**
  * A group's exams on the teacher's side, in the app (A-219): each exam with
  * its day, time, room and examiner, and under it the scores of this group's
- * students. Exams are set up and graded on the site.
+ * students. Whoever may add exams adds one for this group here, and an exam
+ * opens its own page, where it is graded (A-235).
  */
 export function GroupExamsScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const t = useTranslations();
+  const me = useMe();
+  const { colors } = useTheme();
   const group = useGroup(id);
   const query = useGroupExams(id);
+  const [adding, setAdding] = useState(false);
 
-  const header = <Header back title={t("groups.detail.tabs.exams")} subtitle={group.data?.name} />;
+  const header = (
+    <Header
+      back
+      title={t("groups.detail.tabs.exams")}
+      subtitle={group.data?.name}
+      right={
+        can(me, "exams.create") ? (
+          <Button
+            compact
+            icon={<Plus size={16} color={colors.primaryForeground} />}
+            label={t("exams.add")}
+            onPress={() => setAdding(true)}
+            testID="group-exam-add"
+          />
+        ) : undefined
+      }
+    />
+  );
   // A centre may keep the exam schedule from its teachers; the page says so.
   if (query.error instanceof ApiError && query.error.status === 403) {
     return (
@@ -45,12 +69,13 @@ export function GroupExamsScreen() {
       contentStyle={styles.column}
     >
       {query.data.length === 0 ? (
-        <EmptyState title={t("common.nothingFound")} text={t("mobile.exams.madeOnSite")} />
+        <EmptyState title={t("common.nothingFound")} />
       ) : (
         query.data.map((exam) => (
           <ExamCard key={exam.id} exam={exam} groupName={group.data?.name ?? null} />
         ))
       )}
+      <ExamFormSheet open={adding} onClose={() => setAdding(false)} fixedGroupId={id} />
     </Screen>
   );
 }
@@ -58,6 +83,7 @@ export function GroupExamsScreen() {
 function ExamCard({ exam, groupName }: { exam: GroupExam; groupName: string | null }) {
   const t = useTranslations();
   const formatDate = useDate();
+  const router = useRouter();
   const [open, setOpen] = useState(false);
   const results = useExamResults(exam.id, open);
   // A mock exam is taken by several groups; this page is about one of them.
@@ -102,14 +128,22 @@ function ExamCard({ exam, groupName }: { exam: GroupExam; groupName: string | nu
           .filter(Boolean)
           .join(", ")}
       </Text>
-      <Button
-        compact
-        variant="ghost"
-        label={open ? t("mobile.tests.hideResults") : t("mobile.tests.results")}
-        onPress={() => setOpen((was) => !was)}
-        style={styles.start}
-        testID="exam-results"
-      />
+      <View style={styles.buttons}>
+        <Button
+          compact
+          variant="ghost"
+          label={open ? t("mobile.tests.hideResults") : t("mobile.tests.results")}
+          onPress={() => setOpen((was) => !was)}
+          testID="exam-results"
+        />
+        <Button
+          compact
+          variant="outline"
+          label={t("mobile.exams.open")}
+          onPress={() => router.push({ pathname: "/staff/exam/[id]", params: { id: exam.id } })}
+          testID="exam-open"
+        />
+      </View>
       {open ? (
         results.isLoading ? (
           <Loading />
@@ -164,6 +198,6 @@ const styles = StyleSheet.create({
   fill: { flex: 1 },
   column: { gap: space[4], maxWidth: 720 },
   head: { flexDirection: "row", alignItems: "flex-start", gap: space[3] },
-  start: { alignSelf: "flex-start" },
+  buttons: { flexDirection: "row", flexWrap: "wrap", gap: space[2] },
   row: { flexDirection: "row", alignItems: "center", gap: space[3], paddingVertical: space[3] },
 });

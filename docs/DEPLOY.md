@@ -204,6 +204,10 @@ A-201) has no migration and no setting. Two things to know after it:
   on an `https` address (the live site is one). Nothing on the server switches it
   on or off; a person can switch it off for the site in the browser.
 
+The update for the app's Exams pages (A-235) changes nothing on the server: no
+migration, no new environment variable, no new call. The app's exams use the
+calls the site's Exams pages already make, so they work on the server as it is.
+
 The update for the app's Teachers, Courses and Rooms pages (A-234) has no
 migration, no new environment variable and no new call. One thing changes on
 the site: a page opened from the phone app arrives with a half-hour cookie,

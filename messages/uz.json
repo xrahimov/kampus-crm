@@ -6419,7 +6419,7 @@
       "madeOnSite": "Testlar saytda tuziladi va guruhga beriladi: Sozlamalar, Testlar."
     },
     "exams": {
-      "madeOnSite": "Imtihonlar saytda, «Imtihonlar» bo'limida yaratiladi va baholanadi."
+      "open": "Imtihonni ochish"
     },
     "history": {
       "latest": "Oxirgi {count} ta o'zgarish ko'rsatilgan."
