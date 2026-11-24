@@ -6501,7 +6501,8 @@
     "scan": {
       "denied": "Kameraga ruxsat berilmadi. Qurilma sozlamalarida Kampus uchun ruxsat bering yoki kodni pastga yozing.",
       "noCamera": "Bu qurilmada kamerani ochib bo'lmadi. Qo'l skaneridan foydalaning yoki kodni pastga yozing.",
-      "send": "Belgilash"
+      "send": "Belgilash",
+      "nothingYet": "Hali hech narsa skanerlanmadi"
     },
     "catalog": {
       "changeHours": "Soatlarni o'zgartirish",

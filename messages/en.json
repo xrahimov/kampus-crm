@@ -6501,7 +6501,8 @@
     "scan": {
       "denied": "The camera was not allowed. Allow it for Kampus in the device's settings, or type the code below.",
       "noCamera": "The camera could not be opened on this device. Use a hand scanner or type the code below.",
-      "send": "Mark present"
+      "send": "Mark present",
+      "nothingYet": "Nothing scanned yet"
     },
     "catalog": {
       "changeHours": "Change hours",

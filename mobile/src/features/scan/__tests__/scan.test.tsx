@@ -122,6 +122,9 @@ describe("a typed badge code", () => {
   it("sends the whole code when Enter comes before its last letter has arrived (A-266)", async () => {
     serve(result(), result({ status: "unknown", studentId: null, studentName: null }));
     await renderScreen(<ScanScreen />);
+    // The line of the newest badge is there from the start, so the field never moves under the keyboard.
+    expect(screen.getByTestId("scan-last")).toHaveTextContent("Nothing scanned yet");
+    expect(screen.getByTestId("scan-last")).toHaveStyle({ height: 28 });
     // A hand scanner types and presses Enter in one go: the field's last change is a letter short.
     await fireEvent.changeText(screen.getByTestId("scan-code"), CODE.slice(0, -1));
     await fireEvent(screen.getByTestId("scan-code"), "submitEditing", {
@@ -130,7 +133,7 @@ describe("a typed badge code", () => {
     await screen.findByTestId("scan-line-1");
     expect(sentBody(scans()[0]![1])).toEqual({ code: CODE });
     expect(screen.getByTestId("scan-code").props.value).toBe("");
-    // On a phone the newest badge is said under the field, above the keyboard.
+    // On a phone the newest badge is said above the field, where the keyboard does not cover it.
     expect(screen.getByTestId("scan-last")).toHaveTextContent(/Sardor Karimov.*Present/);
 
     // Nothing left over from the first code goes with the next one.

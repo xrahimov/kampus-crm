@@ -128,16 +128,26 @@ export function ScanScreen() {
       <Card>
         <Text variant="heading">{ts("manual")}</Text>
         {/* On a phone the list is under the keyboard, and so is all below the field: the latest
-            badge is said above it too. */}
-        {!wide && newest ? (
+            badge is said above it too. The line is there from the start and keeps its height,
+            so the field under it does not move below the keyboard with the first badge. */}
+        {!wide ? (
           <View style={styles.last} testID="scan-last">
-            <Text variant="small" numberOfLines={1} style={styles.fill}>
-              {newest.result?.studentName ?? newest.problem ?? newest.code}
+            <Text
+              variant="small"
+              tone={newest ? "foreground" : "mutedForeground"}
+              numberOfLines={1}
+              style={styles.fill}
+            >
+              {newest
+                ? (newest.result?.studentName ?? newest.problem ?? newest.code)
+                : t("mobile.scan.nothingYet")}
             </Text>
-            <Badge
-              tone={newest.result ? STATUS_TONE[newest.result.status] : "destructive"}
-              label={ts(`status.${newest.result ? newest.result.status : "error"}`)}
-            />
+            {newest ? (
+              <Badge
+                tone={newest.result ? STATUS_TONE[newest.result.status] : "destructive"}
+                label={ts(`status.${newest.result ? newest.result.status : "error"}`)}
+              />
+            ) : null}
           </View>
         ) : null}
         <Field
@@ -265,7 +275,7 @@ const styles = StyleSheet.create({
   side: { flex: 2 },
   main: { flex: 3, gap: space[4] },
   start: { alignSelf: "flex-start" },
-  last: { flexDirection: "row", alignItems: "center", gap: space[2] },
+  last: { flexDirection: "row", alignItems: "center", gap: space[2], height: 28 },
   flush: { padding: 0, gap: 0, overflow: "hidden" },
   logHead: {
     flexDirection: "row",
