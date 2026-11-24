@@ -387,6 +387,6 @@ describe("where Staff and Roles live", () => {
   it("opens both in the app", () => {
     expect(nativeRoute("/settings/staff")).toBe("/staff/settings/staff");
     expect(nativeRoute("/settings/roles")).toBe("/staff/settings/roles");
-    expect(nativeRoute("/settings/migration")).toBeNull();
+    expect(nativeRoute("/settings/organizations")).toBeNull();
   });
 });

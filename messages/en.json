@@ -6413,6 +6413,11 @@
     "coins": {
       "given": "{count, plural, one {# coin} other {# coins}} given to {name}."
     },
+    "import": {
+      "choose": "Choose a file",
+      "another": "Choose another file",
+      "onDevice": "The export has to be saved on this device first."
+    },
     "tests": {
       "results": "Results",
       "hideResults": "Hide results",

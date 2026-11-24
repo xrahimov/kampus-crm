@@ -6413,6 +6413,11 @@
     "coins": {
       "given": "{name}ga {count} ta coin berildi."
     },
+    "import": {
+      "choose": "Faylni tanlash",
+      "another": "Boshqa faylni tanlash",
+      "onDevice": "Eksport fayli avval shu qurilmaga saqlangan bo'lishi kerak."
+    },
     "tests": {
       "results": "Natijalar",
       "hideResults": "Natijalarni yashirish",

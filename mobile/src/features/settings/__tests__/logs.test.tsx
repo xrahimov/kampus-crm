@@ -529,6 +529,6 @@ describe("where the site's logs live in the app", () => {
     expect(nativeRoute("/settings/logs")).toBeNull();
     expect(nativeRoute("/settings/logs/other")).toBeNull();
     expect(nativeRoute("/settings/logs/sms/more")).toBeNull();
-    expect(nativeRoute("/settings/migration")).toBeNull();
+    expect(nativeRoute("/settings/organizations")).toBeNull();
   });
 });

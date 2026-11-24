@@ -525,6 +525,6 @@ describe("where the site's settings pages live in the app", () => {
     expect(nativeRoute("/settings/sms")).toBe("/staff/settings/sms");
     expect(nativeRoute("/settings/receipt")).toBe("/staff/settings/receipt");
     expect(nativeRoute("/settings/coins")).toBe("/staff/settings/coins");
-    expect(nativeRoute("/settings/migration")).toBeNull();
+    expect(nativeRoute("/settings/organizations")).toBeNull();
   });
 });

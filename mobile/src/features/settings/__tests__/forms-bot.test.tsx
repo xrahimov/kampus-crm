@@ -471,6 +471,6 @@ describe("where these two pages live in the app", () => {
   it("opens both in the app", () => {
     expect(nativeRoute("/settings/forms")).toBe("/staff/settings/forms");
     expect(nativeRoute("/settings/bot")).toBe("/staff/settings/bot");
-    expect(nativeRoute("/settings/migration")).toBeNull();
+    expect(nativeRoute("/settings/organizations")).toBeNull();
   });
 });
