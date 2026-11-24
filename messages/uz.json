@@ -6416,7 +6416,8 @@
     "tests": {
       "results": "Natijalar",
       "hideResults": "Natijalarni yashirish",
-      "madeOnSite": "Testlar saytda tuziladi va guruhga beriladi: Sozlamalar, Testlar."
+      "whereMade": "Testlar Sozlamalar, Testlar bo'limida tuziladi va guruhga beriladi.",
+      "moreQuestions": "Yana {count} ta savol bor. Qidiruv orqali toping."
     },
     "exams": {
       "open": "Imtihonni ochish"

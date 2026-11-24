@@ -547,6 +547,6 @@ describe("automatic SMS", () => {
 describe("where General settings lives", () => {
   it("opens in the app", () => {
     expect(nativeRoute("/settings/general")).toBe("/staff/settings/general");
-    expect(nativeRoute("/settings/tests")).toBeNull();
+    expect(nativeRoute("/settings/migration")).toBeNull();
   });
 });

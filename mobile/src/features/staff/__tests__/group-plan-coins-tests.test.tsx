@@ -421,6 +421,6 @@ describe("a group's tests on the teacher's side", () => {
     clearClients();
     serve({ "GET /groups/g1": GROUP, "GET /groups/g1/tests": [] });
     await renderScreen(<GroupTestsScreen />);
-    expect(await screen.findByText(/on the site/i)).toBeTruthy();
+    expect(await screen.findByText(/under Settings, Tests/)).toBeTruthy();
   });
 });

@@ -204,6 +204,16 @@ A-201) has no migration and no setting. Two things to know after it:
   on an `https` address (the live site is one). Nothing on the server switches it
   on or off; a person can switch it off for the site in the browser.
 
+Tests and the question bank in the app (A-250) use the calls the site's pages make: no
+migration, no setting, no new call. One fix on the site comes with the update: **Edit** in the
+list of tests under Settings → Tests now loads the test's questions before the form opens, so
+saving no longer takes them away.
+
+Integrations, AmoCRM and FaceID in the app (A-249) use the calls the site's pages make. One
+fact is added to an answer the server already gives: for Telegram, whether the person owns the
+server (`state.mayShare`). No migration, no setting. Until the server is updated the app leaves
+the **Shared with every centre** tick out and the owner sets it on the site; nothing else waits.
+
 The small repairs of A-248 are in the app, except three English sentences that the site shares
 ("1 recipient", "1 student activated", "1 membership activated"): they change on the site with
 the next update. No migration, no setting, no new call.

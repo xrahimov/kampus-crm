@@ -159,6 +159,10 @@ describe("the flag", () => {
 
     // The owner's own card carries no note about itself.
     expect((await getIntegration(ownerOfA, "TELEGRAM")).state.sharedBot).toBeNull();
+
+    // The app shows the "shared with every centre" tick to the server's owner alone (A-249).
+    expect((await getIntegration(ownerOfA, "TELEGRAM")).state.mayShare).toBe(true);
+    expect((await getIntegration(ceoB, "TELEGRAM")).state.mayShare).toBe(false);
   });
 
   it("lets a centre keep its own weekly-report preference while using the shared bot", async () => {
