@@ -68,7 +68,9 @@ able to work from an iPad or a phone.
 | Office: settings, step 3: Staff (search, role chips, archive, the staff form with roles) and Roles (the permission ticks) (A-244)                                                                                            | Built, phone and tablet; Excel export and import of staff stay on the site                                               |
 | Office: settings, step 4a: Login log, Action log, Sent SMS, Calls and Payments, each with the site's filters and Show more (A-246)                                                                                           | Built, phone and tablet; the Excel file and receipts open on the site                                                    |
 | Office: settings, step 4b: Bot notifications (add and remove a Telegram recipient) and Forms (add, change, delete, share the link) (A-247)                                                                                   | Built, phone and tablet                                                                                                  |
-| The office's other pages: the other 5 settings sections, the manual, the assistant                                                                                                                                           | Next, part 6c step 5 and part 6d; they open on the site until then                                                       |
+| Office: settings, step 5a: Integrations (the nine services, the waiting jobs), AmoCRM and FaceID (A-249)                                                                                                                     | Built, phone and tablet; the owner's "Shared with every centre" tick needs the server update                             |
+| Office: settings, step 5b: Tests and the question bank, a test's page with its results and Enter result (A-250)                                                                                                              | Built, phone and tablet                                                                                                  |
+| The office's other pages: the import from the old CRM in Settings, the manual, the assistant                                                                                                                                 | Next, part 6c step 5c and part 6d; they open on the site until then                                                      |
 | The site running on the app's code                                                                                                                                                                                           | Part by part, the student side first; wide tables, Excel and print last                                                  |
 
 ## What kai needs to do
@@ -235,7 +237,21 @@ mobile/
   group say "This student is already in the group." with it. `GroupScreen` builds its page
   links, facts, month and students apart: on a phone someone with `groups.update` gets links
   (with **Manage students** first), facts, month, students; everyone else and every tablet
-  keep the old order. Next free number: A-249.
+  keep the old order.
+- **Settings, step 5a (A-249).** `integrations-screen.tsx`, `amocrm-screen.tsx` and
+  `face-id-screen.tsx` share `IntegrationForm` (`integration-form.tsx`) and the field list in
+  `integration-fields.ts` (compared with the server's schemas by a site test). The form keeps
+  every value as text and sends numbers and ticks in their own kind; it is not remounted when a
+  save brings the list anew, so "Saved." stays, and it takes its values from the save's answer,
+  which masks a secret again. `MASKED` is the site's eight dots. `state.mayShare` on the Telegram
+  service says whether to show the owner's tick.
+- **Settings, step 5b (A-250).** `tests-settings-screen.tsx` is the site's Settings → Tests with
+  its two tabs; `test-screen.tsx` one test's page with `AttemptSheet` for a student's answers;
+  `test-form.tsx` and `question-sheet.tsx` the two forms; `src/api/office-tests.ts` the calls. The
+  test form is given the whole test (`OfficeTestDetail`) and never a row of the list, because a
+  row has no questions and a save sends the questions; that is why a test is changed from its own
+  page. A change invalidates the office's tests, the student side's test and a group's tests.
+  Next free number: A-251.
 - **Finance and payroll (A-237).** `src/features/finance/` and `src/api/office-finance.ts`.
   `FinanceScreen` is the site's Finance page; `EntriesScreen` the entries of a kind or of a
   category (`entries-routes.tsx` reads which from the address), with `EntrySheet`, the site's one
