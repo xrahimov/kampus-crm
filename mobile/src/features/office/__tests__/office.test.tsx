@@ -419,6 +419,20 @@ describe("where a page of the site lives in the app", () => {
     expect(nativeRoute("/today")).toBe("/staff");
     expect(nativeRoute("/account/salary")).toBe("/staff/salary");
     expect(nativeRoute("/notifications")).toBe("/staff/notifications");
+    // Finance (A-237): its page, the entries of a kind and of a category, a payroll month.
+    expect(nativeRoute("/finance")).toBe("/staff/finance");
+    expect(nativeRoute("/finance/investment")).toEqual({
+      pathname: "/staff/finance/[section]",
+      params: { section: "investment" },
+    });
+    expect(nativeRoute("/finance/costs/c1")).toEqual({
+      pathname: "/staff/finance/costs/[id]",
+      params: { id: "c1" },
+    });
+    expect(nativeRoute("/finance/salary-detail/2026-11-01")).toEqual({
+      pathname: "/staff/finance/salary/[month]",
+      params: { month: "2026-11" },
+    });
     // The debtors and the cash desk (A-236), the debtors with a notification's filter.
     expect(nativeRoute("/debts")).toBe("/staff/debts");
     expect(nativeRoute("/cashdesk")).toBe("/staff/cashdesk");
@@ -437,7 +451,11 @@ describe("where a page of the site lives in the app", () => {
   });
 
   it("sends everything else to the site", () => {
-    expect(nativeRoute("/finance")).toBeNull();
+    expect(nativeRoute("/reports")).toBeNull();
+    // Finance has no such page, and a payroll month is a month.
+    expect(nativeRoute("/finance/taxes")).toBeNull();
+    expect(nativeRoute("/finance/salary-detail/2026-13-01")).toBeNull();
+    expect(nativeRoute("/finance/costs")).toBeNull();
     // A day close's sheet to print is the site's page.
     expect(nativeRoute("/cashdesk/c1")).toBeNull();
     // A debtors filter the app's list does not have stays the site's.
@@ -591,9 +609,17 @@ describe("the search over everything", () => {
 
 describe("the menu of every page", () => {
   it("lists what the person may open, and marks what opens on the site", async () => {
-    mockMe = me(["dashboard.view", "groups.view", "students.view", "leads.view", "finance.view"], {
-      user: { ...me([]).user, hasSalary: true },
-    });
+    mockMe = me(
+      [
+        "dashboard.view",
+        "groups.view",
+        "students.view",
+        "leads.view",
+        "finance.view",
+        "reports.view",
+      ],
+      { user: { ...me([]).user, hasSalary: true } },
+    );
     serve({ "GET /notifications": notifications() });
     await renderScreen(<Menu />);
 
@@ -612,17 +638,20 @@ describe("the menu of every page", () => {
     }
     // No right to them, no row.
     expect(screen.queryByTestId("menu-settings")).toBeNull();
-    expect(screen.queryByTestId("menu-reports")).toBeNull();
-    // The app has students and leads; finance is the site's for now.
+    expect(screen.queryByTestId("menu-exams")).toBeNull();
+    // The app has students, leads and finance (A-237); the reports are the site's for now.
     expect(screen.queryByTestId("menu-students-site", { includeHiddenElements: true })).toBeNull();
     expect(screen.queryByTestId("menu-leads-site", { includeHiddenElements: true })).toBeNull();
-    expect(screen.getByTestId("menu-finance-site", { includeHiddenElements: true })).toBeTruthy();
+    expect(screen.queryByTestId("menu-finance-site", { includeHiddenElements: true })).toBeNull();
+    expect(screen.getByTestId("menu-reports-site", { includeHiddenElements: true })).toBeTruthy();
     await waitFor(() => expect(screen.getByTestId("menu-notifications")).toHaveTextContent(/1/));
 
     await fireEvent.press(screen.getByTestId("menu-salary"));
     expect(mockPush).toHaveBeenCalledWith("/staff/salary");
     await fireEvent.press(screen.getByTestId("menu-finance"));
-    expect(mockOpenOnSite).toHaveBeenCalledWith("/en/finance");
+    expect(mockPush).toHaveBeenLastCalledWith("/staff/finance");
+    await fireEvent.press(screen.getByTestId("menu-reports"));
+    expect(mockOpenOnSite).toHaveBeenCalledWith("/en/reports");
   });
 
   it("leaves the home and the salary out for a teacher without them", async () => {
