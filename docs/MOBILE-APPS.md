@@ -76,7 +76,8 @@ able to work from an iPad or a phone.
 | Office: a group's Discounts (give one, end one) and, in a package group, Packages (offers, students' lessons, sell a package, packages sold) (A-254)                                                                         | Built, phone and tablet; no server update needed                                                                         |
 | Office: a person's photo: chosen in the staff and student forms, shown in the lists, on a teacher's and a student's page and on More (A-255)                                                                                 | Built, phone and tablet; no server update needed                                                                         |
 | Office: the site's Excel files: every list, report, the payroll and the payments log as a file on the phone (A-256)                                                                                                          | Built, phone and tablet; no server update needed                                                                         |
-| What the site has and the app does not yet: importing from an Excel file, leads boards and columns                                                                                                                           | Next; they open on the site until then                                                                                   |
+| Office: importing from an Excel sheet: rooms, courses, staff, groups, a group's students and the five imports of the Students page (A-257)                                                                                   | Built, phone and tablet; the app's part needs no server update                                                           |
+| What the site has and the app does not yet: leads boards and columns                                                                                                                                                         | Next; they open on the site until then                                                                                   |
 | The site running on the app's code                                                                                                                                                                                           | Part by part, the student side first; wide tables, Excel and print last                                                  |
 
 ## What kai needs to do
@@ -300,7 +301,15 @@ mobile/
   copy to Downloads with `media.copyToMediaStore`); `lib/save-file.ts` is the browser build's
   download; `lib/save-file-parts.ts` reads the file's name and the server's refusal. A screen's
   test mocks `@/lib/save-file` and checks the path it was asked for.
-  Next free number: A-257.
+- **Imports from a sheet (A-257).** `features/files/import-sheet.tsx` is the site's import dialog
+  as a sheet: the template through `saveFile`, the file through `chooseSheet`, the sheet sent with
+  `apiForm` (`dryRun=1` first for an import that previews). `features/files/import-button.tsx` has
+  `ImportButton` (one import), `ImportMenu` (several behind one button) and `ImportKind` (title,
+  hint, the two calls, `toBranch`, `preview`); both add the person's branch and ask every list
+  again after rows came in. The test IDs start with the kind's `id` (`rooms-import-open`,
+  `-template`, `-choose`, `-submit`, `-done`). The staff import's passwords are only ever tested
+  with made-up values.
+  Next free number: A-258.
 - **Finance and payroll (A-237).** `src/features/finance/` and `src/api/office-finance.ts`.
   `FinanceScreen` is the site's Finance page; `EntriesScreen` the entries of a kind or of a
   category (`entries-routes.tsx` reads which from the address), with `EntrySheet`, the site's one
