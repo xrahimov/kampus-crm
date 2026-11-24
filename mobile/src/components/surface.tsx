@@ -12,6 +12,7 @@ import {
 } from "react";
 import {
   ActivityIndicator,
+  Image,
   KeyboardAvoidingView,
   Platform,
   Pressable,
@@ -35,6 +36,8 @@ import {
 } from "react-native-reanimated";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
+import { fileSource } from "@/lib/file-source";
+import { useLocalFile } from "@/lib/local-file";
 import { useLayout } from "@/lib/layout";
 import { CONTENT_MAX_WIDTH, radius, space, useTheme, type Colors } from "@/lib/theme";
 
@@ -528,9 +531,43 @@ export function Divider() {
   return <View style={{ height: StyleSheet.hairlineWidth, backgroundColor: colors.border }} />;
 }
 
+const NO_PHOTO = { uri: "" };
+
 /** Initials on a quiet disc, where the site shows a photo or the same initials. */
-export function Avatar({ name, size = 36 }: { name: string; size?: number }) {
+export function Avatar({
+  name,
+  size = 36,
+  photo,
+}: {
+  name: string;
+  size?: number;
+  /** The person's photo as the server names it; the initials show without one. */
+  photo?: string | null;
+}) {
   const { colors } = useTheme();
+  // A photo that does not load gives way to the initials, until another photo is given.
+  const [failed, setFailed] = useState<string | null>(null);
+  // A phone's picture sends the session itself; a browser fetches the photo first, and the
+  // initials stand in until it is there.
+  const source = useLocalFile(photo ? fileSource(photo) : NO_PHOTO, () => setFailed(photo ?? null));
+  const round = {
+    width: size,
+    height: size,
+    borderRadius: size / 2,
+    backgroundColor: colors.secondary,
+  };
+  if (photo && failed !== photo && source) {
+    return (
+      <Image
+        source={source}
+        onError={() => setFailed(photo)}
+        resizeMode="cover"
+        accessibilityIgnoresInvertColors
+        style={round}
+        testID="avatar-photo"
+      />
+    );
+  }
   const initials = name
     .trim()
     .split(/\s+/)
@@ -538,16 +575,7 @@ export function Avatar({ name, size = 36 }: { name: string; size?: number }) {
     .map((part) => part.charAt(0).toUpperCase())
     .join("");
   return (
-    <View
-      style={{
-        width: size,
-        height: size,
-        borderRadius: size / 2,
-        backgroundColor: colors.secondary,
-        alignItems: "center",
-        justifyContent: "center",
-      }}
-    >
+    <View style={[round, styles.avatar]}>
       <Text variant="smallStrong" tone="secondaryForeground">
         {initials}
       </Text>
@@ -635,6 +663,7 @@ export function Segmented<T extends string>({
 }
 
 const styles = StyleSheet.create({
+  avatar: { alignItems: "center", justifyContent: "center" },
   page: { flex: 1 },
   fill: { flex: 1 },
   grow: { flexGrow: 1 },

@@ -56,7 +56,7 @@ export function TeacherScreen() {
   const profile = (
     <Card testID="teacher-profile">
       <View style={styles.person}>
-        <Avatar name={teacher.fullName} size={56} />
+        <Avatar name={teacher.fullName} photo={teacher.photoUrl} size={56} />
         <View style={styles.fill}>
           <Text variant="title">{teacher.fullName}</Text>
           <View style={styles.badges}>

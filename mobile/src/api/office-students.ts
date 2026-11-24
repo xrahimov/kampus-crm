@@ -84,6 +84,7 @@ export interface NewStudentInput {
   phone: string | null;
   birthDate: string | null;
   gender: "MALE" | "FEMALE";
+  photoUrl: string | null;
   note: string | null;
   membership: { groupId: string; joinedAt: string; status: "ACTIVE" | "NEW" } | null;
   parent: { fullName: string; phone: string } | null;
@@ -167,10 +168,11 @@ export interface StudentChange {
   fullName: string;
   phone: string | null;
   birthDate: string | null;
+  photoUrl: string | null;
   note: string | null;
 }
 
-/** Changes who the student is: the name, the phone, the day of birth, the note. */
+/** Changes who the student is: the name, the phone, the day of birth, the photo, the note. */
 export function useUpdateStudent(id: string) {
   const client = useQueryClient();
   return useMutation({

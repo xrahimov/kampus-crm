@@ -83,6 +83,8 @@ export interface TeacherInput {
   gender: Gender;
   birthDate: string | null;
   hireDate: string | null;
+  /** The address `POST /uploads` answered with; null takes the photo off. */
+  photoUrl: string | null;
   branchIds: string[];
   salaryMethod: SalaryMethod;
   fixedSalary: number | null;

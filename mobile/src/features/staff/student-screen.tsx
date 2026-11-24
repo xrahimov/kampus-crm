@@ -204,7 +204,7 @@ function Person({ student }: { student: StudentDetail }) {
     <View style={styles.block}>
       <Card testID="student-person">
         <View style={styles.head}>
-          <Avatar name={student.fullName} size={48} />
+          <Avatar name={student.fullName} photo={student.photoUrl} size={48} />
           <View style={styles.fill}>
             <Text variant="heading">{student.fullName}</Text>
             <View style={styles.badges}>

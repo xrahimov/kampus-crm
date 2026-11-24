@@ -174,7 +174,7 @@ function TeacherCard({
         : t("teachers.noGroups");
   return (
     <Card onPress={onPress} style={styles.card} testID={`teacher-${person.id}`}>
-      <Avatar name={person.fullName} size={44} />
+      <Avatar name={person.fullName} photo={person.photoUrl} size={44} />
       <View style={styles.fill}>
         <View style={styles.name}>
           <Text variant="heading" numberOfLines={1} style={styles.fill}>

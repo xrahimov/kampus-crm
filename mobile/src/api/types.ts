@@ -1026,6 +1026,8 @@ export interface StudentGroup {
 export interface StudentRow {
   id: string;
   fullName: string;
+  /** The student's photo as the server names it (A-255); the initials show without one. */
+  photoUrl?: string | null;
   /** Null when the centre keeps phone numbers from this person. */
   phone: string | null;
   note: string | null;
