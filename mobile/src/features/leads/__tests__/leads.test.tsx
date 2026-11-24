@@ -806,8 +806,7 @@ describe("where the site's lead pages live in the app", () => {
     });
   });
 
-  it("leaves the sources report and filters the app's board does not have to the site", () => {
-    expect(nativeRoute("/leads/sources")).toBeNull();
+  it("leaves filters the app's board does not have to the site", () => {
     expect(nativeRoute("/leads?teacherId=t1")).toBeNull();
     expect(nativeRoute("/leads/calls/x")).toBeNull();
   });

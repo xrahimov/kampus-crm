@@ -1,6 +1,7 @@
 import { Pressable, StyleSheet, View } from "react-native";
 
 import type { Lead, LeadStatus, LeadTemperature } from "@/api/leads";
+import { Tick } from "@/components/check";
 import { Badge, type Tone } from "@/components/surface";
 import { Text } from "@/components/text";
 import { dayAsDate } from "@/lib/days";
@@ -77,19 +78,29 @@ export function LeadRow({
   today,
   note,
   onPress,
+  ticked = false,
+  onTick,
 }: {
   lead: Lead;
   today: string;
   /** A line under the phone: the column on the calls list, the owner on the board. */
   note?: string | null;
   onPress: () => void;
+  ticked?: boolean;
+  /** With it the row has a tick box, for doing one thing to several leads (A-259). */
+  onTick?: () => void;
 }) {
+  const t = useTranslations("leads");
   const { colors } = useTheme();
-  return (
+  const body = (
     <Pressable
       onPress={onPress}
       accessibilityRole="button"
-      style={({ pressed }) => [styles.row, pressed ? { backgroundColor: colors.muted } : null]}
+      style={({ pressed }) => [
+        styles.row,
+        onTick ? styles.beside : null,
+        pressed ? { backgroundColor: colors.muted } : null,
+      ]}
       testID={`lead-${lead.id}`}
     >
       <Text variant="bodyStrong">{lead.fullName}</Text>
@@ -107,9 +118,23 @@ export function LeadRow({
       <LeadBadges lead={lead} today={today} />
     </Pressable>
   );
+  if (!onTick) return body;
+  return (
+    <View style={styles.ticked}>
+      <Tick
+        ticked={ticked}
+        onPress={onTick}
+        label={t("select", { name: lead.fullName })}
+        testID={`lead-tick-${lead.id}`}
+      />
+      {body}
+    </View>
+  );
 }
 
 const styles = StyleSheet.create({
   badges: { flexDirection: "row", flexWrap: "wrap", gap: 6, marginTop: 2 },
   row: { paddingHorizontal: space[4], paddingVertical: space[3], gap: 2 },
+  ticked: { flexDirection: "row", alignItems: "stretch" },
+  beside: { flex: 1, paddingLeft: space[2] },
 });

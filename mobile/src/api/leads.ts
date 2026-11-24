@@ -292,6 +292,7 @@ export type InboxStatus = "open" | "closed" | "all";
 export const leadKeys = {
   board: (filters: BoardFilters) => ["leads", "board", filters] as const,
   options: ["leads", "options"] as const,
+  sources: (from: string | null, to: string | null) => ["leads", "sources", from, to] as const,
   contacts: (id: string) => ["leads", "contacts", id] as const,
   trials: (id: string) => ["leads", "trials", id] as const,
   calls: (filters: CallsFilters) => ["leads", "calls", filters] as const,
@@ -349,6 +350,106 @@ export function useSaveLead(id: string | null) {
       id
         ? api<Lead>(`/leads/${id}`, { method: "PATCH", body: input })
         : api<Lead>("/leads", { method: "POST", body: input }),
+    onSuccess: changed,
+  });
+}
+
+export type BulkLeadAction =
+  { action: "move"; columnId: string } | { action: "archive" } | { action: "restore" };
+
+/** The ticked leads together (A-259): moved to a column, archived or brought back. */
+export function useBulkLeads() {
+  const changed = useLeadsChanged();
+  return useMutation({
+    mutationFn: (input: BulkLeadAction & { leadIds: string[] }) =>
+      api<{ done: number; skipped: number }>("/leads/bulk", { method: "POST", body: input }),
+    onSuccess: changed,
+  });
+}
+
+/*
+ * The board's own set-up (A-258): boards, their columns and the sources leads
+ * come from, as the site's Leads page and its Sources report have them.
+ */
+
+/** Renames a board, or makes a new one in a branch (it starts with one column). */
+export function useSaveBoard(id: string | null) {
+  const changed = useLeadsChanged();
+  return useMutation({
+    mutationFn: (input: { name: string; branchId?: string | null }) =>
+      id
+        ? api<LeadBoard>(`/lead-boards/${id}`, { method: "PATCH", body: { name: input.name } })
+        : api<LeadBoard>("/lead-boards", { method: "POST", body: input }),
+    onSuccess: changed,
+  });
+}
+
+/** Deletes a board; the server keeps one that still has leads or takes a form's leads. */
+export function useDeleteBoard() {
+  const changed = useLeadsChanged();
+  return useMutation({
+    mutationFn: (id: string) => api<void>(`/lead-boards/${id}`, { method: "DELETE" }),
+    onSuccess: changed,
+  });
+}
+
+/** Renames a column, or adds one at the end of a board. */
+export function useSaveColumn(target: { boardId: string } | { columnId: string } | null) {
+  const changed = useLeadsChanged();
+  return useMutation({
+    mutationFn: (name: string): Promise<unknown> => {
+      if (!target) return Promise.resolve(null);
+      return "columnId" in target
+        ? api(`/lead-columns/${target.columnId}`, { method: "PATCH", body: { name } })
+        : api(`/lead-boards/${target.boardId}/columns`, { method: "POST", body: { name } });
+    },
+    onSuccess: changed,
+  });
+}
+
+/** Deletes a column; the server keeps a board's last one and one that still has leads. */
+export function useDeleteColumn() {
+  const changed = useLeadsChanged();
+  return useMutation({
+    mutationFn: (id: string) => api<void>(`/lead-columns/${id}`, { method: "DELETE" }),
+    onSuccess: changed,
+  });
+}
+
+export interface LeadSource {
+  id: string;
+  name: string;
+  isActive: boolean;
+  /** Leads, archived ones too, that came in the chosen days. */
+  leadCount: number;
+  /** Students who name this source. */
+  studentCount: number;
+}
+
+/** The sources with how many leads each brought between two days (either may be open). */
+export function useSources(from: string | null, to: string | null) {
+  return useQuery({
+    queryKey: leadKeys.sources(from, to),
+    queryFn: ({ signal }) => api<LeadSource[]>(`/lead-sources${query({ from, to })}`, { signal }),
+    placeholderData: (previous) => previous,
+  });
+}
+
+export function useSaveSource(id: string | null) {
+  const changed = useLeadsChanged();
+  return useMutation({
+    mutationFn: (input: { name: string; isActive: boolean }) =>
+      id
+        ? api<LeadSource>(`/lead-sources/${id}`, { method: "PATCH", body: input })
+        : api<LeadSource>("/lead-sources", { method: "POST", body: input }),
+    onSuccess: changed,
+  });
+}
+
+export function useDeleteSource() {
+  const changed = useLeadsChanged();
+  return useMutation({
+    mutationFn: (id: string) => api<void>(`/lead-sources/${id}`, { method: "DELETE" }),
     onSuccess: changed,
   });
 }
@@ -431,12 +532,17 @@ export function useCancelTrial() {
 
 /** The lead becomes a student of the group; the lead is archived with a link to the student. */
 export function useLeadToGroup(id: string) {
+  return useLeadsToGroup([id]);
+}
+
+/** The ticked leads become students of one group (A-259); those already in it are skipped. */
+export function useLeadsToGroup(leadIds: string[]) {
   const client = useQueryClient();
   return useMutation({
     mutationFn: (input: { groupId: string; joinedAt: string; status: JoinStatus }) =>
       api<{ added: number; skipped: number }>("/leads/add-to-group", {
         method: "POST",
-        body: { leadIds: [id], ...input },
+        body: { leadIds, ...input },
       }),
     onSuccess: () =>
       Promise.all([

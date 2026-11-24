@@ -107,6 +107,62 @@ export function useStudentOptions(enabled = true) {
   });
 }
 
+/** What is done to the ticked students together (A-260); the server checks the right each needs. */
+export type BulkStudentsInput =
+  | { action: "archive" | "restore"; studentIds: string[] }
+  | {
+      action: "addToGroup";
+      studentIds: string[];
+      groupId: string;
+      joinedAt: string;
+      status: "NEW" | "TRIAL" | "ACTIVE";
+    }
+  | {
+      action: "discount";
+      studentIds: string[];
+      groupId: string;
+      discountedPrice: number;
+      months: number;
+      comment: string | null;
+    };
+
+export interface BulkStudentsResult {
+  done: number;
+  skipped: number;
+}
+
+export function useBulkStudents() {
+  const client = useQueryClient();
+  return useMutation({
+    mutationFn: (input: BulkStudentsInput) =>
+      api<BulkStudentsResult>("/students/bulk", { method: "POST", body: input }),
+    // Groups, balances and the home page's figures all move with these.
+    onSuccess: () => client.invalidateQueries(),
+  });
+}
+
+/** The most students one "Activate" call takes. */
+const ACTIVATE_AT_ONCE = 200;
+
+/** Every New or Trial membership of these students becomes Active today (the site's "Activate"). */
+export function useActivateStudents() {
+  const client = useQueryClient();
+  return useMutation({
+    mutationFn: async (studentIds: string[]) => {
+      let activated = 0;
+      for (let from = 0; from < studentIds.length; from += ACTIVATE_AT_ONCE) {
+        const result = await api<{ activated: number }>("/students/activate", {
+          method: "POST",
+          body: { studentIds: studentIds.slice(from, from + ACTIVATE_AT_ONCE) },
+        });
+        activated += result.activated;
+      }
+      return { activated };
+    },
+    onSettled: () => client.invalidateQueries(),
+  });
+}
+
 export function usePaymentOptions(enabled = true) {
   return useQuery({
     queryKey: officeStudentKeys.paymentOptions,
