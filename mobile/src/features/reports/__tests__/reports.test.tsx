@@ -502,16 +502,20 @@ describe("the list of reports", () => {
       expect(screen.getByTestId(`report-${key}`)).toBeTruthy();
     }
     expect(screen.getByTestId("report-payments")).toHaveTextContent("Payments");
-    // The three the app does not have yet carry the sign of a page on the site.
-    expect(screen.getByTestId("report-graduates-site", hidden)).toBeTruthy();
-    expect(screen.getByTestId("report-staffAttendance-site", hidden)).toBeTruthy();
-    expect(screen.getByTestId("report-coins-site", hidden)).toBeTruthy();
-    expect(screen.queryByTestId("report-churn-site", hidden)).toBeNull();
+    // Every report is the app's own (A-239): none carries the sign of a page on the site.
+    for (const key of ["graduates", "staffAttendance", "coins", "churn"]) {
+      expect(screen.queryByTestId(`report-${key}-site`, hidden)).toBeNull();
+    }
 
     await fireEvent.press(screen.getByTestId("report-studentPayments"));
     expect(mockPush).toHaveBeenLastCalledWith("/staff/reports/student-payments");
     await fireEvent.press(screen.getByTestId("report-graduates"));
-    expect(mockOpenOnSite).toHaveBeenLastCalledWith("/en/reports/graduates");
+    expect(mockPush).toHaveBeenLastCalledWith("/staff/reports/graduates");
+    await fireEvent.press(screen.getByTestId("report-staffAttendance"));
+    expect(mockPush).toHaveBeenLastCalledWith("/staff/reports/staff-attendance");
+    await fireEvent.press(screen.getByTestId("report-coins"));
+    expect(mockPush).toHaveBeenLastCalledWith("/staff/reports/coins");
+    expect(mockOpenOnSite).not.toHaveBeenCalled();
   });
 
   it("leaves out what the person has no right to", async () => {
@@ -533,9 +537,10 @@ describe("the list of reports", () => {
     expect(nativeRoute("/reports/referrals")).toBe("/staff/reports/referrals");
     expect(nativeRoute("/reports/students")).toBe("/staff/reports/students");
     expect(nativeRoute("/reports/statistics")).toBe("/staff/reports/statistics");
-    expect(nativeRoute("/reports/graduates")).toBeNull();
-    expect(nativeRoute("/reports/staff-attendance")).toBeNull();
-    expect(nativeRoute("/reports/coins")).toBeNull();
+    expect(nativeRoute("/reports/graduates")).toBe("/staff/reports/graduates");
+    expect(nativeRoute("/reports/staff-attendance")).toBe("/staff/reports/staff-attendance");
+    expect(nativeRoute("/reports/coins")).toBe("/staff/reports/coins");
+    expect(nativeRoute("/reports/taxes")).toBeNull();
     expect(nativeRoute("/reports/payments/export.xlsx")).toBeNull();
   });
 });

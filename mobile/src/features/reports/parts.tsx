@@ -1,9 +1,10 @@
 import { FileSpreadsheet } from "lucide-react-native";
 import { useState, type ReactNode } from "react";
-import { Pressable, StyleSheet, View } from "react-native";
+import { Pressable, ScrollView, StyleSheet, View } from "react-native";
 
 import type { ReportPeriod } from "@/api/office-reports";
 import { Button } from "@/components/button";
+import { Chip } from "@/components/chip";
 import { Select, type SelectOption } from "@/components/select";
 import { Card, Notice } from "@/components/surface";
 import { Text } from "@/components/text";
@@ -66,6 +67,42 @@ export function useDays(start: { from: string; to: string }) {
   /** Both are days and the last one is before the first. */
   const backwards = typed.from !== null && typed.to !== null && typed.to < typed.from;
   return { typed, applied, set, backwards };
+}
+
+/**
+ * The tabs of a report whose names do not fit a row of equal parts (five of
+ * them, or long ones): they keep their own widths and the row scrolls sideways.
+ */
+export function Tabs<T extends string>({
+  options,
+  value,
+  onChange,
+  testID,
+}: {
+  options: ReadonlyArray<{ value: T; label: string }>;
+  value: T;
+  onChange: (value: T) => void;
+  testID: string;
+}) {
+  return (
+    <ScrollView
+      horizontal
+      showsHorizontalScrollIndicator={false}
+      contentContainerStyle={styles.tabs}
+      accessibilityRole="tablist"
+      testID={testID}
+    >
+      {options.map((option) => (
+        <Chip
+          key={option.value}
+          label={option.label}
+          on={option.value === value}
+          onPress={() => onChange(option.value)}
+          testID={`${testID}-${option.value}`}
+        />
+      ))}
+    </ScrollView>
+  );
 }
 
 /** One filter's box in the row of filters: half the row on a phone, a quarter on a tablet. */
@@ -492,8 +529,9 @@ export function Stats({ items, columns = 3 }: { items: Stat[]; columns?: 2 | 3 |
   const width = `${100 / columns}%` as const;
   return (
     <View style={styles.stats}>
-      {items.map((item) => (
-        <View key={item.label} style={[styles.stat, { width }]}>
+      {items.map((item, index) => (
+        // Two numbers of a row can share a name: days late and time late.
+        <View key={`${index}:${item.label}`} style={[styles.stat, { width }]}>
           <Text variant="small" tone="mutedForeground" numberOfLines={2}>
             {item.label}
           </Text>
@@ -553,6 +591,7 @@ const styles = StyleSheet.create({
   fill: { flex: 1 },
   start: { alignSelf: "flex-start" },
   between: { flexDirection: "row", alignItems: "center", gap: space[2] },
+  tabs: { gap: space[2], paddingVertical: 2 },
   number: { fontVariant: ["tabular-nums"] },
   filters: {
     flexDirection: "row",
