@@ -204,6 +204,9 @@ A-201) has no migration and no setting. Two things to know after it:
   on an `https` address (the live site is one). Nothing on the server switches it
   on or off; a person can switch it off for the site in the browser.
 
+The rest of the student form in the app and the School filter (A-265) use the site's own calls.
+No server update, no migration, no setting.
+
 Attendance by badge in the app and a student's earned badges (A-264) use the site's own calls.
 No server update, no migration, no setting. The app itself gains a camera module
 (`expo-camera`), so the feature is in the app from its next build on.
