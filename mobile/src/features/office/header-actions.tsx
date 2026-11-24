@@ -1,11 +1,13 @@
 import { useRouter } from "expo-router";
-import { Bell, Search } from "lucide-react-native";
+import { Bell, Search, Sparkles } from "lucide-react-native";
 import { StyleSheet, View } from "react-native";
 
 import { useUnreadCount } from "@/api/office";
 import { Press } from "@/components/motion";
 import { Text } from "@/components/text";
+import { useSummaryUnseen } from "@/features/assistant/summary-seen";
 import { useTranslations } from "@/lib/i18n";
+import { can, useMe } from "@/lib/session";
 import { useTheme } from "@/lib/theme";
 
 /**
@@ -16,9 +18,11 @@ import { useTheme } from "@/lib/theme";
 const REACH = { top: 8, bottom: 2, left: 4, right: 4 };
 
 /**
- * The two things on top of every page of the site, at the right of the home's
+ * What stands on top of every page of the site, at the right of the home's
  * header (A-230): the search over students, groups and leads, and the bell
- * with how many notifications wait unread.
+ * with how many notifications wait unread. With them the assistant (A-253),
+ * for those the site shows its floating assistant to; it opens on the summary
+ * and carries a dot until today's summary has been looked at.
  */
 export function HeaderActions() {
   const t = useTranslations();
@@ -26,8 +30,33 @@ export function HeaderActions() {
   const { colors } = useTheme();
   const unread = useUnreadCount();
   const count = unread.data ?? 0;
+  const me = useMe();
+  const assistant = can(me, "dashboard.view") || can(me, "groups.view");
+  const unseen = useSummaryUnseen(me.user.id);
   return (
     <View style={styles.row}>
+      {assistant ? (
+        <Press
+          accessibilityRole="button"
+          accessibilityLabel={t("assistant.launcher.open")}
+          hitSlop={REACH}
+          sink={0.88}
+          onPress={() => router.push({ pathname: "/staff/assistant", params: { tab: "summary" } })}
+          style={styles.button}
+          testID="open-assistant"
+        >
+          <Sparkles size={22} color={colors.foreground} />
+          {unseen ? (
+            <View
+              style={[
+                styles.dot,
+                { backgroundColor: colors.saffron, borderColor: colors.background },
+              ]}
+              testID="summary-unseen"
+            />
+          ) : null}
+        </Press>
+      ) : null}
       <Press
         accessibilityRole="button"
         accessibilityLabel={t("mobile.office.searchTitle")}
@@ -83,4 +112,13 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   countText: { fontSize: 11, lineHeight: 14 },
+  dot: {
+    position: "absolute",
+    top: 2,
+    right: 6,
+    width: 10,
+    height: 10,
+    borderRadius: 5,
+    borderWidth: 2,
+  },
 });

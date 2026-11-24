@@ -450,6 +450,36 @@ export function assistantSystemPrompt(actor: Actor, centre: string, locale: stri
   ].join("\n");
 }
 
+/** What the Assistant page shows before a question is asked. */
+export interface AssistantInfoDto {
+  /** Whose first questions are offered: the office's or a teacher's. */
+  audience: "office" | "teacher";
+  /** "fake" is the test mode of a centre without a key. */
+  mode: "fake" | "anthropic";
+  model: string;
+  /** Whether this person may enter the key in Settings → Integrations. */
+  canConfigure: boolean;
+}
+
+/**
+ * What the site's Assistant page reads while it is drawn on the server, for
+ * the phone app (A-253), which has no such moment: who is asking and how the
+ * centre's assistant answers. Nothing here costs an answer.
+ */
+export async function assistantInfo(
+  actor: Actor,
+  db: DbClient = prisma,
+): Promise<AssistantInfoDto> {
+  if (!canUseAssistant(actor.permissions)) throw AppError.forbidden();
+  const client = await getAiClient(db, actor.organizationId);
+  return {
+    audience: can(actor, "dashboard.view") ? "office" : "teacher",
+    mode: client.name,
+    model: client.model,
+    canConfigure: can(actor, "settings.integrations"),
+  };
+}
+
 /** One answer to a conversation; the model may call tools up to MAX_TOOL_ROUNDS times. */
 export async function askAssistant(
   actor: Actor,

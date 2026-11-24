@@ -56,6 +56,8 @@ const HEADER_GUESS = 36 + 2 * space[3];
 export interface ScreenScroll {
   /** Brings what stands `y` points down the page to the top, just under the header. */
   to: (y: number, animated?: boolean) => void;
+  /** Goes to the end of the page: the newest line of a conversation. */
+  end: (animated?: boolean) => void;
 }
 
 /**
@@ -77,6 +79,7 @@ export function Screen({
   contentStyle,
   padTop = false,
   scrollRef,
+  footerField = false,
 }: {
   children: ReactNode;
   scroll?: boolean;
@@ -91,6 +94,8 @@ export function Screen({
   padTop?: boolean;
   /** For a screen that moves its own page: a section of an article. */
   scrollRef?: Ref<ScreenScroll>;
+  /** The footer is a field to write in (a question to the assistant): it rises with the keyboard. */
+  footerField?: boolean;
 }) {
   const { colors } = useTheme();
   const { wide } = useLayout();
@@ -128,6 +133,10 @@ export function Screen({
         wanted.current = y;
         goRef.current(y, animated);
       },
+      end: (animated = true) => {
+        wanted.current = null;
+        scroller.current?.scrollToEnd({ animated });
+      },
     }),
     [],
   );
@@ -158,7 +167,8 @@ export function Screen({
           style={styles.fill}
           // Android draws under the keyboard (edge to edge): the page gives up that room and the
           // field being typed in stays in view. iOS moves the scrolling part by itself (below).
-          behavior={Platform.OS === "android" ? "padding" : undefined}
+          // A field in the footer is not part of what scrolls, so there the whole page makes room.
+          behavior={Platform.OS === "android" || footerField ? "padding" : undefined}
         >
           <View style={styles.fill}>
             <Backdrop style={styles.fill}>
@@ -170,7 +180,7 @@ export function Screen({
                   testID="screen-scroll"
                   keyboardShouldPersistTaps="handled"
                   // iOS: a field under the keyboard is scrolled into view.
-                  automaticallyAdjustKeyboardInsets
+                  automaticallyAdjustKeyboardInsets={!footerField}
                   contentInset={inset ? room : undefined}
                   // The page starts under the header, and goes back there when the header grows.
                   contentOffset={inset ? start : undefined}

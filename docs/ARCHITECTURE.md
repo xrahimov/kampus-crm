@@ -274,6 +274,8 @@ The lesson room's client code that is not tied to a browser page lives in `src/l
 **Help (the manual)**
 The site renders the manual on its own pages from `src/features/help`. For the phone app (A-252): ✓ `GET /help?locale` (every article the reader may open, whole, in one language: text, pictures with their sizes, videos this server has) · ✓ `GET /help/search?locale&q` (the site's own search) · ✓ `GET /help-videos/:locale/:id` (one how-to video, open to everyone, A-199)
 
+**The assistant** (A-185, A-190): ✓ `POST /assistant` (one answer to a conversation, sent whole) · ✓ `POST /assistant/briefing` (a person's summary of a period: figures and a conclusion) · ✓ `GET /assistant` (for the phone app, A-253: who is asking, test mode or a model, whether this person may enter the key; reads settings only)
+
 **Webhooks (integrations)**
 ✓ `POST /webhooks/telephony` · `POST /webhooks/face-id` · `POST /webhooks/telegram` (shared secret in `x-kampus-secret` or `?secret=`; `/webhooks/amocrm` is only the OAuth redirect URI)
 
