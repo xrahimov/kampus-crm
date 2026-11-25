@@ -1,8 +1,8 @@
 # Kampus on the App Store
 
 What is ready for putting the iPhone and iPad app (`center.kampus.app`) on the App Store, what kai
-does in App Store Connect, and the answers for Apple's forms. Written 26 November 2026 (A-269,
-A-270). The Android side is in [PLAY-STORE.md](PLAY-STORE.md).
+does in App Store Connect, and the answers for Apple's forms. Written 26 November 2026 (A-269 to
+A-271). The Android side is in [PLAY-STORE.md](PLAY-STORE.md).
 
 Claude never handles the passwords of kai's accounts. Signing is Xcode's: the keys stay in the
 Mac's keychain and with Apple, none is in the repository.
@@ -14,10 +14,10 @@ Mac's keychain and with Apple, none is in the repository.
 | Apple Developer Program                             | kai's, individual, since 25 November 2026, renews 26 November 2027                                               |
 | The app's names and app group                       | Registered: `center.kampus.app`, `center.kampus.app.broadcast`, `group.center.kampus.app`                        |
 | A record in App Store Connect                       | Made. Store name **Kampus: learning centre** ("Kampus" alone was taken); under the icon the app is called Kampus |
-| A signed build                                      | **1.0.0 (1)** uploaded from the Mac on 25 November 2026, in TestFlight                                           |
+| A signed build                                      | **1.0.0 (1)** uploaded from the Mac on 25 November 2026, in TestFlight; kai is its only tester                   |
 | Name, subtitle, description, keywords, category     | Entered as drafts in English (U.S.) and Russian. Apple has no Uzbek store page                                   |
-| Privacy policy and account deletion links           | Entered. The pages are live only after the server update with #168                                               |
-| Screenshots (iPhone 6.9-inch, iPad 13-inch)         | Not made yet                                                                                                     |
+| Privacy policy and account deletion links           | Entered. The pages are live since the server update of 25 November 2026                                          |
+| Screenshots (iPhone 6.9-inch, iPad 13-inch)         | Made on the Mac (A-271), English and Russian; a few are retaken after two repairs; not yet in App Store Connect  |
 | App Privacy answers, age rating, content rights     | Answers below; not entered                                                                                       |
 | Price and countries                                 | Not set. Free; the countries are kai's choice                                                                    |
 | A sign-in and contact details for Apple's reviewers | kai's                                                                                                            |
@@ -26,10 +26,11 @@ Mac's keychain and with Apple, none is in the repository.
 
 ## kai's steps, in order
 
-1. **Say "deploy it"** so the privacy and delete-account pages exist on the live site. Apple opens
-   both links during review, and the store build talks to the live site.
-2. **Try the app on a phone.** Say "add me to testflight": Claude makes an internal test group with
-   only kai in it, and the app installs through Apple's TestFlight app.
+1. **"deploy it"**: done on 25 November 2026. The privacy and delete-account pages are on the live
+   site; Apple opens both links during review, and the store build talks to the live site.
+2. **Try the app on a phone.** kai is in the internal test group "Owner" since 25 November 2026:
+   Apple's e-mail to the Apple ID's address has the button and the code for the TestFlight app.
+   Teachers and students come in as **outside testers** (see below), not through this group.
 3. **Read the answers below** and say "fill the forms"; Claude enters them in App Store Connect as
    drafts. They are declarations in kai's name, so they are not entered before that.
 4. **Give the reviewers a way in.** Under **App Review Information**: a sign-in that works with a
@@ -42,6 +43,30 @@ Mac's keychain and with Apple, none is in the repository.
    that Apple shows to the public); leaving the EU out avoids that. China mainland asks for filings
    Kampus does not have: leave it out.
 7. **Say "send it for review"** when the pictures are in and the forms are filled.
+
+## Testers
+
+- **Inside testers** (up to 100) must be users of kai's developer account in App Store Connect, each
+  with a role. Right for kai and a co-developer, wrong for teachers and students. Claude does not
+  give another address access to the account; kai presses **Invite** under Users and Access.
+- **Outside testers** (up to 10,000) get no access to the account: a public link or an invitation
+  by e-mail, and the app installs through TestFlight. Apple looks at a build once before outside
+  testers get it, and asks for a text on what to test, kai's contact details and a sign-in with a
+  password. On "set up outside testers" Claude makes the group and drafts the text; kai types the
+  contact details and the sign-in and sends it in.
+- A TestFlight build stops working 90 days after its upload.
+
+## The pictures
+
+On kai's Mac in `~/Desktop/kampus-appstore/screenshots/` (A-271): `iphone-6.9/en` and `ru`, six
+pictures each at 1320 by 2868 (Today, grading sheet, a student, Finance, Leads, a group), and
+`ipad-13/en` and `ru`, four each at 2048 by 2732 (Today, a group, Students, Finance). App Store
+Connect takes them by drag and drop on the version's page, per language and per device size.
+
+They are taken on the simulators "iPhone 18 Pro Max" and "iPad Air 13-inch (M4)" from a Release
+build against the local server with the seed data, the clock set to 9:41 with
+`xcrun simctl status_bar`, the language switched in the app. A simulator's picture carries an
+alpha channel, which Apple refuses: each file is flattened (checked with `sips`, `hasAlpha: no`).
 
 ## The store page's texts
 

@@ -93,17 +93,22 @@ export function SignInScreen() {
   if (wide) {
     return (
       <View style={[styles.split, { backgroundColor: colors.background }]}>
-        <View style={[styles.wall, { backgroundColor: palette.light.sidebar }]}>
-          <TileWall />
-          {/* As on the site: the name and what Kampus is, at the foot of the wall. */}
-          <View
-            style={[styles.wallBrand, { paddingBottom: insets.bottom + space[10] }]}
-            pointerEvents="none"
-          >
-            <Text variant="display" style={styles.wallName}>
-              {t("app.name")}
-            </Text>
-            <Text style={styles.wallTagline}>{t("app.tagline")}</Text>
+        {/* The wall starts under the status bar, like the rail after sign-in: a tablet's clock
+            and date sit over this corner in the page's ink, and on the dark wall they could not
+            be read in light mode (A-271). */}
+        <View style={[styles.wallSide, { paddingTop: insets.top }]} testID="sign-in-wall-side">
+          <View style={[styles.wall, { backgroundColor: palette.light.sidebar }]}>
+            <TileWall />
+            {/* As on the site: the name and what Kampus is, at the foot of the wall. */}
+            <View
+              style={[styles.wallBrand, { paddingBottom: insets.bottom + space[10] }]}
+              pointerEvents="none"
+            >
+              <Text variant="display" style={styles.wallName}>
+                {t("app.name")}
+              </Text>
+              <Text style={styles.wallTagline}>{t("app.tagline")}</Text>
+            </View>
           </View>
         </View>
         <KeyboardAvoidingView
@@ -786,7 +791,8 @@ function JoinStep({
 const styles = StyleSheet.create({
   fill: { flex: 1 },
   split: { flex: 1, flexDirection: "row" },
-  wall: { flex: 5, overflow: "hidden" },
+  wallSide: { flex: 5 },
+  wall: { flex: 1, overflow: "hidden" },
   side: { flex: 6 },
   wallBrand: {
     flex: 1,

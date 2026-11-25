@@ -218,7 +218,16 @@ export function FinanceScreen() {
                 style={styles.tile}
                 testID={`finance-figure-${key}`}
               >
-                <Text variant="small" tone="mutedForeground" numberOfLines={1}>
+                {/* One line, so the numbers of a row stand level; a long name ("Эффективность
+                    маркетинга" on a phone) is set a little smaller instead of cut (A-271). */}
+                <Text
+                  variant="small"
+                  tone="mutedForeground"
+                  numberOfLines={1}
+                  adjustsFontSizeToFit
+                  minimumFontScale={0.8}
+                  testID={`finance-figure-${key}-name`}
+                >
                   {tf(`kpis.${key}`)}
                 </Text>
                 <Text
