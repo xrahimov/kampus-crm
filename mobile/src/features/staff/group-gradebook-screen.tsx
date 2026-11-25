@@ -5,6 +5,7 @@ import { useGroup } from "@/api/hooks";
 import { useGroupGradebook } from "@/api/staff-group";
 import type { GroupGradebook } from "@/api/types";
 import { Header } from "@/components/header";
+import { RoomyText } from "@/components/roomy-text";
 import { Card, EmptyState, Screen } from "@/components/surface";
 import { Text } from "@/components/text";
 import { PendingScreen } from "@/features/shared/pending-screen";
@@ -101,11 +102,11 @@ function StudentCard({ row }: { row: Row }) {
                 <Text variant="small" style={styles.fill}>
                   {name}
                 </Text>
-                <Text variant="small" tone="mutedForeground">
+                <RoomyText variant="small" tone="mutedForeground">
                   {category.percent === null
                     ? t("groups.gradebook.items", { count: 0 })
                     : `${category.percent}%, ${t("groups.gradebook.items", { count: category.count })}`}
-                </Text>
+                </RoomyText>
               </View>
               <Meter percent={category.percent} label={name} />
             </View>

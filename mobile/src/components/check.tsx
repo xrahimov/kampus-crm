@@ -1,8 +1,9 @@
 import { Check as CheckIcon } from "lucide-react-native";
-import { Platform, Pressable, StyleSheet, View } from "react-native";
+import { Pressable, StyleSheet, View } from "react-native";
 
 import { radius, space, useTheme } from "@/lib/theme";
 
+import { RoomyText } from "./roomy-text";
 import { Text } from "./text";
 
 /** A yes-or-no choice with its words: the whole row takes the tap. */
@@ -52,7 +53,7 @@ export function Check({
         {value ? <CheckIcon size={16} color={colors.primaryForeground} /> : null}
       </View>
       <View style={inline ? styles.words : styles.fill}>
-        {inline && Platform.OS === "android" ? <RoomyLabel label={label} /> : <Text>{label}</Text>}
+        {inline ? <RoomyText>{label}</RoomyText> : <Text>{label}</Text>}
         {hint ? (
           <Text variant="small" tone="mutedForeground">
             {hint}
@@ -60,24 +61,6 @@ export function Check({
         ) : null}
       </View>
     </Pressable>
-  );
-}
-
-/**
- * A label that is as wide as its words on Android and still shows all of them
- * (A-268). Android lays a text out a fraction of a point narrower than it was
- * measured, so a label given exactly its own width drops its last letter to a
- * second line nobody sees ("Arxiv" read "Arxi"). The unseen copy, one space
- * longer and held to one line, sets the width; the words are drawn over it.
- */
-function RoomyLabel({ label }: { label: string }) {
-  return (
-    <View>
-      <Text numberOfLines={1} style={styles.unseen} importantForAccessibility="no">
-        {`${label}\u00A0`}
-      </Text>
-      <Text style={StyleSheet.absoluteFill}>{label}</Text>
-    </View>
   );
 }
 
@@ -139,7 +122,6 @@ const styles = StyleSheet.create({
   level: { marginTop: 0 },
   // Never narrower than the words.
   words: { flexShrink: 0 },
-  unseen: { opacity: 0 },
   box: {
     width: 24,
     height: 24,
