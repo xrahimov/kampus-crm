@@ -119,7 +119,9 @@ const styles = StyleSheet.create({
   fill: { flex: 1 },
   inline: { flexGrow: 0, flexShrink: 0, alignItems: "center" },
   level: { marginTop: 0 },
-  words: { flexShrink: 1 },
+  // Never narrower than the words: allowed to shrink, Android rounds the width down by a
+  // fraction of a point and the last letter of a one-word label drops off ("Arxi", A-268).
+  words: { flexShrink: 0 },
   box: {
     width: 24,
     height: 24,

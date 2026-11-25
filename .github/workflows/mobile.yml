@@ -99,11 +99,16 @@ jobs:
         run: npx expo prebuild --platform android --no-install
       # A release build carries its own JavaScript, so it runs without a
       # computer beside it. It is signed with the template's test key: fine for
-      # trying the app, not for Google Play (that key will be kai's own).
+      # trying the app, not for Google Play (that file is built by the
+      # "Google Play bundle" workflow, with kai's upload key).
       # arm64 is every current phone and tablet; x86_64 is the emulator below.
       - name: Build
         working-directory: mobile/android
         run: ./gradlew assembleRelease --no-daemon -PreactNativeArchitectures=arm64-v8a,x86_64
+      # Google Play asks this of every app for Android 15 and later (A-268); a
+      # library that is not ready is named here, long before an upload is refused.
+      - name: Native libraries are ready for 16 KB memory pages
+        run: bash scripts/check-page-size.sh android/app/build/outputs/apk/release/app-release.apk
       - name: Name the file
         run: cp android/app/build/outputs/apk/release/app-release.apk "$RUNNER_TEMP/kampus-${{ github.run_number }}.apk"
       - uses: actions/upload-artifact@v4

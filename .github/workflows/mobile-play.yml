@@ -1,0 +1,114 @@
+name: Google Play bundle
+
+# The file that is uploaded to Google Play (A-268): an Android App Bundle of
+# the Kampus app (mobile/), signed with the app's upload key.
+#
+# Run by hand ("Run workflow") it builds the real one, with the upload key from
+# this repository's secrets, and keeps it as a download for 30 days.
+# On a pull request that touches how the app is built or signed it runs the
+# same steps with a key made up for the run and thrown away, so that a change
+# which would break the store build is seen before it is merged.
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - "mobile/app.config.ts"
+      - "mobile/plugins/**"
+      - "mobile/package-lock.json"
+      - "mobile/scripts/check-page-size.sh"
+      - "mobile/scripts/check-play-bundle.sh"
+      - ".github/workflows/mobile-play.yml"
+
+concurrency:
+  group: mobile-play-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  bundle:
+    name: Signed bundle for Google Play
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    defaults:
+      run:
+        working-directory: mobile
+    env:
+      # Google Play takes each number once, and only a higher one than before.
+      # This workflow's own count gives that, whoever starts the run.
+      APP_BUILD: ${{ github.run_number }}
+      KAMPUS_UPLOAD_KEY_ALIAS: upload
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: mobile/package-lock.json
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+      - uses: gradle/actions/setup-gradle@v4
+      - name: Install
+        run: npm ci
+      # The real key is kai's: made on kai's computer by scripts/play-upload-key.sh
+      # and kept in this repository's secrets. Nobody reads it back from there.
+      - name: The upload key from the secrets
+        if: github.event_name == 'workflow_dispatch'
+        env:
+          UPLOAD_KEYSTORE: ${{ secrets.ANDROID_UPLOAD_KEYSTORE }}
+          UPLOAD_PASSWORD: ${{ secrets.ANDROID_UPLOAD_PASSWORD }}
+        run: |
+          if [ -z "$UPLOAD_KEYSTORE" ] || [ -z "$UPLOAD_PASSWORD" ]; then
+            echo "::error::The upload key is not in this repository's secrets yet. See docs/PLAY-STORE.md, 'The upload key'."
+            exit 1
+          fi
+          printf '%s' "$UPLOAD_KEYSTORE" | base64 --decode > "$RUNNER_TEMP/upload.jks"
+          {
+            echo "KAMPUS_UPLOAD_STORE_FILE=$RUNNER_TEMP/upload.jks"
+            echo "KAMPUS_UPLOAD_STORE_PASSWORD=$UPLOAD_PASSWORD"
+          } >> "$GITHUB_ENV"
+      # A pull request has no secrets to use and needs none: a key made here,
+      # with a password made here, proves the signing and is gone with the run.
+      - name: A throwaway key for the trial run
+        if: github.event_name != 'workflow_dispatch'
+        run: |
+          export KAMPUS_UPLOAD_STORE_PASSWORD="$(openssl rand -hex 16)"
+          echo "::add-mask::$KAMPUS_UPLOAD_STORE_PASSWORD"
+          keytool -genkeypair -keystore "$RUNNER_TEMP/upload.jks" -storetype PKCS12 \
+            -alias upload -keyalg RSA -keysize 2048 -validity 2 -dname "CN=Kampus trial run" \
+            -storepass:env KAMPUS_UPLOAD_STORE_PASSWORD -keypass:env KAMPUS_UPLOAD_STORE_PASSWORD
+          {
+            echo "KAMPUS_UPLOAD_STORE_FILE=$RUNNER_TEMP/upload.jks"
+            echo "KAMPUS_UPLOAD_STORE_PASSWORD=$KAMPUS_UPLOAD_STORE_PASSWORD"
+          } >> "$GITHUB_ENV"
+      # No EXPO_PUBLIC_API_URL: the store's app talks to the live site over https.
+      - name: Generate the Android project
+        run: npx expo prebuild --platform android --no-install
+      - name: The store's app refuses plain http
+        run: |
+          if grep -q 'usesCleartextTraffic="true"' android/app/src/main/AndroidManifest.xml; then
+            echo "::error::The generated app allows plain http; a store build must not."
+            exit 1
+          fi
+      # Every kind of processor: Google Play hands each phone only its own part.
+      - name: Build the bundle
+        working-directory: mobile/android
+        run: ./gradlew bundleRelease --no-daemon
+      - name: Signed with the upload key, ready for 16 KB pages
+        run: bash scripts/check-play-bundle.sh android/app/build/outputs/bundle/release/app-release.aab "$KAMPUS_UPLOAD_STORE_FILE" upload
+      - name: Name the file
+        if: github.event_name == 'workflow_dispatch'
+        run: cp android/app/build/outputs/bundle/release/app-release.aab "$RUNNER_TEMP/kampus-play-${{ github.run_number }}.aab"
+      - uses: actions/upload-artifact@v4
+        if: github.event_name == 'workflow_dispatch'
+        with:
+          name: kampus-play-${{ github.run_number }}
+          path: ${{ runner.temp }}/kampus-play-${{ github.run_number }}.aab
+          if-no-files-found: error
+          retention-days: 30
+      - name: Remove the key from the runner
+        if: always()
+        run: rm -f "$RUNNER_TEMP/upload.jks"
