@@ -2,7 +2,7 @@
 
 What is ready for putting the Android app (`center.kampus.app`) on Google Play, what kai does in
 Play Console, and the answers for Google's forms. Written 25 November 2026 (A-267, A-268). The
-iPhone side has its own list in [MOBILE-APPS.md](MOBILE-APPS.md).
+iPhone side is in [APP-STORE.md](APP-STORE.md).
 
 Claude never handles the passwords of kai's accounts and never sees the upload key or its password.
 

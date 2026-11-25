@@ -1,0 +1,14 @@
+{
+  "en-US": {
+    "name": "Kampus: learning centre",
+    "subtitle": "Lessons, homework, payments",
+    "promotionalText": "Lessons, homework, attendance and payments of your learning centre in one app, for students, parents, teachers and the office.",
+    "keywords": "school,education,course,class,teacher,student,parent,timetable,attendance,marks,tuition,crm,video"
+  },
+  "ru": {
+    "name": "Kampus: учебный центр",
+    "subtitle": "Уроки, задания и оплата",
+    "promotionalText": "Уроки, домашние задания, посещаемость и оплата вашего учебного центра в одном приложении: для учеников, родителей, учителей и администрации.",
+    "keywords": "школа,курсы,обучение,учитель,ученик,родитель,расписание,посещаемость,оценки,оплата,журнал,видеоурок"
+  }
+}

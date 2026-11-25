@@ -89,6 +89,7 @@ able to work from an iPad or a phone.
 | Deleting one's own account, and the privacy policy the stores ask for (A-267)                                                                                                                                                | Built, phone and tablet; needs the server update (one migration) and a new build of the app                                                 |
 | Ready for Google Play: a bundle signed with kai's upload key, the 16 KB check, the store page's texts and pictures (A-268)                                                                                                   | Built; waits for kai's Play Console account and key: [PLAY-STORE.md](PLAY-STORE.md)                                                         |
 | The store accounts: Google Play (personal, "Kampus CRM", identity check running) and Apple (individual, approved); the iPhone app names its signing team (A-269)                                                             | Accounts open; the Mac signs once kai's Apple ID is in Xcode                                                                                |
+| The first signed iPhone and iPad build, 1.0.0 (1), in TestFlight; the App Store page's texts in English and Russian as drafts (A-270, [APP-STORE.md](APP-STORE.md))                                                          | Uploaded; no testers, nothing sent for review                                                                                               |
 | What stays on the site                                                                                                                                                                                                       | The organisations page with the server's status, the print layouts (receipt, badge, cash desk sheet, certificate), recording a video lesson |
 | The site running on the app's code                                                                                                                                                                                           | Part by part, the student side first; wide tables, Excel and print last                                                                     |
 
@@ -104,11 +105,12 @@ None of this blocks building; each item unlocks one step.
 2. **Apple Developer Program**: enrolled 25 November 2026 as an individual, $99 a year, renews 26
    November 2027 (A-269). The app's two names, `center.kampus.app` and its screen-share extension
    `center.kampus.app.broadcast`, and the app group `group.center.kampus.app` are registered in the
-   account. In App Store Connect the app's record exists under the name **Kampus CRM** ("Kampus"
-   alone was taken there; on the phone the app is still called Kampus), English (U.S.), for iPhone
-   and iPad. Its store page is empty and nothing has been sent to Apple for review.
-3. **Xcode** on the Mac is installed. Still to do: add the Apple ID in Xcode (Settings, Accounts),
-   so the Mac can sign a build for a real iPhone and for TestFlight.
+   account. In App Store Connect the app's record exists under the name **Kampus: learning centre**
+   ("Kampus" alone was taken there; on the phone the app is still called Kampus), and the first
+   build, 1.0.0 (1), is in TestFlight (A-270). What kai still does there, in order, is in
+   [APP-STORE.md](APP-STORE.md).
+3. **Xcode** on the Mac is installed and has kai's Apple ID since 25 November 2026, so the Mac
+   signs builds for a real iPhone and for TestFlight.
 4. Later, for push: a free **Firebase** project (Android) and a push key from the Apple account.
 
 Claude never handles the passwords of these accounts. Signing keys are created by kai's accounts and
@@ -353,10 +355,11 @@ mobile/
 - **Deleting an account (A-267).** `useDeleteStudentAccount`, `useAskDeletion` and `useWithdrawDeletion` are in `api/account.ts`. The student's button is at the foot of `features/student/home-screen.tsx` and signs the app out when the server has answered; the staff card is in `features/account/account-screen.tsx`. Both open the site's `/delete-account` page for the longer explanation, so its text lives in one place.
 - **The Play build (A-268).** `plugins/with-release-signing.js` edits the generated `android/app/build.gradle` and throws when the template's lines are not where it expects them, so an Expo upgrade that moves them fails loudly in the **Google Play bundle** trial run and not silently with a test-signed file. `scripts/check-page-size.sh` and `scripts/check-play-bundle.sh` need only `readelf`, `unzip`, `keytool` and `jarsigner`. `scripts/play-upload-key.sh` is for kai's own hand: never run it in a check or from a Remote Control session. Store texts are in `store/listing.json`; change them there and paste into Play Console. On a phone a track's `stop()` does not end its capture: a screen share's foreground service and notice stay until `release()`, which `releaseWhenStopped` in `features/room/platform.native.tsx` hangs on `stop()` because the call engine is the site's and knows no `release()`. An auto-width `Text` on Android can be laid out a hair narrower than measured and lose its last letter or word: use `RoomyText` (`components/roomy-text.tsx`) for a one-line text beside something that takes the rest of the row, as `Check` with `inline` and the gradebook's figures do: its width comes from an unseen copy one space longer; padding or `flexShrink: 0` do not help. A `Confirm` has two buttons in half a phone's width each: keep the confirming label to one word. Screenshots for Play may not be longer than twice their width: take them at 1080 × 1920 (`adb shell wm size 1080x1920`), not at the emulator's own size.
 - **Signing for iPhone and iPad (A-269).** The team is `ios.appleTeamId` in `app.config.ts`; `plugins/with-screen-share.js` gives the extension the same team, and `scripts/check-ios-project.mjs` fails when the two differ. Signing is automatic: Xcode makes the certificates and profiles itself once the Apple ID is added in Xcode on the Mac, which is kai's own step. In Apple's page for a new App Group the field already holds `group.`: type only the rest.
+- **The App Store build (A-270).** The commands, and why a new team's first archive fails until one real device is registered, are in [APP-STORE.md](APP-STORE.md#how-it-is-built). The store build has no `EXPO_PUBLIC_API_URL` and a higher `APP_BUILD` each time. Apple's store texts are in `store/app-store.json` (English and Russian; Apple has no Uzbek page) and the description in `store/listing.json`; change them there, then in App Store Connect. Never press **Add for Review** there: that is kai's word.
 - **Finding what is missing.** The last sweep listed every `route.ts` under `src/app/api/v1` with
   its methods and looked for each path's last fixed part in `mobile/src`: a call nobody names is a
   feature the app lacks. Worth repeating after the site gains a feature.
-  Next free number: A-270.
+  Next free number: A-271.
 - **Finance and payroll (A-237).** `src/features/finance/` and `src/api/office-finance.ts`.
   `FinanceScreen` is the site's Finance page; `EntriesScreen` the entries of a kind or of a
   category (`entries-routes.tsx` reads which from the address), with `EntrySheet`, the site's one
