@@ -1,11 +1,12 @@
 "use client";
 
 import { Trash2 } from "lucide-react";
-import { useLocale, useTranslations } from "next-intl";
+import { useTranslations } from "next-intl";
 import { useState } from "react";
 
 import { ConfirmDialog } from "@/components/data/confirm-dialog";
 import { Button } from "@/components/ui/button";
+import { useRouter } from "@/i18n/navigation";
 import { api } from "@/lib/api-client";
 
 /**
@@ -15,7 +16,7 @@ import { api } from "@/lib/api-client";
  */
 export function DeleteStudentAccount({ size = "sm" }: { size?: "sm" | "default" }) {
   const t = useTranslations("studentApp");
-  const locale = useLocale();
+  const router = useRouter();
   const [open, setOpen] = useState(false);
   return (
     <>
@@ -37,8 +38,9 @@ export function DeleteStudentAccount({ size = "sm" }: { size?: "sm" | "default" 
         confirmLabel={t("deleteAccount")}
         onConfirm={async () => {
           await api("/student-auth/account", { method: "DELETE" });
-          // A full load: the session cookie is gone, and so is everything this page showed.
-          window.location.assign(`/${locale}/delete-account?done=1`);
+          // The session cookie is gone: the page that says so is read fresh from the server.
+          router.replace("/delete-account?done=1");
+          router.refresh();
         }}
       />
     </>
