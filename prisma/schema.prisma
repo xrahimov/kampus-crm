@@ -214,6 +214,9 @@ model User {
   staffView           StaffView?
   /// The first sign-in with Telegram: from then on the phone is proven and a password may sign in (A-196).
   telegramVerifiedAt  DateTime?
+  /// Set by the site owner (A-272): a sign-in for an app store's reviewer, whose
+  /// password works without a Telegram code. Null for everyone else.
+  reviewSignInAt      DateTime?
   /// When "choose a password" was offered after a Telegram sign-in; offered once (A-196).
   passwordOfferedAt   DateTime?
   /// When the person asked for their own account to be deleted; the director archives it (A-267).
@@ -1172,6 +1175,9 @@ model StudentAccount {
   passwordSetAt     DateTime?
   /// When "choose a password" was offered; offered once.
   passwordOfferedAt DateTime?
+  /// Made by the site owner for an app store's reviewer (A-272): it has no Telegram
+  /// behind it, and its telegramUserId is "review-<student id>".
+  reviewSignInAt    DateTime?
 
   links    StudentAccountLink[]
   sessions StudentSession[]

@@ -22,11 +22,13 @@ import { useRouter } from "@/i18n/navigation";
 import { api } from "@/lib/api-client";
 import { useDateFormat } from "@/lib/use-date-format";
 import type { OrganizationDto } from "@/server/services/settings/organizations.service";
+import type { ReviewSignInDto } from "@/server/services/settings/review-sign-ins.service";
 import type { SystemStatusDto } from "@/server/services/system/monitoring.service";
 
 import { FormDialog } from "../shared/form-dialog";
 import { RowActions } from "../shared/row-actions";
 import { OrganizationDialog } from "./organization-dialog";
+import { ReviewSignIns } from "./review-sign-ins";
 import { ServerStatus } from "./server-status";
 
 function formatBytes(bytes: number): string {
@@ -44,10 +46,12 @@ export function OrganizationsPage({
   organizations,
   ownId,
   status,
+  reviewSignIns,
 }: {
   organizations: OrganizationDto[];
   ownId: string;
   status: SystemStatusDto;
+  reviewSignIns: ReviewSignInDto[];
 }) {
   const t = useTranslations("settings.organizations");
   const tc = useTranslations("common");
@@ -273,6 +277,7 @@ export function OrganizationsPage({
           </div>
         )}
       </FormDialog>
+      <ReviewSignIns initial={reviewSignIns} onChanged={refresh} />
       <OrganizationDialog
         open={dialog.open}
         onOpenChange={(open) => setDialog((d) => ({ ...d, open }))}

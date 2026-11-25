@@ -91,6 +91,7 @@ able to work from an iPad or a phone.
 | The store accounts: Google Play (personal, "Kampus CRM", identity check running) and Apple (individual, approved); the iPhone app names its signing team (A-269)                                                             | Accounts open; the Mac signs once kai's Apple ID is in Xcode                                                                                |
 | The first signed iPhone and iPad build, 1.0.0 (1), in TestFlight; the App Store page's texts in English and Russian as drafts (A-270, [APP-STORE.md](APP-STORE.md))                                                          | Uploaded; no testers, nothing sent for review                                                                                               |
 | The App Store pictures for iPhone and iPad; a long tile name on Finance is shrunk, not cut; the sign-in wall on a tablet starts under the status bar (A-271)                                                                 | Pictures on the Mac; the two repairs need a new build of the app; no server update needed                                                   |
+| A sign-in for Apple's and Google's reviewers that needs no Telegram code, made by the site owner on Settings → Organisations (A-272)                                                                                         | Built on the site; needs the server update (one migration)                                                                                  |
 | What stays on the site                                                                                                                                                                                                       | The organisations page with the server's status, the print layouts (receipt, badge, cash desk sheet, certificate), recording a video lesson |
 | The site running on the app's code                                                                                                                                                                                           | Part by part, the student side first; wide tables, Excel and print last                                                                     |
 
@@ -361,7 +362,7 @@ mobile/
 - **Finding what is missing.** The last sweep listed every `route.ts` under `src/app/api/v1` with
   its methods and looked for each path's last fixed part in `mobile/src`: a call nobody names is a
   feature the app lacks. Worth repeating after the site gains a feature.
-  Next free number: A-272.
+  Next free number: A-273.
 - **Finance and payroll (A-237).** `src/features/finance/` and `src/api/office-finance.ts`.
   `FinanceScreen` is the site's Finance page; `EntriesScreen` the entries of a kind or of a
   category (`entries-routes.tsx` reads which from the address), with `EntrySheet`, the site's one

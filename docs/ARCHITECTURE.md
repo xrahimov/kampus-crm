@@ -221,6 +221,8 @@ For the phone app (A-203, A-204; [MOBILE-APPS.md](MOBILE-APPS.md)): a call with 
 
 A person's own account (A-267, for the stores' rules): `POST|DELETE /auth/account/deletion` (a staff member asks for their account to be deleted, or takes the request back; people with `staff.delete` get a notice) · `DELETE /student-auth/account` (a student deletes their own sign-in at once; the centre's record of the student stays). The public pages `/privacy` and `/delete-account` need no sign-in.
 
+Sign-ins for the stores' reviewers (A-272, site owner only): `GET|POST /system/review-sign-ins` (list them; give a staff member or a student of the owner's own centre, found by phone, a password that works without a Telegram code) and `POST /system/review-sign-ins/remove` (end one). The service refuses anyone who has signed in with Telegram themself.
+
 The lesson room's client code that is not tied to a browser page lives in `src/lib/video/` (A-207): `call-engine.ts` (connections, signalling by polling `/video/peers/:id/sync`, chat, hands, the teacher's tools), `room-view.ts` (who is on the stage) and `dto.ts` (the shapes the video services answer with, which the services re-export). The site's room (`features/video/call-room.tsx`) and the phone app (`mobile/src/features/room/`) both import it; the app passes the server's address to the engine, since it has no page address of its own. The engine also takes the device's own way to open a shared screen (`openDisplay`, A-208): a browser needs none, the Android app passes its screen capture. The whiteboard's strokes and a shown file's state travel through the same engine, so the app draws them from the same data as the site (A-209, A-210), with the shared rules in `src/lib/video-material.ts`.
 
 **Dashboard (EXP §1)**

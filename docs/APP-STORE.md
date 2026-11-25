@@ -2,27 +2,27 @@
 
 What is ready for putting the iPhone and iPad app (`center.kampus.app`) on the App Store, what kai
 does in App Store Connect, and the answers for Apple's forms. Written 26 November 2026 (A-269 to
-A-271). The Android side is in [PLAY-STORE.md](PLAY-STORE.md).
+A-272). The Android side is in [PLAY-STORE.md](PLAY-STORE.md).
 
 Claude never handles the passwords of kai's accounts. Signing is Xcode's: the keys stay in the
 Mac's keychain and with Apple, none is in the repository.
 
 ## Where things stand
 
-| What Apple asks                                     | State                                                                                                            |
-| --------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------- |
-| Apple Developer Program                             | kai's, individual, since 25 November 2026, renews 26 November 2027                                               |
-| The app's names and app group                       | Registered: `center.kampus.app`, `center.kampus.app.broadcast`, `group.center.kampus.app`                        |
-| A record in App Store Connect                       | Made. Store name **Kampus: learning centre** ("Kampus" alone was taken); under the icon the app is called Kampus |
-| A signed build                                      | **1.0.0 (1)** uploaded from the Mac on 25 November 2026, in TestFlight; kai is its only tester                   |
-| Name, subtitle, description, keywords, category     | Entered as drafts in English (U.S.) and Russian. Apple has no Uzbek store page                                   |
-| Privacy policy and account deletion links           | Entered. The pages are live since the server update of 25 November 2026                                          |
-| Screenshots (iPhone 6.9-inch, iPad 13-inch)         | Made on the Mac (A-271), English and Russian; a few are retaken after two repairs; not yet in App Store Connect  |
-| App Privacy answers, age rating, content rights     | Answers below; not entered                                                                                       |
-| Price and countries                                 | Not set. Free; the countries are kai's choice                                                                    |
-| A sign-in and contact details for Apple's reviewers | kai's                                                                                                            |
-| Copyright line, trader status for the EU            | kai's                                                                                                            |
-| Sent for review                                     | No. Nothing is sent before kai says so                                                                           |
+| What Apple asks                                     | State                                                                                                                                      |
+| --------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
+| Apple Developer Program                             | kai's, individual, since 25 November 2026, renews 26 November 2027                                                                         |
+| The app's names and app group                       | Registered: `center.kampus.app`, `center.kampus.app.broadcast`, `group.center.kampus.app`                                                  |
+| A record in App Store Connect                       | Made. Store name **Kampus: learning centre** ("Kampus" alone was taken); under the icon the app is called Kampus                           |
+| A signed build                                      | **1.0.0 (1)** uploaded from the Mac on 25 November 2026, in TestFlight; kai is its only tester, an outside group waits for its first build |
+| Name, subtitle, description, keywords, category     | Entered as drafts in English (U.S.) and Russian. Apple has no Uzbek store page                                                             |
+| Privacy policy and account deletion links           | Entered. The pages are live since the server update of 25 November 2026                                                                    |
+| Screenshots (iPhone 6.9-inch, iPad 13-inch)         | Made on the Mac (A-271), English and Russian, final; not yet in App Store Connect                                                          |
+| App Privacy answers, age rating, content rights     | Answers below; not entered                                                                                                                 |
+| Price and countries                                 | Not set. Free; the countries are kai's choice                                                                                              |
+| A sign-in and contact details for Apple's reviewers | Contact saved in TestFlight; the sign-in is made on the site (A-272) and typed by kai                                                      |
+| Copyright line, trader status for the EU            | kai's                                                                                                                                      |
+| Sent for review                                     | No. Nothing is sent before kai says so                                                                                                     |
 
 ## kai's steps, in order
 
@@ -33,10 +33,14 @@ Mac's keychain and with Apple, none is in the repository.
    Teachers and students come in as **outside testers** (see below), not through this group.
 3. **Read the answers below** and say "fill the forms"; Claude enters them in App Store Connect as
    drafts. They are declarations in kai's name, so they are not entered before that.
-4. **Give the reviewers a way in.** Under **App Review Information**: a sign-in that works with a
-   password (the reviewers cannot get a Telegram code), best one staff member and one student of the
-   demo centre, and kai's own name, phone and e-mail as the contact. kai types these; the passwords
-   are not sent to Claude.
+4. **Give the reviewers a way in.** Apple's reviewers cannot get a Telegram code, so they need a
+   phone number and password that work by themselves. On the live site open Settings →
+   Organisations, **Sign-ins for app store reviewers** (A-272, after the server update that brings
+   it): add one for a demo teacher and one for a demo student of the demo centre, each with a
+   password kai chooses. Never kai's own sign-in: it is the site owner's and opens every centre.
+   The same phone and password go under **App Review Information** on the version's page, and
+   for outside testers under TestFlight → Test Information → **Sign-in required**. kai types them;
+   the passwords are not sent to Claude. kai's contact details are already saved in TestFlight.
 5. **Copyright**: the line Apple prints on the page, for example the year and the owner's name.
 6. **Countries.** Apple offers every country by default. For a start Uzbekistan and its neighbours
    are enough. Selling in the European Union needs kai's **trader status** (an address and phone
@@ -55,6 +59,17 @@ Mac's keychain and with Apple, none is in the repository.
   password. On "set up outside testers" Claude makes the group and drafts the text; kai types the
   contact details and the sign-in and sends it in.
 - A TestFlight build stops working 90 days after its upload.
+- State on 26 November 2026: the outside group **Teachers and students** exists with no testers and
+  no build. TestFlight → Test Information has the description testers see, the site and privacy
+  links, kai's contact details and feedback address, and the notes for the reviewer. Left for kai:
+  the reviewer's sign-in there, then **Add Builds** (build 1) in the group with this text under
+  "What to test", and **Submit for Review**:
+
+  > Sign in with the phone number your learning centre has for you. Teachers: open today's lessons,
+  > mark attendance, check homework and start a video lesson. Students: look at your lessons and
+  > homework, join a lesson and open your payments. Tell us about anything that looks wrong.
+
+  After Apple's answer the group's public link can be switched on and sent in Telegram.
 
 ## The pictures
 
@@ -65,7 +80,8 @@ Connect takes them by drag and drop on the version's page, per language and per 
 
 They are taken on the simulators "iPhone 18 Pro Max" and "iPad Air 13-inch (M4)" from a Release
 build against the local server with the seed data, the clock set to 9:41 with
-`xcrun simctl status_bar`, the language switched in the app. A simulator's picture carries an
+`xcrun simctl status_bar`, the language switched in the app (for the Russian tablet set the
+simulator itself was in Russian, so the date in its status bar is too). A simulator's picture carries an
 alpha channel, which Apple refuses: each file is flattened (checked with `sips`, `hasAlpha: no`).
 
 ## The store page's texts

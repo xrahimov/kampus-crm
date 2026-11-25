@@ -70,9 +70,9 @@ The rules were read on Google's own pages on 25 November 2026:
 7. **Make a sign-in for Google's reviewers** (App content → App access → "All or some functionality
    is restricted"). They cannot receive a Telegram code, so they need a phone number and a password
    that already work:
-   - in the demo centre add a staff member with the Teacher role and a student in a demo group, on
-     two phone numbers you can reach in Telegram once;
-   - sign in once with each by Telegram code and choose a password when Kampus offers it;
+   - on the live site open Settings → Organisations, **Sign-ins for app store reviewers** (A-272),
+     and add one for a demo teacher and one for a demo student of the demo centre, each with a
+     password you choose; the same two serve Apple ([APP-STORE.md](APP-STORE.md));
    - give Google both numbers and passwords in the form, with the note: "Choose Staff or Student on
      the first screen. Enter the phone number and the password. No code is needed."
      Do not send those passwords to Claude.

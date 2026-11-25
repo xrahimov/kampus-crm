@@ -5,6 +5,7 @@ import { Forbidden } from "@/features/settings/forbidden";
 import { OrganizationsPage } from "@/features/settings/organizations/organizations-page";
 import { requireCurrentUser } from "@/server/auth/current-user";
 import { listOrganizations } from "@/server/services/settings/organizations.service";
+import { listReviewSignIns } from "@/server/services/settings/review-sign-ins.service";
 import { getSystemStatus } from "@/server/services/system/monitoring.service";
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -18,15 +19,17 @@ export default async function Page({ params }: { params: Promise<{ locale: strin
   setRequestLocale(locale);
   const current = await requireCurrentUser();
   if (current.actor.isSiteOwner !== true) return <Forbidden />;
-  const [organizations, status] = await Promise.all([
+  const [organizations, status, reviewSignIns] = await Promise.all([
     listOrganizations(current.actor),
     getSystemStatus(current.actor),
+    listReviewSignIns(current.actor),
   ]);
   return (
     <OrganizationsPage
       organizations={organizations}
       ownId={current.actor.organizationId}
       status={status}
+      reviewSignIns={reviewSignIns}
     />
   );
 }

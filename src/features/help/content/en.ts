@@ -1319,6 +1319,16 @@ export const en: HelpContent = {
             "Settings → Organisations shows, per centre, how many staff, students (active and archived) and groups it has, how much space its uploaded files take, when anyone from it last signed in and which integrations are switched on. The row menu has **Export data**: one JSON file with every record of the centre (branches, staff without passwords, courses, groups, students, payments, attendance, grades, leads, finance and more), for the centre's owner to keep or to move elsewhere. **Suspend** closes a centre: nobody from it can sign in, everyone signed in is signed out, and its data stays untouched until **Resume**. You cannot suspend your own centre. Both actions are written to the action log.",
           ],
         },
+        reviewers: {
+          title: "Sign-ins for app store reviewers",
+          body: [
+            "Apple and Google sign in to the Kampus app before they let it into their stores, and each new version is looked at again. Their reviewers cannot get a Telegram code, which a first sign-in otherwise needs. Under **Sign-ins for app store reviewers** on Settings → Organisations, press **Add a reviewer sign-in**, choose **Staff member** or **Student**, type the phone of a demo account of your own centre and a password of at least 8 characters. That password works at once, by itself; type the same phone and password into the store's review form.",
+            "Only an account nobody uses can be chosen: a person who has signed in with Telegram themself is refused, and so is a student whose phone another student shares. Saving again for the same person replaces the password and signs the reviewer out. **Remove** ends the sign-in: a staff member's account goes back to needing Telegram first, and a student's reviewer account is deleted while the student's record stays. Each change is written to the action log.",
+            {
+              note: "The reviewer sees what that teacher or student sees. Use a demo teacher with demo groups and a demo student, not an account that opens real people's data.",
+            },
+          ],
+        },
         afterwards: {
           title: "Afterwards",
           body: [

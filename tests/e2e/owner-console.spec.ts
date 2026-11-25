@@ -76,4 +76,63 @@ test.describe("site-owner console (A-144)", () => {
     expect(data.tables.branches).toHaveLength(1);
     expect(data.tables.users).toHaveLength(1);
   });
+
+  test("gives a demo teacher a reviewer sign-in and takes it away (A-272)", async ({
+    page,
+    browser,
+  }) => {
+    const stamp = String(Date.now()).slice(-7);
+    const name = `E2E Reviewer ${stamp}`;
+    const phone = `+99897${stamp}`;
+    const password = "Review!Pass2026";
+    await signIn(page, CEO_PHONE);
+    const cookies = await page.context().cookies();
+    const headers = {
+      cookie: cookies.map((c) => `${c.name}=${c.value}`).join("; "),
+      "x-csrf-token": cookies.find((c) => c.name === "kampus_csrf")?.value ?? "",
+      "content-type": "application/json",
+    };
+    const me = (await (await page.request.get("/api/v1/auth/me")).json()) as {
+      branches: Array<{ id: string }>;
+    };
+    // A teacher nobody has signed in as: made without a password, like any new staff member.
+    const created = await page.request.post("/api/v1/staff", {
+      headers,
+      data: {
+        fullName: name,
+        phone,
+        gender: "FEMALE",
+        roleCodes: ["TEACHER"],
+        branchIds: [me.branches[0]!.id],
+      },
+    });
+    expect(created.status()).toBe(201);
+
+    await page.goto("/en/settings/organizations");
+    const card = page.getByTestId("review-sign-ins");
+    await card.getByTestId("review-sign-in-add").click();
+    const dialog = page.getByTestId("review-sign-in-dialog");
+    await dialog.getByLabel("Phone (login)").fill(phone);
+    await dialog.getByLabel("Password").fill(password);
+    await dialog.getByRole("button", { name: "Save" }).click();
+    const row = card.getByTestId("review-sign-in-row").filter({ hasText: name });
+    await expect(row).toContainText("Staff member");
+    await expect(row).toContainText(phone);
+
+    // The reviewer signs in with that phone and password, and nothing asks for another password.
+    const reviewer = await browser.newContext();
+    const theirs = await reviewer.newPage();
+    await theirs.goto("/en/login");
+    await theirs.getByLabel("Phone number").fill(phone);
+    await theirs.getByLabel("Password").fill(password);
+    await theirs.getByRole("button", { name: "Sign in", exact: true }).click();
+    await expect(theirs).toHaveURL(/\/en\/(dashboard|groups|today)/);
+
+    // Removed: the row goes, and the reviewer's session with it.
+    await row.getByTestId("review-sign-in-remove").click();
+    await expect(row).toHaveCount(0);
+    await theirs.goto("/en/today");
+    await expect(theirs).toHaveURL(/\/en\/login/);
+    await reviewer.close();
+  });
 });
