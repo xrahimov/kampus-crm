@@ -187,37 +187,39 @@ enum SalaryMethod {
 }
 
 model User {
-  id                 String        @id @default(cuid())
+  id                  String        @id @default(cuid())
   /// The centre this account belongs to; a login is scoped to it (A-108).
-  organizationId     String
-  fullName           String
-  phone              String        @unique // E.164, e.g. +998901234567
-  passwordHash       String
-  gender             Gender        @default(MALE)
-  birthDate          DateTime?     @db.Date
-  hireDate           DateTime?     @db.Date
-  photoUrl           String?
-  salaryMethod       SalaryMethod?
-  fixedSalary        Decimal?      @db.Decimal(15, 2) // MONTHLY: UZS per month
-  percentShare       Decimal?      @db.Decimal(5, 2) // PERCENT: % of course price
-  perLessonFee       Decimal?      @db.Decimal(15, 2) // PER_LESSON: UZS per lesson
-  perStudentFee      Decimal?      @db.Decimal(15, 2) // PER_STUDENT: UZS per active student
-  isArchived         Boolean       @default(false)
+  organizationId      String
+  fullName            String
+  phone               String        @unique // E.164, e.g. +998901234567
+  passwordHash        String
+  gender              Gender        @default(MALE)
+  birthDate           DateTime?     @db.Date
+  hireDate            DateTime?     @db.Date
+  photoUrl            String?
+  salaryMethod        SalaryMethod?
+  fixedSalary         Decimal?      @db.Decimal(15, 2) // MONTHLY: UZS per month
+  percentShare        Decimal?      @db.Decimal(5, 2) // PERCENT: % of course price
+  perLessonFee        Decimal?      @db.Decimal(15, 2) // PER_LESSON: UZS per lesson
+  perStudentFee       Decimal?      @db.Decimal(15, 2) // PER_STUDENT: UZS per active student
+  isArchived          Boolean       @default(false)
   /// The person who runs the server: may create organisations for other centres (A-108).
-  isSiteOwner        Boolean       @default(false)
+  isSiteOwner         Boolean       @default(false)
   /// Someone else chose the password (a new account, an admin reset): the user picks their own at the next sign-in (A-124).
-  mustChangePassword Boolean       @default(false)
-  passwordChangedAt  DateTime?
+  mustChangePassword  Boolean       @default(false)
+  passwordChangedAt   DateTime?
   /// A one-time code by Telegram is asked for after the password (A-124).
-  signInCode         SignInCode    @default(OFF)
+  signInCode          SignInCode    @default(OFF)
   /// The view last chosen with the switch in the header; null until the person chooses (A-194).
-  staffView          StaffView?
+  staffView           StaffView?
   /// The first sign-in with Telegram: from then on the phone is proven and a password may sign in (A-196).
-  telegramVerifiedAt DateTime?
+  telegramVerifiedAt  DateTime?
   /// When "choose a password" was offered after a Telegram sign-in; offered once (A-196).
-  passwordOfferedAt  DateTime?
-  createdAt          DateTime      @default(now())
-  updatedAt          DateTime      @updatedAt
+  passwordOfferedAt   DateTime?
+  /// When the person asked for their own account to be deleted; the director archives it (A-267).
+  deletionRequestedAt DateTime?
+  createdAt           DateTime      @default(now())
+  updatedAt           DateTime      @updatedAt
 
   organization    Organization     @relation(fields: [organizationId], references: [id])
   roles           UserRole[]
@@ -3190,6 +3192,8 @@ enum NotificationKind {
   LEAD_FOLLOW_UP
   LEAD_MESSAGE
   JOIN_REQUEST
+  /// A staff member asked for their own account to be deleted (A-267).
+  ACCOUNT_DELETION
 }
 
 model Notification {

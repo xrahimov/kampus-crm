@@ -204,6 +204,17 @@ A-201) has no migration and no setting. Two things to know after it:
   on an `https` address (the live site is one). Nothing on the server switches it
   on or off; a person can switch it off for the site in the browser.
 
+The privacy policy and deleting one's own account (A-267) come with **one migration**
+(`20261125140000_account_deletion`: a column on `User` and a notice kind; it adds, it changes no
+row). Two public pages appear, `/privacy` and `/delete-account` under each language. One optional
+setting in `/opt/kampus/.env`: `LEGAL_CONTACT_EMAIL`, the address both pages name for questions
+about personal data. Without it the pages send the reader to their learning centre. After the
+update, check that `https://kampus.center/en/privacy` and `https://kampus.center/en/delete-account`
+open without a sign-in: Google and Apple read them before they accept the app.
+
+Getting the app ready for Google Play (A-268) changes nothing on the server. The bundle is built on
+GitHub by the **Google Play bundle** workflow; see [PLAY-STORE.md](PLAY-STORE.md).
+
 The repairs from the simulator run of the finished app (A-266) are in the app, which needs a
 new build. The site gets two small things with its next update: "1 item" instead of
 "1 items" under an exercise, and the time zone label worked out in a way that also holds in

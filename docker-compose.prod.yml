@@ -57,6 +57,8 @@ services:
       COOKIE_SECURE: ${COOKIE_SECURE:-true}
       # "on" lets staff passwords in again where a centre signs in with Telegram only (docs/DEPLOY.md).
       STAFF_PASSWORD_LOGIN: ${STAFF_PASSWORD_LOGIN:-}
+      # The address the privacy policy and "Delete your account" pages name for questions (A-267).
+      LEGAL_CONTACT_EMAIL: ${LEGAL_CONTACT_EMAIL:-}
       UPLOAD_DIR: /data/uploads
       # The how-to videos the manual plays (docs/DEPLOY.md "How-to videos"); an empty folder shows none.
       HELP_VIDEOS_DIR: /data/help-videos

@@ -160,6 +160,8 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
       "./plugins/with-screen-share",
       { words: { en: shareWords(en), ru: shareWords(ru), uz: shareWords(uz) } },
     ],
+    // Google Play's upload key signs a release when the build is given one (A-268).
+    "./plugins/with-release-signing",
     [
       "expo-splash-screen",
       {

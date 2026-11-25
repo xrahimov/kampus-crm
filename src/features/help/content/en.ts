@@ -162,6 +162,7 @@ export const en: HelpContent = {
             {
               note: "Administrators can switch the Telegram code on for a colleague and sign them out of all devices from the staff form under Settings → Staff.",
             },
+            "**Ask to delete my account**, at the bottom of the page, asks your centre to close your account. Everyone who manages staff gets a notice in the bell and archives you under Settings → Staff; from then on you cannot sign in. Your name stays on the centre's past records: the lessons you taught, the payments you took and your salary. **I changed my mind** takes the request back. If such a notice reaches you about a colleague, open Settings → Staff and archive them.",
           ],
         },
         mySalary: {
@@ -1352,6 +1353,7 @@ export const en: HelpContent = {
             {
               note: "If your number is not at the centre yet, Kampus asks your name and your group and sends a request to the centre. The bot tells you when a teacher or manager has let you in; then sign in again. Using someone else's phone? Press **Sign out** at the bottom when you are done.",
             },
+            "**Delete my account**, at the bottom of your home page, deletes your sign-in at once and on every device: your password, the link to your Telegram account and the bot's notices to you. What the learning centre keeps about its students (name, attendance, marks, payments) stays with the centre. You can sign in again later with a code from Telegram. The page **/delete-account** on the same address says what is deleted and what is kept, and **/privacy** is the privacy policy.",
           ],
         },
         family: {

@@ -33,6 +33,8 @@ export interface AccountDto {
   /** For teachers: their hours open for 1:1 booking (A-169); null for everyone else. */
   availability: AvailabilityWindowDto[] | null;
   userId: string;
+  /** When the person asked for this account to be deleted (A-267); null when they have not. */
+  deletionRequestedAt: string | null;
 }
 
 export interface SessionDto {
@@ -54,6 +56,7 @@ export async function getAccount(actor: Actor, db: DbClient = prisma): Promise<A
       signInCode: true,
       mustChangePassword: true,
       passwordChangedAt: true,
+      deletionRequestedAt: true,
       botRecipient: { select: { id: true } },
       roles: { select: { role: { select: { code: true } } } },
       availability: { select: { weekday: true, startTime: true, endTime: true } },
@@ -74,6 +77,7 @@ export async function getAccount(actor: Actor, db: DbClient = prisma): Promise<A
         )
       : null,
     userId: actor.userId,
+    deletionRequestedAt: user.deletionRequestedAt?.toISOString() ?? null,
   };
 }
 

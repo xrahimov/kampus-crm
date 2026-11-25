@@ -160,6 +160,16 @@
       "signOut": "Sign out",
       "signOutOthers": "Sign out everywhere else",
       "signedOutOthers": "{count, plural, =0 {No other devices were signed in.} one {One other device was signed out.} other {# other devices were signed out.}}"
+    },
+    "deletion": {
+      "title": "Delete my account",
+      "hint": "Your account was opened by your learning centre, so the centre closes it. Ask here and the people who manage staff at your centre are told.",
+      "ask": "Ask to delete my account",
+      "confirmTitle": "Ask for your account to be deleted?",
+      "confirmText": "The people who manage staff at your centre are told. Once they archive your account you can no longer sign in. Your name stays on the centre’s past records: the lessons you taught, the payments you took and your salary.",
+      "asked": "You asked on {date}. Your centre has been told and will archive the account.",
+      "withdraw": "I changed my mind",
+      "more": "What is deleted and what is kept"
     }
   },
   "salary": {
@@ -4662,7 +4672,8 @@
           "account": {
             "link": "Telegram sign-in linked",
             "unlink": "Telegram sign-in removed",
-            "signOut": "Student signed out everywhere"
+            "signOut": "Student signed out everywhere",
+            "delete": "Sign-in account deleted by its owner"
           }
         },
         "teacher": {
@@ -4739,7 +4750,9 @@
           "passwordChange": "Password changed",
           "signOutAll": "Signed out everywhere",
           "signInCode": "Sign-in code switched",
-          "passwordSet": "Password chosen after a Telegram sign-in"
+          "passwordSet": "Password chosen after a Telegram sign-in",
+          "deletionRequest": "Asked for their own account to be deleted",
+          "deletionWithdraw": "Took back the request to delete their account"
         },
         "announcement": {
           "create": "Announcement posted",
@@ -5209,7 +5222,8 @@
       "ABSENCES": "{count, plural, one {# student stopped} other {# students stopped}} coming to lessons: call them",
       "LEAD_FOLLOW_UP": "{count, plural, one {# lead is} other {# leads are}} due for a call today ({overdue} overdue)",
       "LEAD_MESSAGE": "{name} wrote in Telegram: {text}",
-      "JOIN_REQUEST": "{name} ({phone}) signed in with Telegram and waits to be let in"
+      "JOIN_REQUEST": "{name} ({phone}) signed in with Telegram and waits to be let in",
+      "ACCOUNT_DELETION": "{name} ({phone}) asks for their account to be deleted. Archive it under Settings → Staff"
     }
   },
   "portal": {
@@ -6060,7 +6074,11 @@
       "toHome": "Open my groups"
     },
     "choosePassword": "Choose a password",
-    "changePassword": "Change password"
+    "changePassword": "Change password",
+    "deleteAccount": "Delete my account",
+    "deleteTitle": "Delete your account?",
+    "deleteText": "Your sign-in is deleted now, on every device: your password, the link to your Telegram account and the bot’s notices to you. What the learning centre keeps about its students (name, attendance, marks, payments) stays with the centre. You can sign in again later with a code from Telegram.",
+    "deleteMore": "What is deleted and what is kept"
   },
   "exercises": {
     "heading": "Self-check exercises",
@@ -6265,9 +6283,134 @@
     "theirNote": "They wrote: {note}",
     "fillAll": "Fill in every field first."
   },
+  "legal": {
+    "languages": "Language",
+    "updated": "Last updated: 25 November 2026",
+    "privacy": {
+      "title": "Privacy policy",
+      "description": "What the Kampus app and kampus.center hold about you, why, who sees it and how to have it deleted.",
+      "intro": "This policy covers the Kampus app for Android and iPhone (center.kampus.app) and the Kampus website at kampus.center. Kampus is the tool learning centres use to run their groups, lessons, homework and payments. Below is what Kampus holds about you, why, who can see it and how to have it deleted.",
+      "contactEmail": "To reach Kampus about privacy, write to {email}.",
+      "contactNone": "To reach Kampus about privacy, ask your learning centre: it can reach us directly.",
+      "deletionLink": "How to delete your account",
+      "sections": {
+        "who": {
+          "title": "Who is responsible",
+          "text": "Your learning centre decides what is entered about its students, parents and staff, and it is the first place to ask about your record. Kampus keeps that information for the centre and runs the app and the site."
+        },
+        "what": {
+          "title": "What Kampus holds",
+          "points": {
+            "account": "Your account: your name and phone number and, if you sign in with Telegram, your Telegram name, username, numeric ID and profile picture. Your password is kept only as a one-way hash that nobody can read back.",
+            "student": "A student’s record, entered by the centre: name, phone, date of birth, gender, photo, school, parents’ names and phones, groups, attendance, marks, homework, test results, coins, staff comments and payments.",
+            "staff": "A staff member’s record, entered by the centre: name, phone, date of birth, photo, role, work attendance and salary.",
+            "sent": "What you send yourself: homework answers (text, photos, files, voice recordings), messages in a group’s chat, answers in tests and polls, and ratings of lessons.",
+            "video": "Video lessons: your camera, microphone and shared screen go encrypted to the other people in the lesson while it lasts, directly or through Kampus’s relay when a direct connection is not possible. Kampus does not keep them. If the teacher records a lesson, the recording is kept for the group for the time the centre has set (90 days unless it chose otherwise).",
+            "signIns": "Sign-ins: the time, the internet address and the kind of device, so that you can see where you are signed in and misuse can be noticed.",
+            "not": "The app does not read your contacts or your location, and of your photos and files it reads only the ones you pick. It carries no advertising and no tracking or analytics kits."
+          }
+        },
+        "why": {
+          "title": "Why",
+          "text": "So that the centre can teach and keep its accounts: the timetable, attendance, homework, results, payments and the messages about them. Kampus does not sell personal data, does not use it for advertising and does not build profiles for anyone else."
+        },
+        "permissions": {
+          "title": "What the app asks your phone for",
+          "points": {
+            "camera": "Camera: for video lessons, for a photo of your homework and, for staff, to read a student’s badge.",
+            "microphone": "Microphone: for video lessons and for a voice answer to homework.",
+            "files": "Photos and files: only the ones you choose to send.",
+            "screen": "Your screen: only while you press Share screen in a lesson. Android shows a notice the whole time.",
+            "notifications": "Notifications: for that notice."
+          }
+        },
+        "sharing": {
+          "title": "Who sees it",
+          "text": "The staff of your centre, each according to their role. A parent sees their child’s record. Other people in your group see your name and what you post in the group. Outside the centre, information goes only to the companies that carry out a task, and only as much as the task needs:",
+          "points": {
+            "telegram": "Telegram, if you connect it: sign-in codes and the centre’s notices reach you through a Telegram bot.",
+            "sms": "The centre’s SMS provider: your phone number and the text of a message the centre sends you.",
+            "payments": "Payme and Click, if you pay online: the amount and your payment reference. Kampus never sees your card number.",
+            "assistant": "Anthropic, if a centre turns on the assistant for its staff: the staff member’s question and the centre’s information needed to answer it. Students and parents are not offered the assistant.",
+            "hosting": "The hosting company whose server Kampus rents: it stores the data and does not use it.",
+            "law": "Kampus may also disclose information when the law requires it."
+          }
+        },
+        "keeping": {
+          "title": "How long it is kept",
+          "points": {
+            "records": "The centre’s records: while the centre uses Kampus. They are removed when the centre asks or closes its account.",
+            "recordings": "Lesson recordings: for the time the centre has set, 90 days unless it chose otherwise.",
+            "codes": "Sign-in codes: one day.",
+            "backups": "Backups: 14 days."
+          }
+        },
+        "security": {
+          "title": "How it is protected",
+          "text": "Everything between your device and Kampus travels encrypted (HTTPS). Passwords are hashed. The app keeps your sign-in in the phone’s secure storage. Each centre sees only its own information, staff see only what their role allows, and every change staff make is logged."
+        },
+        "choices": {
+          "title": "Your choices",
+          "text": "To see or correct your record, ask your learning centre. You can delete your account yourself at any time, in the app or on the site."
+        },
+        "children": {
+          "title": "Children",
+          "text": "Learning centres also teach children. A child’s record is entered by the centre with the family’s agreement, and a parent can sign in to see it. Kampus asks nothing of a child beyond what the lessons need. A parent can ask the centre to remove a child’s sign-in or record."
+        },
+        "changes": {
+          "title": "Changes",
+          "text": "When this policy changes, the new text is put on this page with its date."
+        }
+      }
+    },
+    "deletion": {
+      "title": "Delete your Kampus account",
+      "description": "How to delete your account in the Kampus app or on kampus.center, what is deleted and what is kept.",
+      "intro": "This page is for people who use the Kampus app (center.kampus.app) or kampus.center. It says how to delete your account, what is deleted and what is kept.",
+      "done": "Your account is deleted, and you are signed out on every device.",
+      "student": {
+        "title": "Students and parents",
+        "steps": {
+          "s1": "Sign in, in the app or on this site.",
+          "s2": "At the bottom of your home page, press Delete my account.",
+          "s3": "Confirm. The account is deleted at once."
+        },
+        "signIn": "Sign in to delete my account",
+        "signedIn": "You are signed in as {name}."
+      },
+      "staff": {
+        "title": "Teachers and other staff",
+        "text": "Your account was opened by your learning centre, so the centre closes it.",
+        "steps": {
+          "s1": "Sign in, in the app or on this site.",
+          "s2": "Open My account.",
+          "s3": "Press Ask to delete my account. The people who manage staff at your centre are told and archive the account. From then on you cannot sign in."
+        },
+        "signIn": "Sign in to My account"
+      },
+      "deleted": {
+        "title": "What is deleted",
+        "points": {
+          "student": "For a student or parent: the account itself, your password, your sign-ins on every device, the link to your Telegram account, what the bot remembered about you (your number and your chat) and the bot’s notices to you.",
+          "staff": "For staff: your sign-in is closed and every device is signed out."
+        }
+      },
+      "kept": {
+        "title": "What is kept",
+        "text": "The learning centre’s own records stay with the centre: a student’s name and phone on its list, attendance, marks, homework and payments; for staff, the lessons taught, the payments taken and the salary. The centre needs them for its accounts and reports and keeps them while it uses Kampus. To have a record corrected or removed, ask the centre. Copies in backups are gone within 14 days."
+      },
+      "help": {
+        "title": "Cannot sign in?",
+        "contactEmail": "Ask your learning centre, or write to {email} with your phone number and the name of your centre.",
+        "contactNone": "Ask your learning centre: it can close the account for you."
+      },
+      "privacyLink": "Privacy policy"
+    }
+  },
   "mobile": {
     "offline": "No connection to Kampus. Check the internet and try again.",
     "retry": "Try again",
+    "ask": "Ask",
     "doorStudent": "Student or parent",
     "doorStaff": "Staff",
     "language": "Language",

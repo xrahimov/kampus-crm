@@ -15,6 +15,8 @@ export interface Account {
   /** This session was opened with a Telegram code: a new password needs no old one. */
   telegramSession: boolean;
   userId: string;
+  /** When the person asked for this account to be deleted (A-267); null when they have not. */
+  deletionRequestedAt: string | null;
 }
 
 /** One place the person is signed in. */
@@ -76,5 +78,42 @@ export function useSignOutOthers() {
   return useMutation({
     mutationFn: () => api<{ revoked: number }>("/auth/sessions", { method: "DELETE" }),
     onSettled: () => client.invalidateQueries({ queryKey: accountKeys.sessions }),
+  });
+}
+
+/**
+ * "Ask to delete my account" (A-267): a staff account was opened by the centre,
+ * so those who manage staff are told and archive it.
+ */
+export function useAskDeletion() {
+  const client = useQueryClient();
+  return useMutation({
+    mutationFn: () => api<{ requestedAt: string }>("/auth/account/deletion", { method: "POST" }),
+    onSuccess: ({ requestedAt }) =>
+      client.setQueryData<Account>(accountKeys.account, (now) =>
+        now ? { ...now, deletionRequestedAt: requestedAt } : now,
+      ),
+  });
+}
+
+/** The person changed their mind before the account was archived. */
+export function useWithdrawDeletion() {
+  const client = useQueryClient();
+  return useMutation({
+    mutationFn: () => api<void>("/auth/account/deletion", { method: "DELETE" }),
+    onSuccess: () =>
+      client.setQueryData<Account>(accountKeys.account, (now) =>
+        now ? { ...now, deletionRequestedAt: null } : now,
+      ),
+  });
+}
+
+/**
+ * A student or parent deletes their own account (A-267), at once and on every
+ * device. What the learning centre keeps about its students stays with the centre.
+ */
+export function useDeleteStudentAccount() {
+  return useMutation({
+    mutationFn: () => api<void>("/student-auth/account", { method: "DELETE" }),
   });
 }

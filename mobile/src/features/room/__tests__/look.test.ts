@@ -1,5 +1,5 @@
 import { controlBar, gridColumns } from "@/features/room/look";
-import { captureError, captureScale } from "@/features/room/platform.native";
+import { captureError, captureScale, releaseWhenStopped } from "@/features/room/platform.native";
 import { initials } from "@/features/room/tile";
 
 jest.mock("@react-native-async-storage/async-storage", () =>
@@ -77,5 +77,25 @@ describe("capturing the phone's screen", () => {
     expect(captureScale(1920)).toBe(1);
     expect(captureScale(2400)).toBe(0.8);
     expect(captureScale(2960)).toBe(0.65);
+  });
+
+  it("lets Android's capture go when the share is stopped, once", () => {
+    // Until the track is released the phone keeps "Kampus is sharing your screen" up (A-268).
+    jest.useFakeTimers();
+    const stop = jest.fn();
+    const release = jest.fn();
+    const track = { stop, release };
+    releaseWhenStopped([track]);
+    expect(release).not.toHaveBeenCalled();
+    track.stop();
+    expect(stop).toHaveBeenCalledTimes(1);
+    // The engine puts the camera back on the line first.
+    expect(release).not.toHaveBeenCalled();
+    jest.runAllTimers();
+    expect(release).toHaveBeenCalledTimes(1);
+    track.stop();
+    jest.runAllTimers();
+    expect(release).toHaveBeenCalledTimes(1);
+    jest.useRealTimers();
   });
 });

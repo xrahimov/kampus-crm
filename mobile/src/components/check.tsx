@@ -3,6 +3,7 @@ import { Pressable, StyleSheet, View } from "react-native";
 
 import { radius, space, useTheme } from "@/lib/theme";
 
+import { RoomyText } from "./roomy-text";
 import { Text } from "./text";
 
 /** A yes-or-no choice with its words: the whole row takes the tap. */
@@ -52,7 +53,7 @@ export function Check({
         {value ? <CheckIcon size={16} color={colors.primaryForeground} /> : null}
       </View>
       <View style={inline ? styles.words : styles.fill}>
-        <Text>{label}</Text>
+        {inline ? <RoomyText>{label}</RoomyText> : <Text>{label}</Text>}
         {hint ? (
           <Text variant="small" tone="mutedForeground">
             {hint}
@@ -119,7 +120,8 @@ const styles = StyleSheet.create({
   fill: { flex: 1 },
   inline: { flexGrow: 0, flexShrink: 0, alignItems: "center" },
   level: { marginTop: 0 },
-  words: { flexShrink: 1 },
+  // Never narrower than the words.
+  words: { flexShrink: 0 },
   box: {
     width: 24,
     height: 24,

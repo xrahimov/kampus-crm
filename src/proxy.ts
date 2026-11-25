@@ -26,6 +26,8 @@ function onOwnHost(request: NextRequest): boolean {
 const PUBLIC_PATHS = new Set(["/login"]);
 /** Path prefixes anyone may open (public lead forms, students' pages, centres' public pages). */
 const PUBLIC_PREFIXES = ["/forms/", "/class/", "/family/", "/c/", "/cert/"];
+/** The pages the app stores link to (A-267): open to anyone, signed in or not. */
+const OPEN_PAGES = new Set(["/privacy", "/delete-account"]);
 
 function stripLocale(pathname: string): { locale: string | null; rest: string } {
   const match = pathname.match(/^\/([a-z]{2})(\/.*)?$/);
@@ -48,6 +50,7 @@ export function proxy(request: NextRequest) {
   // The student area has its own sign-in (A-150); "/students" is staff's and stays closed.
   const isOpen =
     PUBLIC_PREFIXES.some((prefix) => rest.startsWith(prefix)) ||
+    OPEN_PAGES.has(rest) ||
     rest === "/student" ||
     rest.startsWith("/student/");
 

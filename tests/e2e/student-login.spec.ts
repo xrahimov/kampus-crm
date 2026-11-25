@@ -129,5 +129,25 @@ test.describe("student sign-in with Telegram (A-150)", () => {
     await expect(student).toHaveURL(/\/en\/student$/);
     await student.getByTestId("student-sign-out").click();
     await expect(student).toHaveURL(/\/en\/student\/login/);
+
+    // The student deletes their own account (A-267): gone at once, on the page the stores link to.
+    await telegramLogin(student, lola);
+    await expect(student).toHaveURL(/\/en\/student$/);
+    await student.goto("/en/delete-account");
+    await expect(student.getByTestId("delete-signed-in")).toContainText("Lola");
+    await student.goto("/en/student");
+    await student.getByTestId("student-delete-account").click();
+    await student
+      .getByRole("alertdialog")
+      .getByRole("button", { name: "Delete my account" })
+      .click();
+    await expect(student).toHaveURL(/\/en\/delete-account\?done=1/);
+    await expect(student.getByTestId("account-deleted")).toBeVisible();
+    await student.goto("/en/student");
+    await expect(student).toHaveURL(/\/en\/student\/login/);
+    // The centre's record of the student stays; only the sign-in is gone.
+    await page.reload();
+    await expect(page.getByTestId("access-card")).toBeVisible();
+    await expect(page.getByTestId("access-card").getByTestId("access-row")).toHaveCount(0);
   });
 });

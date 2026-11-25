@@ -114,7 +114,8 @@ export type NotificationKind =
   | "ABSENCES"
   | "LEAD_FOLLOW_UP"
   | "LEAD_MESSAGE"
-  | "JOIN_REQUEST";
+  | "JOIN_REQUEST"
+  | "ACCOUNT_DELETION";
 
 export interface StaffNotification {
   id: string;

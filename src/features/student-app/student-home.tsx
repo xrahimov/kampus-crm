@@ -16,6 +16,8 @@ import type {
   StudentHomeGroupDto,
 } from "@/server/services/student-auth/student-home.service";
 
+import { DeleteStudentAccount } from "./delete-account";
+
 /** The signed-in student or parent's home (A-150): every profile, its groups and homework to do. */
 export function StudentHome({ data }: { data: StudentHomeDto }) {
   const t = useTranslations("studentApp");
@@ -117,6 +119,8 @@ export function StudentHome({ data }: { data: StudentHomeDto }) {
                 {t("signOutAll")}
               </Button>
             </form>
+            {/* The app stores ask that an account can be deleted where it is used (A-267). */}
+            <DeleteStudentAccount />
           </div>
         </CardContent>
       </Card>

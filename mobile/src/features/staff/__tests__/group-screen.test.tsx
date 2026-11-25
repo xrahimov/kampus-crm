@@ -101,7 +101,11 @@ const MONTH: MonthGrid = {
       courseTopicTitle: null,
       attachmentUrl: null,
       isExtra: false,
-      attendance: {},
+      // "gone" was marked that day and has since been taken out of the group.
+      attendance: {
+        m1: { status: "PRESENT", comment: null },
+        gone: { status: "ABSENT", comment: null },
+      },
       grades: {},
       studentNote: null,
       rating: { average: null, count: 0 },
@@ -178,6 +182,8 @@ describe("a group's page on a phone", () => {
     const [month, facts] = order("month-name", "group-office");
     expect(month).toBeGreaterThan(-1);
     expect(month).toBeLessThan(facts!);
+    // A lesson's count is of the students listed, as the lesson says when opened.
+    expect(screen.getByTestId("month-lesson-l1")).toHaveTextContent(/1\/1/);
   });
 });
 

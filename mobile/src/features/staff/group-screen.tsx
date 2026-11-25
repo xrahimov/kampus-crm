@@ -24,7 +24,7 @@ import {
   StickyNote,
   UsersRound,
 } from "lucide-react-native";
-import { useCallback, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { Pressable, StyleSheet, View } from "react-native";
 
 import { useGroupChat } from "@/api/group-pages";
@@ -86,6 +86,10 @@ export function GroupScreen() {
   const [extra, setExtra] = useState(false);
   const [added, setAdded] = useState<string | null>(null);
   const formatDate = useDate();
+  const memberIds = useMemo(
+    () => new Set((grid.data?.members ?? []).map((m) => m.membershipId)),
+    [grid.data?.members],
+  );
 
   const header = (
     <Header
@@ -127,7 +131,7 @@ export function GroupScreen() {
           {grid.data.lessons.map((lesson, index) => (
             <View key={lesson.id}>
               {index > 0 ? <Divider /> : null}
-              <LessonRow lesson={lesson} />
+              <LessonRow lesson={lesson} members={memberIds} />
             </View>
           ))}
         </Card>
@@ -527,12 +531,19 @@ function MonthSwitch({ month, onChange }: { month: string; onChange: (month: str
   );
 }
 
-function LessonRow({ lesson }: { lesson: GridLesson }) {
+/**
+ * The count is of the students listed below the lessons, as the lesson itself
+ * counts them when it is opened: a mark left by someone who has since been
+ * taken out of the group is still kept, but would make the two disagree.
+ */
+function LessonRow({ lesson, members }: { lesson: GridLesson; members: ReadonlySet<string> }) {
   const t = useTranslations();
   const formatDate = useDate();
   const router = useRouter();
   const { colors } = useTheme();
-  const marks = Object.values(lesson.attendance).filter((a) => a.status !== "NOT_MARKED");
+  const marks = Object.entries(lesson.attendance)
+    .filter(([membershipId, a]) => members.has(membershipId) && a.status !== "NOT_MARKED")
+    .map(([, a]) => a);
   const present = marks.filter((a) => a.status === "PRESENT").length;
   const date = dayAsDate(lesson.date);
   return (

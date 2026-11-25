@@ -1,23 +1,27 @@
 import { useRouter } from "expo-router";
 import { KeyRound } from "lucide-react-native";
-import { StyleSheet, View } from "react-native";
+import { useState } from "react";
+import { Linking, StyleSheet, View } from "react-native";
 
 import {
   useAccount,
   useAccountSessions,
+  useAskDeletion,
   useSetSignInCode,
   useSignOutOthers,
   useSignOutSession,
+  useWithdrawDeletion,
   type AccountSession,
 } from "@/api/account";
 import { Button } from "@/components/button";
 import { Check } from "@/components/check";
+import { Confirm } from "@/components/confirm";
 import { Header } from "@/components/header";
 import { Badge, Card, Divider, Notice, Screen } from "@/components/surface";
 import { Text } from "@/components/text";
 import { PendingScreen } from "@/features/shared/pending-screen";
-import { ApiError } from "@/lib/api";
-import { errorText, useDate, useTranslations } from "@/lib/i18n";
+import { API_ORIGIN, ApiError } from "@/lib/api";
+import { errorText, useDate, useLocaleChoice, useTranslations } from "@/lib/i18n";
 import { useLayout } from "@/lib/layout";
 import { space, useTheme } from "@/lib/theme";
 
@@ -38,6 +42,10 @@ export function AccountScreen() {
   const code = useSetSignInCode();
   const signOutOne = useSignOutSession();
   const signOutOthers = useSignOutOthers();
+  const askDeletion = useAskDeletion();
+  const withdrawDeletion = useWithdrawDeletion();
+  const { locale } = useLocaleChoice();
+  const [asking, setAsking] = useState(false);
 
   // The page's one-line description fits a tablet's header; on a phone it would be cut short.
   const header = (
@@ -170,6 +178,65 @@ export function AccountScreen() {
           testID="account-sign-out-others"
         />
       </Card>
+      {/* The app stores ask that an account can be deleted where it is used (A-267). */}
+      <Card testID="account-deletion">
+        <Text variant="heading">{ta("deletion.title")}</Text>
+        <Text tone="mutedForeground">{ta("deletion.hint")}</Text>
+        {me.deletionRequestedAt ? (
+          <Notice testID="account-deletion-asked">
+            {ta("deletion.asked", {
+              date: date(new Date(me.deletionRequestedAt), { dateStyle: "medium" }),
+            })}
+          </Notice>
+        ) : null}
+        {withdrawDeletion.error ? (
+          <Notice tone="destructive" testID="account-deletion-problem">
+            {errorText(t, withdrawDeletion.error)}
+          </Notice>
+        ) : null}
+        <View style={styles.actions}>
+          {me.deletionRequestedAt ? (
+            <Button
+              variant="outline"
+              label={ta("deletion.withdraw")}
+              loading={withdrawDeletion.isPending}
+              onPress={() => withdrawDeletion.mutate()}
+              testID="account-deletion-withdraw"
+            />
+          ) : (
+            <Button
+              variant="destructive"
+              label={ta("deletion.ask")}
+              onPress={() => {
+                askDeletion.reset();
+                setAsking(true);
+              }}
+              testID="account-deletion-ask"
+            />
+          )}
+          {/* The page that says what goes and what the centre keeps is the site's, open to anyone. */}
+          <Button
+            variant="ghost"
+            label={ta("deletion.more")}
+            onPress={() =>
+              void Linking.openURL(`${API_ORIGIN}/${locale}/delete-account`).catch(() => undefined)
+            }
+            testID="account-deletion-more"
+          />
+        </View>
+      </Card>
+      <Confirm
+        open={asking}
+        onClose={() => setAsking(false)}
+        title={ta("deletion.confirmTitle")}
+        text={ta("deletion.confirmText")}
+        // One word: the two buttons share a phone's width, and the title asks the question.
+        label={t("mobile.ask")}
+        loading={askDeletion.isPending}
+        problem={askDeletion.error ? errorText(t, askDeletion.error) : null}
+        onConfirm={() => askDeletion.mutate(undefined, { onSuccess: () => setAsking(false) })}
+        testID="account-deletion-confirm"
+      />
     </Screen>
   );
 }
@@ -228,6 +295,7 @@ const styles = StyleSheet.create({
   pair: { flexDirection: "row", alignItems: "flex-start", gap: space[4] },
   half: { flex: 1 },
   start: { alignSelf: "flex-start" },
+  actions: { flexDirection: "row", flexWrap: "wrap", alignItems: "center", gap: space[2] },
   session: { flexDirection: "row", alignItems: "center", gap: space[3], paddingVertical: space[3] },
   name: { flexDirection: "row", flexWrap: "wrap", alignItems: "center", gap: space[2] },
 });
