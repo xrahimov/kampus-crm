@@ -18,7 +18,7 @@ Claude never handles the passwords of kai's accounts and never sees the upload k
 | Store page: name, texts, icon, banner, screenshots                  | Ready: `mobile/store/` and `~/Desktop/kampus-play/screenshots/` on the Mac                                                         |
 | Data safety form, content rating, target audience, permissions      | Answers below; kai enters them                                                                                                     |
 | A sign-in for Google's reviewers                                    | kai makes it (step 7)                                                                                                              |
-| A Play Console developer account                                    | kai's (step 1)                                                                                                                     |
+| A Play Console developer account                                    | Open since 25 November 2026 (personal, "Kampus CRM"); Google is verifying kai's identity, and **Create app** is locked until then  |
 
 The rules were read on Google's own pages on 25 November 2026:
 [target API level](https://support.google.com/googleplay/android-developer/answer/11926878),
