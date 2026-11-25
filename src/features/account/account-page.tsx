@@ -3,6 +3,7 @@
 import { useTranslations } from "next-intl";
 import { useState, useTransition } from "react";
 
+import { ConfirmDialog } from "@/components/data/confirm-dialog";
 import { Alert } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -17,7 +18,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { useRouter } from "@/i18n/navigation";
+import { Link, useRouter } from "@/i18n/navigation";
 import { api, ApiError } from "@/lib/api-client";
 import { useDateFormat } from "@/lib/use-date-format";
 import type { AccountDto, SessionDto } from "@/server/services/account.service";
@@ -43,6 +44,7 @@ export function AccountPage({
   const [account, setAccount] = useState(initial);
   const [codeError, setCodeError] = useState<string | null>(null);
   const [signedOut, setSignedOut] = useState<number | null>(null);
+  const [asking, setAsking] = useState(false);
   const refresh = () => startTransition(() => router.refresh());
   const others = sessions.filter((s) => !s.current);
 
@@ -65,6 +67,18 @@ export function AccountPage({
     const { revoked } = await api<{ revoked: number }>("/auth/sessions", { method: "DELETE" });
     setSignedOut(revoked);
     refresh();
+  }
+
+  async function askDeletion() {
+    const { requestedAt } = await api<{ requestedAt: string }>("/auth/account/deletion", {
+      method: "POST",
+    });
+    setAccount((now) => ({ ...now, deletionRequestedAt: requestedAt }));
+  }
+
+  async function withdrawDeletion() {
+    await api("/auth/account/deletion", { method: "DELETE" });
+    setAccount((now) => ({ ...now, deletionRequestedAt: null }));
   }
 
   async function signOutOne(id: string) {
@@ -219,6 +233,54 @@ export function AccountPage({
           </Table>
         </CardContent>
       </Card>
+
+      {/* The app stores ask that an account can be deleted where it is used (A-267). */}
+      <Card data-testid="account-deletion">
+        <CardHeader className="flex flex-row flex-wrap items-start justify-between gap-3">
+          <div className="max-w-prose space-y-1.5">
+            <CardTitle>{t("account.deletion.title")}</CardTitle>
+            <CardDescription>{t("account.deletion.hint")}</CardDescription>
+          </div>
+          {account.deletionRequestedAt ? (
+            <Button variant="outline" onClick={withdrawDeletion} data-testid="deletion-withdraw">
+              {t("account.deletion.withdraw")}
+            </Button>
+          ) : (
+            <Button
+              variant="outline"
+              className="text-destructive hover:bg-destructive/10 hover:text-destructive"
+              onClick={() => setAsking(true)}
+              data-testid="deletion-ask"
+            >
+              {t("account.deletion.ask")}
+            </Button>
+          )}
+        </CardHeader>
+        <CardContent className="space-y-2 text-sm">
+          {account.deletionRequestedAt ? (
+            <p data-testid="deletion-asked">
+              {t("account.deletion.asked", {
+                date: fmt(new Date(account.deletionRequestedAt), { dateStyle: "medium" }),
+              })}
+            </p>
+          ) : null}
+          <Link
+            href="/delete-account"
+            className="font-medium underline underline-offset-4"
+            data-testid="deletion-more"
+          >
+            {t("account.deletion.more")}
+          </Link>
+        </CardContent>
+      </Card>
+      <ConfirmDialog
+        open={asking}
+        onOpenChange={setAsking}
+        title={t("account.deletion.confirmTitle")}
+        description={t("account.deletion.confirmText")}
+        confirmLabel={t("account.deletion.ask")}
+        onConfirm={askDeletion}
+      />
     </div>
   );
 }

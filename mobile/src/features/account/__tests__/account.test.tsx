@@ -1,4 +1,5 @@
 import { fireEvent, screen, waitFor } from "@testing-library/react-native";
+import { Linking } from "react-native";
 
 import type { Account, AccountSession } from "@/api/account";
 import { AccountScreen } from "@/features/account/account-screen";
@@ -75,6 +76,7 @@ function account(change: Partial<Account> = {}): Account {
     passwordChangedAt: "2026-11-01T08:00:00.000Z",
     telegramSession: false,
     userId: "u1",
+    deletionRequestedAt: null,
     ...change,
   };
 }
@@ -266,6 +268,56 @@ describe("the devices on My account", () => {
     serve({ "GET /auth/account": account(), "GET /auth/sessions": { items: [session()] } });
     await show();
     expect(screen.getByTestId("account-code")).toBeOnTheScreen();
+  });
+});
+
+describe("asking for the account to be deleted (A-267)", () => {
+  it("asks after a second press, shows the day it was asked, and takes it back", async () => {
+    const open = jest.spyOn(Linking, "openURL").mockResolvedValue(undefined);
+    serve({
+      "GET /auth/account": account(),
+      "GET /auth/sessions": { items: [session()] },
+      "POST /auth/account/deletion": { requestedAt: "2026-11-25T09:00:00.000Z" },
+      "DELETE /auth/account/deletion": { ok: true },
+    });
+    await show();
+    expect(screen.queryByTestId("account-deletion-asked")).toBeNull();
+    await fireEvent.press(screen.getByTestId("account-deletion-ask"));
+    // Nothing is sent until the person confirms.
+    expect(calls("POST", "/auth/account/deletion")).toHaveLength(0);
+    expect(await screen.findByText("Ask for your account to be deleted?")).toBeOnTheScreen();
+    await fireEvent.press(screen.getByTestId("account-deletion-confirm-confirm"));
+    expect(await screen.findByTestId("account-deletion-asked")).toHaveTextContent(
+      /You asked on .*2026/,
+    );
+    expect(calls("POST", "/auth/account/deletion")).toHaveLength(1);
+    expect(screen.queryByTestId("account-deletion-ask")).toBeNull();
+
+    await fireEvent.press(screen.getByTestId("account-deletion-withdraw"));
+    await waitFor(() => expect(screen.queryByTestId("account-deletion-asked")).toBeNull());
+    expect(calls("DELETE", "/auth/account/deletion")).toHaveLength(1);
+    expect(screen.getByTestId("account-deletion-ask")).toBeOnTheScreen();
+
+    // What goes and what the centre keeps is the site's page, in the app's language.
+    await fireEvent.press(screen.getByTestId("account-deletion-more"));
+    expect(open).toHaveBeenCalledWith(expect.stringMatching(/\/en\/delete-account$/));
+    open.mockRestore();
+  });
+
+  it("shows an earlier request, and says so when the server refuses a new one", async () => {
+    serve({
+      "GET /auth/account": account(),
+      "GET /auth/sessions": { items: [session()] },
+      "POST /auth/account/deletion": () =>
+        answer(500, { error: { code: "errors.internal", message: "errors.internal" } }),
+    });
+    await show();
+    await fireEvent.press(screen.getByTestId("account-deletion-ask"));
+    await fireEvent.press(await screen.findByTestId("account-deletion-confirm-confirm"));
+    await waitFor(() => expect(calls("POST", "/auth/account/deletion")).toHaveLength(1));
+    // The question stays open with the reason; the account is as it was.
+    expect(await screen.findByTestId("account-deletion-confirm-confirm")).toBeOnTheScreen();
+    expect(screen.queryByTestId("account-deletion-asked")).toBeNull();
   });
 });
 

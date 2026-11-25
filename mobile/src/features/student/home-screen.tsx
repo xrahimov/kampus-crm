@@ -1,17 +1,20 @@
 import { useRouter } from "expo-router";
 import { Video } from "lucide-react-native";
 import { useState } from "react";
-import { StyleSheet, View } from "react-native";
+import { Linking, StyleSheet, View } from "react-native";
 
+import { useDeleteStudentAccount } from "@/api/account";
 import { useStudentHome } from "@/api/hooks";
 import type { StudentHomeGroup, StudentHomeHomework, StudentHomeProfile } from "@/api/types";
 import { Button } from "@/components/button";
+import { Confirm } from "@/components/confirm";
 import { Header } from "@/components/header";
 import { Badge, Card, EmptyState, Loading, Notice, Screen } from "@/components/surface";
 import { Text } from "@/components/text";
 import { DeviceSettings } from "@/features/shared/device-settings";
 import { dayAsDate } from "@/lib/days";
-import { errorText, useDate, useMoney, useTranslations } from "@/lib/i18n";
+import { API_ORIGIN } from "@/lib/api";
+import { errorText, useDate, useLocaleChoice, useMoney, useTranslations } from "@/lib/i18n";
 import { useLayout } from "@/lib/layout";
 import { useSession } from "@/lib/session";
 import { space, useTheme } from "@/lib/theme";
@@ -27,6 +30,9 @@ export function StudentHomeScreen() {
   const { signOut } = useSession();
   const query = useStudentHome();
   const [leaving, setLeaving] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+  const remove = useDeleteStudentAccount();
+  const { locale } = useLocaleChoice();
   const home = query.data;
 
   const header = (
@@ -81,6 +87,44 @@ export function StudentHomeScreen() {
           void signOut();
         }}
         testID="sign-out"
+      />
+      {/* The app stores ask that an account can be deleted where it is used (A-267). */}
+      <Button
+        variant="ghost"
+        label={t("studentApp.deleteAccount")}
+        onPress={() => {
+          remove.reset();
+          setDeleting(true);
+        }}
+        testID="delete-account"
+      />
+      <Confirm
+        open={deleting}
+        onClose={() => setDeleting(false)}
+        title={t("studentApp.deleteTitle")}
+        text={t("studentApp.deleteText")}
+        label={t("studentApp.deleteAccount")}
+        loading={remove.isPending || leaving}
+        problem={remove.error ? errorText(t, remove.error) : null}
+        onConfirm={() =>
+          remove.mutate(undefined, {
+            // The account is gone on the server: this device forgets its sign-in and
+            // shows the sign-in page again.
+            onSuccess: () => {
+              setLeaving(true);
+              void signOut();
+            },
+          })
+        }
+        testID="delete-account-confirm"
+      />
+      <Button
+        variant="ghost"
+        label={t("studentApp.deleteMore")}
+        onPress={() =>
+          void Linking.openURL(`${API_ORIGIN}/${locale}/delete-account`).catch(() => undefined)
+        }
+        testID="delete-account-more"
       />
     </View>
   );

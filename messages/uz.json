@@ -160,6 +160,16 @@
       "signOut": "Chiqish",
       "signOutOthers": "Boshqa barcha qurilmalardan chiqish",
       "signedOutOthers": "{count, plural, =0 {Boshqa qurilma yo‘q edi.} one {# boshqa qurilmadan chiqildi.} other {# boshqa qurilmadan chiqildi.}}"
+    },
+    "deletion": {
+      "title": "Hisobimni o‘chirish",
+      "hint": "Hisobingizni o‘quv markazi ochgan, shuning uchun uni markaz yopadi. Shu yerda so‘rov yuboring, markazingizda xodimlarni boshqaradiganlar xabardor bo‘ladi.",
+      "ask": "Hisobimni o‘chirishni so‘rash",
+      "confirmTitle": "Hisobingizni o‘chirish so‘ralsinmi?",
+      "confirmText": "Markazingizda xodimlarni boshqaradiganlar xabardor bo‘ladi. Ular hisobni arxivga o‘tkazgach, siz tizimga kira olmaysiz. Ismingiz markazning o‘tgan yozuvlarida qoladi: o‘tgan darslaringiz, qabul qilgan to‘lovlaringiz va maoshingiz.",
+      "asked": "Siz {date} kuni so‘ragansiz. Markazga xabar berildi, hisob arxivga o‘tkaziladi.",
+      "withdraw": "Fikrimdan qaytdim",
+      "more": "Nima o‘chiriladi va nima qoladi"
     }
   },
   "salary": {
@@ -4662,7 +4672,8 @@
           "account": {
             "link": "Telegram orqali kirish ulandi",
             "unlink": "Telegram orqali kirish olib tashlandi",
-            "signOut": "O‘quvchi hamma joydan chiqarildi"
+            "signOut": "O‘quvchi hamma joydan chiqarildi",
+            "delete": "Kirish hisobini egasi o‘chirdi"
           }
         },
         "teacher": {
@@ -4739,7 +4750,9 @@
           "passwordChange": "Parol o‘zgartirildi",
           "signOutAll": "Barcha qurilmalardan chiqildi",
           "signInCode": "Kirish kodi o‘zgartirildi",
-          "passwordSet": "Telegram orqali kirgach parol tanlandi"
+          "passwordSet": "Telegram orqali kirgach parol tanlandi",
+          "deletionRequest": "O‘z hisobini o‘chirishni so‘radi",
+          "deletionWithdraw": "Hisobni o‘chirish so‘rovini qaytarib oldi"
         },
         "announcement": {
           "create": "E‘lon joylandi",
@@ -5209,7 +5222,8 @@
       "ABSENCES": "{count} o‘quvchi darsga kelmay qo‘ydi: qo‘ng‘iroq qiling",
       "LEAD_FOLLOW_UP": "Bugun {count} lidga qo‘ng‘iroq qilish kerak ({overdue} tasi kechikkan)",
       "LEAD_MESSAGE": "{name} Telegramda yozdi: {text}",
-      "JOIN_REQUEST": "{name} ({phone}) Telegram orqali kirdi va ruxsat kutmoqda"
+      "JOIN_REQUEST": "{name} ({phone}) Telegram orqali kirdi va ruxsat kutmoqda",
+      "ACCOUNT_DELETION": "{name} ({phone}) o‘z hisobini o‘chirishni so‘rayapti. Uni Sozlamalar → Xodimlar bo‘limida arxivga o‘tkazing"
     }
   },
   "portal": {
@@ -6060,7 +6074,11 @@
       "toHome": "Guruhlarimni ochish"
     },
     "choosePassword": "Parol tanlash",
-    "changePassword": "Parolni o‘zgartirish"
+    "changePassword": "Parolni o‘zgartirish",
+    "deleteAccount": "Hisobimni o‘chirish",
+    "deleteTitle": "Hisobingiz o‘chirilsinmi?",
+    "deleteText": "Kirish hisobingiz hozirning o‘zida, barcha qurilmalarda o‘chiriladi: parolingiz, Telegram hisobingiz bilan bog‘lanish va botning sizga yuboradigan xabarlari. O‘quv markazi o‘z o‘quvchilari haqida saqlaydigan ma’lumotlar (ism, davomat, baholar, to‘lovlar) markazda qoladi. Keyinroq Telegramdan kod olib yana kirishingiz mumkin.",
+    "deleteMore": "Nima o‘chiriladi va nima qoladi"
   },
   "exercises": {
     "heading": "O‘z-o‘zini tekshirish mashqlari",
@@ -6264,6 +6282,130 @@
     "chooseRole": "Lavozimni tanlang",
     "theirNote": "Yozgani: {note}",
     "fillAll": "Avval barcha maydonlarni to‘ldiring."
+  },
+  "legal": {
+    "languages": "Til",
+    "updated": "Yangilangan: 2026-yil 25-noyabr",
+    "privacy": {
+      "title": "Maxfiylik siyosati",
+      "description": "Kampus ilovasi va kampus.center sayti siz haqingizda nimani saqlaydi, nima uchun, uni kim ko‘radi va qanday o‘chirish mumkin.",
+      "intro": "Bu siyosat Android va iPhone uchun Kampus ilovasiga (center.kampus.app) hamda kampus.center manzilidagi Kampus saytiga tegishli. Kampus — o‘quv markazlari guruhlar, darslar, uy vazifalari va to‘lovlarni yuritadigan vosita. Quyida Kampus siz haqingizda nimani saqlashi, nima uchun, uni kim ko‘rishi va qanday o‘chirish mumkinligi aytilgan.",
+      "contactEmail": "Maxfiylik bo‘yicha Kampusga yozing: {email}.",
+      "contactNone": "Maxfiylik bo‘yicha o‘quv markazingizga murojaat qiling: u biz bilan bevosita bog‘lana oladi.",
+      "deletionLink": "Hisobni qanday o‘chirish mumkin",
+      "sections": {
+        "who": {
+          "title": "Ma’lumotlar uchun kim javob beradi",
+          "text": "O‘quvchilar, ota-onalar va xodimlar haqida nima kiritilishini o‘quv markazingiz hal qiladi, o‘z yozuvingiz haqida avvalo undan so‘rang. Kampus bu ma’lumotlarni markaz uchun saqlaydi hamda ilova va saytning ishlashini ta’minlaydi."
+        },
+        "what": {
+          "title": "Kampus nimani saqlaydi",
+          "points": {
+            "account": "Hisobingiz: ismingiz va telefon raqamingiz, Telegram orqali kirsangiz, Telegramdagi ismingiz, foydalanuvchi nomingiz, raqamli identifikatoringiz va profil rasmingiz. Parolingiz faqat qayta o‘qib bo‘lmaydigan xesh ko‘rinishida saqlanadi.",
+            "student": "Markaz kiritadigan o‘quvchi yozuvi: ism, telefon, tug‘ilgan sana, jins, rasm, maktab, ota-onaning ismi va telefoni, guruhlar, davomat, baholar, uy vazifalari, test natijalari, tangalar, xodimlarning izohlari va to‘lovlar.",
+            "staff": "Markaz kiritadigan xodim yozuvi: ism, telefon, tug‘ilgan sana, rasm, lavozim, ishga kelish hisobi va maosh.",
+            "sent": "O‘zingiz yuboradigan narsalar: uy vazifasiga javoblar (matn, rasm, fayl, ovozli yozuv), guruh chatidagi xabarlar, test va so‘rovnomalardagi javoblar, darslarga qo‘ygan baholaringiz.",
+            "video": "Video darslar: kamerangiz, mikrofoningiz va ko‘rsatilayotgan ekraningiz dars davomida shifrlangan holda darsdagi boshqa ishtirokchilarga boradi: to‘g‘ridan-to‘g‘ri yoki to‘g‘ridan-to‘g‘ri ulanib bo‘lmasa, Kampusning oraliq serveri orqali. Kampus ularni saqlamaydi. O‘qituvchi darsni yozib olsa, yozuv guruh uchun markaz belgilagan muddat davomida saqlanadi (markaz boshqa muddat tanlamagan bo‘lsa, 90 kun).",
+            "signIns": "Kirishlar: vaqti, internet manzili va qurilma turi. Bu qayerdan kirganingizni ko‘rishingiz va suiiste’molni payqash uchun kerak.",
+            "not": "Ilova kontaktlaringizni va joylashuvingizni o‘qimaydi, rasm va fayllardan esa faqat o‘zingiz tanlaganlarini o‘qiydi. Unda reklama ham, kuzatuv yoki tahlil modullari ham yo‘q."
+          }
+        },
+        "why": {
+          "title": "Nima uchun",
+          "text": "Markaz dars bera olishi va hisob-kitobini yurita olishi uchun: dars jadvali, davomat, uy vazifalari, natijalar, to‘lovlar va ular haqidagi xabarlar. Kampus shaxsiy ma’lumotlarni sotmaydi, ulardan reklama uchun foydalanmaydi va boshqalar uchun profil tuzmaydi."
+        },
+        "permissions": {
+          "title": "Ilova telefoningizdan nimani so‘raydi",
+          "points": {
+            "camera": "Kamera: video darslar, uy vazifasini suratga olish va, xodimlarda, o‘quvchi beyjini o‘qish uchun.",
+            "microphone": "Mikrofon: video darslar va uy vazifasiga ovozli javob uchun.",
+            "files": "Rasm va fayllar: faqat o‘zingiz yuborish uchun tanlaganlaringiz.",
+            "screen": "Ekraningiz: faqat darsda «Ekranni ko‘rsatish»ni bosganingizda. Android shu vaqt davomida bildirishnoma ko‘rsatib turadi.",
+            "notifications": "Bildirishnomalar: shu bildirishnoma uchun."
+          }
+        },
+        "sharing": {
+          "title": "Uni kim ko‘radi",
+          "text": "Markazingiz xodimlari, har biri o‘z lavozimi doirasida. Ota-ona o‘z farzandining yozuvini ko‘radi. Guruhingizdagi boshqa ishtirokchilar ismingizni va guruhda yozganlaringizni ko‘radi. Markazdan tashqariga ma’lumot faqat aniq bir vazifani bajaradigan kompaniyalarga va faqat shu vazifa uchun kerakli hajmda boradi:",
+          "points": {
+            "telegram": "Telegram, agar uni ulagan bo‘lsangiz: kirish kodlari va markaz xabarlari sizga Telegram boti orqali keladi.",
+            "sms": "Markazning SMS-provayderi: telefon raqamingiz va markaz sizga yuboradigan xabar matni.",
+            "payments": "Payme va Click, agar onlayn to‘lasangiz: summa va to‘lov raqamingiz. Karta raqamingizni Kampus hech qachon ko‘rmaydi.",
+            "assistant": "Anthropic, agar markaz o‘z xodimlari uchun yordamchini yoqqan bo‘lsa: xodimning savoli va javob uchun kerakli markaz ma’lumotlari. Yordamchi o‘quvchilar va ota-onalarga taklif qilinmaydi.",
+            "hosting": "Kampus serverini ijaraga olgan xosting kompaniyasi: u ma’lumotlarni saqlaydi va ulardan foydalanmaydi.",
+            "law": "Qonun talab qilganda ham Kampus ma’lumotni oshkor qilishi mumkin."
+          }
+        },
+        "keeping": {
+          "title": "Qancha vaqt saqlanadi",
+          "points": {
+            "records": "Markaz yozuvlari: markaz Kampusdan foydalanar ekan. Markaz so‘raganda yoki o‘z hisobini yopganda ular o‘chiriladi.",
+            "recordings": "Dars yozuvlari: markaz belgilagan muddat, boshqa muddat tanlanmagan bo‘lsa, 90 kun.",
+            "codes": "Kirish kodlari: bir kun.",
+            "backups": "Zaxira nusxalar: 14 kun."
+          }
+        },
+        "security": {
+          "title": "Qanday himoyalangan",
+          "text": "Qurilmangiz bilan Kampus o‘rtasidagi hamma narsa shifrlangan holda uzatiladi (HTTPS). Parollar xeshlanadi. Ilova kirish ma’lumotingizni telefonning himoyalangan xotirasida saqlaydi. Har bir markaz faqat o‘z ma’lumotlarini ko‘radi, xodimlar faqat lavozimi ruxsat berganini ko‘radi va xodimlar kiritgan har bir o‘zgarish jurnalga yoziladi."
+        },
+        "choices": {
+          "title": "Sizning tanlovingiz",
+          "text": "Yozuvingizni ko‘rish yoki tuzatish uchun o‘quv markazingizga murojaat qiling. Hisobingizni istalgan vaqtda o‘zingiz, ilovada yoki saytda, o‘chirishingiz mumkin."
+        },
+        "children": {
+          "title": "Bolalar",
+          "text": "O‘quv markazlari bolalarni ham o‘qitadi. Bolaning yozuvini markaz oila roziligi bilan kiritadi, ota-ona esa kirib uni ko‘ra oladi. Kampus boladan darslar uchun kerak bo‘lganidan ortiq hech narsa so‘ramaydi. Ota-ona markazdan bolaning kirish hisobini yoki yozuvini o‘chirishni so‘rashi mumkin."
+        },
+        "changes": {
+          "title": "O‘zgarishlar",
+          "text": "Bu siyosat o‘zgarganda, yangi matn sanasi bilan shu sahifaga qo‘yiladi."
+        }
+      }
+    },
+    "deletion": {
+      "title": "Kampus hisobini o‘chirish",
+      "description": "Kampus ilovasida yoki kampus.center saytida hisobni qanday o‘chirish, nima o‘chirilishi va nima qolishi.",
+      "intro": "Bu sahifa Kampus ilovasidan (center.kampus.app) yoki kampus.center saytidan foydalanuvchilar uchun. Bu yerda hisobni qanday o‘chirish, nima o‘chirilishi va nima qolishi aytilgan.",
+      "done": "Hisobingiz o‘chirildi, barcha qurilmalarda tizimdan chiqdingiz.",
+      "student": {
+        "title": "O‘quvchilar va ota-onalar",
+        "steps": {
+          "s1": "Ilovada yoki shu saytda tizimga kiring.",
+          "s2": "Bosh sahifangizning pastida «Hisobimni o‘chirish»ni bosing.",
+          "s3": "Tasdiqlang. Hisob darhol o‘chiriladi."
+        },
+        "signIn": "Hisobni o‘chirish uchun kirish",
+        "signedIn": "Siz {name} sifatida kirgansiz."
+      },
+      "staff": {
+        "title": "O‘qituvchilar va boshqa xodimlar",
+        "text": "Hisobingizni o‘quv markazi ochgan, shuning uchun uni markaz yopadi.",
+        "steps": {
+          "s1": "Ilovada yoki shu saytda tizimga kiring.",
+          "s2": "«Mening hisobim»ni oching.",
+          "s3": "«Hisobimni o‘chirishni so‘rash»ni bosing. Markazingizda xodimlarni boshqaradiganlar xabardor bo‘ladi va hisobni arxivga o‘tkazadi. Shundan keyin tizimga kira olmaysiz."
+        },
+        "signIn": "«Mening hisobim»ga kirish"
+      },
+      "deleted": {
+        "title": "Nima o‘chiriladi",
+        "points": {
+          "student": "O‘quvchi yoki ota-ona uchun: hisobning o‘zi, parolingiz, barcha qurilmalardagi kirishlaringiz, Telegram hisobingiz bilan bog‘lanish, bot siz haqingizda eslab qolgan narsalar (raqamingiz va chatingiz) va botning sizga yuboradigan xabarlari.",
+          "staff": "Xodim uchun: kirish yopiladi va barcha qurilmalarda tizimdan chiqariladi."
+        }
+      },
+      "kept": {
+        "title": "Nima qoladi",
+        "text": "O‘quv markazining o‘z yozuvlari markazda qoladi: o‘quvchining ro‘yxatdagi ismi va telefoni, davomat, baholar, uy vazifalari va to‘lovlar; xodimlar uchun: o‘tilgan darslar, qabul qilingan to‘lovlar va maosh. Ular markazga hisob-kitob va hisobotlar uchun kerak va markaz Kampusdan foydalanar ekan saqlanadi. Yozuvni tuzatish yoki o‘chirish uchun markazga murojaat qiling. Zaxira nusxalardagi ko‘chirmalar 14 kun ichida yo‘qoladi."
+      },
+      "help": {
+        "title": "Kira olmayapsizmi?",
+        "contactEmail": "O‘quv markazingizga murojaat qiling yoki telefon raqamingiz va markaz nomini ko‘rsatib {email} manziliga yozing.",
+        "contactNone": "O‘quv markazingizga murojaat qiling: u hisobni siz uchun yopa oladi."
+      },
+      "privacyLink": "Maxfiylik siyosati"
+    }
   },
   "mobile": {
     "offline": "Kampus bilan aloqa yo'q. Internetni tekshirib, qayta urinib ko'ring.",
