@@ -165,6 +165,7 @@ export const uz: HelpContent = {
             {
               note: "Administrator hamkasbiga Telegram kodini yoqib, uni barcha qurilmalardan chiqarib yuborishi mumkin: Sozlamalar → Xodimlar bo‘limidagi xodim formasidan.",
             },
+            "Sahifa pastidagi **Hisobimni o‘chirishni so‘rash** markazingizdan hisobingizni yopishni so‘raydi. Xodimlarni boshqaradigan har bir kishi qo‘ng‘iroqchada bildirishnoma oladi va sizni Sozlamalar → Xodimlar bo‘limida arxivga o‘tkazadi; shundan keyin tizimga kira olmaysiz. Ismingiz markazning o‘tgan yozuvlarida qoladi: o‘tgan darslaringiz, qabul qilgan to‘lovlaringiz va maoshingiz. **Fikrimdan qaytdim** so‘rovni qaytarib oladi. Hamkasbingiz haqida shunday bildirishnoma kelsa, Sozlamalar → Xodimlar ni ochib, uni arxivga o‘tkazing.",
           ],
         },
         mySalary: {
@@ -1356,6 +1357,7 @@ export const uz: HelpContent = {
             {
               note: "Raqamingiz markazda hali bo‘lmasa, Kampus ismingiz va guruhingizni so‘raydi hamda markazga so‘rov yuboradi. O‘qituvchi yoki menejer sizni kiritgach, bot xabar beradi; shunda qayta kiring. Birovning telefonidan foydalanyapsizmi? Tugatgach, pastdagi **Chiqish** ni bosing.",
             },
+            "Bosh sahifangiz pastidagi **Hisobimni o‘chirish** kirish hisobingizni darhol va barcha qurilmalarda o‘chiradi: parolingiz, Telegram hisobingiz bilan bog‘lanish va botning sizga yuboradigan xabarlari. O‘quv markazi o‘z o‘quvchilari haqida saqlaydigan ma’lumotlar (ism, davomat, baholar, to‘lovlar) markazda qoladi. Keyinroq Telegramdan kod olib yana kirishingiz mumkin. Shu manzildagi **/delete-account** sahifasi nima o‘chirilishi va nima qolishini aytadi, **/privacy** esa maxfiylik siyosati.",
           ],
         },
         family: {

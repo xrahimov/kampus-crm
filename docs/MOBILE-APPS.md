@@ -86,6 +86,8 @@ able to work from an iPad or a phone.
 | Staff: attendance by badge (the camera, a hand scanner or the keyboard), from Today and from a lesson; a student's earned badges on the student's page (A-264)                                                               | Built, phone and tablet; needs a new build of the app (camera module); no server update needed                                              |
 | Office: the rest of the student form (password, source, invited by, time zone, status in the group, own price, charged from, school; gender, zone and school on an edit) and the School filter (A-265)                       | Built, phone and tablet; no server update needed                                                                                            |
 | Repairs from the simulator run of the finished app, run 17: a badge code sent with Enter, time zone offsets, the Owner filter on Leads, small labels (A-266)                                                                 | Built; needs a new build of the app; no server update needed                                                                                |
+| Deleting one's own account, and the privacy policy the stores ask for (A-267)                                                                                                                                                | Built, phone and tablet; needs the server update (one migration) and a new build of the app                                                 |
+| Ready for Google Play: a bundle signed with kai's upload key, the 16 KB check, the store page's texts and pictures (A-268)                                                                                                   | Built; waits for kai's Play Console account and key: [PLAY-STORE.md](PLAY-STORE.md)                                                         |
 | What stays on the site                                                                                                                                                                                                       | The organisations page with the server's status, the print layouts (receipt, badge, cash desk sheet, certificate), recording a video lesson |
 | The site running on the app's code                                                                                                                                                                                           | Part by part, the student side first; wide tables, Excel and print last                                                                     |
 
@@ -95,6 +97,8 @@ None of this blocks building; each item unlocks one step.
 
 1. **Google Play Console** account, $25 once. A personal account must run a closed test with 12
    testers for 14 days before it may publish; an organisation account needs a D-U-N-S number.
+   Everything else for Google Play (the upload key, the store page, the forms and Claude's answers
+   for them) is in [PLAY-STORE.md](PLAY-STORE.md).
 2. **Apple Developer Program**, $99 a year. An individual account needs no D-U-N-S number. Without
    it no iPhone or iPad can install the app, not even kai's own for longer than a week. In that
    account the app needs two names, `center.kampus.app` and its screen-share extension
@@ -105,7 +109,8 @@ None of this blocks building; each item unlocks one step.
 4. Later, for push: a free **Firebase** project (Android) and a push key from the Apple account.
 
 Claude never handles the passwords of these accounts. Signing keys are created by kai's accounts and
-kept there (Play App Signing, App Store Connect).
+kept there (Play App Signing, App Store Connect). Android's upload key is made by kai on the Mac with
+`mobile/scripts/play-upload-key.sh` (A-268); Claude never sees it or its password.
 
 ## How it is put together
 
@@ -342,10 +347,12 @@ mobile/
 - **Attendance by badge (A-264).** `features/scan/scan-screen.tsx` (`/staff/scan`, with `lesson`, `group` and `time` when it is for one lesson) and `badge-camera.tsx`, the only place that uses `expo-camera`. `expo install` cannot reach Expo from the cloud container: take a module's version from `node_modules/expo/bundledNativeModules.json` and `npm install` it. In a browser the module reads codes with the browser's `BarcodeDetector`, which the headless test browser lacks; the screen check gives it one made of the site's `jsqr`, and a still picture as the camera (`--use-file-for-fake-video-capture`). In tests `expo-camera` is mocked in `jest.setup.js`: `CameraView` is a tag a test hands a code to with `fireEvent(camera, "barcodeScanned", { data })`. A student's badges are `BadgeTiles` (`features/badges/badge-tiles.tsx`), shared with the student's own Results.
 - **The student form (A-265).** `features/office/student-form.tsx` is the site's whole form. `student-form-parts.tsx` has the two fields that choose from a long list: `StudentPickField` (a student found with `useStudentSearch`) and `TimeZoneField` (a zone found by its city in `lib/time-zone-names.json`, as the student's own card does). Source and School are shown only when `GET /students/options` lists any.
 - **What run 17 taught (A-266).** On a phone `onSubmitEditing` can arrive before the last `onChangeText`: a field that a hand scanner types into takes its text from the event (`event.nativeEvent.text`), not from state. The app's engine answers `timeZoneName: "shortOffset"` with a bare "GMT": work an offset out from the zone's clock (`timeZoneLabel` in `src/lib/time-zones.ts` does). A child with `flex: 1` makes its auto-width parent take the whole row on a phone (a browser sizes it by its content), so a `Check` beside another control gets `inline`. A row with `alignItems: "baseline"` did not wrap on the iPad although `flexWrap` was set: put what may not fit in a row that already wraps. With the keyboard open, a phone shows the focused field just above it and nothing below, so what must be seen while typing goes above the field. The iOS simulator has no camera: the preview is black after Allow, and only a real phone shows a badge being read. For a run, the iPad Pro 13-inch simulator carries the live build and the iPhone 18 Pro the test student: use the iPhone 17 and the iPad Air.
+- **Deleting an account (A-267).** `useDeleteStudentAccount`, `useAskDeletion` and `useWithdrawDeletion` are in `api/account.ts`. The student's button is at the foot of `features/student/home-screen.tsx` and signs the app out when the server has answered; the staff card is in `features/account/account-screen.tsx`. Both open the site's `/delete-account` page for the longer explanation, so its text lives in one place.
+- **The Play build (A-268).** `plugins/with-release-signing.js` edits the generated `android/app/build.gradle` and throws when the template's lines are not where it expects them, so an Expo upgrade that moves them fails loudly in the **Google Play bundle** trial run and not silently with a test-signed file. `scripts/check-page-size.sh` and `scripts/check-play-bundle.sh` need only `readelf`, `unzip`, `keytool` and `jarsigner`. `scripts/play-upload-key.sh` is for kai's own hand: never run it in a check or from a Remote Control session. Store texts are in `store/listing.json`; change them there and paste into Play Console. Screenshots for Play may not be longer than twice their width: take them at 1080 × 1920 (`adb shell wm size 1080x1920`), not at the emulator's own size.
 - **Finding what is missing.** The last sweep listed every `route.ts` under `src/app/api/v1` with
   its methods and looked for each path's last fixed part in `mobile/src`: a call nobody names is a
   feature the app lacks. Worth repeating after the site gains a feature.
-  Next free number: A-267.
+  Next free number: A-269.
 - **Finance and payroll (A-237).** `src/features/finance/` and `src/api/office-finance.ts`.
   `FinanceScreen` is the site's Finance page; `EntriesScreen` the entries of a kind or of a
   category (`entries-routes.tsx` reads which from the address), with `EntrySheet`, the site's one
