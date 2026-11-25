@@ -72,6 +72,12 @@ need(
 );
 need(existsSync("ios/KampusBroadcast/SampleHandler.swift"), "the extension's code is in place");
 
+// Signing (A-269): the app and its extension are signed by the same team, in both
+// build kinds, or Xcode refuses to put the extension into the app.
+const teams = read("ios/Kampus.xcodeproj/project.pbxproj").match(/DEVELOPMENT_TEAM = \w+;/g) ?? [];
+need(teams.length >= 4, "the app and the extension both name a signing team");
+need(new Set(teams).size <= 1, "the app and the extension name the same signing team");
+
 if (failures.length > 0) {
   console.error("The iPhone project is missing:\n" + failures.map((f) => `  - ${f}`).join("\n"));
   process.exit(1);

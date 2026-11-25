@@ -86,6 +86,9 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   backgroundColor: PORCELAIN,
   ios: {
     bundleIdentifier: "center.kampus.app",
+    // kai's Apple Developer team (A-269). Not a secret: it is printed in every signed
+    // app. With it Xcode signs the app and its screen-share extension by itself.
+    appleTeamId: "3Z948P849A",
     buildNumber: String(BUILD),
     supportsTablet: true,
     infoPlist: {

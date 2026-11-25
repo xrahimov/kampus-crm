@@ -88,6 +88,7 @@ able to work from an iPad or a phone.
 | Repairs from the simulator run of the finished app, run 17: a badge code sent with Enter, time zone offsets, the Owner filter on Leads, small labels (A-266)                                                                 | Built; needs a new build of the app; no server update needed                                                                                |
 | Deleting one's own account, and the privacy policy the stores ask for (A-267)                                                                                                                                                | Built, phone and tablet; needs the server update (one migration) and a new build of the app                                                 |
 | Ready for Google Play: a bundle signed with kai's upload key, the 16 KB check, the store page's texts and pictures (A-268)                                                                                                   | Built; waits for kai's Play Console account and key: [PLAY-STORE.md](PLAY-STORE.md)                                                         |
+| The store accounts: Google Play (personal, "Kampus CRM", identity check running) and Apple (individual, approved); the iPhone app names its signing team (A-269)                                                             | Accounts open; the Mac signs once kai's Apple ID is in Xcode                                                                                |
 | What stays on the site                                                                                                                                                                                                       | The organisations page with the server's status, the print layouts (receipt, badge, cash desk sheet, certificate), recording a video lesson |
 | The site running on the app's code                                                                                                                                                                                           | Part by part, the student side first; wide tables, Excel and print last                                                                     |
 
@@ -95,17 +96,19 @@ able to work from an iPad or a phone.
 
 None of this blocks building; each item unlocks one step.
 
-1. **Google Play Console** account, $25 once. A personal account must run a closed test with 12
-   testers for 14 days before it may publish; an organisation account needs a D-U-N-S number.
+1. **Google Play Console** account: opened 25 November 2026, personal, developer name "Kampus CRM"
+   (A-269). Google is verifying kai's identity; until its e-mail comes no app can be created there.
+   A personal account must run a closed test with 12 testers for 14 days before it may publish.
    Everything else for Google Play (the upload key, the store page, the forms and Claude's answers
    for them) is in [PLAY-STORE.md](PLAY-STORE.md).
-2. **Apple Developer Program**, $99 a year. An individual account needs no D-U-N-S number. Without
-   it no iPhone or iPad can install the app, not even kai's own for longer than a week. In that
-   account the app needs two names, `center.kampus.app` and its screen-share extension
-   `center.kampus.app.broadcast`, both with the app group `group.center.kampus.app` (Xcode
-   creates them itself when it signs with the account).
-3. **Xcode** on the Mac (free, from the App Store, about 12 GB): lets the Mac build the iPhone app
-   and run it in the simulator.
+2. **Apple Developer Program**: enrolled 25 November 2026 as an individual, $99 a year, renews 26
+   November 2027 (A-269). The app's two names, `center.kampus.app` and its screen-share extension
+   `center.kampus.app.broadcast`, and the app group `group.center.kampus.app` are registered in the
+   account. In App Store Connect the app's record exists under the name **Kampus CRM** ("Kampus"
+   alone was taken there; on the phone the app is still called Kampus), English (U.S.), for iPhone
+   and iPad. Its store page is empty and nothing has been sent to Apple for review.
+3. **Xcode** on the Mac is installed. Still to do: add the Apple ID in Xcode (Settings, Accounts),
+   so the Mac can sign a build for a real iPhone and for TestFlight.
 4. Later, for push: a free **Firebase** project (Android) and a push key from the Apple account.
 
 Claude never handles the passwords of these accounts. Signing keys are created by kai's accounts and
@@ -349,10 +352,11 @@ mobile/
 - **What run 17 taught (A-266).** On a phone `onSubmitEditing` can arrive before the last `onChangeText`: a field that a hand scanner types into takes its text from the event (`event.nativeEvent.text`), not from state. The app's engine answers `timeZoneName: "shortOffset"` with a bare "GMT": work an offset out from the zone's clock (`timeZoneLabel` in `src/lib/time-zones.ts` does). A child with `flex: 1` makes its auto-width parent take the whole row on a phone (a browser sizes it by its content), so a `Check` beside another control gets `inline`. A row with `alignItems: "baseline"` did not wrap on the iPad although `flexWrap` was set: put what may not fit in a row that already wraps. With the keyboard open, a phone shows the focused field just above it and nothing below, so what must be seen while typing goes above the field. The iOS simulator has no camera: the preview is black after Allow, and only a real phone shows a badge being read. For a run, the iPad Pro 13-inch simulator carries the live build and the iPhone 18 Pro the test student: use the iPhone 17 and the iPad Air.
 - **Deleting an account (A-267).** `useDeleteStudentAccount`, `useAskDeletion` and `useWithdrawDeletion` are in `api/account.ts`. The student's button is at the foot of `features/student/home-screen.tsx` and signs the app out when the server has answered; the staff card is in `features/account/account-screen.tsx`. Both open the site's `/delete-account` page for the longer explanation, so its text lives in one place.
 - **The Play build (A-268).** `plugins/with-release-signing.js` edits the generated `android/app/build.gradle` and throws when the template's lines are not where it expects them, so an Expo upgrade that moves them fails loudly in the **Google Play bundle** trial run and not silently with a test-signed file. `scripts/check-page-size.sh` and `scripts/check-play-bundle.sh` need only `readelf`, `unzip`, `keytool` and `jarsigner`. `scripts/play-upload-key.sh` is for kai's own hand: never run it in a check or from a Remote Control session. Store texts are in `store/listing.json`; change them there and paste into Play Console. On a phone a track's `stop()` does not end its capture: a screen share's foreground service and notice stay until `release()`, which `releaseWhenStopped` in `features/room/platform.native.tsx` hangs on `stop()` because the call engine is the site's and knows no `release()`. An auto-width `Text` on Android can be laid out a hair narrower than measured and lose its last letter or word: use `RoomyText` (`components/roomy-text.tsx`) for a one-line text beside something that takes the rest of the row, as `Check` with `inline` and the gradebook's figures do: its width comes from an unseen copy one space longer; padding or `flexShrink: 0` do not help. A `Confirm` has two buttons in half a phone's width each: keep the confirming label to one word. Screenshots for Play may not be longer than twice their width: take them at 1080 × 1920 (`adb shell wm size 1080x1920`), not at the emulator's own size.
+- **Signing for iPhone and iPad (A-269).** The team is `ios.appleTeamId` in `app.config.ts`; `plugins/with-screen-share.js` gives the extension the same team, and `scripts/check-ios-project.mjs` fails when the two differ. Signing is automatic: Xcode makes the certificates and profiles itself once the Apple ID is added in Xcode on the Mac, which is kai's own step. In Apple's page for a new App Group the field already holds `group.`: type only the rest.
 - **Finding what is missing.** The last sweep listed every `route.ts` under `src/app/api/v1` with
   its methods and looked for each path's last fixed part in `mobile/src`: a call nobody names is a
   feature the app lacks. Worth repeating after the site gains a feature.
-  Next free number: A-269.
+  Next free number: A-270.
 - **Finance and payroll (A-237).** `src/features/finance/` and `src/api/office-finance.ts`.
   `FinanceScreen` is the site's Finance page; `EntriesScreen` the entries of a kind or of a
   category (`entries-routes.tsx` reads which from the address), with `EntrySheet`, the site's one

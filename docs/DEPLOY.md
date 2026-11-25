@@ -204,6 +204,9 @@ A-201) has no migration and no setting. Two things to know after it:
   on an `https` address (the live site is one). Nothing on the server switches it
   on or off; a person can switch it off for the site in the browser.
 
+The store accounts and the iPhone app's signing team (A-269) change nothing on the server: no
+update, no migration, no setting.
+
 The privacy policy and deleting one's own account (A-267) come with **one migration**
 (`20261125140000_account_deletion`: a column on `User` and a notice kind; it adds, it changes no
 row). Two public pages appear, `/privacy` and `/delete-account` under each language. One optional
