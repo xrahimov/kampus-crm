@@ -104,7 +104,9 @@ None of this blocks building; each item unlocks one step.
 2. **Apple Developer Program**: enrolled 25 November 2026 as an individual, $99 a year, renews 26
    November 2027 (A-269). The app's two names, `center.kampus.app` and its screen-share extension
    `center.kampus.app.broadcast`, and the app group `group.center.kampus.app` are registered in the
-   account. Still to do there: accept App Store Connect's terms of service.
+   account. In App Store Connect the app's record exists under the name **Kampus CRM** ("Kampus"
+   alone was taken there; on the phone the app is still called Kampus), English (U.S.), for iPhone
+   and iPad. Its store page is empty and nothing has been sent to Apple for review.
 3. **Xcode** on the Mac is installed. Still to do: add the Apple ID in Xcode (Settings, Accounts),
    so the Mac can sign a build for a real iPhone and for TestFlight.
 4. Later, for push: a free **Firebase** project (Android) and a push key from the Apple account.
