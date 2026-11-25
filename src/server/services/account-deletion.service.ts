@@ -92,7 +92,8 @@ export async function requestStaffDeletion(
     });
     await notifyUsers(tx, {
       kind: "ACCOUNT_DELETION",
-      params: { name: user.fullName, phone: user.phone },
+      // `userId` is not shown: it is how a withdrawal finds these notices again.
+      params: { name: user.fullName, phone: user.phone, userId: actor.userId },
       href: "/settings/staff",
       organizationId: actor.organizationId,
       permission: "staff.delete",
@@ -102,7 +103,11 @@ export async function requestStaffDeletion(
   });
 }
 
-/** The person changed their mind before the account was archived. */
+/**
+ * The person changed their mind before the account was archived. The notices
+ * that asked for the account to be archived go too, read or not: left in the
+ * bell they would still tell someone to archive it.
+ */
 export async function withdrawStaffDeletion(actor: Actor, db: DbClient = prisma): Promise<void> {
   await db.$transaction(async (tx) => {
     const user = await tx.user.findUniqueOrThrow({
@@ -116,6 +121,13 @@ export async function withdrawStaffDeletion(actor: Actor, db: DbClient = prisma)
       entity: "User",
       entityId: actor.userId,
       before: { requestedAt: user.deletionRequestedAt.toISOString() },
+    });
+    await tx.notification.deleteMany({
+      where: {
+        kind: "ACCOUNT_DELETION",
+        user: { organizationId: actor.organizationId },
+        params: { path: ["userId"], equals: actor.userId },
+      },
     });
   });
 }

@@ -6410,6 +6410,7 @@
   "mobile": {
     "offline": "Kampus bilan aloqa yo'q. Internetni tekshirib, qayta urinib ko'ring.",
     "retry": "Qayta urinish",
+    "ask": "So'rash",
     "doorStudent": "O'quvchi yoki ota-ona",
     "doorStaff": "Xodim",
     "language": "Til",

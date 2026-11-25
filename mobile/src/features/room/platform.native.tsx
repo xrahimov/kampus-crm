@@ -162,6 +162,33 @@ export function captureScale(longestSidePx: number): number {
   return Math.round((SCREEN_MAX_WIDTH / longestSidePx) * 100) / 100;
 }
 
+/** A track of this phone's own, which the app must let go of by hand. */
+interface OwnTrack {
+  stop(): void;
+  release(): void;
+}
+
+/**
+ * Makes ending a shared screen end Android's capture as well (A-268). On a
+ * phone `stop()` only switches a track off: the capture, and with it the
+ * foreground service and its notice "Kampus is sharing your screen", last until
+ * the track is released. The call engine is the site's and knows only `stop()`,
+ * so the release is hung on it here, a moment later, when the engine has put
+ * the camera back on the line.
+ */
+export function releaseWhenStopped(tracks: OwnTrack[], afterMs = 300): void {
+  for (const track of tracks) {
+    const stop = track.stop.bind(track);
+    let released = false;
+    track.stop = () => {
+      stop();
+      if (released) return;
+      released = true;
+      setTimeout(() => track.release(), afterMs);
+    };
+  }
+}
+
 /**
  * Sharing this device's screen. Android (A-208) asks the person once per share
  * ("Start recording or casting?") and then captures whatever is in front, also
@@ -187,6 +214,7 @@ export const screenShare = {
       const stream = await mediaDevices.getDisplayMedia({
         android: { resolutionScale: captureScale(longest) },
       });
+      releaseWhenStopped(stream.getTracks());
       return stream as unknown as MediaStream;
     } catch (error) {
       throw captureError(error);

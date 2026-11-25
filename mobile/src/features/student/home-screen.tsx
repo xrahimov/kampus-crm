@@ -103,7 +103,8 @@ export function StudentHomeScreen() {
         onClose={() => setDeleting(false)}
         title={t("studentApp.deleteTitle")}
         text={t("studentApp.deleteText")}
-        label={t("studentApp.deleteAccount")}
+        // One word: the two buttons share a phone's width, and the title asks the question.
+        label={t("common.delete")}
         loading={remove.isPending || leaving}
         problem={remove.error ? errorText(t, remove.error) : null}
         onConfirm={() =>

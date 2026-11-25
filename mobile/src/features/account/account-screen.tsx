@@ -230,7 +230,8 @@ export function AccountScreen() {
         onClose={() => setAsking(false)}
         title={ta("deletion.confirmTitle")}
         text={ta("deletion.confirmText")}
-        label={ta("deletion.ask")}
+        // One word: the two buttons share a phone's width, and the title asks the question.
+        label={t("mobile.ask")}
         loading={askDeletion.isPending}
         problem={askDeletion.error ? errorText(t, askDeletion.error) : null}
         onConfirm={() => askDeletion.mutate(undefined, { onSuccess: () => setAsking(false) })}

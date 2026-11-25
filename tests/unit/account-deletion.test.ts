@@ -166,7 +166,11 @@ describe("a staff member asks for their account to be deleted (A-267)", () => {
     });
     // The director only: not the cashier, and not the person who asked.
     expect(notices.map((n) => n.userId)).toEqual([directorId]);
-    expect(notices[0]!.params).toEqual({ name: `${TAG} Teacher`, phone: phone(1) });
+    expect(notices[0]!.params).toEqual({
+      name: `${TAG} Teacher`,
+      phone: phone(1),
+      userId: teacherId,
+    });
     expect(notices[0]!.href).toBe("/settings/staff");
     expect(cashierId).not.toBe(directorId);
 
@@ -178,8 +182,17 @@ describe("a staff member asks for their account to be deleted (A-267)", () => {
       }),
     ).toBe(1);
 
+    // Someone else's request is its own: the teacher's withdrawal leaves it alone.
+    await requestStaffDeletion(actorFor(cashierId));
+
     await withdrawStaffDeletion(teacher);
     expect((await getAccount(teacher)).deletionRequestedAt).toBeNull();
+    // The director's bell no longer says to archive the teacher.
+    const left = await prisma.notification.findMany({
+      where: { kind: "ACCOUNT_DELETION", user: { organizationId: orgId } },
+      select: { params: true },
+    });
+    expect(left.map((n) => (n.params as { userId: string }).userId)).toEqual([cashierId]);
     const actions = (
       await prisma.auditLog.findMany({
         where: { organizationId: orgId, entityId: teacherId },

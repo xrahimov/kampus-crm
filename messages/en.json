@@ -6410,6 +6410,7 @@
   "mobile": {
     "offline": "No connection to Kampus. Check the internet and try again.",
     "retry": "Try again",
+    "ask": "Ask",
     "doorStudent": "Student or parent",
     "doorStaff": "Staff",
     "language": "Language",
