@@ -1,3 +1,4 @@
+import appStore from "../app-store.json";
 import listing from "../listing.json";
 
 /*
@@ -29,5 +30,36 @@ describe("the Google Play listing", () => {
     expect(text.match(/^• /gm)!.length).toBe(
       listing["en-US"].fullDescription.match(/^• /gm)!.length,
     );
+  });
+});
+
+/*
+ * The App Store page's own texts (A-270). Apple has no Uzbek store page, so
+ * there are two languages; the long description is the one from listing.json.
+ * App Store Connect refuses a name or subtitle over 30 characters, keywords
+ * over 100 and a promotional text over 170.
+ */
+const APPLE = [
+  ["en-US", "en-US"],
+  ["ru", "ru-RU"],
+] as const;
+
+describe("the App Store listing", () => {
+  it("has English and Russian and nothing else", () => {
+    expect(Object.keys(appStore).sort()).toEqual(APPLE.map(([language]) => language).sort());
+  });
+
+  it.each(APPLE)("%s fits Apple's limits", (language, playLanguage) => {
+    const text = appStore[language];
+    expect(text.name).toBe(listing[playLanguage].title);
+    expect(text.name.length).toBeLessThanOrEqual(30);
+    expect(text.subtitle.length).toBeGreaterThan(0);
+    expect(text.subtitle.length).toBeLessThanOrEqual(30);
+    expect(text.promotionalText.length).toBeLessThanOrEqual(170);
+    expect(text.keywords.length).toBeLessThanOrEqual(100);
+    // Apple counts every character: no space after a comma, and no word from the name.
+    expect(text.keywords).not.toMatch(/, | ,/);
+    expect(text.keywords.toLowerCase()).not.toContain("kampus");
+    expect(listing[playLanguage].fullDescription.length).toBeLessThanOrEqual(4000);
   });
 });
