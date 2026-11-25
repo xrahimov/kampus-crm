@@ -204,9 +204,12 @@ A-201) has no migration and no setting. Two things to know after it:
   on an `https` address (the live site is one). Nothing on the server switches it
   on or off; a person can switch it off for the site in the browser.
 
+The App Store pictures and the two repairs they led to (A-271) are in the app only: nothing to do
+on the server, no migration, no setting. They reach people with the next build of the app.
+
 The first TestFlight build and the App Store page's texts (A-270) change nothing on the server.
-The store build talks to the live site, so the update that brings #167 and #168 should be on the
-server before other people use that build.
+The store build talks to the live site; the update that brought #167 and #168 has been on the
+server since 25 November 2026.
 
 The store accounts and the iPhone app's signing team (A-269) change nothing on the server: no
 update, no migration, no setting.

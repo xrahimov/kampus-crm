@@ -263,6 +263,12 @@ describe("the Finance page", () => {
     expect(await screen.findByTestId("finance-figure-income")).toHaveTextContent(/Income.*2,?850/);
     expect(screen.getByTestId("finance-figure-profit")).toHaveTextContent(/1,?530/);
     expect(screen.getByTestId("finance-figure-marketingEfficiency")).toHaveTextContent(/87\.5%/);
+    // A long name is set smaller, not cut: "Эффективность маркетинга" on a phone (A-271).
+    expect(screen.getByTestId("finance-figure-marketingEfficiency-name").props).toMatchObject({
+      numberOfLines: 1,
+      adjustsFontSizeToFit: true,
+      minimumFontScale: 0.8,
+    });
     expect(screen.getByTestId("finance-by-method")).toHaveTextContent(/Cash.*2,?000/);
     expect(screen.getByTestId("finance-by-method")).toHaveTextContent(/No method/);
     expect(screen.getByTestId("finance-yearly")).toHaveTextContent(new RegExp(`${YEAR} turnover`));
