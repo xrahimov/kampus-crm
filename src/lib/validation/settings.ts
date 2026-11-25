@@ -191,6 +191,20 @@ export const organizationSuspendSchema = z.object({
 });
 export type OrganizationSuspendInput = z.infer<typeof organizationSuspendSchema>;
 
+/** A sign-in for an app store's reviewer (A-272): a staff member or a student, by phone. */
+export const REVIEW_SIGN_IN_KINDS = ["STAFF", "STUDENT"] as const;
+export type ReviewSignInKind = (typeof REVIEW_SIGN_IN_KINDS)[number];
+export const reviewSignInSchema = z.object({
+  kind: z.enum(REVIEW_SIGN_IN_KINDS),
+  phone: phoneSchema,
+  password: passwordSchema,
+});
+export type ReviewSignInInput = z.infer<typeof reviewSignInSchema>;
+export const reviewSignInRemoveSchema = z.object({
+  kind: z.enum(REVIEW_SIGN_IN_KINDS),
+  id: idSchema,
+});
+
 // --- Payment methods ----------------------------------------------------------
 
 export const paymentMethodSchema = z.object({

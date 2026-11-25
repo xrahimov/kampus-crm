@@ -615,7 +615,10 @@
     "firstSignInTelegram": "Birinchi marta Telegram orqali kiriladi. “Telegramdan kod olish” tugmasini bosing; shundan keyin parolingiz ham ishlaydi.",
     "joinRequestExpired": "Bu so‘rovning muddati tugagan. Kirish sahifasidan qayta boshlang.",
     "joinRequestDecided": "Bu so‘rovga allaqachon javob berilgan.",
-    "passwordNeedsTelegram": "Joriy parolsiz yangi parol qo‘yish uchun avval Telegram kodi bilan kiring."
+    "passwordNeedsTelegram": "Joriy parolsiz yangi parol qo‘yish uchun avval Telegram kodi bilan kiring.",
+    "reviewSignInNobody": "Markazingizda bu raqamli hech kim yo‘q.",
+    "reviewSignInRealPerson": "Bu haqiqiy odamning akkaunti: u Telegram orqali o‘zi kirgan. Hech kim ishlatmaydigan demo akkauntni tanlang.",
+    "reviewSignInSharedPhone": "Bu raqam bir nechta o‘quvchida bor. Raqami faqat o‘ziniki bo‘lgan o‘quvchini tanlang."
   },
   "validation": {
     "phone": "+998 90 123 45 67 ko‘rinishida raqam kiriting.",
@@ -1175,7 +1178,28 @@
       "resumeTitle": "Bu markaz davom ettirilsinmi?",
       "resumeText": "“{name}” odamlari yana kira oladi.",
       "reason": "Sabab (faqat sizga ko‘rinadi)",
-      "export": "Ma‘lumotlarni eksport qilish"
+      "export": "Ma‘lumotlarni eksport qilish",
+      "review": {
+        "title": "Ilovalar do‘koni tekshiruvchilari uchun kirish",
+        "description": "Apple va Google ilovani chiqarishdan oldin unga kirib ko‘radi, ularning tekshiruvchilari esa Telegram kodini ola olmaydi. O‘z markazingizdagi bitta demo o‘qituvchi va bitta demo o‘quvchiga o‘zi ishlaydigan parol bering, tekshiruv tugagach olib tashlang. Telegram orqali o‘zi kirgan odamni tanlab bo‘lmaydi.",
+        "add": "Tekshiruvchi uchun kirish qo‘shish",
+        "addDescription": "Parol darhol ishlaydi, Telegram kodi kerak emas. Xuddi shu telefon va parolni do‘konning tekshiruv shakliga kiriting.",
+        "none": "Tekshiruvchilar uchun kirish yo‘q.",
+        "kind": "Kim",
+        "kinds": {
+          "STAFF": "Xodim",
+          "STUDENT": "O‘quvchi"
+        },
+        "phone": "Telefon (login)",
+        "phoneHint": {
+          "STAFF": "Markazingizdagi xodim kartasidagi telefon, masalan demo o‘qituvchiniki.",
+          "STUDENT": "Markazingizdagi o‘quvchi kartasidagi telefon. Boshqa o‘quvchida bu raqam bo‘lmasligi kerak."
+        },
+        "password": "Parol",
+        "passwordHint": "Kamida 8 ta belgi. U qayta ko‘rsatilmaydi; shu odam uchun qayta saqlansa, almashtiriladi.",
+        "phoneSince": "{phone}, {date} dan beri",
+        "remove": "Olib tashlash"
+      }
     },
     "system": {
       "title": "Server holati",

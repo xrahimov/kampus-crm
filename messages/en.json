@@ -615,7 +615,10 @@
     "firstSignInTelegram": "Your first sign-in is with Telegram. Press “Get a code in Telegram”; after that your password works too.",
     "joinRequestExpired": "This request has expired. Start again from the sign-in page.",
     "joinRequestDecided": "This request has already been answered.",
-    "passwordNeedsTelegram": "To set a password without the current one, sign in with a code from Telegram first."
+    "passwordNeedsTelegram": "To set a password without the current one, sign in with a code from Telegram first.",
+    "reviewSignInNobody": "Nobody in your centre has this phone number.",
+    "reviewSignInRealPerson": "This is a real person’s account: they have signed in with Telegram themself. Choose a demo account nobody uses.",
+    "reviewSignInSharedPhone": "More than one student has this phone number. Choose a student whose number is theirs alone."
   },
   "validation": {
     "phone": "Enter a number like +998 90 123 45 67.",
@@ -1175,7 +1178,28 @@
       "resumeTitle": "Resume this centre?",
       "resumeText": "People of “{name}” can sign in again.",
       "reason": "Reason (shown to you only)",
-      "export": "Export data"
+      "export": "Export data",
+      "review": {
+        "title": "Sign-ins for app store reviewers",
+        "description": "Apple and Google sign in to the app before they publish it, and their reviewers cannot get a Telegram code. Give one demo teacher and one demo student of your own centre a password that works by itself, and remove it when the review is over. A person who has signed in with Telegram themself cannot be used.",
+        "add": "Add a reviewer sign-in",
+        "addDescription": "The password works at once, without a Telegram code. Type the same phone number and password into the store’s review form.",
+        "none": "No reviewer sign-ins.",
+        "kind": "Who",
+        "kinds": {
+          "STAFF": "Staff member",
+          "STUDENT": "Student"
+        },
+        "phone": "Phone (login)",
+        "phoneHint": {
+          "STAFF": "The phone on the staff member’s card in your centre, for example the demo teacher’s.",
+          "STUDENT": "The phone on the student’s card in your centre. No other student may share it."
+        },
+        "password": "Password",
+        "passwordHint": "At least 8 characters. It is never shown again; saving again for the same person replaces it.",
+        "phoneSince": "{phone}, since {date}",
+        "remove": "Remove"
+      }
     },
     "system": {
       "title": "Server status",

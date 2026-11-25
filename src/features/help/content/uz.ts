@@ -1323,6 +1323,16 @@ export const uz: HelpContent = {
             "Sozlamalar → Tashkilotlar har bir markaz uchun xodimlar, o‘quvchilar (faol va arxivdagi) va guruhlar sonini, yuklangan fayllari qancha joy olishini, undan oxirgi marta kim qachon kirganini va qaysi integratsiyalar yoqilganini ko‘rsatadi. Qator menyusida **Ma‘lumotlarni eksport qilish** bor: markazning barcha yozuvlari (filiallar, parolsiz xodimlar, kurslar, guruhlar, o‘quvchilar, to‘lovlar, davomat, baholar, lidlar, moliya va boshqalar) bitta JSON fayl bo‘lib, markaz egasi saqlab qo‘yishi yoki boshqa joyga ko‘chirishi uchun. **To‘xtatish** markazni yopadi: undan hech kim kira olmaydi, kirganlar chiqariladi, ma‘lumotlari **Davom ettirish** bosilguncha o‘z joyida qoladi. O‘z markazingizni to‘xtata olmaysiz. Ikkala amal ham harakatlar jurnaliga yoziladi.",
           ],
         },
+        reviewers: {
+          title: "Ilovalar do‘koni tekshiruvchilari uchun kirish",
+          body: [
+            "Apple va Google Kampus ilovasini o‘z do‘konlariga qo‘yishdan oldin unga kirib ko‘radi, har bir yangi versiyani ham qayta ko‘radi. Ularning tekshiruvchilari birinchi kirish uchun kerak bo‘ladigan Telegram kodini ola olmaydi. Sozlamalar → Tashkilotlar sahifasidagi **Ilovalar do‘koni tekshiruvchilari uchun kirish** bo‘limida **Tekshiruvchi uchun kirish qo‘shish** tugmasini bosing, **Xodim** yoki **O‘quvchi**ni tanlang, o‘z markazingizdagi demo akkauntning telefonini va kamida 8 ta belgili parolni kiriting. Bu parol darhol, o‘zi ishlaydi; xuddi shu telefon va parolni do‘konning tekshiruv shakliga kiriting.",
+            "Faqat hech kim ishlatmaydigan akkauntni tanlash mumkin: Telegram orqali o‘zi kirgan odam rad etiladi, raqami boshqa o‘quvchida ham bor o‘quvchi ham. Shu odam uchun qayta saqlash parolni almashtiradi va tekshiruvchini tizimdan chiqaradi. **Olib tashlash** kirishni tugatadi: xodim akkaunti yana avval Telegramni talab qiladi, o‘quvchining tekshiruvchi akkaunti esa o‘chiriladi, o‘quvchi kartasi qoladi. Har bir o‘zgarish harakatlar jurnaliga yoziladi.",
+            {
+              note: "Tekshiruvchi o‘sha o‘qituvchi yoki o‘quvchi ko‘rgan narsani ko‘radi. Haqiqiy odamlar ma’lumotini ochadigan akkauntni emas, demo guruhli demo o‘qituvchi va demo o‘quvchini tanlang.",
+            },
+          ],
+        },
         afterwards: {
           title: "Keyin",
           body: [
