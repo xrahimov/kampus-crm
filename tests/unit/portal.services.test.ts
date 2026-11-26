@@ -9,6 +9,7 @@ import { DEFAULT_ROLE_PERMISSIONS } from "@/lib/rbac/default-roles";
 import { prisma } from "@/server/db/prisma";
 import type { Actor } from "@/server/rbac/authorize";
 import { createGroup } from "@/server/services/groups/groups.service";
+import { lessonsNotOver } from "@/server/services/groups/shared";
 import { addMember } from "@/server/services/groups/memberships.service";
 import { getPortal } from "@/server/services/portal/portal.service";
 import { createBranch } from "@/server/services/settings/branches.service";
@@ -199,6 +200,26 @@ describe("student portal", () => {
     expect(portal!.exams).toEqual([]);
     expect(portal!.tests).toEqual([]);
     expect(portal!.student.coins).toBe(0);
+  });
+
+  it("a lesson stops being the next one when it ends, not at midnight (A-273)", async () => {
+    const [first, second] = await prisma.lesson.findMany({
+      where: { groupId, date: { gt: new Date() } },
+      orderBy: [{ date: "asc" }, { startTime: "asc" }],
+      take: 2,
+    });
+    const day = first!.date.toISOString().slice(0, 10);
+    const next = (at: string) =>
+      prisma.lesson.findFirst({
+        where: lessonsNotOver(groupId, new Date(`${day}T${at}:00+05:00`)),
+        orderBy: [{ date: "asc" }, { startTime: "asc" }],
+        select: { id: true },
+      });
+    // The lesson runs 18:00 to 19:30 on the centre's clock.
+    expect((await next("08:00"))!.id).toBe(first!.id);
+    expect((await next("19:29"))!.id).toBe(first!.id);
+    expect((await next("19:30"))!.id).toBe(second!.id);
+    expect((await next("23:59"))!.id).toBe(second!.id);
   });
 
   it("never mixes in another student's marks", async () => {

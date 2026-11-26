@@ -6690,6 +6690,35 @@
       "sampleMethod": "Naqd",
       "fixFields": "Ba'zi maydonlarni tuzatish kerak. Ular yuqorida belgilangan.",
       "formsDescription": "Tashrif buyuruvchilarni lidga aylantiradigan ochiq veb-formalar. Forma havolasini ulashing yoki tashrif buyuruvchilar nimani ko'rishini bilish uchun uni oching."
+    },
+    "shortcuts": {
+      "nextLesson": "Keyingi darsim",
+      "nextLessonAbout": "Keyingi dars qaysi va qachon ekanini aytadi.",
+      "startLesson": "Darsni boshlash",
+      "startLessonAbout": "Kampusda hozirgi yoki keyingi darsingizni ochadi.",
+      "homework": "Uy vazifam",
+      "homeworkAbout": "Qanday uy vazifalari kutayotganini yoki nechta javob tekshirilishi kerakligini aytadi.",
+      "say": {
+        "signedOut": "Avval Kampusni ochib, tizimga kiring.",
+        "stale": "Darslaringizni tekshirishi uchun Kampusni bir marta oching.",
+        "noLessons": "Rejalashtirilgan darslaringiz yo'q.",
+        "next": "Keyingi darsingiz: {title}, {when}.",
+        "nextPlace": "Keyingi darsingiz: {title}, {when}, {place}.",
+        "onNow": "Hozir {title} darsi bo'lyapti, soat {time} gacha.",
+        "today": "bugun soat {time} da",
+        "tomorrow": "ertaga soat {time} da",
+        "onDay": "{day}, soat {time} da",
+        "noHomework": "Kutayotgan uy vazifasi yo'q.",
+        "homeworkOne": "Bitta uy vazifangiz bor: {title}.",
+        "homeworkOneDue": "Bitta uy vazifangiz bor: {title}, muddati {day}.",
+        "homeworkFew": "{count} ta uy vazifangiz bor. Birinchisi: {title}.",
+        "homeworkMany": "{count} ta uy vazifangiz bor. Birinchisi: {title}.",
+        "openingLesson": "Kampusda darsingiz ochilmoqda.",
+        "toCheckNone": "Tekshiriladigan javoblar yo'q.",
+        "toCheckOne": "{count} ta javob tekshirilishini kutmoqda.",
+        "toCheckFew": "{count} ta javob tekshirilishini kutmoqda.",
+        "toCheckMany": "{count} ta javob tekshirilishini kutmoqda."
+      }
     }
   }
 }

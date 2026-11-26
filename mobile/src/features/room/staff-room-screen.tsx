@@ -6,6 +6,7 @@ import type { VideoRoom } from "@/api/types";
 import { api } from "@/lib/api";
 import { useTranslations } from "@/lib/i18n";
 import { useMe } from "@/lib/session";
+import { useDonation } from "@/features/shortcuts/donation";
 import type { JoinDto } from "@kampus/lib/video/dto";
 
 import { RoomFlow } from "./room-flow";
@@ -16,6 +17,7 @@ import { RoomFlow } from "./room-flow";
  * camera and microphone and goes in.
  */
 export function StaffRoomScreen() {
+  useDonation("startLesson");
   const { id } = useLocalSearchParams<{ id: string }>();
   const t = useTranslations();
   const me = useMe();

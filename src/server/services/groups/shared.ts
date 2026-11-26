@@ -19,6 +19,24 @@ const TASHKENT_OFFSET_MS = 5 * 60 * 60 * 1000;
 export const centreToday = (now: Date = new Date()): string =>
   dateToIso(new Date(now.getTime() + TASHKENT_OFFSET_MS));
 
+/** "HH:mm" on the centre's clock, the form a lesson's `startTime` and `endTime` have. */
+export const centreClock = (now: Date = new Date()): string =>
+  new Date(now.getTime() + TASHKENT_OFFSET_MS).toISOString().slice(11, 16);
+
+/**
+ * A group's lessons that have not ended yet: every later day, and today's
+ * while its end is still ahead. A student's "next lesson" is the first of
+ * these; with "today or later" alone, a lesson that ended this morning stayed
+ * the next one until midnight (A-273).
+ */
+export function lessonsNotOver(groupId: string, now: Date = new Date()): Prisma.LessonWhereInput {
+  const day = new Date(`${centreToday(now)}T00:00:00.000Z`);
+  return {
+    groupId,
+    OR: [{ date: { gt: day } }, { date: day, endTime: { gt: centreClock(now) } }],
+  };
+}
+
 /** Users whose only roles are teacher roles see just the groups they teach (A-52). */
 export function ownGroupsOnly(actor: Actor): boolean {
   return (

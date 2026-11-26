@@ -1,0 +1,11 @@
+{
+  "My next lesson in ${applicationName}": "Мой следующий урок в ${applicationName}",
+  "Next lesson in ${applicationName}": "Следующий урок в ${applicationName}",
+  "When is my next lesson in ${applicationName}": "Когда мой следующий урок в ${applicationName}",
+  "Start my lesson in ${applicationName}": "Начать урок в ${applicationName}",
+  "Join my lesson in ${applicationName}": "Войти на урок в ${applicationName}",
+  "Open my lesson in ${applicationName}": "Открыть урок в ${applicationName}",
+  "My homework in ${applicationName}": "Моё домашнее задание в ${applicationName}",
+  "Homework in ${applicationName}": "Домашнее задание в ${applicationName}",
+  "Check homework in ${applicationName}": "Проверить домашнее задание в ${applicationName}"
+}

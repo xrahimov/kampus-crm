@@ -18,6 +18,7 @@ Claude never handles the passwords of kai's accounts and never sees the upload k
 | Store page: name, texts, icon, banner, screenshots                  | Ready: `mobile/store/` and `~/Desktop/kampus-play/screenshots/` on the Mac                                                         |
 | Data safety form, content rating, target audience, permissions      | Answers below; kai enters them                                                                                                     |
 | A sign-in for Google's reviewers                                    | kai makes it (step 7)                                                                                                              |
+| Gemini can call the app's three functions (A-274)                   | In the app. Needs Google's preview programme and the Play record: [Gemini](#gemini) below                                          |
 | A Play Console developer account                                    | Open since 25 November 2026 (personal, "Kampus CRM"); Google is verifying kai's identity, and **Create app** is locked until then  |
 
 The rules were read on Google's own pages on 25 November 2026:
@@ -81,6 +82,29 @@ The rules were read on Google's own pages on 25 November 2026:
    the first time the camera can be seen reading a badge on a real phone.
 9. **Closed testing** (personal accounts): the 12 testers for 14 days. Then **Apply for production**,
    answer Google's questions about the test, and send the release for review.
+
+## Gemini
+
+The app declares three functions an assistant may call on Android 16 and later: the next lesson,
+the homework that waits, opening the lesson (A-274). Google lets Gemini use an app's functions only
+for apps in its **Connected Apps Platform developer preview**, read on Google's pages on 26 November
+2026 ([AppFunctions](https://developer.android.com/ai/appfunctions),
+[connected apps](https://developer.android.com/ai/appfunctions/create-manage-connected-apps)).
+These steps are kai's, after the app exists in Play Console (step 2 above):
+
+1. Apply for the preview with the Google account of the Play Console:
+   <https://connected.google.com/console/help/?apply>. Its terms are kai's to read and accept.
+2. In Google's Connected Console make a connected app of the kind **Android MCP** and link it to
+   the Play app. Google asks for one sentence about the app (under 30 words), at least three things
+   it can do and three example requests. Claude's draft: "Kampus is a learning centre's app for
+   teachers, students and parents." Can do: tell the next lesson; tell the homework that waits; open
+   the lesson. Requests: "When is my next lesson in Kampus?", "What homework do I have in Kampus?",
+   "Open my lesson in Kampus."
+3. Upload a bundle to a Play testing track, submit it in the Connected Console and add the Gmail
+   addresses that may try it. Only those people, and only that version, can use it until the app
+   is published; with a production release Google publishes it by itself.
+
+The preview is Google's experiment and may change or end. Nothing else in the app depends on it.
 
 ## The store page's texts
 

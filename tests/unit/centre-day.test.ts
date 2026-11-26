@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import { defaultHomeworkLesson } from "@/lib/homework";
 import { sameClock } from "@/lib/time-zones";
-import { centreToday } from "@/server/services/groups/shared";
+import { centreClock, centreToday, lessonsNotOver } from "@/server/services/groups/shared";
 
 /*
  * The server runs in UTC and the centre's day is Tashkent's (UTC+5): from 19:00
@@ -21,6 +21,32 @@ describe("the centre's day", () => {
   it("crosses a month and a year", () => {
     expect(centreToday(new Date("2026-11-30T21:00:00Z"))).toBe("2026-12-01");
     expect(centreToday(new Date("2026-12-31T19:30:00Z"))).toBe("2027-01-01");
+  });
+});
+
+describe("the lessons that are not over", () => {
+  it("reads the centre's clock, five hours ahead of the server's", () => {
+    expect(centreClock(new Date("2026-11-26T12:06:00Z"))).toBe("17:06");
+    expect(centreClock(new Date("2026-11-26T19:00:00Z"))).toBe("00:00");
+  });
+
+  it("are every later day, and today's while its end is ahead", () => {
+    // 17:06 in Tashkent on 26 November: the morning lesson is over, an evening one is not.
+    expect(lessonsNotOver("g1", new Date("2026-11-26T12:06:00Z"))).toEqual({
+      groupId: "g1",
+      OR: [
+        { date: { gt: new Date("2026-11-26T00:00:00.000Z") } },
+        { date: new Date("2026-11-26T00:00:00.000Z"), endTime: { gt: "17:06" } },
+      ],
+    });
+  });
+
+  it("follow the centre's day past midnight in Tashkent", () => {
+    const where = lessonsNotOver("g1", new Date("2026-11-26T20:30:00Z"));
+    expect(where.OR?.[1]).toEqual({
+      date: new Date("2026-11-27T00:00:00.000Z"),
+      endTime: { gt: "01:30" },
+    });
   });
 });
 

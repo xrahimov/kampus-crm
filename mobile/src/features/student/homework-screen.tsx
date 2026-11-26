@@ -28,6 +28,7 @@ import { ApiError, type PickedFile } from "@/lib/api";
 import { dayAsDate } from "@/lib/days";
 import { errorText, useDate, useTranslations } from "@/lib/i18n";
 import { radius, space, useTheme } from "@/lib/theme";
+import { useDonation } from "@/features/shortcuts/donation";
 import { materialView } from "@kampus/lib/video-material";
 
 import { ExerciseRows } from "./exercise-rows";
@@ -51,6 +52,7 @@ export function needsAnswer(homework: PortalHomework): boolean {
  * (from the home screen) puts one task first with its form open.
  */
 export function HomeworkScreen() {
+  useDonation("homework");
   const { token, focus } = useLocalSearchParams<{ token: string; focus?: string }>();
   const t = useTranslations();
   const portal = usePortal(token);

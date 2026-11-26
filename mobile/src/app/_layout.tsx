@@ -14,6 +14,7 @@ import { StatusBar } from "expo-status-bar";
 import { useEffect, useState } from "react";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 
+import { ShortcutsBridge } from "@/features/shortcuts/shortcuts-bridge";
 import { ApiError } from "@/lib/api";
 import { I18nProvider } from "@/lib/i18n";
 import { SessionProvider, useSession } from "@/lib/session";
@@ -73,6 +74,7 @@ function Navigation({ fontsReady }: { fontsReady: boolean }) {
   return (
     <>
       <StatusBar style={dark ? "light" : "dark"} />
+      <ShortcutsBridge />
       <Stack
         screenOptions={{
           headerShown: false,
@@ -98,6 +100,8 @@ function Navigation({ fontsReady }: { fontsReady: boolean }) {
           />
           {/* A file opened inside the app: homework, materials (A-212). */}
           <Stack.Screen name="file" options={{ animation: "ios_from_right" }} />
+          {/* Where Siri, Gemini and the home screen's shortcuts land (A-273). */}
+          <Stack.Screen name="shortcut/[what]" />
         </Stack.Protected>
         <Stack.Screen name="index" />
       </Stack>

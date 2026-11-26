@@ -2,7 +2,7 @@ import type { AttendanceStatus, ExamType } from "@/generated/prisma/client";
 import { lessonInZone, type LocalLessonTime } from "@/lib/time-zones";
 import { prisma, type DbClient } from "@/server/db/prisma";
 import { levelName } from "@/server/services/exams/exams.service";
-import { centreToday } from "@/server/services/groups/shared";
+import { centreToday, lessonsNotOver } from "@/server/services/groups/shared";
 import { dateToIso, decimalToNumber, isoToDate } from "@/server/services/settings/shared";
 import { nextTopicForGroup } from "@/server/services/settings/syllabus.service";
 import { membershipBalances } from "@/server/services/students/balances";
@@ -142,7 +142,7 @@ export async function getPortal(token: string, db: DbClient = prisma): Promise<P
         },
       }),
       db.lesson.findFirst({
-        where: { groupId: membership.groupId, date: { gte: isoToDate(todayIso) } },
+        where: lessonsNotOver(membership.groupId),
         orderBy: [{ date: "asc" }, { startTime: "asc" }],
         select: {
           id: true,

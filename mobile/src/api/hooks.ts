@@ -35,10 +35,11 @@ export const keys = {
 };
 
 /** One day of lessons; null asks the server for its own today. */
-export function useToday(date: string | null) {
+export function useToday(date: string | null, enabled = true) {
   return useQuery({
     queryKey: keys.today(date),
     queryFn: ({ signal }) => api<Today>(`/today${date ? `?date=${date}` : ""}`, { signal }),
+    enabled,
   });
 }
 
@@ -292,10 +293,11 @@ export function useStartVideo(groupId: string) {
 
 /* ----- Students and parents ----- */
 
-export function useStudentHome() {
+export function useStudentHome(enabled = true) {
   return useQuery({
     queryKey: ["student", "home"],
     queryFn: ({ signal }) => api<StudentHome>("/student-auth/home", { signal }),
+    enabled,
     // "Lesson is on now" should appear without pulling the page down.
     refetchInterval: 60_000,
   });

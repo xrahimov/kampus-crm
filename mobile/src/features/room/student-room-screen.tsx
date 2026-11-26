@@ -3,6 +3,7 @@ import { useLocalSearchParams } from "expo-router";
 
 import { api } from "@/lib/api";
 import { useTranslations } from "@/lib/i18n";
+import { useDonation } from "@/features/shortcuts/donation";
 import type { JoinDto } from "@kampus/lib/video/dto";
 
 import { RoomFlow } from "./room-flow";
@@ -23,6 +24,7 @@ interface ClassPage {
  * and lets the student in as soon as they have.
  */
 export function StudentRoomScreen() {
+  useDonation("startLesson");
   const { token } = useLocalSearchParams<{ token: string }>();
   const t = useTranslations();
   const path = `/public/class/${encodeURIComponent(token)}`;

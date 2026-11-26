@@ -26,7 +26,51 @@ interface Messages {
   mobile: {
     permissions: { camera: string; microphone: string; photos: string };
     room: { shareNotice: string; shareNoticeText: string; shareChannel: string };
+    shortcuts: ShortcutWords;
   };
+}
+/**
+ * What the app is for, as an assistant on Android reads it before it chooses one of the
+ * app's functions (A-274). English: it is read by Gemini, never shown to a person.
+ */
+const GEMINI_ABOUT =
+  "Kampus is the app of a learning centre for its teachers, students and parents: " +
+  "when the next lesson is, opening that lesson, and the homework that waits.";
+/** The names of the shortcuts and what Siri answers with (A-273). */
+interface ShortcutWords {
+  nextLesson: string;
+  nextLessonAbout: string;
+  startLesson: string;
+  startLessonAbout: string;
+  homework: string;
+  homeworkAbout: string;
+  say: Record<string, string>;
+}
+const SHORTCUT_WORDS = {
+  en: (en as Messages).mobile.shortcuts,
+  ru: (ru as Messages).mobile.shortcuts,
+  uz: (uz as Messages).mobile.shortcuts,
+};
+/**
+ * A shortcut's name and description in the Shortcuts app. The Swift code holds the
+ * English wording, and iOS looks the other languages up by it.
+ */
+function shortcutTitles(locale: keyof typeof SHORTCUT_WORDS): Record<string, string> {
+  const titles: Record<string, string> = {};
+  if (locale === "en") return titles;
+  const english = SHORTCUT_WORDS.en;
+  const local = SHORTCUT_WORDS[locale];
+  for (const key of [
+    "nextLesson",
+    "nextLessonAbout",
+    "startLesson",
+    "startLessonAbout",
+    "homework",
+    "homeworkAbout",
+  ] as const) {
+    titles[english[key]] = local[key];
+  }
+  return titles;
 }
 /** The notice Android shows while the screen is shared (A-208). */
 function shareWords(messages: unknown) {
@@ -34,12 +78,17 @@ function shareWords(messages: unknown) {
   return { title: room.shareNotice, text: room.shareNoticeText, channel: room.shareChannel };
 }
 /** Under `ios`, so the sentences reach the iPhone's question and stay out of Android's resources. */
-function iosWording(locale: keyof typeof PERMISSIONS): { ios: Record<string, string> } {
+function iosWording(locale: keyof typeof PERMISSIONS): {
+  ios: Record<string, string | Record<string, string>>;
+} {
+  const titles = shortcutTitles(locale);
   return {
     ios: {
       NSCameraUsageDescription: PERMISSIONS[locale].camera,
       NSMicrophoneUsageDescription: PERMISSIONS[locale].microphone,
       NSPhotoLibraryUsageDescription: PERMISSIONS[locale].photos,
+      // The shortcuts' names in the Shortcuts app and in Spotlight (A-273).
+      ...(Object.keys(titles).length > 0 ? { "Localizable.strings": titles } : {}),
     },
   };
 }
@@ -102,6 +151,11 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
       NSPhotoLibraryUsageDescription: PERMISSIONS.en.photos,
       // A lesson keeps its sound when the teacher looks at another app for a moment.
       UIBackgroundModes: ["audio"],
+      // Siri hears "Kampus" as the word it knows: people may say either (A-273).
+      INAlternativeAppNames: [
+        { INAlternativeAppName: "Campus", INAlternativeAppNamePronunciationHint: "campus" },
+        { INAlternativeAppName: "Кампус" },
+      ],
     },
   },
   locales: {
@@ -165,6 +219,18 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     ],
     // Google Play's upload key signs a release when the build is given one (A-268).
     "./plugins/with-release-signing",
+    // Siri on iPhone and iPad; the code is in `app-intents/` (A-273).
+    "expo-app-intents",
+    // The words of those shortcuts, and Android's list under the app's picture.
+    [
+      "./plugins/with-voice-shortcuts",
+      {
+        words: SHORTCUT_WORDS,
+        phrases: { ru: require("./plugins/voice/siri-phrases.ru.json") as Record<string, string> },
+      },
+    ],
+    // What Gemini can ask the app for on Android 16 and later (A-274).
+    ["./plugins/with-gemini-functions", { instructions: GEMINI_ABOUT }],
     [
       "expo-splash-screen",
       {
@@ -175,5 +241,10 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
       },
     ],
   ],
-  experiments: { typedRoutes: true },
+  experiments: {
+    typedRoutes: true,
+    // Swift in `app-intents/` is compiled into the app itself: Apple reads the
+    // Siri shortcuts out of the app at build time and does not look inside libraries.
+    inlineModules: { watchedDirectories: ["app-intents"] },
+  },
 });
