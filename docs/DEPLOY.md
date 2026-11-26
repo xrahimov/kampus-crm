@@ -204,6 +204,9 @@ A-201) has no migration and no setting. Two things to know after it:
   on an `https` address (the live site is one). Nothing on the server switches it
   on or off; a person can switch it off for the site in the browser.
 
+The shortcuts for Siri and for Android's home screen (A-273) are in the app only: nothing to do on
+the server, no migration, no setting. They reach people with the next build of the app.
+
 The update that brings sign-ins for app store reviewers (A-272) has one migration,
 `20261126000000_review_sign_ins`: two empty date columns, on `User` and `StudentAccount`; no row
 changes and there is no setting. After it the site owner finds **Sign-ins for app store reviewers**

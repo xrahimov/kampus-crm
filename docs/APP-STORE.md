@@ -21,6 +21,7 @@ Mac's keychain and with Apple, none is in the repository.
 | App Privacy answers, age rating, content rights     | Answers below; not entered                                                                                                                 |
 | Price and countries                                 | Not set. Free; the countries are kai's choice                                                                                              |
 | A sign-in and contact details for Apple's reviewers | Contact saved in TestFlight; the sign-in is made on the site (A-272) and typed by kai                                                      |
+| Siri shortcuts (A-273)                              | In the code since 26 November 2026; they reach people with the next build. The voice itself needs a real iPhone to be tried                |
 | Copyright line, trader status for the EU            | kai's                                                                                                                                      |
 | Sent for review                                     | No. Nothing is sent before kai says so                                                                                                     |
 
@@ -118,6 +119,9 @@ for **App Functionality** only and is **linked to the person's identity**.
 
 Not collected: payment card details (Payme and Click take them on their own pages), location,
 contacts, browsing or search history, usage data, diagnostics, health, advertising data.
+
+**Siri (A-273)** changes none of these answers: what the shortcuts read stays on the device, and
+nothing new is collected or sent.
 
 **Age rating.** Every content question (violence, sexual content, profanity, drugs, gambling,
 horror, medical information, contests): **None**. Capabilities: **messaging and chat: yes**,

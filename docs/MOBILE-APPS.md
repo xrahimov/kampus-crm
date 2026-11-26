@@ -92,6 +92,7 @@ able to work from an iPad or a phone.
 | The first signed iPhone and iPad build, 1.0.0 (1), in TestFlight; the App Store page's texts in English and Russian as drafts (A-270, [APP-STORE.md](APP-STORE.md))                                                          | Uploaded; no testers, nothing sent for review                                                                                               |
 | The App Store pictures for iPhone and iPad; a long tile name on Finance is shrunk, not cut; the sign-in wall on a tablet starts under the status bar (A-271)                                                                 | Pictures on the Mac; the two repairs need a new build of the app; no server update needed                                                   |
 | A sign-in for Apple's and Google's reviewers that needs no Telegram code, made by the site owner on Settings → Organisations (A-272)                                                                                         | Built on the site; needs the server update (one migration)                                                                                  |
+| "My next lesson", "Start my lesson" and "My homework" said to Siri on iPhone and iPad, and under the app's picture on Android's home screen (A-273)                                                                          | Built; needs a new build of the app; no server update needed                                                                                |
 | What stays on the site                                                                                                                                                                                                       | The organisations page with the server's status, the print layouts (receipt, badge, cash desk sheet, certificate), recording a video lesson |
 | The site running on the app's code                                                                                                                                                                                           | Part by part, the student side first; wide tables, Excel and print last                                                                     |
 
@@ -359,10 +360,28 @@ mobile/
 - **Signing for iPhone and iPad (A-269).** The team is `ios.appleTeamId` in `app.config.ts`; `plugins/with-screen-share.js` gives the extension the same team, and `scripts/check-ios-project.mjs` fails when the two differ. Signing is automatic: Xcode makes the certificates and profiles itself once the Apple ID is added in Xcode on the Mac, which is kai's own step. In Apple's page for a new App Group the field already holds `group.`: type only the rest.
 - **The App Store build (A-270).** The commands, and why a new team's first archive fails until one real device is registered, are in [APP-STORE.md](APP-STORE.md#how-it-is-built). The store build has no `EXPO_PUBLIC_API_URL` and a higher `APP_BUILD` each time. Apple's store texts are in `store/app-store.json` (English and Russian; Apple has no Uzbek page) and the description in `store/listing.json`; change them there, then in App Store Connect. Never press **Add for Review** there: that is kai's word.
 - **Dark surfaces at the top of a tablet (A-271).** iPadOS draws the clock and date at the top left in one colour for the whole bar, the page's ink. Anything dark that reaches the top edge there (the menu rail, the sign-in wall) hides them in light mode, so both start under the status bar with `paddingTop: insets.top` on a wrapper in the page's colour. A new dark panel on the left needs the same.
+- **Shortcuts from outside the app (A-273).** `features/shortcuts/` is the app's side:
+  `snapshot.ts` makes the note (names and hours only; never put a class link or a token in it),
+  `native.ts` hands it to the phone, `shortcuts-bridge.tsx` (drawn once in `app/_layout.tsx`) writes
+  it whenever the day or the student's home is loaded and wipes it at sign-out, and
+  `/shortcut/[what]` (`shortcut-screen.tsx` with `targets.ts`) turns a wish into a screen from the
+  server's own answer. Siri's side is Swift in `mobile/app-intents/`, compiled into the app itself
+  (`experiments.inlineModules` in `app.config.ts`) with the package `expo-app-intents`: the three
+  intents, `AppShortcuts.swift` with the English phrases, `KampusNote.swift` reading the note and
+  `KampusAnswers.swift` making the sentence. The words are not in Swift: titles come through
+  `locales` in `app.config.ts`, the answers from `mobile.shortcuts.say` of the message files
+  (written as `Kampus.strings` by `plugins/with-voice-shortcuts.js`), the Russian phrases from
+  `plugins/voice/siri-phrases.ru.json`. A title in Swift must equal the English message letter for
+  letter, and every phrase needs its Russian line: `plugins/__tests__/voice-shortcuts.test.ts`
+  fails otherwise. Apple allows ten shortcuts for an app and every phrase must hold
+  `\(.applicationName)`. Android's list is plain files written by the same plugin
+  (`res/xml/kampus_shortcuts.xml`), each a link `kampus://shortcut/<wish>`; a fourth shortcut is
+  one more line in `SHORTCUTS` there and in `targets.ts`. A screen a person reaches by hand calls
+  `useDonation` so the iPhone learns the hour.
 - **Finding what is missing.** The last sweep listed every `route.ts` under `src/app/api/v1` with
   its methods and looked for each path's last fixed part in `mobile/src`: a call nobody names is a
   feature the app lacks. Worth repeating after the site gains a feature.
-  Next free number: A-273.
+  Next free number: A-274.
 - **Finance and payroll (A-237).** `src/features/finance/` and `src/api/office-finance.ts`.
   `FinanceScreen` is the site's Finance page; `EntriesScreen` the entries of a kind or of a
   category (`entries-routes.tsx` reads which from the address), with `EntrySheet`, the site's one
