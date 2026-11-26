@@ -180,3 +180,16 @@ jest.mock("react-native/Libraries/Modal/Modal", () => {
   }
   return { __esModule: true, default: Modal };
 });
+
+/*
+ * Siri's side of the shortcuts (A-273). A test runs as on a phone that has
+ * none; the tests of the shortcuts switch it on with `isAvailable`.
+ */
+jest.mock("expo-app-intents", () => ({
+  isAvailable: jest.fn(() => false),
+  setEntityCatalogAsync: jest.fn(() => Promise.resolve()),
+  donateIntentAsync: jest.fn(() => Promise.resolve()),
+  deleteDonationsAsync: jest.fn(() => Promise.resolve()),
+  removePendingInvocationAsync: jest.fn(() => Promise.resolve()),
+  useAppIntents: jest.fn(),
+}));

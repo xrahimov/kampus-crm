@@ -70,3 +70,25 @@ export const broadcast = {
     return () => heard?.remove();
   },
 };
+
+/*
+ * The note Gemini reads on Android (A-274): the coming lessons and the homework
+ * that waits, kept in the app's own settings store so that an app function can
+ * answer while JavaScript is asleep. Null removes it (sign-out). iPhones keep
+ * the same note through `expo-app-intents`; a browser keeps none.
+ */
+interface KampusShortcutsNative {
+  setSnapshot(json: string | null): boolean;
+}
+
+const shortcutsNative = requireOptionalNativeModule<KampusShortcutsNative>("KampusShortcuts");
+
+export const shortcutNote = {
+  save(json: string | null): void {
+    try {
+      shortcutsNative?.setSnapshot(json);
+    } catch {
+      // The note is a convenience: without it Gemini asks the person to open Kampus.
+    }
+  },
+};

@@ -6690,6 +6690,35 @@
       "sampleMethod": "Cash",
       "fixFields": "Some fields need another look. They are marked above.",
       "formsDescription": "Public web forms that turn visitors into leads. Share a form's link, or open it to see what visitors see."
+    },
+    "shortcuts": {
+      "nextLesson": "My next lesson",
+      "nextLessonAbout": "Says which lesson comes next and when.",
+      "startLesson": "Start my lesson",
+      "startLessonAbout": "Opens your current or next lesson in Kampus.",
+      "homework": "My homework",
+      "homeworkAbout": "Says what homework is waiting, or how many answers wait to be checked.",
+      "say": {
+        "signedOut": "Open Kampus and sign in first.",
+        "stale": "Open Kampus once so it can check your lessons.",
+        "noLessons": "You have no lessons planned.",
+        "next": "Your next lesson is {title}, {when}.",
+        "nextPlace": "Your next lesson is {title}, {when}, {place}.",
+        "onNow": "{title} is on now, until {time}.",
+        "today": "today at {time}",
+        "tomorrow": "tomorrow at {time}",
+        "onDay": "{day} at {time}",
+        "noHomework": "You have no homework waiting.",
+        "homeworkOne": "You have one homework task: {title}.",
+        "homeworkOneDue": "You have one homework task: {title}, due {day}.",
+        "homeworkFew": "You have {count} homework tasks. First: {title}.",
+        "homeworkMany": "You have {count} homework tasks. First: {title}.",
+        "openingLesson": "Opening your lesson in Kampus.",
+        "toCheckNone": "No answers are waiting to be checked.",
+        "toCheckOne": "{count} answer is waiting to be checked.",
+        "toCheckFew": "{count} answers are waiting to be checked.",
+        "toCheckMany": "{count} answers are waiting to be checked."
+      }
     }
   }
 }

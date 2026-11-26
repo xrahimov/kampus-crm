@@ -4,6 +4,6 @@
     "modules": ["KampusBroadcastModule"]
   },
   "android": {
-    "modules": ["center.kampus.call.KampusCallModule"]
+    "modules": ["center.kampus.call.KampusCallModule", "center.kampus.call.KampusShortcutsModule"]
   }
 }

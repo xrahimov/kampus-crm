@@ -18,6 +18,7 @@ import { ApiError, type PickedFile } from "@/lib/api";
 import { dayAsDate } from "@/lib/days";
 import { errorText, useDate, useTranslations } from "@/lib/i18n";
 import { radius, space, useTheme } from "@/lib/theme";
+import { useDonation } from "@/features/shortcuts/donation";
 import { materialView } from "@kampus/lib/video-material";
 
 /**
@@ -26,6 +27,7 @@ import { materialView } from "@kampus/lib/video-material";
  * spoken answer plays in place (A-214).
  */
 export function CheckingScreen() {
+  useDonation("homework");
   const t = useTranslations();
   const query = useCheckingQueue();
   const queue = query.data;
