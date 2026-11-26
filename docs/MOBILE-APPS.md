@@ -93,6 +93,7 @@ able to work from an iPad or a phone.
 | The App Store pictures for iPhone and iPad; a long tile name on Finance is shrunk, not cut; the sign-in wall on a tablet starts under the status bar (A-271)                                                                 | Pictures on the Mac; the two repairs need a new build of the app; no server update needed                                                   |
 | A sign-in for Apple's and Google's reviewers that needs no Telegram code, made by the site owner on Settings → Organisations (A-272)                                                                                         | Built on the site; needs the server update (one migration)                                                                                  |
 | "My next lesson", "Start my lesson" and "My homework" said to Siri on iPhone and iPad, and under the app's picture on Android's home screen (A-273)                                                                          | Built; needs a new build of the app; no server update needed                                                                                |
+| The same three as functions Gemini can call on Android 16 and later (A-274)                                                                                                                                                  | Built; waits for Google: its preview programme for assistants and the app's Play record ([PLAY-STORE.md](PLAY-STORE.md#gemini))             |
 | What stays on the site                                                                                                                                                                                                       | The organisations page with the server's status, the print layouts (receipt, badge, cash desk sheet, certificate), recording a video lesson |
 | The site running on the app's code                                                                                                                                                                                           | Part by part, the student side first; wide tables, Excel and print last                                                                     |
 
@@ -378,10 +379,19 @@ mobile/
   (`res/xml/kampus_shortcuts.xml`), each a link `kampus://shortcut/<wish>`; a fourth shortcut is
   one more line in `SHORTCUTS` there and in `targets.ts`. A screen a person reaches by hand calls
   `useDonation` so the iPhone learns the hour.
+- **Functions for Gemini (A-274).** The Kotlin is `plugins/gemini/KampusFunctions.kt`, copied into
+  the generated project's app module by `plugins/with-gemini-functions.js`, which also adds Google's
+  library `androidx.appfunctions`, its code generator (KSP) and the service's manifest entry. The
+  comments above each function and field are what the assistant reads: keep them short, what the
+  thing is for first. The generator's version must be the one Expo pairs with the app's Kotlin
+  (`ksp` in `app.config.ts`; a test compares it with Expo's own table after an upgrade). Try a
+  function on an Android 16 emulator with
+  `adb shell cmd app_function list-app-functions --package center.kampus.app` and
+  `adb shell "cmd app_function execute-app-function --package center.kampus.app --function 'center.kampus.app.functions.BaseKampusAppFunctionService#getNextLesson' --parameters '{}'"`.
 - **Finding what is missing.** The last sweep listed every `route.ts` under `src/app/api/v1` with
   its methods and looked for each path's last fixed part in `mobile/src`: a call nobody names is a
   feature the app lacks. Worth repeating after the site gains a feature.
-  Next free number: A-274.
+  Next free number: A-275.
 - **Finance and payroll (A-237).** `src/features/finance/` and `src/api/office-finance.ts`.
   `FinanceScreen` is the site's Finance page; `EntriesScreen` the entries of a kind or of a
   category (`entries-routes.tsx` reads which from the address), with `EntrySheet`, the site's one
