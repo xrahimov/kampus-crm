@@ -229,9 +229,8 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
         phrases: { ru: require("./plugins/voice/siri-phrases.ru.json") as Record<string, string> },
       },
     ],
-    // What Gemini can ask the app for on Android 16 and later (A-274). `ksp` is the version
-    // Expo pairs with the app's Kotlin; a test fails when an Expo upgrade moves it.
-    ["./plugins/with-gemini-functions", { instructions: GEMINI_ABOUT, ksp: "2.2.0-2.0.2" }],
+    // What Gemini can ask the app for on Android 16 and later (A-274).
+    ["./plugins/with-gemini-functions", { instructions: GEMINI_ABOUT }],
     [
       "expo-splash-screen",
       {

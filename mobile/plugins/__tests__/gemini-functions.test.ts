@@ -13,8 +13,8 @@ interface Application {
 }
 // eslint-disable-next-line @typescript-eslint/no-require-imports
 const plugin = require("../with-gemini-functions") as {
-  addGeneratorPlugin: (gradle: string, version: string) => string;
   addLibrary: (gradle: string) => string;
+  addMemory: (jvmargs: string) => string;
   appMetadata: (instructions: string) => string;
   declareService: (application: Application) => Application;
   SERVICE: string;
@@ -28,22 +28,13 @@ const voice = require("../with-voice-shortcuts") as { SHORTCUTS: Array<{ wish: s
  * What Gemini can ask the app for (A-274). The Kotlin is compiled only when
  * the Android app is built; these tests hold together what no compiler
  * compares: the names the plugin writes into the manifest, the note's fields
- * as JavaScript writes them, and the code generator's version.
+ * as JavaScript writes them, and where the code generator's version comes from.
  */
 
 const read = (...parts: string[]) => fs.readFileSync(path.join(__dirname, "..", ...parts), "utf8");
 const kotlin = read("gemini/KampusFunctions.kt");
 
 // The lines of Expo's template the plugin looks for.
-const ROOT = `buildscript {
-  dependencies {
-    classpath('com.android.tools.build:gradle')
-    classpath('com.facebook.react:react-native-gradle-plugin')
-    def kotlinVersion = findProperty('android.kotlinVersion')
-    classpath(kotlinVersion ? "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlinVersion" : 'org.jetbrains.kotlin:kotlin-gradle-plugin')
-  }
-}
-`;
 const APP = `apply plugin: "com.android.application"
 apply plugin: "org.jetbrains.kotlin.android"
 apply plugin: "com.facebook.react"
@@ -55,14 +46,6 @@ dependencies {
 `;
 
 describe("the Gradle files", () => {
-  it("get the code generator beside Kotlin, once", () => {
-    const once = plugin.addGeneratorPlugin(ROOT, "2.2.0-2.0.2");
-    expect(once).toContain(
-      `'org.jetbrains.kotlin:kotlin-gradle-plugin')\n    classpath("com.google.devtools.ksp:symbol-processing-gradle-plugin:2.2.0-2.0.2")\n`,
-    );
-    expect(plugin.addGeneratorPlugin(once, "2.2.0-2.0.2")).toBe(once);
-  });
-
   it("get the library and its generator in the app, once", () => {
     const once = plugin.addLibrary(APP);
     expect(once).toContain(
@@ -73,20 +56,38 @@ describe("the Gradle files", () => {
     expect(plugin.addLibrary(once)).toBe(once);
   });
 
-  it("stop the build when Expo's template no longer has the lines", () => {
-    expect(() => plugin.addGeneratorPlugin("buildscript {}", "1")).toThrow(/Kotlin classpath/);
-    expect(() => plugin.addLibrary("dependencies {}")).toThrow(/Kotlin plugin/);
-  });
-
-  it("use the generator version Expo pairs with the app's Kotlin", () => {
+  it("load the generator before any plugin is applied, in the version Expo worked out", () => {
+    const once = plugin.addLibrary(APP);
+    // Gradle wants a file's `buildscript` block before everything else in it.
+    expect(once.indexOf("buildscript {")).toBeGreaterThanOrEqual(0);
+    expect(once.indexOf("buildscript {")).toBeLessThan(once.indexOf("apply plugin:"));
+    expect(once).toContain(
+      'classpath("com.google.devtools.ksp:symbol-processing-gradle-plugin:${rootProject.ext.kspVersion}")',
+    );
+    // No version of its own: it must fit the build's Kotlin, which Expo pairs it with.
+    expect(once).not.toMatch(/symbol-processing-gradle-plugin:\d/);
     const expo = "../node_modules/expo-modules-autolinking/android/expo-gradle-plugin";
     const folder = `${expo}/expo-autolinking-plugin/src/main/kotlin/expo/modules/plugin`;
-    const version = /defaultKotlinVersion = "([\d.]+)"/.exec(read(folder, "KotlinVersions.kt"));
-    const paired = new RegExp(`"${version?.[1]}" to "([\\d.-]+)"`).exec(
-      read(folder, "KSPLookup.kt"),
+    // Expo's root plugin is what sets the name the block reads.
+    expect(read(folder, "ExpoRootProjectPlugin.kt")).toContain('setIfNotExist("kspVersion")');
+  });
+
+  it("stop the build when Expo's template no longer has the lines", () => {
+    expect(() => plugin.addLibrary("dependencies {}")).toThrow(/Kotlin plugin/);
+    expect(() => plugin.addLibrary('apply plugin: "org.jetbrains.kotlin.android"\n')).toThrow(
+      /react-android/,
     );
-    expect(paired?.[1]).toBeTruthy();
-    expect(read("../app.config.ts")).toContain(`ksp: "${paired?.[1]}"`);
+  });
+
+  it("give the generator room in the build's memory, and never take any away", () => {
+    expect(plugin.addMemory("-Xmx2048m -XX:MaxMetaspaceSize=512m")).toBe(
+      "-Xmx2048m -XX:MaxMetaspaceSize=1024m",
+    );
+    expect(plugin.addMemory("-Xmx4g -XX:MaxMetaspaceSize=2g")).toBe(
+      "-Xmx4g -XX:MaxMetaspaceSize=2g",
+    );
+    expect(plugin.addMemory("-Xmx2048m")).toBe("-Xmx2048m -XX:MaxMetaspaceSize=1024m");
+    expect(plugin.addMemory("")).toBe("-XX:MaxMetaspaceSize=1024m");
   });
 });
 

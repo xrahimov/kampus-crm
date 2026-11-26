@@ -383,11 +383,15 @@ mobile/
   the generated project's app module by `plugins/with-gemini-functions.js`, which also adds Google's
   library `androidx.appfunctions`, its code generator (KSP) and the service's manifest entry. The
   comments above each function and field are what the assistant reads: keep them short, what the
-  thing is for first. The generator's version must be the one Expo pairs with the app's Kotlin
-  (`ksp` in `app.config.ts`; a test compares it with Expo's own table after an upgrade). Try a
-  function on an Android 16 emulator with
+  thing is for first. The generator's version is not written anywhere: the plugin reads
+  `rootProject.ext.kspVersion`, which Expo pairs with the build's Kotlin. The generator runs inside
+  the Gradle daemon; a daemon reused from an earlier build ran out of class space
+  ("[ksp] OutOfMemoryError: Metaspace"), so the plugin raises `MaxMetaspaceSize` to 1024 MB. Google's
+  test commands are
   `adb shell cmd app_function list-app-functions --package center.kampus.app` and
-  `adb shell "cmd app_function execute-app-function --package center.kampus.app --function 'center.kampus.app.functions.BaseKampusAppFunctionService#getNextLesson' --parameters '{}'"`.
+  `adb shell "cmd app_function execute-app-function --package center.kampus.app --function 'center.kampus.app.functions.BaseKampusAppFunctionService#getNextLesson' --parameters '{}'"`;
+  the Android 16 emulator image of November 2026 (API 36) has the service and not this shell tool
+  ("No shell command implementation"), a newer image is needed for them.
 - **Finding what is missing.** The last sweep listed every `route.ts` under `src/app/api/v1` with
   its methods and looked for each path's last fixed part in `mobile/src`: a call nobody names is a
   feature the app lacks. Worth repeating after the site gains a feature.
