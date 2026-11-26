@@ -4,9 +4,9 @@ import { generateToken } from "@/server/auth/tokens";
 import { prisma, type DbClient } from "@/server/db/prisma";
 import { AppError } from "@/server/errors/app-error";
 import { authorize, type Actor } from "@/server/rbac/authorize";
-import { centreToday } from "@/server/services/groups/shared";
+import { lessonsNotOver } from "@/server/services/groups/shared";
 import { appOriginFor } from "@/server/services/settings/domains.service";
-import { dateToIso, isoToDate, mustFind } from "@/server/services/settings/shared";
+import { dateToIso, mustFind } from "@/server/services/settings/shared";
 import {
   progressSummary,
   type CourseProgressSummary,
@@ -151,7 +151,7 @@ export async function portalChildren(
     db,
     memberships.map((m) => m.id),
   );
-  const todayDate = isoToDate(centreToday());
+  const now = new Date();
   const children: FamilyPortalDto["children"] = [];
   for (const s of students) {
     const groups: FamilyPortalGroupDto[] = [];
@@ -172,7 +172,7 @@ export async function portalChildren(
       }
       const [nextLesson, unreadNews, progress] = await Promise.all([
         db.lesson.findFirst({
-          where: { groupId: m.group.id, date: { gte: todayDate } },
+          where: lessonsNotOver(m.group.id, now),
           orderBy: [{ date: "asc" }, { startTime: "asc" }],
           select: { date: true, startTime: true, endTime: true },
         }),
