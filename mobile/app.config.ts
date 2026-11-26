@@ -29,6 +29,13 @@ interface Messages {
     shortcuts: ShortcutWords;
   };
 }
+/**
+ * What the app is for, as an assistant on Android reads it before it chooses one of the
+ * app's functions (A-274). English: it is read by Gemini, never shown to a person.
+ */
+const GEMINI_ABOUT =
+  "Kampus is the app of a learning centre for its teachers, students and parents: " +
+  "when the next lesson is, opening that lesson, and the homework that waits.";
 /** The names of the shortcuts and what Siri answers with (A-273). */
 interface ShortcutWords {
   nextLesson: string;
@@ -222,6 +229,9 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
         phrases: { ru: require("./plugins/voice/siri-phrases.ru.json") as Record<string, string> },
       },
     ],
+    // What Gemini can ask the app for on Android 16 and later (A-274). `ksp` is the version
+    // Expo pairs with the app's Kotlin; a test fails when an Expo upgrade moves it.
+    ["./plugins/with-gemini-functions", { instructions: GEMINI_ABOUT, ksp: "2.2.0-2.0.2" }],
     [
       "expo-splash-screen",
       {
